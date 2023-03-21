@@ -26,7 +26,19 @@ func RunAnalysis(ctx context.Context, client *client.Client, openAIClient *ai.Cl
 	var brokenPods = map[string][]string{}
 
 	for _, pod := range list.Items {
-		// Loop through container status to check for crashes
+
+		// Check for pending pods
+		if pod.Status.Phase == "Pending" {
+
+			// Check through container status to check for crashes
+			for _, containerStatus := range pod.Status.Conditions {
+				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
+					brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = []string{containerStatus.Message}
+				}
+			}
+		}
+
+		// Check through container status to check for crashes
 		var failureDetails = []string{}
 		for _, containerStatus := range pod.Status.ContainerStatuses {
 			if containerStatus.State.Waiting != nil {
@@ -54,7 +66,7 @@ func RunAnalysis(ctx context.Context, client *client.Client, openAIClient *ai.Cl
 				return
 			}
 
-			color.Green(response)
+			fmt.Printf("%s\n", color.GreenString(response))
 		}
 	}
 }
