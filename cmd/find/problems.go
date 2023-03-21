@@ -14,7 +14,6 @@ import (
 	"github.com/cloud-native-skunkworks/k8sgpt/pkg/client"
 	"github.com/cloud-native-skunkworks/k8sgpt/pkg/openai"
 	"github.com/fatih/color"
-	ai "github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -74,22 +73,15 @@ var problemsCmd = &cobra.Command{
 			if explain {
 				s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 				s.Start()
-				resp, err := openAIClient.GetClient().CreateChatCompletion(ctx, ai.ChatCompletionRequest{
-					Model: ai.GPT3Dot5Turbo,
-					Messages: []ai.ChatCompletionMessage{
-						{
-							Role:    "user",
-							Content: "Simplify the following Kubernetes error message and provide a solution: " + strings.Join(value, " "),
-						},
-					},
-				})
+
+				response, err := openAIClient.GetCompletion(ctx, strings.Join(value, " "))
 				s.Stop()
 				if err != nil {
 					color.Red("Error: %v", err)
 					return
 				}
 
-				color.Green(resp.Choices[0].Message.Content)
+				color.Green(response)
 			}
 		}
 

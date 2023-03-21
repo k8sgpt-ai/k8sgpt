@@ -16,7 +16,8 @@ It reduces the mystery of kubernetes and makes it easy to understand what is goi
 ```
 k8sgpt auth key <Your OpenAI key>
 
-k8sgpt scan 
+k8sgpt find problems --explain
+
 ```
 
 
