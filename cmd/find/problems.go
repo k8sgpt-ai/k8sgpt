@@ -64,11 +64,8 @@ var problemsCmd = &cobra.Command{
 			}
 
 		}
-		// loop through and print map
 		for key, value := range brokenPods {
-			y := color.YellowString(key)
-			v := color.RedString(value[0])
-			fmt.Printf("%s: %s\n", y, v)
+			fmt.Printf("%s: %s\n", color.YellowString(key), color.RedString(value[0]))
 
 			if explain {
 				s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner

@@ -1,7 +1,10 @@
+<img src="images/logo.png" width="100px;" />
+
 # k8sgpt
 
+<br />
 AI Powered Kubernetes debugging for SRE, Platform and DevOps teams.
-
+<br />
 
 <img src="images/demo.gif" width=800px; />
 
