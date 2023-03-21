@@ -4,7 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/cloud-native-skunkworks/k8sgpt/cmd/auth"
@@ -57,11 +56,12 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	//Initialise the kubeconfig
-	_, err := client.NewClient(masterURL, kubeconfig)
+	kubernetesClient, err := client.NewClient(masterURL, kubeconfig)
 	if err != nil {
 		color.Red("Error initialising kubernetes client: %v", err)
 	}
 
+	viper.Set("kubernetesClient", kubernetesClient)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -86,6 +86,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		//	fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }

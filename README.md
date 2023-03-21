@@ -3,6 +3,8 @@
 AI Powered Kubernetes debugging for SRE, Platform and DevOps teams.
 
 
+<img src="images/demo.gif" width=800px; />
+
 ## What is k8sgpt?
 
 `k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.

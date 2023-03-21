@@ -10,6 +10,10 @@ type Client struct {
 	client *kubernetes.Clientset
 }
 
+func (c *Client) GetClient() *kubernetes.Clientset {
+	return c.client
+}
+
 func NewClient(masterURL string, kubeconfig string) (*Client, error) {
 
 	config, err := rest.InClusterConfig()
