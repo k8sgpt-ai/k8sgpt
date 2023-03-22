@@ -7,10 +7,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/cloud-native-skunkworks/k8sgpt/pkg/analyzer"
-	"github.com/cloud-native-skunkworks/k8sgpt/pkg/client"
-	"github.com/cloud-native-skunkworks/k8sgpt/pkg/openai"
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/client"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

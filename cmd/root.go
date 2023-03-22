@@ -6,10 +6,10 @@ package cmd
 import (
 	"os"
 
-	"github.com/cloud-native-skunkworks/k8sgpt/cmd/auth"
-	"github.com/cloud-native-skunkworks/k8sgpt/cmd/find"
-	"github.com/cloud-native-skunkworks/k8sgpt/pkg/client"
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/find"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -1,4 +1,4 @@
-module github.com/cloud-native-skunkworks/k8sgpt
+module github.com/k8sgpt-ai/k8sgpt
 
 go 1.20
 
