@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/find"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/client"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -56,7 +56,7 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	//Initialise the kubeconfig
-	kubernetesClient, err := client.NewClient(masterURL, kubeconfig)
+	kubernetesClient, err := kubernetes.NewClient(masterURL, kubeconfig)
 	if err != nil {
 		color.Red("Error initialising kubernetes client: %v", err)
 	}
