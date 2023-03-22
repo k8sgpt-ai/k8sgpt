@@ -55,9 +55,10 @@ func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient *ai.Cl
 					if err != nil {
 						continue
 					}
-
-					failureDetails = append(failureDetails, evt.Message)
-					brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
+					if evt.Reason == "FailedCreatePodSandBox" {
+						failureDetails = append(failureDetails, evt.Message)
+						brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
+					}
 				}
 
 			}
