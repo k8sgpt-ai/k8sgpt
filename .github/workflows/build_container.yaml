@@ -9,11 +9,8 @@ on:
     branches:
       - 'main'
       - '[0-9]+.[1-9][0-9]*.x'
-      - 'epic/*'
     paths-ignore:
-      - "docs/**"
       - "**.md"
-      - "netlify.toml"
 
 env:
   GO_VERSION: "~1.20"
