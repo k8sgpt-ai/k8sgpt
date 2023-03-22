@@ -10,7 +10,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	golang.org/x/term v0.6.0
 	k8s.io/apimachinery v0.26.3
-	k8s.io/client-go v0.26.3
+	k8s.io/client-go v11.0.0+incompatible
 )
 
 require (
