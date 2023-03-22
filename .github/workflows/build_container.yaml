@@ -62,7 +62,7 @@ jobs:
           echo "NON_FORKED_AND_NON_ROBOT_RUN=$NON_FORKED_AND_NON_ROBOT_RUN" >> "$GITHUB_OUTPUT"
 
   build_image:
-    name: Build Docker Image
+    name: Build Container Image
     needs: prepare_ci_run
     runs-on: ubuntu-22.04
     env:
@@ -70,7 +70,7 @@ jobs:
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
       BUILD_TIME: ${{ needs.prepare_ci_run.outputs.BUILD_TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-      RELEASE_REGISTRY: "localhost:5000/podtato-head"
+      RELEASE_REGISTRY: "localhost:5000/k8sgpt"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -138,7 +138,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           target: production
           tags: |
-            ghcr.io/podtato-head/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
+            ghcr.io/k8sgpt-ai/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
           build-args: |
             GIT_HASH=${{ env.GIT_SHA }}
             RELEASE_VERSION=dev-${{ env.DATETIME }}
