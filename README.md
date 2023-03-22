@@ -6,7 +6,7 @@
 AI Powered Kubernetes debugging for SRE, Platform and DevOps teams.
 <br />
 
-<img src="images/demo.gif" width=650px; />
+<img src="images/demo2.gif" width=650px; />
 
 ## What is k8sgpt?
 
