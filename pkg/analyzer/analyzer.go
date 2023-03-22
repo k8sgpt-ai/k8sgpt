@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/cloud-native-skunkworks/k8sgpt/pkg/client"
-	ai "github.com/cloud-native-skunkworks/k8sgpt/pkg/openai"
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/client"
+	ai "github.com/k8sgpt-ai/k8sgpt/pkg/openai"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
