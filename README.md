@@ -6,7 +6,7 @@
 AI Powered Kubernetes debugging for SRE, Platform and DevOps teams.
 <br />
 
-<img src="images/demo.gif" width=800px; />
+<img src="images/demo.gif" width=650px; />
 
 ## What is k8sgpt?
 
@@ -25,37 +25,16 @@ k8sgpt find problems --explain
 
 ```
 
-
 ### Configuration 
 
 `k8sgpt` stores config data in `~/.k8sgpt` the data is stored in plain text, including your OpenAI key.
 
 
-### Example
+### What about kubectl-ai?
 
-```
-❯ k8sgpt find problems --explain
-default/deathstar-5b559d699b-d4jm7: Back-off pulling image "docker.io/cilium/starwaraaes"
+The the kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
 
-
-The Kubernetes error message: Back-off pulling image "docker.io/cilium/starwaraaes" means that the Kubernetes cluster is having trouble pulling the specified container image from the Docker registry. 
-
-To solve this issue, you can try the following:
-
-1. Check if the specified image exists in the Docker registry by running the following command:
-
-    `docker pull docker.io/cilium/starwaraaes`
-
-2. If the image exists, try pulling the image manually on the node where the container is trying to run. This can be done by running the following command:
-
-    `docker pull docker.io/cilium/starwaraaes`
-
-3. If the image is not found in the Docker registry, check if the image name and tag are correct.
-
-4. If the issue persists, check the Docker engine logs for any error messages that might provide more context on the issue.
-placed-application-demo/placed-application-demo-58469d688c-7wdps: 0/5 nodes are available: 5 node(s) were unschedulable. preemption: 0/5 nodes are available: 5 Preemption is not helpful for scheduling..
-
-```
+K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find the root cause of an issue.
 
 ## Community
 * Find us on [Slack](https://cloud-native.slack.com/channels/k8sgpt-ai)
