@@ -56,3 +56,6 @@ To solve this issue, you can try the following:
 placed-application-demo/placed-application-demo-58469d688c-7wdps: 0/5 nodes are available: 5 node(s) were unschedulable. preemption: 0/5 nodes are available: 5 Preemption is not helpful for scheduling..
 
 ```
+
+## Community
+* Find us on [Slack](https://cloud-native.slack.com/channels/k8sgpt-ai)
