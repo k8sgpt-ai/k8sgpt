@@ -3,24 +3,22 @@ package analyzer
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/client"
-	ai "github.com/k8sgpt-ai/k8sgpt/pkg/openai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func RunAnalysis(ctx context.Context, client *client.Client, openAIClient *ai.Client, explain bool) {
+func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient *ai.Client, explain bool) error {
 
 	// search all namespaces for pods that are not running
 	list, err := client.GetClient().CoreV1().Pods("").List(ctx, metav1.ListOptions{})
 	if err != nil {
-		color.Red("Error: %v", err)
-		os.Exit(1)
+		return err
 	}
 
 	var brokenPods = map[string][]string{}
@@ -59,14 +57,15 @@ func RunAnalysis(ctx context.Context, client *client.Client, openAIClient *ai.Cl
 			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 			s.Start()
 
-			response, err := openAIClient.GetCompletion(ctx, strings.Join(value, " "))
+			response, err := aiClient.GetCompletion(ctx, strings.Join(value, " "))
 			s.Stop()
 			if err != nil {
-				color.Red("Error: %v", err)
-				return
+				return err
 			}
 
 			fmt.Printf("%s\n", color.GreenString(response))
 		}
 	}
+
+	return nil
 }
