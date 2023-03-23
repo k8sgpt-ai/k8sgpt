@@ -72,23 +72,23 @@ jobs:
       IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
         with:
           submodules: recursive
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # v2
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2
         with:
           registry: "ghcr.io"
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker Image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # v4
         with:
           context: .
           file: ./container/Dockerfile
@@ -102,14 +102,14 @@ jobs:
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0.13.4
+        uses: anchore/sbom-action@448520c4f19577ffce70a8317e619089054687e3 # v0.13.4
         with:
           image: ${{ env.IMAGE_TAG }}
           artifact-name: sbom-${{ env.IMAGE_NAME }}
           output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
 
       - name: Attach SBOM to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
