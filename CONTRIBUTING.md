@@ -13,20 +13,28 @@ We're happy that you want to contribute to this project. Please read the section
 **Where should I start?**
 - If you are new to the project, please check out the [good first issue](https://github.com/k8sgpt-ai/k8sgpt/labels/good%20first%20issue) label.
 - If you are looking for something to work on, check out our [open issues](https://github.com/k8sgpt-ai/k8sgpt/issues).
+- If you have an idea for a new feature, please open an issue, and we can discuss it.
+- We are also happy to help you find something to work on. Just reach out to us.
 
 **Getting in touch with the community**
 * Join our [#k8sgpt slack channel](https://slack.cloud-native.io/channels/k8sgpt)
+* Introduce yourself on the slack channel or open an issue to let us know that you are interested in contributing
+
+**Discuss issues**
+* Before you start working on something, propose and discuss your solution on the issue
+* If you are unsure about something, ask the community
 
 **How do I contribute?**
-- Fork the repository
-- Create a new branch
+- Fork the repository and clone it locally
+- Create a new branch and follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) guidelines for work undertaken
 - Make your changes
-- Create a pull request
+- Keep pull requests small and focused, if you have multiple changes, please open multiple PRs
+- Create a pull request back to the upstream repository and follow follow the [pull request template](.github/pull_request_template.md) guidelines.
 - Wait for a review and address any comments
 
 **Opening PRs**
 - As long as you are working on your PR, please mark it as a draft
-- Please make sure that your PR is up to date with the latest changes in `main`
+- Please make sure that your PR is up-to-date with the latest changes in `main`
 - Fill out the PR template
 - Mention the issue that your PR is addressing (closes: #<id>)
 - Make sure that your PR passes all checks
@@ -35,7 +43,6 @@ We're happy that you want to contribute to this project. Please read the section
 - Be respectful and constructive
 - Assign yourself to the PR
 - Check if all checks are passing
-  - If not, request changes
 - Suggest changes instead of simply commenting on found issues
 - If you are unsure about something, ask the author
 - If you are not sure if the changes work, try them out
