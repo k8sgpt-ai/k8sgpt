@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/logo-white.png">
-  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/logo-black.png">
+  <source media="(prefers-color-scheme: dark)" srcset="./images/logo-white.png" width="100px;">
+  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/logo-black.png" width="100px;">
 </picture>
 
 `k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
