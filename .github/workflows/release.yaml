@@ -34,22 +34,22 @@ jobs:
 
   goreleaser:
     if: needs.release-please.outputs.releases_created == 'true'
+    permissions:
+      contents: write
+
     needs:
       - release-please
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
         with:
           fetch-depth: 0
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
           go-version: '1.20'
-      -
-        name: Run GoReleaser
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
@@ -58,3 +58,57 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-container:
+    if: needs.release-please.outputs.releases_created == 'true'
+    needs:
+      - release-please
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    env:
+      IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: "ghcr.io"
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          target: production
+          tags: |
+            ${{ env.IMAGE_TAG }}
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
+          cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0.13.4
+        with:
+          image: ${{ env.IMAGE_TAG }}
+          artifact-name: sbom-${{ env.IMAGE_NAME }}
+          output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
+
+      - name: Attach SBOM to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
