@@ -112,6 +112,7 @@ jobs:
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     permissions:
       packages: write # Needed for pushing images to the registry
+      contents: read # Needed for checking out the repository
     steps:
       - name: Check out code
         uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
