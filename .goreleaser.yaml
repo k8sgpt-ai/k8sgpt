@@ -29,6 +29,13 @@ archives:
     - goos: windows
       format: zip
 
+brews:
+  - name: k8sgpt
+    homepage: https://k8sgpt.ai
+    tap:
+      owner: k8sgpt-ai
+      name: homebrew-k8sgpt
+
 checksum:
   name_template: 'checksums.txt'
 
@@ -37,6 +44,9 @@ snapshot:
 
 changelog:
   skip: true
+
+sboms:
+  - artifacts: archive
 
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
