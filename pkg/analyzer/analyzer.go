@@ -47,6 +47,19 @@ func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient *ai.Cl
 					failureDetails = append(failureDetails, containerStatus.State.Waiting.Message)
 					brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
 				}
+				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
+				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
+
+					// parse the event log and append details
+					evt, err := FetchLatestPodEvent(ctx, client, &pod)
+					if err != nil {
+						continue
+					}
+					if evt.Reason == "FailedCreatePodSandBox" {
+						failureDetails = append(failureDetails, evt.Message)
+						brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
+					}
+				}
 
 			}
 		}
@@ -97,6 +110,8 @@ func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient *ai.Cl
 					return err
 				}
 			}
+
+			color.Green(response)
 		}
 	}
 
