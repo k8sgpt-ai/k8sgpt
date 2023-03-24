@@ -57,7 +57,7 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.K8SGPT_BOT_SECRET }}
 
   build-container:
     if: needs.release-please.outputs.releases_created == 'true'
