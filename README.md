@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/banner-white.png" width="100px;">
-  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="100px;">
+  <source media="(prefers-color-scheme: dark)" srcset="./images/banner-white.png" width="600px;">
+  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
 
 _Try it out now_
