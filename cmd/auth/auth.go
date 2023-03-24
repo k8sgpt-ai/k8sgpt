@@ -24,9 +24,13 @@ var AuthCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		backendType := viper.GetString("backend_type")
-		if backendType == "" && backend == "" {
-			color.Red("No backend set. Please run k8sgpt auth")
-			os.Exit(1)
+		if backendType == "" {
+			// Set the default backend
+			viper.Set("backend_type", "openai")
+			if err := viper.WriteConfig(); err != nil {
+				color.Red("Error writing config file: %s", err.Error())
+				os.Exit(1)
+			}
 		}
 		// override the default backend if a flag is provided
 		if backend != "" {

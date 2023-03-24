@@ -13,10 +13,10 @@ type OpenAIClient struct {
 
 func (c *OpenAIClient) Configure(token string) error {
 	client := openai.NewClient(token)
-
 	if client == nil {
 		return errors.New("error creating OpenAI client")
 	}
+	c.client = client
 	return nil
 }
 
