@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/find"
+	i "github.com/k8sgpt-ai/k8sgpt/cmd/init"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -44,7 +45,7 @@ func init() {
 	// will be global for your application.
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(find.FindCmd)
-
+	rootCmd.AddCommand(i.InitCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.git.yaml)")
 	rootCmd.PersistentFlags().StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
@@ -59,6 +60,7 @@ func init() {
 	}
 
 	viper.Set("kubernetesClient", kubernetesClient)
+
 }
 
 // initConfig reads in config file and ENV variables if set.

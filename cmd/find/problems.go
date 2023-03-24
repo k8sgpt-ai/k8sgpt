@@ -2,6 +2,7 @@ package find
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -22,10 +23,30 @@ var problemsCmd = &cobra.Command{
 	 provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// Initialise the openAI client
-		openAIClient, err := ai.NewClient()
-		if err != nil {
-			color.Red("Error: %v", err)
+		// get backend from file
+		backendType := viper.GetString("backend_type")
+		if backendType == "" {
+			color.Red("No backend set. Please run k8sgpt init")
+			os.Exit(1)
+		}
+		// get the token with viper
+		token := viper.GetString(fmt.Sprintf("%s_key", backendType))
+		// check if nil
+		if token == "" {
+			color.Red("No %s key set. Please run k8sgpt auth", backendType)
+			os.Exit(1)
+		}
+
+		var aiClient ai.IAI
+		switch backendType {
+		case "openai":
+			aiClient = &ai.OpenAIClient{}
+			if err := aiClient.Configure(token); err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
+			}
+		default:
+			color.Red("Backend not supported")
 			os.Exit(1)
 		}
 
@@ -33,7 +54,7 @@ var problemsCmd = &cobra.Command{
 		// Get kubernetes client from viper
 		client := viper.Get("kubernetesClient").(*kubernetes.Client)
 
-		if err := analyzer.RunAnalysis(ctx, client, openAIClient, explain); err != nil {
+		if err := analyzer.RunAnalysis(ctx, client, aiClient, explain); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
