@@ -12,6 +12,10 @@ import (
 	"golang.org/x/term"
 )
 
+var (
+	backend string
+)
+
 // authCmd represents the auth command
 var AuthCmd = &cobra.Command{
 	Use:   "auth",
@@ -20,6 +24,14 @@ var AuthCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		backendType := viper.GetString("backend_type")
+		if backendType == "" {
+			color.Red("No backend set. Please run k8sgpt init")
+			os.Exit(1)
+		}
+		// override the default backend if a flag is provided
+		if backend != "" {
+			backendType = backend
+		}
 
 		fmt.Printf("Enter %s Key: ", backendType)
 		bytePassword, err := term.ReadPassword(int(syscall.Stdin))
@@ -40,5 +52,6 @@ var AuthCmd = &cobra.Command{
 }
 
 func init() {
-
+	// add flag for backend
+	AuthCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 }
