@@ -11,6 +11,8 @@ defaults:
 jobs:
   validate:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read # Needed for checking out the repository
     steps:
       - name: Validate Pull Request
         uses: amannn/action-semantic-pull-request@v5.2.0
