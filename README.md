@@ -3,6 +3,13 @@
   <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/logo-black.png" width="100px;">
 </picture>
 
+_Try it out now_
+
+```
+brew tap k8sgpt-ai/k8sgpt
+brew install k8sgpt
+```
+
 `k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
 
 It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
