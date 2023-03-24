@@ -1,3 +1,6 @@
+/*
+Copyright © 2023 NAME HERE alexsimonjones@gmail.com
+*/
 package auth
 
 import (
