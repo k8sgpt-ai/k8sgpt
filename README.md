@@ -20,12 +20,17 @@ It has SRE experience codified into it's analyzers and helps to pull out the mos
 
 ```
 # Ensure KUBECONFIG env is set to an active Kubernetes cluster
-k8sgpt init 
 k8sgpt auth
 k8sgpt find problems 
 # for more detail
 k8s find problems --explain
 ```
+
+## Upcoming major milestones
+
+- [] Multiple AI backend support
+- [] Custom AI/ML model backend support
+- [] Custom analyzers
 
 ### What about kubectl-ai?
 

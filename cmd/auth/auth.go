@@ -24,8 +24,8 @@ var AuthCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		backendType := viper.GetString("backend_type")
-		if backendType == "" {
-			color.Red("No backend set. Please run k8sgpt init")
+		if backendType == "" && backend == "" {
+			color.Red("No backend set. Please run k8sgpt auth")
 			os.Exit(1)
 		}
 		// override the default backend if a flag is provided

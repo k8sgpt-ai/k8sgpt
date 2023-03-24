@@ -13,7 +13,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var explain bool
+var (
+	explain bool
+	backend string
+)
 
 // problemsCmd represents the problems command
 var problemsCmd = &cobra.Command{
@@ -26,8 +29,12 @@ var problemsCmd = &cobra.Command{
 		// get backend from file
 		backendType := viper.GetString("backend_type")
 		if backendType == "" {
-			color.Red("No backend set. Please run k8sgpt init")
+			color.Red("No backend set. Please run k8sgpt auth")
 			os.Exit(1)
+		}
+		// override the default backend if a flag is provided
+		if backend != "" {
+			backendType = backend
 		}
 		// get the token with viper
 		token := viper.GetString(fmt.Sprintf("%s_key", backendType))
@@ -64,7 +71,8 @@ var problemsCmd = &cobra.Command{
 func init() {
 
 	problemsCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
-
+	// add flag for backend
+	problemsCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	FindCmd.AddCommand(problemsCmd)
 
 }
