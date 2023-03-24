@@ -2,6 +2,7 @@ package find
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -16,6 +17,7 @@ import (
 var (
 	explain bool
 	backend string
+	output  string
 )
 
 // problemsCmd represents the problems command
@@ -61,10 +63,27 @@ var problemsCmd = &cobra.Command{
 		// Get kubernetes client from viper
 		client := viper.Get("kubernetesClient").(*kubernetes.Client)
 
-		if err := analyzer.RunAnalysis(ctx, client, aiClient, explain); err != nil {
+		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
+		if err := analyzer.RunAnalysis(ctx, client, aiClient, explain, analysisResults); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		for n, analysis := range *analysisResults {
+
+			switch output {
+			case "json":
+				j, err := json.Marshal(analysis)
+				if err != nil {
+					color.Red("Error: %v", err)
+					os.Exit(1)
+				}
+				fmt.Println(string(j))
+			default:
+				fmt.Printf("%s %s: %s \n%s\n", color.CyanString("%d", n), color.YellowString(analysis.Name), color.RedString(analysis.Error), color.GreenString(analysis.Details))
+
+			}
+		}
+
 	},
 }
 
@@ -73,6 +92,8 @@ func init() {
 	problemsCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
 	problemsCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	// output as json
+	problemsCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 	FindCmd.AddCommand(problemsCmd)
 
 }
