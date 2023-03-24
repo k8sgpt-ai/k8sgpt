@@ -1,23 +1,36 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./images/logo-white.png" width="100px;">
-  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/logo-black.png" width="100px;">
+  <source media="(prefers-color-scheme: dark)" srcset="./images/banner-white.png" width="600px;">
+  <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
+
+_Install it now_
+
+```
+brew tap k8sgpt-ai/k8sgpt
+brew install k8sgpt
+```
 
 `k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
 
 It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
 
-<img src="images/demo2.gif" width=650px; />
+<img src="images/image.png" width=650px; />
 
 ## Usage
 
 ```
 # Ensure KUBECONFIG env is set to an active Kubernetes cluster
-k8sgpt auth key <Your OpenAI key>
-
-k8sgpt find problems --explain
-
+k8sgpt auth
+k8sgpt find problems 
+# for more detail
+k8s find problems --explain
 ```
+
+## Upcoming major milestones
+
+- [] Multiple AI backend support
+- [] Custom AI/ML model backend support
+- [] Custom analyzers
 
 ### What about kubectl-ai?
 
@@ -30,5 +43,8 @@ K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a too
 
 `k8sgpt` stores config data in `~/.k8sgpt` the data is stored in plain text, including your OpenAI key.
 
+### Contributing
+
+Please read our [contributing guide](./CONTRIBUTING.md).
 ### Community
 * Find us on [Slack](https://cloud-native.slack.com/channels/k8sgpt-ai)

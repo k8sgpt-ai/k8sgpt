@@ -214,6 +214,8 @@ github.com/sashabaranov/go-openai v1.5.5 h1:VYdzEGVk4zV04ZNqNb1DT8w7JCzWM77h3h6p
 github.com/sashabaranov/go-openai v1.5.5/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/sashabaranov/go-openai v1.5.6 h1:i/DI9y1kzlPqKA0KeTYezJJSy01sqpOdUIm2BV7vgtA=
 github.com/sashabaranov/go-openai v1.5.6/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
+github.com/sashabaranov/go-openai v1.5.7 h1:8DGgRG+P7yWixte5j720y6yiXgY3Hlgcd0gcpHdltfo=
+github.com/sashabaranov/go-openai v1.5.7/go.mod h1:lj5b/K+zjTSFxVLijLSTDZuP7adOgerWeFyZLUhAKRg=
 github.com/spf13/afero v1.9.3 h1:41FoI0fD7OR7mGcKE/aOiLkGreyf8ifIOQmJANWogMk=
 github.com/spf13/afero v1.9.3/go.mod h1:iUV7ddyEEZPO5gA3zD4fJt6iStLlL+Lg4m2cihcDf8Y=
 github.com/spf13/cast v1.5.0 h1:rj3WzYc11XZaIZMPKmwP96zkFEnnAmV8s6XbB2aY32w=

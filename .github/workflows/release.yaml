@@ -23,7 +23,7 @@ jobs:
     # Release-please creates a PR that tracks all changes
     steps:
       - name: Checkout
-        uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
 
       - uses: google-github-actions/release-please-action@e0b9d1885d92e9a93d5ce8656de60e3b806e542c # v3
         id: release
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
         with:
           fetch-depth: 0
       - name: Set up Go
@@ -57,7 +57,7 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.K8SGPT_BOT_SECRET }}
 
   build-container:
     if: needs.release-please.outputs.releases_created == 'true'
@@ -72,7 +72,7 @@ jobs:
       IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout
-        uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
         with:
           submodules: recursive
 

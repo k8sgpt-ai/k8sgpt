@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -47,7 +44,6 @@ func init() {
 	// will be global for your application.
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(find.FindCmd)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.git.yaml)")
 	rootCmd.PersistentFlags().StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
@@ -62,6 +58,7 @@ func init() {
 	}
 
 	viper.Set("kubernetesClient", kubernetesClient)
+
 }
 
 // initConfig reads in config file and ENV variables if set.

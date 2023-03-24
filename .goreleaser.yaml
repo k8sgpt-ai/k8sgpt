@@ -29,6 +29,13 @@ archives:
     - goos: windows
       format: zip
 
+brews:
+  - name: k8sgpt
+    homepage: https://k8sgpt.ai
+    tap:
+      owner: k8sgpt-ai
+      name: homebrew-k8sgpt
+
 checksum:
   name_template: 'checksums.txt'
 
