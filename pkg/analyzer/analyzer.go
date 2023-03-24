@@ -7,13 +7,14 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 )
 
-func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool) error {
-	err := AnalyzePod(ctx, client, aiClient, explain)
+func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
+
+	err := AnalyzePod(ctx, client, aiClient, explain, analysisResults)
 	if err != nil {
 		return err
 	}
 
-	err = AnalyzeReplicaSet(ctx, client, aiClient, explain)
+	err = AnalyzeReplicaSet(ctx, client, aiClient, explain, analysisResults)
 	if err != nil {
 		return err
 	}

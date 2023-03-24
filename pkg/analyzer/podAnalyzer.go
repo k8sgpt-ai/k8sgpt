@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool) error {
+func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
 
 	// search all namespaces for pods that are not running
 	list, err := client.GetClient().CoreV1().Pods("").List(ctx, metav1.ListOptions{})
@@ -66,15 +66,16 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 
 	}
 
-	count := 0
 	for key, value := range brokenPods {
-		fmt.Printf("%s: %s: %s\n", color.CyanString("%d", count), color.YellowString(key), color.RedString(value[0]))
-		count++
+		inputValue := strings.Join(value, " ")
+		var currentAnalysis = Analysis{
+			Kind:  "Pod",
+			Name:  key,
+			Error: value[0],
+		}
 		if explain {
 			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 			s.Start()
-
-			inputValue := strings.Join(value, " ")
 
 			// Check for cached data
 			sEnc := base64.StdEncoding.EncodeToString([]byte(inputValue))
@@ -92,8 +93,8 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 					color.Red("error decoding cached data: %v", err)
 					continue
 				}
-
-				color.Green(string(output))
+				currentAnalysis.Details = string(output)
+				*analysisResults = append(*analysisResults, currentAnalysis)
 				continue
 			}
 
@@ -110,9 +111,10 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 					return err
 				}
 			}
+			currentAnalysis.Details = response
 
-			color.Green(response)
 		}
+		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
 
 	return nil

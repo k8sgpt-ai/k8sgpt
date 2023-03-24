@@ -15,7 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool) error {
+func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
 
 	// search all namespaces for pods that are not running
 	list, err := client.GetClient().AppsV1().ReplicaSets("").List(ctx, metav1.ListOptions{})
@@ -39,10 +39,13 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 		}
 	}
 
-	count := 0
 	for key, value := range brokenRS {
-		fmt.Printf("%s: %s: %s\n", color.CyanString("%d", count), color.YellowString(key), color.RedString(value[0]))
-		count++
+		var currentAnalysis = Analysis{
+			Kind:  "ReplicaSet",
+			Name:  key,
+			Error: value[0],
+		}
+
 		if explain {
 			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 			s.Start()
@@ -65,8 +68,8 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 					color.Red("error decoding cached data: %v", err)
 					continue
 				}
-
-				color.Green(string(output))
+				currentAnalysis.Details = string(output)
+				*analysisResults = append(*analysisResults, currentAnalysis)
 				continue
 			}
 
@@ -83,7 +86,9 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 					return err
 				}
 			}
+			currentAnalysis.Details = response
 		}
+		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
 
 	return nil
