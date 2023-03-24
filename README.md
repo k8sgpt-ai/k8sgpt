@@ -28,9 +28,9 @@ k8s find problems --explain
 
 ## Upcoming major milestones
 
-- [] Multiple AI backend support
-- [] Custom AI/ML model backend support
-- [] Custom analyzers
+- [ ] Multiple AI backend support
+- [ ] Custom AI/ML model backend support
+- [ ] Custom analyzers
 
 ### What about kubectl-ai?
 
