@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.0.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.3...v0.0.4) (2023-03-24)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/sashabaranov/go-openai to v1.5.7 ([7f7726d](https://github.com/k8sgpt-ai/k8sgpt/commit/7f7726d59a63baeaf8ff110e00b30a20ec7f1df5))
+
+
+### Docs
+
+* add some important information to contributing ([9ab7f58](https://github.com/k8sgpt-ai/k8sgpt/commit/9ab7f587620d69e4e8fc98faabce6417c35f7497))
+* update CONTRIBUTING ([05a787d](https://github.com/k8sgpt-ai/k8sgpt/commit/05a787d53dfe5e625c6449ac1e21ec36e66ddd28))
+* update CONTRIBUTING ([26449e1](https://github.com/k8sgpt-ai/k8sgpt/commit/26449e10efd8926cccd4a2eaa4e9dc3afa8bd01a))
+
+
+### Other
+
+* add bot secret to goreleaser ([171e58b](https://github.com/k8sgpt-ai/k8sgpt/commit/171e58b51107f75717694e35c4e249ee41f0409a))
+* add brew tap generation on release ([2992c4e](https://github.com/k8sgpt-ai/k8sgpt/commit/2992c4e5c8abad50c90ed85523c732f19ab1f31c))
+* **deps:** update actions/checkout digest to 8f4b7f8 ([9955d75](https://github.com/k8sgpt-ai/k8sgpt/commit/9955d754505b60f28d17397132a1d02e95ffe303))
+
 ## [0.0.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.3...v0.0.3) (2023-03-23)
 
 
