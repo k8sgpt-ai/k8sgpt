@@ -3,7 +3,7 @@
   <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
 
-_Try it out now_
+_Install it now_
 
 ```
 brew tap k8sgpt-ai/k8sgpt
@@ -20,13 +20,17 @@ It has SRE experience codified into it's analyzers and helps to pull out the mos
 
 ```
 # Ensure KUBECONFIG env is set to an active Kubernetes cluster
-k8sgpt auth key <Your OpenAI key>
-
+k8sgpt auth
 k8sgpt find problems 
 # for more detail
 k8s find problems --explain
-
 ```
+
+## Upcoming major milestones
+
+- [] Multiple AI backend support
+- [] Custom AI/ML model backend support
+- [] Custom analyzers
 
 ### What about kubectl-ai?
 

@@ -4,17 +4,18 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"time"
 )
 
-func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient *ai.Client, explain bool) error {
+func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool) error {
 
 	// search all namespaces for pods that are not running
 	list, err := client.GetClient().CoreV1().Pods("").List(ctx, metav1.ListOptions{})
