@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read # Needed for checking out the repository
+      pull-requests: read # Needed for reading prs
     steps:
       - name: Validate Pull Request
         uses: amannn/action-semantic-pull-request@v5.2.0
