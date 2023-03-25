@@ -1,4 +1,4 @@
-package find
+package analyze
 
 import (
 	"context"
@@ -20,9 +20,9 @@ var (
 	output  string
 )
 
-// problemsCmd represents the problems command
-var problemsCmd = &cobra.Command{
-	Use:   "problems",
+// AnalyzeCmd represents the problems command
+var AnalyzeCmd = &cobra.Command{
+	Use:   "analyze",
 	Short: "This command will find problems within your Kubernetes cluster",
 	Long: `This command will find problems within your Kubernetes cluster and
 	 provide you with a list of issues that need to be resolved`,
@@ -89,11 +89,10 @@ var problemsCmd = &cobra.Command{
 
 func init() {
 
-	problemsCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
+	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
-	problemsCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	// output as json
-	problemsCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
-	FindCmd.AddCommand(problemsCmd)
+	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 
 }
