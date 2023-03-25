@@ -52,7 +52,7 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 
 					// parse the event log and append details
 					evt, err := FetchLatestPodEvent(ctx, client, &pod)
-					if err != nil {
+					if err != nil || evt == nil {
 						continue
 					}
 					if evt.Reason == "FailedCreatePodSandBox" {
