@@ -79,8 +79,7 @@ var AnalyzeCmd = &cobra.Command{
 				}
 				fmt.Println(string(j))
 			default:
-				fmt.Printf("%s %s: %s \n%s\n", color.CyanString("%d", n), color.YellowString(analysis.Name), color.RedString(analysis.Error), color.GreenString(analysis.Details))
-
+				fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n), color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject), color.RedString(analysis.Error), color.GreenString(analysis.Details))
 			}
 		}
 
