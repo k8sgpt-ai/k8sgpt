@@ -78,6 +78,7 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 					continue
 				}
 				currentAnalysis.Details = string(output)
+				currentAnalysis.ParentObject = parent
 				*analysisResults = append(*analysisResults, currentAnalysis)
 				continue
 			}

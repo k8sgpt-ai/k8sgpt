@@ -100,6 +100,7 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 					continue
 				}
 				currentAnalysis.Details = string(output)
+				currentAnalysis.ParentObject = parent
 				*analysisResults = append(*analysisResults, currentAnalysis)
 				continue
 			}
