@@ -6,9 +6,10 @@ import (
 )
 
 type PreAnalysis struct {
-	Pod            v1.Pod
-	FailureDetails []string
-	ReplicaSet     appsv1.ReplicaSet
+	Pod                   v1.Pod
+	FailureDetails        []string
+	ReplicaSet            appsv1.ReplicaSet
+	PersistentVolumeClaim v1.PersistentVolumeClaim
 }
 
 type Analysis struct {
