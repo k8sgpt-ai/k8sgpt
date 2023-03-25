@@ -22,30 +22,30 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 	if err != nil {
 		return err
 	}
-
-	var brokenPods = map[string][]string{}
+	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, pod := range list.Items {
-
+		var failures []string
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
 
 			// Check through container status to check for crashes
 			for _, containerStatus := range pod.Status.Conditions {
 				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
-					brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = []string{containerStatus.Message}
+					if containerStatus.Message != "" {
+						failures = []string{containerStatus.Message}
+					}
 				}
 			}
 		}
 
 		// Check through container status to check for crashes
-		var failureDetails = []string{}
 		for _, containerStatus := range pod.Status.ContainerStatuses {
 			if containerStatus.State.Waiting != nil {
 				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
-
-					failureDetails = append(failureDetails, containerStatus.State.Waiting.Message)
-					brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
+					if containerStatus.State.Waiting.Message != "" {
+						failures = append(failures, containerStatus.State.Waiting.Message)
+					}
 				}
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
@@ -55,24 +55,30 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 					if err != nil || evt == nil {
 						continue
 					}
-					if evt.Reason == "FailedCreatePodSandBox" {
-						failureDetails = append(failureDetails, evt.Message)
-						brokenPods[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = failureDetails
+					if evt.Reason == "FailedCreatePodSandBox" && evt.Message != "" {
+						failures = append(failures, evt.Message)
 					}
 				}
-
 			}
 		}
-
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = PreAnalysis{
+				Pod:            pod,
+				FailureDetails: failures,
+			}
+		}
 	}
 
-	for key, value := range brokenPods {
-		inputValue := strings.Join(value, " ")
+	for key, value := range preAnalysis {
+		inputValue := strings.Join(value.FailureDetails, " ")
 		var currentAnalysis = Analysis{
 			Kind:  "Pod",
 			Name:  key,
-			Error: value[0],
+			Error: value.FailureDetails[0],
 		}
+
+		parent, _ := getParent(client, value.Pod.ObjectMeta)
+
 		if explain {
 			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 			s.Start()
@@ -112,10 +118,59 @@ func AnalyzePod(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI,
 				}
 			}
 			currentAnalysis.Details = response
-
 		}
+		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
 
 	return nil
+}
+
+func getParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool) {
+	if meta.OwnerReferences != nil {
+		for _, owner := range meta.OwnerReferences {
+			switch owner.Kind {
+			case "ReplicaSet":
+				rs, err := client.GetClient().AppsV1().ReplicaSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if rs.OwnerReferences != nil {
+					return getParent(client, rs.ObjectMeta)
+				}
+				return "ReplicaSet/" + rs.Name, false
+
+			case "Deployment":
+				dep, err := client.GetClient().AppsV1().Deployments(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if dep.OwnerReferences != nil {
+					return getParent(client, dep.ObjectMeta)
+				}
+				return "Deployment/" + dep.Name, false
+
+			case "StatefulSet":
+				sts, err := client.GetClient().AppsV1().StatefulSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if sts.OwnerReferences != nil {
+					return getParent(client, sts.ObjectMeta)
+				}
+				return "StatefulSet/" + sts.Name, false
+
+			case "DaemonSet":
+				ds, err := client.GetClient().AppsV1().DaemonSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if ds.OwnerReferences != nil {
+					return getParent(client, ds.ObjectMeta)
+				}
+				return "DaemonSet/" + ds.Name, false
+			}
+		}
+	}
+	return meta.Name, false
 }

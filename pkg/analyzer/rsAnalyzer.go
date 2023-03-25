@@ -23,9 +23,10 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 		return err
 	}
 
-	var brokenRS = map[string][]string{}
+	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, rs := range list.Items {
+		var failures []string
 
 		// Check for empty rs
 		if rs.Status.Replicas == 0 {
@@ -33,24 +34,32 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 			// Check through container status to check for crashes
 			for _, rsStatus := range rs.Status.Conditions {
 				if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
-					brokenRS[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = []string{rsStatus.Message}
+					failures = []string{rsStatus.Message}
 				}
+			}
+		}
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = PreAnalysis{
+				ReplicaSet:     rs,
+				FailureDetails: failures,
 			}
 		}
 	}
 
-	for key, value := range brokenRS {
+	for key, value := range preAnalysis {
 		var currentAnalysis = Analysis{
 			Kind:  "ReplicaSet",
 			Name:  key,
-			Error: value[0],
+			Error: value.FailureDetails[0],
 		}
+
+		parent, _ := getParent(client, value.ReplicaSet.ObjectMeta)
 
 		if explain {
 			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
 			s.Start()
 
-			inputValue := strings.Join(value, " ")
+			inputValue := strings.Join(value.FailureDetails, " ")
 
 			// Check for cached data
 			sEnc := base64.StdEncoding.EncodeToString([]byte(inputValue))
@@ -88,6 +97,7 @@ func AnalyzeReplicaSet(ctx context.Context, client *kubernetes.Client, aiClient 
 			}
 			currentAnalysis.Details = response
 		}
+		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
 
