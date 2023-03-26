@@ -9,6 +9,7 @@ type PreAnalysis struct {
 	Pod            v1.Pod
 	FailureDetails []string
 	ReplicaSet     appsv1.ReplicaSet
+	Endpoint       v1.Endpoints
 }
 
 type Analysis struct {
