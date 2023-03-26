@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.0.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.5...v0.0.6) (2023-03-26)
+
+
+### Features
+
+* add service analysis ([961fb6c](https://github.com/k8sgpt-ai/k8sgpt/commit/961fb6c555f59f1276531f462739b76b1508830e))
+* added analysis for pvcs ([88d49ae](https://github.com/k8sgpt-ai/k8sgpt/commit/88d49ae21c7d889d59361de157360f80503683be))
+* also fixes bug if the events feed is empty ([#73](https://github.com/k8sgpt-ai/k8sgpt/issues/73)) ([a1093dc](https://github.com/k8sgpt-ai/k8sgpt/commit/a1093dcfe468a7671c9e543372f73780fb38418e))
+* find parent objects ([b29c6e4](https://github.com/k8sgpt-ai/k8sgpt/commit/b29c6e45825807d07dd6fdb954457772f40b1b0e))
+* find parent objects and add information about them ([#72](https://github.com/k8sgpt-ai/k8sgpt/issues/72)) ([14e85b0](https://github.com/k8sgpt-ai/k8sgpt/commit/14e85b08ff7d9a571796905260db7f1056b6e838))
+* initial json implementation ([#68](https://github.com/k8sgpt-ai/k8sgpt/issues/68)) ([979f13f](https://github.com/k8sgpt-ai/k8sgpt/commit/979f13f043f54a5bc74d0a49fee0db2faaf0a4f8))
+* interfaced out ai clients ([90b3c08](https://github.com/k8sgpt-ai/k8sgpt/commit/90b3c0898c8ab1299ce8b60effe981f5fc9ed63b))
+* support for multi-auth ([51aa59a](https://github.com/k8sgpt-ai/k8sgpt/commit/51aa59aea8c0fd5533d2300c7a79c0b9008ef887))
+
+
+### Bug Fixes
+
+* missing parent when explain is used ([9c7d559](https://github.com/k8sgpt-ai/k8sgpt/commit/9c7d55955b777ad201307cb946e0fc81cf9c4b99))
+* semantic commit token permission ([#69](https://github.com/k8sgpt-ai/k8sgpt/issues/69)) ([0181c0a](https://github.com/k8sgpt-ai/k8sgpt/commit/0181c0aeb56ad82fd232ce1c7788c43b7bd03bf2))
+
+
+### Other
+
+* add semantic pr validation ([#66](https://github.com/k8sgpt-ai/k8sgpt/issues/66)) ([ad594c7](https://github.com/k8sgpt-ai/k8sgpt/commit/ad594c7cb2105e0eff72d1767b2ddcc4dc0e3d38))
+* **deps:** pin amannn/action-semantic-pull-request action to c3cd5d1 ([3621766](https://github.com/k8sgpt-ai/k8sgpt/commit/36217667ceb87d9b97b44dc91e0ff6e7a1b86e14))
+
 ## [0.0.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.4...v0.0.5) (2023-03-24)
 
 
