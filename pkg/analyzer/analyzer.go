@@ -19,6 +19,11 @@ func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI
 		return err
 	}
 
+	err = AnalyzePersistentVolumeClaim(ctx, client, aiClient, explain, analysisResults)
+  if err != nil {
+		return err
+	}
+  
 	err = AnalyzeEndpoints(ctx, client, aiClient, explain, analysisResults)
 	if err != nil {
 		return err
