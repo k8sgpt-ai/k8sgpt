@@ -10,6 +10,7 @@ type PreAnalysis struct {
 	FailureDetails        []string
 	ReplicaSet            appsv1.ReplicaSet
 	PersistentVolumeClaim v1.PersistentVolumeClaim
+	Endpoint       v1.Endpoints
 }
 
 type Analysis struct {
