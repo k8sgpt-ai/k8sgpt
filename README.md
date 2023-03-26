@@ -16,6 +16,18 @@ It has SRE experience codified into it's analyzers and helps to pull out the mos
 
 <img src="images/image.png" width=650px; />
 
+## Analyzers
+
+K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but you will be able to write your own analyzers.
+
+### Built in analyzers
+
+- [x] podAnalyzer
+- [x] pvcAnalyzer
+- [x] rsAnalyzer
+- [x] serviceAnalyzer
+- [x] eventAnalyzer
+
 ## Usage
 
 ```
