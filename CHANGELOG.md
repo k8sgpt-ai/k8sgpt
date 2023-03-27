@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.0.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.7...v0.0.8) (2023-03-27)
+
+
+### Features
+
+* add generation of api-keys to cli ([#87](https://github.com/k8sgpt-ai/k8sgpt/issues/87)) ([1c653ec](https://github.com/k8sgpt-ai/k8sgpt/commit/1c653ecc51b74a2f51ce7240ffaee0fe75f2e8dd))
+* add generation of api-keys to cli ([#87](https://github.com/k8sgpt-ai/k8sgpt/issues/87)) ([bb2db5c](https://github.com/k8sgpt-ai/k8sgpt/commit/bb2db5ca7923e2049308d1674bb59ae8154e415c))
+* addition of simple language support ([c3008c5](https://github.com/k8sgpt-ai/k8sgpt/commit/c3008c5e75acbb35d864135199ca9c034f59e35f))
+* version ([0c231d6](https://github.com/k8sgpt-ai/k8sgpt/commit/0c231d635e7ad71609bb80abac5e0ade15ffb860))
+* version ([931f072](https://github.com/k8sgpt-ai/k8sgpt/commit/931f072e0ab0cfd77f261b0b719cf0819f85b951))
+
 ## [0.0.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.6...v0.0.7) (2023-03-27)
 
 
