@@ -14,9 +14,9 @@ brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
 
-* After installing, you will need to generate an API key from [OpenAI](https://openai.com/). 
+* Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it 
-  * and then `k8sgpt auth` to set it in k8sgpt.
+* Run `k8sgpt auth` to set it in k8sgpt.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 
