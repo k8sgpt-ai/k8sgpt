@@ -10,13 +10,13 @@ type PreAnalysis struct {
 	FailureDetails        []string
 	ReplicaSet            appsv1.ReplicaSet
 	PersistentVolumeClaim v1.PersistentVolumeClaim
-	Endpoint       v1.Endpoints
+	Endpoint              v1.Endpoints
 }
 
 type Analysis struct {
-	Kind         string `json:"kind"`
-	Name         string `json:"name"`
-	Error        string `json:"error"`
-	Details      string `json:"details"`
-	ParentObject string `json:"parentObject"`
+	Kind         string   `json:"kind"`
+	Name         string   `json:"name"`
+	Error        []string `json:"error"`
+	Details      string   `json:"details"`
+	ParentObject string   `json:"parentObject"`
 }
