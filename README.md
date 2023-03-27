@@ -14,7 +14,7 @@ brew install k8sgpt
 
 It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
 
-<img src="images/image.png" width=650px; />
+<img src="images/landing.png" width=650px; />
 
 ## Analyzers
 
