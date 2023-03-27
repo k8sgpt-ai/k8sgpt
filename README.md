@@ -20,7 +20,7 @@ brew install k8sgpt
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 
-<img src="images/landing.png" width=650px; />
+<img src="images/demo4.gif" width=650px; />
 
 ## Analyzers
 
