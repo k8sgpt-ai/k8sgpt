@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"os"
 
 	"github.com/fatih/color"
@@ -44,6 +45,7 @@ func init() {
 	// will be global for your application.
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(analyze.AnalyzeCmd)
+	rootCmd.AddCommand(generate.GenerateCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.git.yaml)")
 	rootCmd.PersistentFlags().StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
