@@ -2,16 +2,11 @@ package analyzer
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"strings"
-	"time"
 
-	"github.com/briandowns/spinner"
-	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/spf13/viper"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -66,54 +61,10 @@ func AnalyzeEndpoints(ctx context.Context, client *kubernetes.Client, aiClient a
 		var currentAnalysis = Analysis{
 			Kind:  "Service",
 			Name:  key,
-			Error: value.FailureDetails[0],
+			Error: value.FailureDetails,
 		}
 
-		parent, _ := getParent(client, value.Endpoint.ObjectMeta)
-
-		if explain {
-			s := spinner.New(spinner.CharSets[35], 100*time.Millisecond) // Build our new spinner
-			s.Start()
-
-			inputValue := strings.Join(value.FailureDetails, " ")
-
-			// Check for cached data
-			sEnc := base64.StdEncoding.EncodeToString([]byte(inputValue))
-			// find in viper cache
-			if viper.IsSet(sEnc) {
-				s.Stop()
-				// retrieve data from cache
-				response := viper.GetString(sEnc)
-				if response == "" {
-					color.Red("error retrieving cached data")
-					continue
-				}
-				output, err := base64.StdEncoding.DecodeString(response)
-				if err != nil {
-					color.Red("error decoding cached data: %v", err)
-					continue
-				}
-				currentAnalysis.Details = string(output)
-				currentAnalysis.ParentObject = parent
-				*analysisResults = append(*analysisResults, currentAnalysis)
-				continue
-			}
-
-			response, err := aiClient.GetCompletion(ctx, inputValue)
-			s.Stop()
-			if err != nil {
-				color.Red("error getting completion: %v", err)
-				continue
-			}
-
-			if !viper.IsSet(sEnc) {
-				viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
-				if err := viper.WriteConfig(); err != nil {
-					return err
-				}
-			}
-			currentAnalysis.Details = response
-		}
+		parent, _ := util.GetParent(client, value.Endpoint.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}

@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -18,6 +20,7 @@ var (
 	explain bool
 	backend string
 	output  string
+	filters []string
 )
 
 // AnalyzeCmd represents the problems command
@@ -68,10 +71,48 @@ var AnalyzeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		for n, analysis := range *analysisResults {
+		// Removed filtered results from slice
+		if len(filters) > 0 {
+			var filteredResults []analyzer.Analysis
+			for _, analysis := range *analysisResults {
+				for _, filter := range filters {
+					if strings.Contains(analysis.Kind, filter) {
+						filteredResults = append(filteredResults, analysis)
+					}
+				}
+			}
+			analysisResults = &filteredResults
+		}
+
+		var bar *progressbar.ProgressBar
+		if len(*analysisResults) > 0 {
+			bar = progressbar.Default(int64(len(*analysisResults)))
+		}
+
+		// This variable is used to store the results that will be printed
+		// It's necessary because the heap memory is lost when the function returns
+		var printOutput []analyzer.Analysis
+
+		for _, analysis := range *analysisResults {
+
+			if explain {
+				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error)
+				if err != nil {
+					color.Red("Error: %v", err)
+					continue
+				}
+				analysis.Details = parsedText
+				bar.Add(1)
+			}
+			printOutput = append(printOutput, analysis)
+		}
+
+		// print results
+		for n, analysis := range printOutput {
 
 			switch output {
 			case "json":
+				analysis.Error = analysis.Error[0:]
 				j, err := json.Marshal(analysis)
 				if err != nil {
 					color.Red("Error: %v", err)
@@ -79,14 +120,18 @@ var AnalyzeCmd = &cobra.Command{
 				}
 				fmt.Println(string(j))
 			default:
-				fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n), color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject), color.RedString(analysis.Error), color.GreenString(analysis.Details))
+				fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n),
+					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject),
+					color.RedString(analysis.Error[0]), color.GreenString(analysis.Details))
 			}
 		}
-
 	},
 }
 
 func init() {
+
+	// array of strings flag
+	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analzyers (e.g. Pod,PersistentVolumeClaim,Service,ReplicaSet)")
 
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
