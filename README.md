@@ -37,8 +37,6 @@ K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a se
 ## Usage
 
 ```
-Kubernetes debugging powered by AI
-
 Usage:
   k8sgpt [command]
 
@@ -48,6 +46,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   generate    Generate Key for your chosen backend (opens browser)
   help        Help about any command
+  version     Print the version number of k8sgpt
 
 Flags:
       --config string       config file (default is $HOME/.k8sgpt.git.yaml)
