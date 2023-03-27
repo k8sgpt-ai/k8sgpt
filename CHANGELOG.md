@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.6...v0.0.7) (2023-03-27)
+
+
+### Features
+
+* wip fixing missing details ([0852c65](https://github.com/k8sgpt-ai/k8sgpt/commit/0852c658ded33b91e1d323bd8cba6ac6935cb525))
+
+
+### Other
+
+* moved code ([a194d4a](https://github.com/k8sgpt-ai/k8sgpt/commit/a194d4a509329cbc5a00724b0a19c75726c2a0d3))
+* return success on no issues ([009f47c](https://github.com/k8sgpt-ai/k8sgpt/commit/009f47c8e8ee6d3ce9b36110c36edae97690c949))
+* updated readme ([06fb807](https://github.com/k8sgpt-ai/k8sgpt/commit/06fb8073dc5b0b5bd9f8d115d9ec206ab238d68f))
+
 ## [0.0.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.6...v0.0.6) (2023-03-26)
 
 
