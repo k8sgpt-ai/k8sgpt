@@ -17,10 +17,11 @@ import (
 )
 
 var (
-	explain bool
-	backend string
-	output  string
-	filters []string
+	explain  bool
+	backend  string
+	output   string
+	filters  []string
+	language string
 )
 
 // AnalyzeCmd represents the problems command
@@ -53,7 +54,7 @@ var AnalyzeCmd = &cobra.Command{
 		switch backendType {
 		case "openai":
 			aiClient = &ai.OpenAIClient{}
-			if err := aiClient.Configure(token); err != nil {
+			if err := aiClient.Configure(token, language); err != nil {
 				color.Red("Error: %v", err)
 				os.Exit(1)
 			}
@@ -141,5 +142,6 @@ func init() {
 	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	// output as json
 	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
-
+	// add language options for output
+	AnalyzeCmd.Flags().StringVarP(&language, "language", "l", "english", "Languages to use for AI (e.g. 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese', 'Korean')")
 }
