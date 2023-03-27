@@ -3,16 +3,22 @@
   <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
 
-_Install it now_
+`k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
+
+It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
+
+## Quick Start
 
 ```
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
 
-`k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
-
-It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
+* Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
+  * You can do this by running `k8sgpt generate` to open a browser link to generate it 
+* Run `k8sgpt auth` to set it in k8sgpt.
+* Run `k8sgpt analyze` to run a scan.
+* And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 
 <img src="images/landing.png" width=650px; />
 
@@ -40,13 +46,23 @@ Available Commands:
   analyze     This command will find problems within your Kubernetes cluster
   auth        Authenticate with your chosen backend
   completion  Generate the autocompletion script for the specified shell
+  generate    Generate Key for your chosen backend (opens browser)
   help        Help about any command
 
+Flags:
+      --config string       config file (default is $HOME/.k8sgpt.git.yaml)
+  -h, --help                help for k8sgpt
+      --kubeconfig string   Path to a kubeconfig. Only required if out-of-cluster.
+      --master string       The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.
+  -t, --toggle              Help message for toggle
+
+Use "k8sgpt [command] --help" for more information about a command.
 ```
 
 _Run a scan with the default analyzers_
 
 ```
+k8sgpt generate
 k8sgpt auth
 k8sgpt analyze --explain
 ```
