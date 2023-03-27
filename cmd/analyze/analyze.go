@@ -89,6 +89,11 @@ var AnalyzeCmd = &cobra.Command{
 		if len(*analysisResults) > 0 {
 			bar = progressbar.Default(int64(len(*analysisResults)))
 		}
+
+		// This variable is used to store the results that will be printed
+		// It's necessary because the heap memory is lost when the function returns
+		var printOutput []analyzer.Analysis
+
 		for _, analysis := range *analysisResults {
 
 			if explain {
@@ -100,10 +105,11 @@ var AnalyzeCmd = &cobra.Command{
 				analysis.Details = parsedText
 				bar.Add(1)
 			}
+			printOutput = append(printOutput, analysis)
 		}
 
 		// print results
-		for n, analysis := range *analysisResults {
+		for n, analysis := range printOutput {
 
 			switch output {
 			case "json":

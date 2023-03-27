@@ -31,11 +31,36 @@ K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a se
 ## Usage
 
 ```
-# Ensure KUBECONFIG env is set to an active Kubernetes cluster
+Kubernetes debugging powered by AI
+
+Usage:
+  k8sgpt [command]
+
+Available Commands:
+  analyze     This command will find problems within your Kubernetes cluster
+  auth        Authenticate with your chosen backend
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+
+```
+
+_Run a scan with the default analyzers_
+
+```
 k8sgpt auth
-k8sgpt find problems 
-# for more detail
-k8s find problems --explain
+k8sgpt analyze --explain
+```
+
+_Filter on resource_
+
+```
+k8sgpt analyze --explain --resource=Service
+```
+
+_Output to JSON_
+
+```
+k8sgpt analyze --explain --resource=Service --output=json
 ```
 
 ## Upcoming major milestones
