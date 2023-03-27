@@ -2,7 +2,6 @@ package analyze
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -97,7 +96,7 @@ var AnalyzeCmd = &cobra.Command{
 		for _, analysis := range *analysisResults {
 
 			if explain {
-				parsedText, err := parseViaAI(ctx, aiClient, analysis.Error)
+				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error)
 				if err != nil {
 					color.Red("Error: %v", err)
 					continue
@@ -127,44 +126,6 @@ var AnalyzeCmd = &cobra.Command{
 			}
 		}
 	},
-}
-
-func parseViaAI(ctx context.Context, aiClient ai.IAI, prompt []string) (string, error) {
-	// parse the text with the AI backend
-
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	// find in viper cache
-	if viper.IsSet(sEnc) {
-		// retrieve data from cache
-		response := viper.GetString(sEnc)
-		if response == "" {
-			color.Red("error retrieving cached data")
-			return "", nil
-		}
-		output, err := base64.StdEncoding.DecodeString(response)
-		if err != nil {
-			color.Red("error decoding cached data: %v", err)
-			return "", nil
-		}
-		return string(output), nil
-	}
-
-	response, err := aiClient.GetCompletion(ctx, inputKey)
-	if err != nil {
-		color.Red("error getting completion: %v", err)
-		return "", nil
-	}
-
-	if !viper.IsSet(sEnc) {
-		viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
-		}
-	}
-	return response, nil
 }
 
 func init() {
