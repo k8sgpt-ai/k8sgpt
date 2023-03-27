@@ -87,6 +87,9 @@ var AnalyzeCmd = &cobra.Command{
 		var bar *progressbar.ProgressBar
 		if len(*analysisResults) > 0 {
 			bar = progressbar.Default(int64(len(*analysisResults)))
+		} else {
+			color.Green("{ \"status\": \"OK\" }")
+			os.Exit(0)
 		}
 
 		// This variable is used to store the results that will be printed
