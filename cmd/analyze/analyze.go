@@ -104,6 +104,11 @@ var AnalyzeCmd = &cobra.Command{
 			if explain {
 				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error, nocache)
 				if err != nil {
+					// Check for exhaustion
+					if strings.Contains(err.Error(), "status code: 429") {
+						color.Red("Exhausted API quota. Please try again later")
+						os.Exit(1)
+					}
 					color.Red("Error: %v", err)
 					continue
 				}

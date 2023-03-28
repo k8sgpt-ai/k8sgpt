@@ -61,7 +61,7 @@ func ParseViaAI(ctx context.Context, aiClient ai.IAI, prompt []string,
 	response, err := aiClient.GetCompletion(ctx, inputKey)
 	if err != nil {
 		color.Red("error getting completion: %v", err)
-		return "", nil
+		return "", err
 	}
 
 	if !viper.IsSet(sEnc) {
