@@ -17,12 +17,13 @@ import (
 )
 
 var (
-	explain  bool
-	backend  string
-	output   string
-	filters  []string
-	language string
-	nocache  bool
+	explain   bool
+	backend   string
+	output    string
+	filters   []string
+	language  string
+	nocache   bool
+	namespace string
 )
 
 // AnalyzeCmd represents the problems command
@@ -68,9 +69,16 @@ var AnalyzeCmd = &cobra.Command{
 		ctx := context.Background()
 		// Get kubernetes client from viper
 		client := viper.Get("kubernetesClient").(*kubernetes.Client)
+		// Analysis configuration
+		config := &analyzer.AnalysisConfiguration{
+			Namespace: namespace,
+			NoCache:   nocache,
+			Explain:   explain,
+		}
 
 		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-		if err := analyzer.RunAnalysis(ctx, client, aiClient, explain, analysisResults); err != nil {
+		if err := analyzer.RunAnalysis(ctx, config, client,
+			aiClient, analysisResults); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
@@ -102,7 +110,7 @@ var AnalyzeCmd = &cobra.Command{
 		for _, analysis := range *analysisResults {
 
 			if explain {
-				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error, nocache)
+				parsedText, err := analyzer.ParseViaAI(ctx, config, aiClient, analysis.Error)
 				if err != nil {
 					// Check for exhaustion
 					if strings.Contains(err.Error(), "status code: 429") {
@@ -141,10 +149,13 @@ var AnalyzeCmd = &cobra.Command{
 
 func init() {
 
-	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "n", false, "Do not use cached data")
+	// namespace flag
+	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
+	// no cache flag
+	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "c", false, "Do not use cached data")
 	// array of strings flag
 	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analzyers (e.g. Pod,PersistentVolumeClaim,Service,ReplicaSet)")
-
+	// explain flag
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
 	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")

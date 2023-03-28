@@ -11,39 +11,40 @@ import (
 	"github.com/spf13/viper"
 )
 
-func RunAnalysis(ctx context.Context, client *kubernetes.Client,
-	aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
+func RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
+	client *kubernetes.Client,
+	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
-	err := AnalyzePod(ctx, client, aiClient, explain, analysisResults)
+	err := AnalyzePod(ctx, config, client, aiClient, analysisResults)
 	if err != nil {
 		return err
 	}
 
-	err = AnalyzeReplicaSet(ctx, client, aiClient, explain, analysisResults)
+	err = AnalyzeReplicaSet(ctx, config, client, aiClient, analysisResults)
 	if err != nil {
 		return err
 	}
 
-	err = AnalyzePersistentVolumeClaim(ctx, client, aiClient, explain, analysisResults)
+	err = AnalyzePersistentVolumeClaim(ctx, config, client, aiClient, analysisResults)
 	if err != nil {
 		return err
 	}
 
-	err = AnalyzeEndpoints(ctx, client, aiClient, explain, analysisResults)
+	err = AnalyzeEndpoints(ctx, config, client, aiClient, analysisResults)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func ParseViaAI(ctx context.Context, aiClient ai.IAI, prompt []string,
-	nocache bool) (string, error) {
+func ParseViaAI(ctx context.Context, config *AnalysisConfiguration,
+	aiClient ai.IAI, prompt []string) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
 	// find in viper cache
-	if viper.IsSet(sEnc) && !nocache {
+	if viper.IsSet(sEnc) && !config.NoCache {
 		// retrieve data from cache
 		response := viper.GetString(sEnc)
 		if response == "" {
