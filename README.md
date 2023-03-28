@@ -7,12 +7,24 @@
 
 It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
 
-## Quick Start
+## Installation
+
+##### Linux/Mac via brew
 
 ```
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
+##### Windows 
+
+* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) tab based on your system architecture.
+* Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
+
+##### Verify installation
+
+* Run `k8sgpt version` 
+  
+## Quick Start
 
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it 
