@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.0...v0.1.1) (2023-03-28)
+
+
+### Features
+
+* this stops service exiting the program ([6f90386](https://github.com/k8sgpt-ai/k8sgpt/commit/6f90386fc93b2e39e59832468922e8ba7210b8e5))
+* updated readme ([e0141d1](https://github.com/k8sgpt-ai/k8sgpt/commit/e0141d1cf54b5b37b25a5caeb9d5c940b9410ea7))
+
+
+### Bug Fixes
+
+* short term solution for exhaustion ([5890e3a](https://github.com/k8sgpt-ai/k8sgpt/commit/5890e3a79c80a2973af2feb7d50e7f9c57c563c2))
+
+
+### Other
+
+* update README.md ([93b947f](https://github.com/k8sgpt-ai/k8sgpt/commit/93b947f261e401c10dde6dc1854e6e22187437d6))
+* update root.go path ([2cb1c9c](https://github.com/k8sgpt-ai/k8sgpt/commit/2cb1c9c150d052bb3942d9f62ded9d54b0e1873e))
+
 ## [0.1.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.9...v0.1.0) (2023-03-28)
 
 
