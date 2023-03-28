@@ -5,6 +5,12 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+type AnalysisConfiguration struct {
+	Namespace string
+	NoCache   bool
+	Explain   bool
+}
+
 type PreAnalysis struct {
 	Pod                   v1.Pod
 	FailureDetails        []string

@@ -103,6 +103,11 @@ _Filter on resource_
 k8sgpt analyze --explain --filter=Service
 ```
 
+_Filter by namespace_
+```
+k8sgpt analyze --explain --filter=Pod --namespace=default
+```
+
 _Output to JSON_
 
 ```

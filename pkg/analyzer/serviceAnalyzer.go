@@ -11,10 +11,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeEndpoints(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
+func AnalyzeEndpoints(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
+	analysisResults *[]Analysis) error {
 
 	// search all namespaces for pods that are not running
-	list, err := client.GetClient().CoreV1().Endpoints("").List(ctx, metav1.ListOptions{})
+	list, err := client.GetClient().CoreV1().Endpoints(config.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
