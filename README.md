@@ -14,6 +14,9 @@ brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
 
+_brew also enables upgrades with `brew upgrade k8sgpt`_
+
+
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it 
 * Run `k8sgpt auth` to set it in k8sgpt.
