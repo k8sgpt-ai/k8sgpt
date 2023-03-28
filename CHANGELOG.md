@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.8...v0.0.9) (2023-03-28)
+
+
+### Other
+
+* small update ([202e8e2](https://github.com/k8sgpt-ai/k8sgpt/commit/202e8e2977422b2b4506a80dc9b76a392c5457eb))
+
 ## [0.0.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.7...v0.0.8) (2023-03-27)
 
 
