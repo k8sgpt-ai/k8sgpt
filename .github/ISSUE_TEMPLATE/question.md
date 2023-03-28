@@ -1,7 +1,7 @@
 ---
 name: Question / Bug Report
 about: Create a report to help us improve
-title: ''
+title: 'question: '
 labels: 'type:question'
 assignees: ''
 ---

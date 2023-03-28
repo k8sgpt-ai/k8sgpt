@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: Suggest an idea for this project
-title: ''
+title: 'feature: '
 labels: 'type:question'
 assignees: '@k8sgpt-ai/maintainers'
 ---
