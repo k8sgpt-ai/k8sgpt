@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.1.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.1...v0.1.2) (2023-03-28)
+
+
+### Features
+
+* added namespace filter ([#127](https://github.com/k8sgpt-ai/k8sgpt/issues/127)) ([b78ab3d](https://github.com/k8sgpt-ai/k8sgpt/commit/b78ab3d9b503a256bf6ccf18276e20140ae17d1c))
+* prefix templates ([#125](https://github.com/k8sgpt-ai/k8sgpt/issues/125)) ([65a568e](https://github.com/k8sgpt-ai/k8sgpt/commit/65a568e937a8fdacc179f5e8b1a021a0178c04f0))
+
+
+### Bug Fixes
+
+* readme code blocks ([#126](https://github.com/k8sgpt-ai/k8sgpt/issues/126)) ([c8b92aa](https://github.com/k8sgpt-ai/k8sgpt/commit/c8b92aaa0e2795aa8d65f84277c8adfe0f1d14e3))
+* update README.md ([#119](https://github.com/k8sgpt-ai/k8sgpt/issues/119)) ([05abe97](https://github.com/k8sgpt-ai/k8sgpt/commit/05abe975dd859cd85096a1a7182f17b0437ad20f))
+
+
+### Other
+
+* added default issue template ([#96](https://github.com/k8sgpt-ai/k8sgpt/issues/96)) ([#121](https://github.com/k8sgpt-ai/k8sgpt/issues/121)) ([11c227b](https://github.com/k8sgpt-ai/k8sgpt/commit/11c227b82e16dac8b46cbd03bb04d9cc1c2b5ac3))
+
+
+### Docs
+
+* add new issue templates ([dbd305f](https://github.com/k8sgpt-ai/k8sgpt/commit/dbd305f901cca09b7148254c3aa7a7435504d6cc))
+* add WSL gcc instructions ([4d5566b](https://github.com/k8sgpt-ai/k8sgpt/commit/4d5566b4df7aedf43edbeeb03130f0ba77dbed1a))
+* added Windows and Linux instalation steps in README ([#116](https://github.com/k8sgpt-ai/k8sgpt/issues/116)) ([3bfb278](https://github.com/k8sgpt-ai/k8sgpt/commit/3bfb278f81a9c550ee37a88c0cb0377331802542))
+* fix indentations ([a46416d](https://github.com/k8sgpt-ai/k8sgpt/commit/a46416dce0f5cee2d42b27525023b04af1a8e3c0))
+* rename ISSUE_TEMPLATE ([#124](https://github.com/k8sgpt-ai/k8sgpt/issues/124)) ([cb4932c](https://github.com/k8sgpt-ai/k8sgpt/commit/cb4932c39df4903a4b48ae5f0428860027f76fd2))
+
 ## [0.1.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.0...v0.1.1) (2023-03-28)
 
 
