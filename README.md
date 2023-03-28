@@ -93,7 +93,7 @@ K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a too
 
 ### Configuration 
 
-`k8sgpt` stores config data in `~/.k8sgpt` the data is stored in plain text, including your OpenAI key.
+`k8sgpt` stores config data in `~/.k8sgpt.yaml` the data is stored in plain text, including your OpenAI key.
 
 ### Contributing
 
