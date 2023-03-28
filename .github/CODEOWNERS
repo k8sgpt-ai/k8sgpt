@@ -1,0 +1,12 @@
+# CODEOWNERS file indicates code owners for certain files
+#
+# Code owners will automatically be added as a reviewer for PRs that touch
+# the owned files.
+#
+
+# Default owners for everything in the repo
+#
+# Unless a later match takes precedence, these owners will be requested for
+# review when someone opens a pull request.
+
+* @k8sgpt/maintainers
