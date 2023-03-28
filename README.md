@@ -9,6 +9,13 @@ It has SRE experience codified into it's analyzers and helps to pull out the mos
 
 ## Installation
 
+## For linux
+First install golang 
+then go into repo's directory and run "go run main.go" 
+
+to run k8gpts you could use an alias like this 
+` alias k8sgpt='go run <wherever-directory-you-have-clone-this>/k8sgpt/main.go' `
+
 ### Linux/Mac via brew
 
 ```
@@ -101,11 +108,6 @@ _Filter on resource_
 
 ```
 k8sgpt analyze --explain --filter=Service
-```
-
-_Filter by namespace_
-```
-k8sgpt analyze --explain --filter=Pod --namespace=default
 ```
 
 _Output to JSON_
