@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -27,7 +28,8 @@ func AnalyzeEndpoints(ctx context.Context, client *kubernetes.Client, aiClient a
 		if len(ep.Subsets) == 0 {
 			svc, err := client.GetClient().CoreV1().Services(ep.Namespace).Get(ctx, ep.Name, metav1.GetOptions{})
 			if err != nil {
-				return err
+				color.Yellow("Service %s/%s does not exist", ep.Namespace, ep.Name)
+				continue
 			}
 
 			for k, v := range svc.Spec.Selector {
