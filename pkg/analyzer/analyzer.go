@@ -11,7 +11,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
+func RunAnalysis(ctx context.Context, client *kubernetes.Client,
+	aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
 
 	err := AnalyzePod(ctx, client, aiClient, explain, analysisResults)
 	if err != nil {
@@ -35,13 +36,14 @@ func RunAnalysis(ctx context.Context, client *kubernetes.Client, aiClient ai.IAI
 	return nil
 }
 
-func ParseViaAI(ctx context.Context, aiClient ai.IAI, prompt []string) (string, error) {
+func ParseViaAI(ctx context.Context, aiClient ai.IAI, prompt []string,
+	nocache bool) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
 	// find in viper cache
-	if viper.IsSet(sEnc) {
+	if viper.IsSet(sEnc) && !nocache {
 		// retrieve data from cache
 		response := viper.GetString(sEnc)
 		if response == "" {
