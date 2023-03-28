@@ -78,7 +78,7 @@ var AnalyzeCmd = &cobra.Command{
 
 		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
 		if err := analyzer.RunAnalysis(ctx, config, client,
-			aiClient, explain, analysisResults); err != nil {
+			aiClient, analysisResults); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}

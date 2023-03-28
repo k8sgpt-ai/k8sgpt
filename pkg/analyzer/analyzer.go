@@ -13,7 +13,7 @@ import (
 
 func RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
 	client *kubernetes.Client,
-	aiClient ai.IAI, explain bool, analysisResults *[]Analysis) error {
+	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
 	err := AnalyzePod(ctx, config, client, aiClient, analysisResults)
 	if err != nil {
