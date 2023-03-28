@@ -22,6 +22,7 @@ var (
 	output   string
 	filters  []string
 	language string
+	nocache  bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -101,7 +102,7 @@ var AnalyzeCmd = &cobra.Command{
 		for _, analysis := range *analysisResults {
 
 			if explain {
-				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error)
+				parsedText, err := analyzer.ParseViaAI(ctx, aiClient, analysis.Error, nocache)
 				if err != nil {
 					color.Red("Error: %v", err)
 					continue
@@ -135,6 +136,7 @@ var AnalyzeCmd = &cobra.Command{
 
 func init() {
 
+	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "n", false, "Do not use cached data")
 	// array of strings flag
 	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analzyers (e.g. Pod,PersistentVolumeClaim,Service,ReplicaSet)")
 
