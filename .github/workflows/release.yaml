@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
 
-      - uses: google-github-actions/release-please-action@e0b9d1885d92e9a93d5ce8656de60e3b806e542c # v3
+      - uses: google-github-actions/release-please-action@ee9822ec2c397e8a364d634464339ac43a06e042 # v3
         id: release
         with:
           command: manifest
