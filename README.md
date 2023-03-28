@@ -69,13 +69,13 @@ k8sgpt analyze --explain
 _Filter on resource_
 
 ```
-k8sgpt analyze --explain --resource=Service
+k8sgpt analyze --explain --filter=Service
 ```
 
 _Output to JSON_
 
 ```
-k8sgpt analyze --explain --resource=Service --output=json
+k8sgpt analyze --explain --filter=Service --output=json
 ```
 
 ## Upcoming major milestones
