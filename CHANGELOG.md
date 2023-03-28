@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.1.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.9...v0.1.0) (2023-03-28)
+
+
+### Features
+
+* added british alias ([39c0444](https://github.com/k8sgpt-ai/k8sgpt/commit/39c0444fac9b46d0faa347b45df779b97019e5b6)), closes [#93](https://github.com/k8sgpt-ai/k8sgpt/issues/93)
+* enables overwriting of cache ([#95](https://github.com/k8sgpt-ai/k8sgpt/issues/95)) ([a270f7c](https://github.com/k8sgpt-ai/k8sgpt/commit/a270f7c89fb8bec35984715c5e4d160a2307e678))
+
+
+### Other
+
+* add CODEOWNERS ([c5c6162](https://github.com/k8sgpt-ai/k8sgpt/commit/c5c6162df1f3701659e47bce6e9fc6e3c569e539))
+* add codeowners file ([#102](https://github.com/k8sgpt-ai/k8sgpt/issues/102)) ([829ff56](https://github.com/k8sgpt-ai/k8sgpt/commit/829ff566c0a964250d3d8d45306d410e1b9d9d35))
+* release 0.1.0 ([f9c7daf](https://github.com/k8sgpt-ai/k8sgpt/commit/f9c7daf3dcd06dcd9cea5603108b8a42ee273348))
+
 ## [0.0.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.0.8...v0.0.9) (2023-03-28)
 
 
