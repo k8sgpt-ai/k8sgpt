@@ -9,25 +9,40 @@ It has SRE experience codified into it's analyzers and helps to pull out the mos
 
 ## Installation
 
-##### Linux/Mac via brew
+### Linux/Mac via brew
 
 ```
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
-##### Windows 
+
+<details>
+  <summary>Failing Installation on WSL (missing gcc)</summary>
+  When installing Homebrew on WSL, you may encounter the following error:
+  ```
+  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from bottle and must be built from source. k8sgpt Install Clang or run brew install gcc.
+  ```
+
+If you install gcc as suggested, the problem will persist. Therefore, you need to install the build-essential package.
+  ```
+     sudo apt-get update
+     sudo apt-get install build-essential
+  ```
+</details>
+
+### Windows
 
 * Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
-##### Verify installation
+### Verify installation
 
-* Run `k8sgpt version` 
-  
+* Run `k8sgpt version`
+
 ## Quick Start
 
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
-  * You can do this by running `k8sgpt generate` to open a browser link to generate it 
+  * You can do this by running `k8sgpt generate` to open a browser link to generate it
 * Run `k8sgpt auth` to set it in k8sgpt.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
@@ -96,19 +111,19 @@ k8sgpt analyze --explain --filter=Service --output=json
 - [ ] Custom AI/ML model backend support
 - [ ] Custom analyzers
 
-### What about kubectl-ai?
+## What about kubectl-ai?
 
 The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
 
 K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find the root cause of an issue.
 
 
-### Configuration 
+## Configuration
 
 `k8sgpt` stores config data in `~/.k8sgpt.yaml` the data is stored in plain text, including your OpenAI key.
 
-### Contributing
+## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
-### Community
+## Community
 * Find us on [Slack](https://cloud-native.slack.com/channels/k8sgpt-ai)
