@@ -7,7 +7,7 @@
 
 It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
 
-### Installation
+## Installation
 
 ### Linux/Mac via brew
 
