@@ -19,8 +19,10 @@ brew install k8sgpt
 <details>
   <summary>Failing Installation on WSL (missing gcc)</summary>
   When installing Homebrew on WSL, you may encounter the following error:
+
   ```
-  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from bottle and must be built from source. k8sgpt Install Clang or run brew install gcc.
+  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from bottle and must be 
+  built from source. k8sgpt Install Clang or run brew install gcc.
   ```
 
 If you install gcc as suggested, the problem will persist. Therefore, you need to install the build-essential package.
@@ -32,7 +34,8 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 ### Windows
 
-* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) tab based on your system architecture.
+* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) 
+  tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
 ### Verify installation
@@ -51,7 +54,8 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 ## Analyzers
 
-K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but you will be able to write your own analyzers.
+K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but 
+you will be able to write your own analyzers.
 
 ### Built in analyzers
 
@@ -113,9 +117,12 @@ k8sgpt analyze --explain --filter=Service --output=json
 
 ## What about kubectl-ai?
 
-The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
+The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the 
+cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
 
-K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find the root cause of an issue.
+K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers 
+to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find 
+the root cause of an issue.
 
 
 ## Configuration
