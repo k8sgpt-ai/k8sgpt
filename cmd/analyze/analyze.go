@@ -25,6 +25,7 @@ var (
 	language  string
 	nocache   bool
 	namespace string
+	ui        bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -141,27 +142,35 @@ var AnalyzeCmd = &cobra.Command{
 				}
 				fmt.Println(string(j))
 			default:
-				remediation := ""
-				if analysis.Details != "" {
-					remediation = "✓"
+				if ui {
+					remediation := ""
+					if analysis.Details != "" {
+						remediation = "✓"
+					}
+					row := table.Row{
+						fmt.Sprintf("%d", n),
+						analysis.Name,
+						remediation,
+						analysis.Error[0],
+						analysis.Details,
+					}
+					rows = append(rows, row)
+				} else {
+					fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n),
+						color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject),
+						color.RedString(analysis.Error[0]), color.GreenString(analysis.Details))
 				}
-				row := table.Row{
-					fmt.Sprintf("%d", n),
-					analysis.Name,
-					remediation,
-					analysis.Error[0],
-					analysis.Details,
-				}
-				rows = append(rows, row)
 			}
 		}
-
-		Render(rows)
+		if ui {
+			Render(rows, explain)
+		}
 	},
 }
 
 func init() {
 
+	AnalyzeCmd.Flags().BoolVarP(&ui, "ui", "u", false, "Enable UI (Alpha feature)")
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag

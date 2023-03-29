@@ -16,13 +16,11 @@ var (
 	viewportStyle = lipgloss.NewStyle().Align(lipgloss.Bottom, lipgloss.Left).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("240"))
 )
 
-type MainModel struct {
-}
-
 type model struct {
-	table table.Model
-	view  viewport.Model
-	rows  []table.Row
+	table          table.Model
+	view           viewport.Model
+	rows           []table.Row
+	explainEnabled bool
 }
 
 func (m model) Init() tea.Cmd {
@@ -52,10 +50,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-			//m.view.SetContent(m.table.SelectedRow()[4])
+
 		default:
-			m.view.SetContent(m.table.SelectedRow()[4])
+
 		}
+	}
+	if m.explainEnabled {
+		m.view.SetContent(m.table.SelectedRow()[4])
 	}
 	m.table, cmd = m.table.Update(msg)
 
@@ -64,14 +65,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	var s string
-	//s += tableStyle.Render(m.table.View())
-	s += lipgloss.JoinVertical(lipgloss.Top, tableStyle.Render(m.table.View()), viewportStyle.Render(m.view.View()))
-
-	//	s += viewportStyle.Render(m.view.View())
+	if m.explainEnabled {
+		s += lipgloss.JoinVertical(lipgloss.Top, tableStyle.Render(m.table.View()), viewportStyle.Render(m.view.View()))
+	} else {
+		s += tableStyle.Render(m.table.View())
+	}
 	return s
 }
 
-func InitTable(rows []table.Row) (tea.Model, tea.Cmd) {
+func InitTable(rows []table.Row, explainEnabled bool) (tea.Model, tea.Cmd) {
 	t := table.New(table.WithColumns([]table.Column{
 		{Title: "ID", Width: 3},
 		{Title: "Resource", Width: 20},
@@ -84,22 +86,25 @@ func InitTable(rows []table.Row) (tea.Model, tea.Cmd) {
 
 	s := table.DefaultStyles()
 
+	var v viewport.Model
 	t.SetStyles(s)
-
-	v := viewport.New(WindowSize.Width, WindowSize.Height/3)
-	v.SetContent(t.SelectedRow()[4])
+	if explainEnabled {
+		v := viewport.New(WindowSize.Width, WindowSize.Height/3)
+		v.SetContent(t.SelectedRow()[4])
+	}
 	m := model{
-		table: t,
-		rows:  rows,
-		view:  v,
+		table:          t,
+		rows:           rows,
+		view:           v,
+		explainEnabled: explainEnabled,
 	}
 
 	return m, func() tea.Msg { return nil }
 }
 
-func Render(rows []table.Row) {
+func Render(rows []table.Row, explainEnabled bool) {
 
-	m, _ := InitTable(rows)
+	m, _ := InitTable(rows, explainEnabled)
 
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
