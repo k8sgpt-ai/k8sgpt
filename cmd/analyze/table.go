@@ -18,7 +18,7 @@ var (
 
 type model struct {
 	table          table.Model
-	view           viewport.Model
+	explainView    viewport.Model
 	rows           []table.Row
 	explainEnabled bool
 }
@@ -28,7 +28,8 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var cmd, cmd2 tea.Cmd
+
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
@@ -37,7 +38,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.table.SetHeight(WindowSize.Height / 2)
 		tableStyle = lipgloss.NewStyle().Width(WindowSize.Width).Height(WindowSize.Height/2).Align(lipgloss.Top, lipgloss.Left).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("240"))
 		viewportStyle = lipgloss.NewStyle().Width(WindowSize.Width).Height(WindowSize.Height/3).Align(lipgloss.Bottom, lipgloss.Left).BorderStyle(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("240"))
-		m.view = viewport.New(WindowSize.Width, WindowSize.Height/3)
+		m.explainView = viewport.New(WindowSize.Width, WindowSize.Height/3)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -50,26 +51,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "enter":
-
+			if m.explainEnabled {
+				m.explainView.SetContent(m.table.SelectedRow()[4])
+			}
 		default:
 
 		}
 	}
-	if m.explainEnabled {
-		m.view.SetContent(m.table.SelectedRow()[4])
-	}
-	m.table, cmd = m.table.Update(msg)
 
-	return m, cmd
+	m.table, cmd = m.table.Update(msg)
+	m.explainView, cmd2 = m.explainView.Update(msg)
+
+	return m, tea.Batch(cmd, cmd2)
 }
 
 func (m model) View() string {
 	var s string
 	if m.explainEnabled {
-		s += lipgloss.JoinVertical(lipgloss.Top, tableStyle.Render(m.table.View()), viewportStyle.Render(m.view.View()))
+		s += lipgloss.JoinVertical(lipgloss.Top, tableStyle.Render(m.table.View()), viewportStyle.Render(m.explainView.View()))
 	} else {
 		s += tableStyle.Render(m.table.View())
 	}
+
 	return s
 }
 
@@ -84,10 +87,8 @@ func InitTable(rows []table.Row, explainEnabled bool) (tea.Model, tea.Cmd) {
 		table.WithHeight(WindowSize.Height/2),
 		table.WithWidth(WindowSize.Width))
 
-	s := table.DefaultStyles()
-
 	var v viewport.Model
-	t.SetStyles(s)
+
 	if explainEnabled {
 		v := viewport.New(WindowSize.Width, WindowSize.Height/3)
 		v.SetContent(t.SelectedRow()[4])
@@ -95,7 +96,7 @@ func InitTable(rows []table.Row, explainEnabled bool) (tea.Model, tea.Cmd) {
 	m := model{
 		table:          t,
 		rows:           rows,
-		view:           v,
+		explainView:    v,
 		explainEnabled: explainEnabled,
 	}
 
