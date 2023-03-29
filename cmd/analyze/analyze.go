@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/table"
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -126,7 +127,8 @@ var AnalyzeCmd = &cobra.Command{
 			printOutput = append(printOutput, analysis)
 		}
 
-		// print results
+		rows := []table.Row{}
+
 		for n, analysis := range printOutput {
 
 			switch output {
@@ -139,11 +141,22 @@ var AnalyzeCmd = &cobra.Command{
 				}
 				fmt.Println(string(j))
 			default:
-				fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n),
-					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject),
-					color.RedString(analysis.Error[0]), color.GreenString(analysis.Details))
+				remediation := ""
+				if analysis.Details != "" {
+					remediation = "✓"
+				}
+				row := table.Row{
+					fmt.Sprintf("%d", n),
+					analysis.Name,
+					remediation,
+					analysis.Error[0],
+					analysis.Details,
+				}
+				rows = append(rows, row)
 			}
 		}
+
+		Render(rows)
 	},
 }
 
