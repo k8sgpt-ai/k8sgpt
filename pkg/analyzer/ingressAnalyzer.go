@@ -33,6 +33,12 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 			}
 		}
 
+		for _, tls := range ing.Spec.TLS {
+			_, err := client.GetClient().CoreV1().Secrets(ing.Namespace).Get(ctx, tls.SecretName, metav1.GetOptions{})
+			if err != nil {
+				failures = append(failures, fmt.Sprintf("Ingress uses the secret %s/%s as a TLS certificate which does not exist.", ing.Namespace, tls.SecretName))
+			}
+		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", ing.Namespace, ing.Name)] = PreAnalysis{
 				Ingress:        ing,
