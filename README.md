@@ -138,4 +138,4 @@ the root cause of an issue.
 
 Please read our [contributing guide](./CONTRIBUTING.md).
 ## Community
-* Find us on [Slack](https://cloud-native.slack.com/channels/k8sgpt-ai)
+* Find us on [Slack](https://k8sgpt.slack.com/)
