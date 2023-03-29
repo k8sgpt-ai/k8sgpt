@@ -17,8 +17,8 @@ brew install k8sgpt
 ```
 
 <details>
-  <summary>Failing Installation on WSL (missing gcc)</summary>
-  When installing Homebrew on WSL, you may encounter the following error:
+  <summary>Failing Installation on WSL or Linux (missing gcc)</summary>
+  When installing Homebrew on WSL or Linux, you may encounter the following error:
 
   ```
   ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from bottle and must be 
