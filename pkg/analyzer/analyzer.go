@@ -34,6 +34,11 @@ func RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
 	if err != nil {
 		return err
 	}
+
+	err = AnalyzeIngress(ctx, config, client, aiClient, analysisResults)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
