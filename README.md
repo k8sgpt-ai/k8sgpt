@@ -64,6 +64,7 @@ you will be able to write your own analyzers.
 - [x] rsAnalyzer
 - [x] serviceAnalyzer
 - [x] eventAnalyzer
+- [x] ingressAnalyzer
 
 ## Usage
 
