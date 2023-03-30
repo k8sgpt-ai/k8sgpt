@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.3...v0.1.4) (2023-03-30)
+
+
+### Features
+
+* add Ingress class validation ([#154](https://github.com/k8sgpt-ai/k8sgpt/issues/154)) ([b061566](https://github.com/k8sgpt-ai/k8sgpt/commit/b061566404ef80288ca29add2d401574109d44c0))
+* output selected backend ([#153](https://github.com/k8sgpt-ai/k8sgpt/issues/153)) ([be061da](https://github.com/k8sgpt-ai/k8sgpt/commit/be061da5b65045938acd70ad2eb2d21b87d2d6bf))
+
+
+### Bug Fixes
+
+* now supports different kubeconfig and kubectx ([c8f3c94](https://github.com/k8sgpt-ai/k8sgpt/commit/c8f3c946b00c00cd185961a4fa777806da94014e))
+
+
+### Refactoring
+
+* removed sample flag ([0afd528](https://github.com/k8sgpt-ai/k8sgpt/commit/0afd52844b96579391f77698bf0555145b6d2be8))
+
 ## [0.1.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.2...v0.1.3) (2023-03-30)
 
 
