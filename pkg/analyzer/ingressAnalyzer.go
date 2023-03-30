@@ -22,6 +22,26 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 
 	for _, ing := range list.Items {
 		var failures []string
+
+		// get ingressClassName
+		ingressClassName := ing.Spec.IngressClassName
+		if ingressClassName == nil {
+			ingClassValue := ing.Annotations["kubernetes.io/ingress.class"]
+			if ingClassValue == "" {
+				failures = append(failures, fmt.Sprintf("Ingress %s/%s does not specify an Ingress class.", ing.Namespace, ing.Name))
+			} else {
+				ingressClassName = &ingClassValue
+			}
+		}
+
+		// check if ingressclass exist
+		if ingressClassName != nil {
+			_, err := client.GetClient().NetworkingV1().IngressClasses().Get(ctx, *ingressClassName, metav1.GetOptions{})
+			if err != nil {
+				failures = append(failures, fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName))
+			}
+		}
+
 		// loop over rules
 		for _, rule := range ing.Spec.Rules {
 			// loop over paths
