@@ -18,9 +18,20 @@ func NewClient(masterURL string, kubeconfig string) (*Client, error) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		kubeconfig :=
-			clientcmd.NewDefaultClientConfigLoadingRules().GetDefaultFilename()
-		config, err = clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
+		loaderRules := clientcmd.NewDefaultClientConfigLoadingRules()
+
+		if kubeconfig != "" {
+			loaderRules.Precedence = []string{kubeconfig}
+		}
+
+		configOverrides := &clientcmd.ConfigOverrides{}
+
+		if masterURL != "" {
+			configOverrides.ClusterInfo.Server = masterURL
+		}
+
+		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loaderRules, configOverrides)
+		config, err = kubeConfig.ClientConfig()
 		if err != nil {
 			return nil, err
 		}
