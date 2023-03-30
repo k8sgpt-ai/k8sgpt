@@ -14,7 +14,7 @@ var filterListCmd = &cobra.Command{
 	Long:  `The list command displays a list of available filters that can be used to analyze Kubernetes resources.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("Available filters : \n")
-		for _, analyzer := range analyzer.ListAnalayzers() {
+		for _, analyzer := range analyzer.ListFilters() {
 			fmt.Printf("> %s\n", color.GreenString(analyzer))
 		}
 	},
