@@ -139,9 +139,12 @@ var AnalyzeCmd = &cobra.Command{
 				}
 				fmt.Println(string(j))
 			default:
-				fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n),
-					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject),
-					color.RedString(analysis.Error[0]), color.GreenString(analysis.Details))
+				fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
+					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject))
+				for _, err := range analysis.Error {
+					fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
+				}
+				color.GreenString(analysis.Details)
 			}
 		}
 	},
