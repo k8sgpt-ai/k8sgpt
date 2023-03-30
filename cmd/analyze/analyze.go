@@ -79,22 +79,10 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-		if err := analyzer.RunAnalysis(ctx, config, client,
+		if err := analyzer.RunAnalysis(ctx, filters, config, client,
 			aiClient, analysisResults); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
-		}
-		// Removed filtered results from slice
-		if len(filters) > 0 {
-			var filteredResults []analyzer.Analysis
-			for _, analysis := range *analysisResults {
-				for _, filter := range filters {
-					if strings.Contains(analysis.Kind, filter) {
-						filteredResults = append(filteredResults, analysis)
-					}
-				}
-			}
-			analysisResults = &filteredResults
 		}
 
 		var bar *progressbar.ProgressBar
@@ -156,9 +144,13 @@ var AnalyzeCmd = &cobra.Command{
 					}
 					rows = append(rows, row)
 				} else {
-					fmt.Printf("%s %s(%s): %s \n%s\n", color.CyanString("%d", n),
-						color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject),
-						color.RedString(analysis.Error[0]), color.GreenString(analysis.Details))
+
+					fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
+						color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject))
+					for _, err := range analysis.Error {
+						fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
+					}
+					color.GreenString(analysis.Details)
 				}
 			}
 		}
@@ -176,7 +168,7 @@ func init() {
 	// no cache flag
 	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "c", false, "Do not use cached data")
 	// array of strings flag
-	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analzyers (e.g. Pod,PersistentVolumeClaim,Service,ReplicaSet)")
+	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analyzers (e.g. Pod, PersistentVolumeClaim, Service, ReplicaSet)")
 	// explain flag
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
