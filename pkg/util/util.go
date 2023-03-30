@@ -50,6 +50,16 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 					return GetParent(client, ds.ObjectMeta)
 				}
 				return "DaemonSet/" + ds.Name, false
+
+			case "Ingress":
+				ds, err := client.GetClient().NetworkingV1().Ingresses(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if ds.OwnerReferences != nil {
+					return GetParent(client, ds.ObjectMeta)
+				}
+				return "Ingress/" + ds.Name, false
 			}
 		}
 	}

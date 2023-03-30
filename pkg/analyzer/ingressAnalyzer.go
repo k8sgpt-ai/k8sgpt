@@ -55,7 +55,7 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Endpoint.ObjectMeta)
+		parent, _ := util.GetParent(client, value.Ingress.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
