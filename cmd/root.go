@@ -18,6 +18,7 @@ var (
 	masterURL  string
 	kubeconfig string
 	version    string
+	k8sContext string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,7 +31,7 @@ var rootCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
   PersistentPreRun: func(cmd *cobra.Command, args []string) {
     //Initialise the kubeconfig
-    kubernetesClient, err := kubernetes.NewClient(masterURL, kubeconfig)
+    kubernetesClient, err := kubernetes.NewClient(masterURL, kubeconfig, k8sContext)
     if err != nil {
       color.Red("Error initialising kubernetes client: %v", err)
       os.Exit(1)
@@ -62,6 +63,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.yaml)")
 	rootCmd.PersistentFlags().StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	rootCmd.PersistentFlags().StringVarP(&k8sContext, "kube-context", "", "", "Kubernetes context to be used")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

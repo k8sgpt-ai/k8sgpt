@@ -14,7 +14,7 @@ func (c *Client) GetClient() *kubernetes.Clientset {
 	return c.client
 }
 
-func NewClient(masterURL string, kubeconfig string) (*Client, error) {
+func NewClient(masterURL string, kubeconfig string, context string) (*Client, error) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -28,6 +28,10 @@ func NewClient(masterURL string, kubeconfig string) (*Client, error) {
 
 		if masterURL != "" {
 			configOverrides.ClusterInfo.Server = masterURL
+		}
+
+		if context != "" {
+			configOverrides.CurrentContext = context
 		}
 
 		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loaderRules, configOverrides)
