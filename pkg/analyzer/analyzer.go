@@ -11,33 +11,35 @@ import (
 	"github.com/spf13/viper"
 )
 
-func RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
+var analyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
+	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
+	"Pod":                   AnalyzePod,
+	"ReplicaSet":            AnalyzeReplicaSet,
+	"PersistentVolumeClaim": AnalyzePersistentVolumeClaim,
+	"Service":               AnalyzeEndpoints,
+	"Ingress":               AnalyzeIngress,
+}
+
+func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,
 	client *kubernetes.Client,
 	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
-	err := AnalyzePod(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
+	// if there are no filters selected then run all of them
+	if len(filters) == 0 {
+		for _, analyzer := range analyzerMap {
+			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
-	err = AnalyzeReplicaSet(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
-	}
-
-	err = AnalyzePersistentVolumeClaim(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
-	}
-
-	err = AnalyzeEndpoints(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
-	}
-
-	err = AnalyzeIngress(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
+	for _, filter := range filters {
+		if analyzer, ok := analyzerMap[filter]; ok {
+			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
