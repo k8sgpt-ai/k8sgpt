@@ -47,7 +47,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
 * Run `k8sgpt auth` to set it in k8sgpt.
-* Run `k8sgpt filters` to manage filters.
+* Run `k8sgpt filters` to manage the default filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 
@@ -92,18 +92,42 @@ Flags:
 Use "k8sgpt [command] --help" for more information about a command.
 ```
 
+_Manage filters_
+
+_List filters_
+
+```
+k8sgpt filters list
+```
+
+_Add default filters_
+
+```
+k8sgpt filters add [filter(s)]
+```
+
+### Examples :
+
+- Simple filter : `k8sgpt filters add Service`
+- Multiple filters : `k8sgpt filters add Ingress Pod`
+
+_Add default filters_
+
+```
+k8sgpt filters remove [filter(s)]
+```
+
+### Examples :
+
+- Simple filter : `k8sgpt filters remove Service`
+- Multiple filters : `k8sgpt filters remove Ingress Pod`
+
 _Run a scan with the default analyzers_
 
 ```
 k8sgpt generate
 k8sgpt auth
 k8sgpt analyze --explain
-```
-
-_List filters_
-
-```
-k8sgpt filters list
 ```
 
 _Filter on resource_
