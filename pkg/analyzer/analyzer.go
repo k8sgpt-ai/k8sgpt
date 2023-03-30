@@ -81,3 +81,11 @@ func ParseViaAI(ctx context.Context, config *AnalysisConfiguration,
 	}
 	return response, nil
 }
+
+func ListAnalayzers() []string {
+	keys := make([]string, 0, len(analyzerMap))
+	for k := range analyzerMap {
+		keys = append(keys, k)
+	}
+	return keys
+}
