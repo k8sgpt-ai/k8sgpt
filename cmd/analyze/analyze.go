@@ -77,22 +77,10 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-		if err := analyzer.RunAnalysis(ctx, config, client,
+		if err := analyzer.RunAnalysis(ctx, filters, config, client,
 			aiClient, analysisResults); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
-		}
-		// Removed filtered results from slice
-		if len(filters) > 0 {
-			var filteredResults []analyzer.Analysis
-			for _, analysis := range *analysisResults {
-				for _, filter := range filters {
-					if strings.Contains(analysis.Kind, filter) {
-						filteredResults = append(filteredResults, analysis)
-					}
-				}
-			}
-			analysisResults = &filteredResults
 		}
 
 		var bar *progressbar.ProgressBar
