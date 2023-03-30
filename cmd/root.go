@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"os"
+
+	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
@@ -53,7 +54,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	//Initialise the kubeconfig
 	kubernetesClient, err := kubernetes.NewClient(masterURL, kubeconfig)
