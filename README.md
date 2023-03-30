@@ -47,6 +47,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
 * Run `k8sgpt auth` to set it in k8sgpt.
+* Run `k8sgpt filters` to manage filters.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 
@@ -76,6 +77,7 @@ Available Commands:
   analyze     This command will find problems within your Kubernetes cluster
   auth        Authenticate with your chosen backend
   completion  Generate the autocompletion script for the specified shell
+  filters     Manage filters for analyzing Kubernetes resources
   generate    Generate Key for your chosen backend (opens browser)
   help        Help about any command
   version     Print the version number of k8sgpt
@@ -96,6 +98,12 @@ _Run a scan with the default analyzers_
 k8sgpt generate
 k8sgpt auth
 k8sgpt analyze --explain
+```
+
+_List filters_
+
+```
+k8sgpt filters list
 ```
 
 _Filter on resource_
