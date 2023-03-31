@@ -44,7 +44,7 @@ func AnalyzeHpa(ctx context.Context, config *AnalysisConfiguration, client *kube
 				scaleTargetRefNotFound = true
 			}
 		case "StatefulSet":
-			_, err := client.GetClient().AppsV1().Deployments(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := client.GetClient().AppsV1().StatefulSets(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
