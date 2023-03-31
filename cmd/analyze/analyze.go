@@ -144,7 +144,7 @@ var AnalyzeCmd = &cobra.Command{
 				for _, err := range analysis.Error {
 					fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
 				}
-				color.GreenString(analysis.Details)
+				color.GreenString(analysis.Details + "\n")
 			}
 		}
 	},
