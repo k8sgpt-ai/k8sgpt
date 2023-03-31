@@ -48,6 +48,8 @@ func AnalyzeHpa(ctx context.Context, config *AnalysisConfiguration, client *kube
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
+		default:
+			failures = append(failures, fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which does not possible option.", scaleTargetRef.Kind))
 		}
 
 		if scaleTargetRefNotFound {
