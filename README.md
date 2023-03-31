@@ -109,7 +109,7 @@ k8sgpt filters add [filter(s)]
 ### Examples :
 
 - Simple filter : `k8sgpt filters add Service`
-- Multiple filters : `k8sgpt filters add Ingress Pod`
+- Multiple filters : `k8sgpt filters add Ingress,Pod`
 
 _Add default filters_
 
@@ -120,7 +120,7 @@ k8sgpt filters remove [filter(s)]
 ### Examples :
 
 - Simple filter : `k8sgpt filters remove Service`
-- Multiple filters : `k8sgpt filters remove Ingress Pod`
+- Multiple filters : `k8sgpt filters remove Ingress,Pod`
 
 _Run a scan with the default analyzers_
 

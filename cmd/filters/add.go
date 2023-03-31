@@ -15,12 +15,13 @@ var addCmd = &cobra.Command{
 	Use:   "add [filter(s)]",
 	Short: "Adds one or more new filters.",
 	Long:  `The add command adds one or more new filters to the default set of filters used by the analyze.`,
-	Args:  cobra.MinimumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		filters := strings.Split(args[0], ",")
 
 		// Verify filter exist
 		invalidFilters := []string{}
-		for _, f := range args {
+		for _, f := range filters {
 			foundFilter := false
 			for _, filter := range analyzer.ListFilters() {
 				if filter == f {
@@ -44,7 +45,7 @@ var addCmd = &cobra.Command{
 			defaultFilters = []string{}
 		}
 
-		mergedFilters := append(defaultFilters, args...)
+		mergedFilters := append(defaultFilters, filters...)
 
 		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
@@ -60,6 +61,6 @@ var addCmd = &cobra.Command{
 			color.Red("Error writing config file: %s", err.Error())
 			os.Exit(1)
 		}
-		color.Green("Filter %s added", strings.Join(args, ", "))
+		color.Green("Filter %s added", strings.Join(filters, ", "))
 	},
 }

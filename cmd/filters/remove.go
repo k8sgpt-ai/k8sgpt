@@ -14,8 +14,9 @@ var removeCmd = &cobra.Command{
 	Use:   "remove [filter(s)]",
 	Short: "Remove one or more filters.",
 	Long:  `The add command remove one or more filters to the default set of filters used by the analyze.`,
-	Args:  cobra.MinimumNArgs(1),
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		filters := strings.Split(args[0], ",")
 
 		// Get defined default_filters
 		defaultFilters := viper.GetStringSlice("default_filters")
@@ -24,7 +25,7 @@ var removeCmd = &cobra.Command{
 		}
 
 		// verify dupplicate filters example: k8sgpt filters remove Pod Pod
-		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(args)
+		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(filters)
 		if len(dupplicatedFilters) != 0 {
 			color.Red("Duplicate filters found: %s", strings.Join(dupplicatedFilters, ", "))
 			os.Exit(1)
@@ -57,6 +58,6 @@ var removeCmd = &cobra.Command{
 			color.Red("Error writing config file: %s", err.Error())
 			os.Exit(1)
 		}
-		color.Green("Filter(s) %s removed", strings.Join(args, ", "))
+		color.Green("Filter(s) %s removed", strings.Join(filters, ", "))
 	},
 }
