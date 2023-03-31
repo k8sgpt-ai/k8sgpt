@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var filtersAddCmd = &cobra.Command{
+var addCmd = &cobra.Command{
 	Use:   "add [filter(s)]",
 	Short: "Adds one or more new filters.",
 	Long:  `The add command adds one or more new filters to the default set of filters used by the analyze.`,

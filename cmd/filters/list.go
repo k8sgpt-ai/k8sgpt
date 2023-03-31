@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var filterListCmd = &cobra.Command{
+var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List available filters",
 	Long:  `The list command displays a list of available filters that can be used to analyze Kubernetes resources.`,

@@ -19,7 +19,7 @@ var FiltersCmd = &cobra.Command{
 }
 
 func init() {
-	FiltersCmd.AddCommand(filterListCmd)
-	FiltersCmd.AddCommand(filtersAddCmd)
-	FiltersCmd.AddCommand(filtersRemoveCmd)
+	FiltersCmd.AddCommand(listCmd)
+	FiltersCmd.AddCommand(addCmd)
+	FiltersCmd.AddCommand(removeCmd)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var filtersRemoveCmd = &cobra.Command{
+var removeCmd = &cobra.Command{
 	Use:   "remove [filter(s)]",
 	Short: "Remove one or more filters.",
 	Long:  `The add command remove one or more filters to the default set of filters used by the analyze.`,
