@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var analyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
+var coreAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
 	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
 	"Pod":                   AnalyzePod,
 	"ReplicaSet":            AnalyzeReplicaSet,
@@ -20,11 +20,18 @@ var analyzerMap = map[string]func(ctx context.Context, config *AnalysisConfigura
 	"Ingress":               AnalyzeIngress,
 }
 
+var additionalAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
+	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
+	"HorizontalPodAutoScaler": AnalyzeHpa,
+}
+
 func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,
 	client *kubernetes.Client,
 	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
 	activeFilters := viper.GetStringSlice("active_filters")
+
+	analyzerMap := getAnalyzerMap()
 
 	// if there are no filters selected and no active_filters then run all of them
 	if len(filters) == 0 && len(activeFilters) == 0 {
@@ -97,10 +104,34 @@ func ParseViaAI(ctx context.Context, config *AnalysisConfiguration,
 	return response, nil
 }
 
-func ListFilters() []string {
-	keys := make([]string, 0, len(analyzerMap))
-	for k := range analyzerMap {
-		keys = append(keys, k)
+func ListFilters() ([]string, []string) {
+	coreKeys := make([]string, 0, len(coreAnalyzerMap))
+	for k := range coreAnalyzerMap {
+		coreKeys = append(coreKeys, k)
 	}
-	return keys
+
+	additionalKeys := make([]string, 0, len(additionalAnalyzerMap))
+	for k := range additionalAnalyzerMap {
+		additionalKeys = append(additionalKeys, k)
+	}
+	return coreKeys, additionalKeys
+}
+
+func getAnalyzerMap() map[string]func(ctx context.Context, config *AnalysisConfiguration,
+	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
+
+	mergedMap := make(map[string]func(ctx context.Context, config *AnalysisConfiguration,
+		client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error)
+
+	// add core analyzer
+	for key, value := range coreAnalyzerMap {
+		mergedMap[key] = value
+	}
+
+	// add additional analyzer
+	for key, value := range additionalAnalyzerMap {
+		mergedMap[key] = value
+	}
+
+	return mergedMap
 }

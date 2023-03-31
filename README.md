@@ -60,12 +60,18 @@ you will be able to write your own analyzers.
 
 ### Built in analyzers
 
+#### Enabled by default
+
 - [x] podAnalyzer
 - [x] pvcAnalyzer
 - [x] rsAnalyzer
 - [x] serviceAnalyzer
 - [x] eventAnalyzer
 - [x] ingressAnalyzer
+
+#### Optional
+
+- [x] hpaAnalyzer
 
 ## Usage
 
