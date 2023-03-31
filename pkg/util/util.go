@@ -65,3 +65,34 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 	}
 	return meta.Name, false
 }
+
+func RemoveDuplicates(slice []string) ([]string, []string) {
+	set := make(map[string]bool)
+	duplicates := []string{}
+	for _, val := range slice {
+		if _, ok := set[val]; !ok {
+			set[val] = true
+		} else {
+			duplicates = append(duplicates, val)
+		}
+	}
+	uniqueSlice := make([]string, 0, len(set))
+	for val := range set {
+		uniqueSlice = append(uniqueSlice, val)
+	}
+	return uniqueSlice, duplicates
+}
+
+func SliceDiff(source, dest []string) []string {
+	mb := make(map[string]struct{}, len(dest))
+	for _, x := range dest {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range source {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}

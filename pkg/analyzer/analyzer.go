@@ -24,8 +24,10 @@ func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfigur
 	client *kubernetes.Client,
 	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
-	// if there are no filters selected then run all of them
-	if len(filters) == 0 {
+	activeFilters := viper.GetStringSlice("active_filters")
+
+	// if there are no filters selected and no active_filters then run all of them
+	if len(filters) == 0 && len(activeFilters) == 0 {
 		for _, analyzer := range analyzerMap {
 			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
 				return err
@@ -34,7 +36,20 @@ func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfigur
 		return nil
 	}
 
-	for _, filter := range filters {
+	// if the filters flag is specified
+	if len(filters) != 0 {
+		for _, filter := range filters {
+			if analyzer, ok := analyzerMap[filter]; ok {
+				if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+
+	// use active_filters
+	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
 			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
 				return err
