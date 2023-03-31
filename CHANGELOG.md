@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.5...v0.1.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* analysis detail not displayed when --explain ([869ba90](https://github.com/k8sgpt-ai/k8sgpt/commit/869ba909075a5543413fb6ae7fc79aa067c08da4))
+
 ## [0.1.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.4...v0.1.5) (2023-03-31)
 
 
