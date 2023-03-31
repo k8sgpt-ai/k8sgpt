@@ -46,11 +46,11 @@ var addCmd = &cobra.Command{
 
 		mergedFilters := append(defaultFilters, args...)
 
-		uniqueFilters, dupplicateFilters := util.RemoveDuplicates(mergedFilters)
+		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
 		// Verify dupplicate
-		if len(dupplicateFilters) != 0 {
-			color.Red("Duplicate filters found: %s", strings.Join(dupplicateFilters, ", "))
+		if len(dupplicatedFilters) != 0 {
+			color.Red("Duplicate filters found: %s", strings.Join(dupplicatedFilters, ", "))
 			os.Exit(1)
 		}
 

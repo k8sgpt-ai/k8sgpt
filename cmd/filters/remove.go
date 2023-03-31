@@ -24,9 +24,9 @@ var removeCmd = &cobra.Command{
 		}
 
 		// verify dupplicate filters example: k8sgpt filters remove Pod Pod
-		uniqueFilters, dupplicateFilters := util.RemoveDuplicates(args)
-		if len(dupplicateFilters) != 0 {
-			color.Red("Duplicate filters found: %s", strings.Join(dupplicateFilters, ", "))
+		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(args)
+		if len(dupplicatedFilters) != 0 {
+			color.Red("Duplicate filters found: %s", strings.Join(dupplicatedFilters, ", "))
 			os.Exit(1)
 		}
 
