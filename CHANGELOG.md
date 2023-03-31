@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.4...v0.1.5) (2023-03-31)
+
+
+### Features
+
+* add & remove default filter(s) to analyze. ([32ddf66](https://github.com/k8sgpt-ai/k8sgpt/commit/32ddf6691ce083fd4283a1d5ac4b9f02e90df867))
+* add filter command add "list" subcommand ([#159](https://github.com/k8sgpt-ai/k8sgpt/issues/159)) ([6e17c9e](https://github.com/k8sgpt-ai/k8sgpt/commit/6e17c9e285e3871bb8f694b734a8cd6fd02e60f0))
+* check if filters does not empty on add & remove ([975813d](https://github.com/k8sgpt-ai/k8sgpt/commit/975813d3284719c877630ad20f90c6fe163283da))
+* remove filter prefix on subcommand ([30faf84](https://github.com/k8sgpt-ai/k8sgpt/commit/30faf842541c0be6b6483f71f6cf04d5cafecef5))
+* rework filters ([3ed545f](https://github.com/k8sgpt-ai/k8sgpt/commit/3ed545f33fb3ecb3827c03e8c89027c61386c44f))
+* update filters add & remove to be more consistent ([9aa0e89](https://github.com/k8sgpt-ai/k8sgpt/commit/9aa0e8960ee340208b4749954c99867842ba58b9))
+
+
+### Bug Fixes
+
+* kubecontext flag has no effect ([a8bf451](https://github.com/k8sgpt-ai/k8sgpt/commit/a8bf45134ff3a72dc3e531d720f119790faff9d4))
+* spelling on dupplicateFilters ([0a12448](https://github.com/k8sgpt-ai/k8sgpt/commit/0a124484a23789376258413e73628c7b1d7abded))
+
+
+### Other
+
+* renamed filter list file ([25f8dc3](https://github.com/k8sgpt-ai/k8sgpt/commit/25f8dc390cccd66965993f464351e671af11f8ac))
+
 ## [0.1.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.3...v0.1.4) (2023-03-30)
 
 
