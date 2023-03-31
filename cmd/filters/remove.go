@@ -24,6 +24,14 @@ var removeCmd = &cobra.Command{
 			defaultFilters = []string{}
 		}
 
+		// Check if input filters is not empty
+		for _, f := range filters {
+			if f == "" {
+				color.Red("Filter cannot be empty. Please use correct syntax.")
+				os.Exit(1)
+			}
+		}
+
 		// verify dupplicate filters example: k8sgpt filters remove Pod Pod
 		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(filters)
 		if len(dupplicatedFilters) != 0 {

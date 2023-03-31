@@ -22,6 +22,10 @@ var addCmd = &cobra.Command{
 		// Verify filter exist
 		invalidFilters := []string{}
 		for _, f := range filters {
+			if f == "" {
+				color.Red("Filter cannot be empty. Please use correct syntax.")
+				os.Exit(1)
+			}
 			foundFilter := false
 			for _, filter := range analyzer.ListFilters() {
 				if filter == f {
