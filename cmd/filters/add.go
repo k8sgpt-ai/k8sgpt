@@ -17,17 +17,18 @@ var addCmd = &cobra.Command{
 	Long:  `The add command adds one or more new filters to the default set of filters used by the analyze.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filters := strings.Split(args[0], ",")
+		inputFilters := strings.Split(args[0], ",")
+		availableFilters := analyzer.ListFilters()
 
 		// Verify filter exist
 		invalidFilters := []string{}
-		for _, f := range filters {
+		for _, f := range inputFilters {
 			if f == "" {
 				color.Red("Filter cannot be empty. Please use correct syntax.")
 				os.Exit(1)
 			}
 			foundFilter := false
-			for _, filter := range analyzer.ListFilters() {
+			for _, filter := range availableFilters {
 				if filter == f {
 					foundFilter = true
 					break
@@ -43,13 +44,13 @@ var addCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// Get defined default_filters
-		defaultFilters := viper.GetStringSlice("default_filters")
-		if len(defaultFilters) == 0 {
-			defaultFilters = []string{}
+		// Get defined active_filters
+		activeFilters := viper.GetStringSlice("active_filters")
+		if len(activeFilters) == 0 {
+			activeFilters = availableFilters
 		}
 
-		mergedFilters := append(defaultFilters, filters...)
+		mergedFilters := append(activeFilters, inputFilters...)
 
 		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
@@ -59,12 +60,12 @@ var addCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		viper.Set("default_filters", uniqueFilters)
+		viper.Set("active_filters", uniqueFilters)
 
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("Error writing config file: %s", err.Error())
 			os.Exit(1)
 		}
-		color.Green("Filter %s added", strings.Join(filters, ", "))
+		color.Green("Filter %s added", strings.Join(inputFilters, ", "))
 	},
 }

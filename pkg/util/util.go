@@ -82,3 +82,17 @@ func RemoveDuplicates(slice []string) ([]string, []string) {
 	}
 	return uniqueSlice, duplicates
 }
+
+func SliceDiff(source, dest []string) []string {
+	mb := make(map[string]struct{}, len(dest))
+	for _, x := range dest {
+		mb[x] = struct{}{}
+	}
+	var diff []string
+	for _, x := range source {
+		if _, found := mb[x]; !found {
+			diff = append(diff, x)
+		}
+	}
+	return diff
+}

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,16 +17,16 @@ var removeCmd = &cobra.Command{
 	Long:  `The add command remove one or more filters to the default set of filters used by the analyze.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		filters := strings.Split(args[0], ",")
+		inputFilters := strings.Split(args[0], ",")
 
-		// Get defined default_filters
-		defaultFilters := viper.GetStringSlice("default_filters")
-		if len(defaultFilters) == 0 {
-			defaultFilters = []string{}
+		// Get defined active_filters
+		activeFilters := viper.GetStringSlice("active_filters")
+		if len(activeFilters) == 0 {
+			activeFilters = analyzer.ListFilters()
 		}
 
-		// Check if input filters is not empty
-		for _, f := range filters {
+		// Check if input input filters is not empty
+		for _, f := range inputFilters {
 			if f == "" {
 				color.Red("Filter cannot be empty. Please use correct syntax.")
 				os.Exit(1)
@@ -33,7 +34,7 @@ var removeCmd = &cobra.Command{
 		}
 
 		// verify dupplicate filters example: k8sgpt filters remove Pod Pod
-		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(filters)
+		uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(inputFilters)
 		if len(dupplicatedFilters) != 0 {
 			color.Red("Duplicate filters found: %s", strings.Join(dupplicatedFilters, ", "))
 			os.Exit(1)
@@ -43,10 +44,10 @@ var removeCmd = &cobra.Command{
 		filterNotFound := []string{}
 		for _, filter := range uniqueFilters {
 			foundFilter := false
-			for i, f := range defaultFilters {
+			for i, f := range activeFilters {
 				if f == filter {
 					foundFilter = true
-					defaultFilters = append(defaultFilters[:i], defaultFilters[i+1:]...)
+					activeFilters = append(activeFilters[:i], activeFilters[i+1:]...)
 					break
 				}
 			}
@@ -60,12 +61,12 @@ var removeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		viper.Set("default_filters", defaultFilters)
+		viper.Set("active_filters", activeFilters)
 
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("Error writing config file: %s", err.Error())
 			os.Exit(1)
 		}
-		color.Green("Filter(s) %s removed", strings.Join(filters, ", "))
+		color.Green("Filter(s) %s removed", strings.Join(inputFilters, ", "))
 	},
 }
