@@ -61,15 +61,6 @@ func init() {
 	// when this action is called directly.
 	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	//Initialise the kubeconfig
-	kubernetesClient, err := kubernetes.NewClient(kubecontext, kubeconfig)
-	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
-		os.Exit(1)
-	}
-
-	viper.Set("kubernetesClient", kubernetesClient)
-
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -89,6 +80,15 @@ func initConfig() {
 
 		viper.SafeWriteConfig()
 	}
+
+	//Initialise the kubeconfig
+	kubernetesClient, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if err != nil {
+		color.Red("Error initialising kubernetes client: %v", err)
+		os.Exit(1)
+	}
+
+	viper.Set("kubernetesClient", kubernetesClient)
 
 	viper.AutomaticEnv() // read in environment variables that match
 
