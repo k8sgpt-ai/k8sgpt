@@ -102,7 +102,7 @@ jobs:
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@448520c4f19577ffce70a8317e619089054687e3 # v0.13.4
+        uses: anchore/sbom-action@422cb34a0f8b599678c41b21163ea6088edb2624 # v0.14.1
         with:
           image: ${{ env.IMAGE_TAG }}
           artifact-name: sbom-${{ env.IMAGE_NAME }}

@@ -21,8 +21,10 @@ var removeCmd = &cobra.Command{
 
 		// Get defined active_filters
 		activeFilters := viper.GetStringSlice("active_filters")
+		coreFilters, _ := analyzer.ListFilters()
+
 		if len(activeFilters) == 0 {
-			activeFilters = analyzer.ListFilters()
+			activeFilters = coreFilters
 		}
 
 		// Check if input input filters is not empty
