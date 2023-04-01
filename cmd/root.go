@@ -1,8 +1,12 @@
 package cmd
 
 import (
-	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"os"
+	"path/filepath"
+
+	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
+	"k8s.io/client-go/util/homedir"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
@@ -13,10 +17,10 @@ import (
 )
 
 var (
-	cfgFile    string
-	masterURL  string
-	kubeconfig string
-	version    string
+	cfgFile     string
+	kubecontext string
+	kubeconfig  string
+	version     string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -42,26 +46,20 @@ func Execute(v string) {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	var kubeconfigPath string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfigPath = filepath.Join(home, ".kube", "config")
+	}
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(analyze.AnalyzeCmd)
+	rootCmd.AddCommand(filters.FiltersCmd)
 	rootCmd.AddCommand(generate.GenerateCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.yaml)")
-	rootCmd.PersistentFlags().StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
+	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", kubeconfigPath, "Path to a kubeconfig. Only required if out-of-cluster.")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	//Initialise the kubeconfig
-	kubernetesClient, err := kubernetes.NewClient(masterURL, kubeconfig)
-	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
-	}
-
-	viper.Set("kubernetesClient", kubernetesClient)
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }
 
@@ -82,6 +80,15 @@ func initConfig() {
 
 		viper.SafeWriteConfig()
 	}
+
+	//Initialise the kubeconfig
+	kubernetesClient, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if err != nil {
+		color.Red("Error initialising kubernetes client: %v", err)
+		os.Exit(1)
+	}
+
+	viper.Set("kubernetesClient", kubernetesClient)
 
 	viper.AutomaticEnv() // read in environment variables that match
 

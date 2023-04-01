@@ -1,5 +1,83 @@
 # Changelog
 
+## [0.1.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.5...v0.1.6) (2023-03-31)
+
+
+### Bug Fixes
+
+* analysis detail not displayed when --explain ([869ba90](https://github.com/k8sgpt-ai/k8sgpt/commit/869ba909075a5543413fb6ae7fc79aa067c08da4))
+
+## [0.1.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.4...v0.1.5) (2023-03-31)
+
+
+### Features
+
+* add & remove default filter(s) to analyze. ([32ddf66](https://github.com/k8sgpt-ai/k8sgpt/commit/32ddf6691ce083fd4283a1d5ac4b9f02e90df867))
+* add filter command add "list" subcommand ([#159](https://github.com/k8sgpt-ai/k8sgpt/issues/159)) ([6e17c9e](https://github.com/k8sgpt-ai/k8sgpt/commit/6e17c9e285e3871bb8f694b734a8cd6fd02e60f0))
+* check if filters does not empty on add & remove ([975813d](https://github.com/k8sgpt-ai/k8sgpt/commit/975813d3284719c877630ad20f90c6fe163283da))
+* remove filter prefix on subcommand ([30faf84](https://github.com/k8sgpt-ai/k8sgpt/commit/30faf842541c0be6b6483f71f6cf04d5cafecef5))
+* rework filters ([3ed545f](https://github.com/k8sgpt-ai/k8sgpt/commit/3ed545f33fb3ecb3827c03e8c89027c61386c44f))
+* update filters add & remove to be more consistent ([9aa0e89](https://github.com/k8sgpt-ai/k8sgpt/commit/9aa0e8960ee340208b4749954c99867842ba58b9))
+
+
+### Bug Fixes
+
+* kubecontext flag has no effect ([a8bf451](https://github.com/k8sgpt-ai/k8sgpt/commit/a8bf45134ff3a72dc3e531d720f119790faff9d4))
+* spelling on dupplicateFilters ([0a12448](https://github.com/k8sgpt-ai/k8sgpt/commit/0a124484a23789376258413e73628c7b1d7abded))
+
+
+### Other
+
+* renamed filter list file ([25f8dc3](https://github.com/k8sgpt-ai/k8sgpt/commit/25f8dc390cccd66965993f464351e671af11f8ac))
+
+## [0.1.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.3...v0.1.4) (2023-03-30)
+
+
+### Features
+
+* add Ingress class validation ([#154](https://github.com/k8sgpt-ai/k8sgpt/issues/154)) ([b061566](https://github.com/k8sgpt-ai/k8sgpt/commit/b061566404ef80288ca29add2d401574109d44c0))
+* output selected backend ([#153](https://github.com/k8sgpt-ai/k8sgpt/issues/153)) ([be061da](https://github.com/k8sgpt-ai/k8sgpt/commit/be061da5b65045938acd70ad2eb2d21b87d2d6bf))
+
+
+### Bug Fixes
+
+* now supports different kubeconfig and kubectx ([c8f3c94](https://github.com/k8sgpt-ai/k8sgpt/commit/c8f3c946b00c00cd185961a4fa777806da94014e))
+
+
+### Refactoring
+
+* removed sample flag ([0afd528](https://github.com/k8sgpt-ai/k8sgpt/commit/0afd52844b96579391f77698bf0555145b6d2be8))
+
+## [0.1.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.2...v0.1.3) (2023-03-30)
+
+
+### Features
+
+* add secret validation to ingress analyzer ([#141](https://github.com/k8sgpt-ai/k8sgpt/issues/141)) ([86c7e81](https://github.com/k8sgpt-ai/k8sgpt/commit/86c7e81e18db02ebcbfe35d470682c982871375f))
+* bugfix for output ([2eab0c5](https://github.com/k8sgpt-ai/k8sgpt/commit/2eab0c544fbb6026f6aea79b08d8f29c061acf2e))
+* CODE_OF_CONDUCT.md ([#129](https://github.com/k8sgpt-ai/k8sgpt/issues/129)) ([fe73633](https://github.com/k8sgpt-ai/k8sgpt/commit/fe73633273c5c1f4188bca48471283535967d5aa))
+* create-security.md ([27b8916](https://github.com/k8sgpt-ai/k8sgpt/commit/27b8916f297570907437686c6d958636fb249d50))
+* improvement to analysis speed ([548039e](https://github.com/k8sgpt-ai/k8sgpt/commit/548039ebe62bb609c1aa288e5e49845850fd2dd8))
+* init ingress analyzer ([#138](https://github.com/k8sgpt-ai/k8sgpt/issues/138)) ([fe683b7](https://github.com/k8sgpt-ai/k8sgpt/commit/fe683b71b84fe82459b0ffe366b4dcfa1c978cfe))
+
+
+### Bug Fixes
+
+* add Ingress in GetParent switch case ([14ba8d5](https://github.com/k8sgpt-ai/k8sgpt/commit/14ba8d555005f31fc2201cb8b61653093c19b8a7))
+* bugfix for output ([#148](https://github.com/k8sgpt-ai/k8sgpt/issues/148)) ([172c2df](https://github.com/k8sgpt-ai/k8sgpt/commit/172c2df6c55f5fddbfec7f8526be5f2323d1b900))
+* Change ObjectMeta value in Ingress analyser. ([bf49a51](https://github.com/k8sgpt-ai/k8sgpt/commit/bf49a51c62af450cff51a590547ef30989bd2e93))
+* typo in description of the filter flag in analyze command ([#147](https://github.com/k8sgpt-ai/k8sgpt/issues/147)) ([f4765be](https://github.com/k8sgpt-ai/k8sgpt/commit/f4765bed1b1ad121a81b35878fdb866354b5e34a))
+
+
+### Other
+
+* **deps:** update google-github-actions/release-please-action digest to ee9822e ([#132](https://github.com/k8sgpt-ai/k8sgpt/issues/132)) ([01b2826](https://github.com/k8sgpt-ai/k8sgpt/commit/01b282647512a4eaebd42ab5847b5534de148d14))
+
+
+### Docs
+
+* add new slack link ([#134](https://github.com/k8sgpt-ai/k8sgpt/issues/134)) ([#135](https://github.com/k8sgpt-ai/k8sgpt/issues/135)) ([cad2b38](https://github.com/k8sgpt-ai/k8sgpt/commit/cad2b38d037658495024ec0166ebd3e936f65c2e))
+
 ## [0.1.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.1...v0.1.2) (2023-03-28)
 
 

@@ -35,6 +35,7 @@ var AuthCmd = &cobra.Command{
 		// override the default backend if a flag is provided
 		if backend != "" {
 			backendType = backend
+			color.Green("Using %s as backend AI provider", backendType)
 		}
 
 		fmt.Printf("Enter %s Key: ", backendType)

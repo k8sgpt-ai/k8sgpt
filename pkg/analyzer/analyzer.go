@@ -11,33 +11,50 @@ import (
 	"github.com/spf13/viper"
 )
 
-func RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
+var analyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
+	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
+	"Pod":                   AnalyzePod,
+	"ReplicaSet":            AnalyzeReplicaSet,
+	"PersistentVolumeClaim": AnalyzePersistentVolumeClaim,
+	"Service":               AnalyzeEndpoints,
+	"Ingress":               AnalyzeIngress,
+}
+
+func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,
 	client *kubernetes.Client,
 	aiClient ai.IAI, analysisResults *[]Analysis) error {
 
-	err := AnalyzePod(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
+	activeFilters := viper.GetStringSlice("active_filters")
+
+	// if there are no filters selected and no active_filters then run all of them
+	if len(filters) == 0 && len(activeFilters) == 0 {
+		for _, analyzer := range analyzerMap {
+			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
 
-	err = AnalyzeReplicaSet(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
+	// if the filters flag is specified
+	if len(filters) != 0 {
+		for _, filter := range filters {
+			if analyzer, ok := analyzerMap[filter]; ok {
+				if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	}
 
-	err = AnalyzePersistentVolumeClaim(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
-	}
-
-	err = AnalyzeEndpoints(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
-	}
-
-	err = AnalyzeIngress(ctx, config, client, aiClient, analysisResults)
-	if err != nil {
-		return err
+	// use active_filters
+	for _, filter := range activeFilters {
+		if analyzer, ok := analyzerMap[filter]; ok {
+			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -78,4 +95,12 @@ func ParseViaAI(ctx context.Context, config *AnalysisConfiguration,
 		}
 	}
 	return response, nil
+}
+
+func ListFilters() []string {
+	keys := make([]string, 0, len(analyzerMap))
+	for k := range analyzerMap {
+		keys = append(keys, k)
+	}
+	return keys
 }
