@@ -3,9 +3,9 @@
   <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
 
-`k8sgpt` is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english.
+`k8sgpt` is a tool for scanning your Kubernetes clusters, diagnosing, and triaging issues in simple English.
 
-It has SRE experience codified into it's analyzers and helps to pull out the most relevent information to enrich it with AI.
+It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
 ## Installation
 
@@ -21,8 +21,8 @@ brew install k8sgpt
   When installing Homebrew on WSL or Linux, you may encounter the following error:
 
   ```
-  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from bottle and must be 
-  built from source. k8sgpt Install Clang or run brew install gcc.
+  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from a bottle and must be 
+  built from the source. k8sgpt Install Clang or run brew install gcc.
   ```
 
 If you install gcc as suggested, the problem will persist. Therefore, you need to install the build-essential package.
