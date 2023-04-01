@@ -18,7 +18,9 @@ var addCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		inputFilters := strings.Split(args[0], ",")
-		availableFilters := analyzer.ListFilters()
+		coreFilters, additionalFilters := analyzer.ListFilters()
+
+		availableFilters := append(coreFilters, additionalFilters...)
 
 		// Verify filter exist
 		invalidFilters := []string{}
@@ -47,7 +49,7 @@ var addCmd = &cobra.Command{
 		// Get defined active_filters
 		activeFilters := viper.GetStringSlice("active_filters")
 		if len(activeFilters) == 0 {
-			activeFilters = availableFilters
+			activeFilters = coreFilters
 		}
 
 		mergedFilters := append(activeFilters, inputFilters...)

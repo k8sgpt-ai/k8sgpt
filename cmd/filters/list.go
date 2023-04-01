@@ -16,10 +16,11 @@ var listCmd = &cobra.Command{
 	Long:  `The list command displays a list of available filters that can be used to analyze Kubernetes resources.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		activeFilters := viper.GetStringSlice("active_filters")
-		availableFilters := analyzer.ListFilters()
+		coreFilters, additionalFilters := analyzer.ListFilters()
 
+		availableFilters := append(coreFilters, additionalFilters...)
 		if len(activeFilters) == 0 {
-			activeFilters = availableFilters
+			activeFilters = coreFilters
 		}
 
 		inactiveFilters := util.SliceDiff(availableFilters, activeFilters)
