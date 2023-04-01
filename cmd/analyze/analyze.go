@@ -29,7 +29,7 @@ var (
 // AnalyzeCmd represents the problems command
 var AnalyzeCmd = &cobra.Command{
 	Use:     "analyze",
-	Aliases: []string{"analyse"},
+	Aliases: []string{"analyze"},
 	Short:   "This command will find problems within your Kubernetes cluster",
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
@@ -83,14 +83,16 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if len(*analysisResults) == 0 {
+		var bar *progressbar.ProgressBar
+		if len(*analysisResults) > 0 {
+			bar = progressbar.Default(int64(len(*analysisResults)))
+		} else {
 			color.Green("{ \"status\": \"OK\" }")
 			os.Exit(0)
 		}
-		var bar = progressbar.Default(int64(len(*analysisResults)))
-		if !explain {
-			bar.Clear()
-		}
+
+		// This variable is used to store the results that will be printed
+		// It's necessary because the heap memory is lost when the function returns
 		var printOutput []analyzer.Analysis
 
 		for _, analysis := range *analysisResults {
