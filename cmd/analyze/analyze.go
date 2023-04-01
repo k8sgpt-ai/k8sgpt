@@ -83,16 +83,14 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var bar *progressbar.ProgressBar
-		if len(*analysisResults) > 0 {
-			bar = progressbar.Default(int64(len(*analysisResults)))
-		} else {
+		if len(*analysisResults) == 0 {
 			color.Green("{ \"status\": \"OK\" }")
 			os.Exit(0)
 		}
-
-		// This variable is used to store the results that will be printed
-		// It's necessary because the heap memory is lost when the function returns
+		var bar = progressbar.Default(int64(len(*analysisResults)))
+		if !explain {
+			bar.Clear()
+		}
 		var printOutput []analyzer.Analysis
 
 		for _, analysis := range *analysisResults {
