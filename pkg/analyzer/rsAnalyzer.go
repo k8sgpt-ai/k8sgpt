@@ -10,7 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeReplicaSet(ctx context.Context, config *AnalysisConfiguration,
+type ReplicaSetAnalyzer struct{}
+
+func (ReplicaSetAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
 	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
 
 	// search all namespaces for pods that are not running

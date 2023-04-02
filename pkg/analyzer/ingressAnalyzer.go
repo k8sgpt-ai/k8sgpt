@@ -10,7 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
+type IngressAnalyzer struct{}
+
+func (IngressAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
 	analysisResults *[]Analysis) error {
 
 	list, err := client.GetClient().NetworkingV1().Ingresses(config.Namespace).List(ctx, metav1.ListOptions{})
