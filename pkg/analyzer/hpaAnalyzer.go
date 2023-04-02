@@ -72,7 +72,7 @@ func AnalyzeHpa(ctx context.Context, config *AnalysisConfiguration, client *kube
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Ingress.ObjectMeta)
+		parent, _ := util.GetParent(client, value.HorizontalPodAutoscalers.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}
