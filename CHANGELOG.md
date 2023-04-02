@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.1.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.6...v0.1.7) (2023-04-02)
+
+
+### Features
+
+* add hpa analyzer and init additionalAnalyzers ([3603872](https://github.com/k8sgpt-ai/k8sgpt/commit/360387249feb9a999286aaa874a13007986219a5))
+* add pda analyzer ([532a5ce](https://github.com/k8sgpt-ai/k8sgpt/commit/532a5ce0332a8466df42bc944800e6668e349801))
+* check if ScaleTargetRef is possible option ([5dad75f](https://github.com/k8sgpt-ai/k8sgpt/commit/5dad75fbe9fd15cfa7bfa69c046b851ea905876f))
+
+
+### Bug Fixes
+
+* hpaAnalyzer analysis result is using wrong parent ([1190fe6](https://github.com/k8sgpt-ai/k8sgpt/commit/1190fe60fdd6e66ce435874628039df7047a52b9))
+* spelling of PodDisruptionBudget ([ceff008](https://github.com/k8sgpt-ai/k8sgpt/commit/ceff0084df1b6de16f1ed503ee8a4b3c1a9f8648))
+* update client API call to use StatefulSet instead of Deployment ([4916fef](https://github.com/k8sgpt-ai/k8sgpt/commit/4916fef9d6b75c54bcfbc5d136550018e96e3632))
+
+
+### Refactoring
+
+* merged main into branch ([3e836d8](https://github.com/k8sgpt-ai/k8sgpt/commit/3e836d81b7c33ce5c0c133c2e1ca3b0c8d3eeeb0)), closes [#101](https://github.com/k8sgpt-ai/k8sgpt/issues/101)
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.14.1 ([80f29da](https://github.com/k8sgpt-ai/k8sgpt/commit/80f29dae4fd6f6348967192ce2f51f0e0fb5dea0))
+* merge branch 'chetanguptaa-some-fixes' ([071ee56](https://github.com/k8sgpt-ai/k8sgpt/commit/071ee560f36b64b4c65274181e2d13bb14d5b914))
+* refine renovate config ([#172](https://github.com/k8sgpt-ai/k8sgpt/issues/172)) ([d23da9a](https://github.com/k8sgpt-ai/k8sgpt/commit/d23da9ae836a07f0fd59c20a1c3c71d6b7f75277))
+* removes bar on normal analyze events ([e1d8992](https://github.com/k8sgpt-ai/k8sgpt/commit/e1d89920b097db4417c55b020fb23dd8cbaf19ed))
+* removes bar on normal analyze events ([96d0d75](https://github.com/k8sgpt-ai/k8sgpt/commit/96d0d754eab67c0742d3a36a1eefb9c28df59e96))
+* update dependencies ([#174](https://github.com/k8sgpt-ai/k8sgpt/issues/174)) ([9d9c262](https://github.com/k8sgpt-ai/k8sgpt/commit/9d9c26214fbb4c4faba7ef85f2204bc961396de8))
+
+
+### Docs
+
+* add pdbAnalyzer as optional analyzer ([f6974d0](https://github.com/k8sgpt-ai/k8sgpt/commit/f6974d07581384e260059f121242854320dfc58b))
+
 ## [0.1.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.5...v0.1.6) (2023-03-31)
 
 
