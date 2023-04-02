@@ -1,4 +1,4 @@
-name: Go package
+name: Run tests
 
 on: [push]
 
