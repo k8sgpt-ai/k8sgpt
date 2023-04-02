@@ -42,8 +42,8 @@ func AnalyzePdb(ctx context.Context, config *AnalysisConfiguration, client *kube
 
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", pdb.Namespace, pdb.Name)] = PreAnalysis{
-				PodDiscruptionBudget: pdb,
-				FailureDetails:       failures,
+				PodDisruptionBudget: pdb,
+				FailureDetails:      failures,
 			}
 		}
 	}
@@ -55,7 +55,7 @@ func AnalyzePdb(ctx context.Context, config *AnalysisConfiguration, client *kube
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.PodDiscruptionBudget.ObjectMeta)
+		parent, _ := util.GetParent(client, value.PodDisruptionBudget.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		*analysisResults = append(*analysisResults, currentAnalysis)
 	}

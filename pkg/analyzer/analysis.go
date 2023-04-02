@@ -22,7 +22,7 @@ type PreAnalysis struct {
 	Endpoint                 v1.Endpoints
 	Ingress                  networkingv1.Ingress
 	HorizontalPodAutoscalers autoscalingv1.HorizontalPodAutoscaler
-	PodDiscruptionBudget     policyv1.PodDisruptionBudget
+	PodDisruptionBudget      policyv1.PodDisruptionBudget
 }
 
 type Analysis struct {
