@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	backend string
+	backend  string
+	password string
 )
 
 // authCmd represents the auth command
@@ -38,14 +39,16 @@ var AuthCmd = &cobra.Command{
 			color.Green("Using %s as backend AI provider", backendType)
 		}
 
-		fmt.Printf("Enter %s Key: ", backendType)
-		bytePassword, err := term.ReadPassword(int(syscall.Stdin))
-		if err != nil {
-			color.Red("Error reading %s Key from stdin: %s", backendType,
-				err.Error())
-			os.Exit(1)
+		if password == "" {
+			fmt.Printf("Enter %s Key: ", backendType)
+			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				color.Red("Error reading %s Key from stdin: %s", backendType,
+					err.Error())
+				os.Exit(1)
+			}
+			password = strings.TrimSpace(string(bytePassword))
 		}
-		password := strings.TrimSpace(string(bytePassword))
 
 		viper.Set(fmt.Sprintf("%s_key", backendType), password)
 		if err := viper.WriteConfig(); err != nil {
@@ -59,4 +62,6 @@ var AuthCmd = &cobra.Command{
 func init() {
 	// add flag for backend
 	AuthCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	// add flag for password
+	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 }
