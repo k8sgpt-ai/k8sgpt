@@ -72,6 +72,7 @@ you will be able to write your own analyzers.
 #### Optional
 
 - [x] hpaAnalyzer
+- [x] pdbAnalyzer
 
 ## Usage
 

@@ -5,6 +5,7 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	policyv1 "k8s.io/api/policy/v1"
 )
 
 type AnalysisConfiguration struct {
@@ -21,6 +22,7 @@ type PreAnalysis struct {
 	Endpoint                 v1.Endpoints
 	Ingress                  networkingv1.Ingress
 	HorizontalPodAutoscalers autoscalingv1.HorizontalPodAutoscaler
+	PodDisruptionBudget      policyv1.PodDisruptionBudget
 }
 
 type Analysis struct {
