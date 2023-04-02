@@ -6,11 +6,11 @@ import (
 )
 
 type Client struct {
-	client *kubernetes.Clientset
+	Client kubernetes.Interface
 }
 
-func (c *Client) GetClient() *kubernetes.Clientset {
-	return c.client
+func (c *Client) GetClient() kubernetes.Interface {
+	return c.Client
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
@@ -31,6 +31,6 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	}
 
 	return &Client{
-		client: clientSet,
+		Client: clientSet,
 	}, nil
 }
