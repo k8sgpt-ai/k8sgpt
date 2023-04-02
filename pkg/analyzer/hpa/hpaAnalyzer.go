@@ -59,7 +59,6 @@ func (a *HPAAnalyzer) Analyze() error {
 				FailureDetails:           failures,
 			}
 		}
-
 	}
 
 	for key, value := range a.PreAnalysis {
@@ -68,7 +67,6 @@ func (a *HPAAnalyzer) Analyze() error {
 			Name:  key,
 			Error: value.FailureDetails,
 		}
-
 		parent, _ := util.GetParent(a.Client, value.Ingress.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		a.Result = append(a.Result, currentAnalysis)

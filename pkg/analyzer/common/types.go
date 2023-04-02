@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
 	autov1 "k8s.io/api/autoscaling/v1"
@@ -11,9 +12,12 @@ import (
 
 type Analyzer struct {
 	Client      *kubernetes.Client
+	AIClient    ai.IAI
 	Context     context.Context
 	Namespace   string
 	PreAnalysis map[string]PreAnalysis
+	Explain     bool
+	NoCache     bool
 	Result      []Result
 }
 

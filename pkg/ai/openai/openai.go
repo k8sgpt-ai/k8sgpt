@@ -1,9 +1,13 @@
-package ai
+package openai
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
+	"github.com/spf13/viper"
+	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -16,8 +20,10 @@ const (
 )
 
 type OpenAIClient struct {
+	context  context.Context
 	client   *openai.Client
 	language string
+	nocache  bool
 }
 
 func (c *OpenAIClient) Configure(token string, language string) error {
@@ -45,4 +51,42 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 		return "", err
 	}
 	return resp.Choices[0].Message.Content, nil
+}
+
+func (c OpenAIClient) Parse(text string, prompt []string, nocache bool) (string, error) {
+
+	// parse the text with the AI backend
+	inputKey := strings.Join(prompt, " ")
+	// Check for cached data
+	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
+	// find in viper cache
+	if viper.IsSet(sEnc) && !c.nocache {
+		// retrieve data from cache
+		response := viper.GetString(sEnc)
+		if response == "" {
+			color.Red("error retrieving cached data")
+			return "", nil
+		}
+		output, err := base64.StdEncoding.DecodeString(response)
+		if err != nil {
+			color.Red("error decoding cached data: %v", err)
+			return "", nil
+		}
+		return string(output), nil
+	}
+
+	response, err := c.GetCompletion(c.context, inputKey)
+	if err != nil {
+		color.Red("error getting completion: %v", err)
+		return "", err
+	}
+
+	if !viper.IsSet(sEnc) {
+		viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
+		if err := viper.WriteConfig(); err != nil {
+			color.Red("error writing config: %v", err)
+			return "", nil
+		}
+	}
+	return response, nil
 }

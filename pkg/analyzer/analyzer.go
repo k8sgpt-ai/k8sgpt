@@ -2,7 +2,7 @@ package analyzer
 
 import (
 	"context"
-	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/hpa"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/ingress"
@@ -18,109 +18,31 @@ type IAnalyzer interface {
 	GetResult() []common.Result
 }
 
-const (
-	PodAnalyzerName                   = "Pod"
-	ReplicaSetAnalyzerName            = "ReplicaSet"
-	PersistentVolumeClaimAnalyzerName = "PersistentVolumeClaim"
-	ServiceAnalyzerName               = "Service"
-	IngressAnalyzerName               = "Ingress"
-	HPAAnalyzerName                   = "HorizontalPodAutoScaler"
-)
+var AnalyzerMap = map[string]IAnalyzer{
+	"Pod":                   &pod.PodAnalyzer{},
+	"ReplicaSet":            &rs.ReplicaSetAnalyzer{},
+	"PersistentVolumeClaim": &pvc.PvcAnalyzer{},
+	"Service":               &service.ServiceAnalyzer{},
+	"Ingress":               &ingress.IngressAnalyzer{},
+	"HPA":                   &hpa.HPAAnalyzer{},
+}
 
-var (
-	coreAnalyzerList = []string{
-		PodAnalyzerName,
-		ReplicaSetAnalyzerName,
-		PersistentVolumeClaimAnalyzerName,
-		ServiceAnalyzerName,
-		IngressAnalyzerName,
-		HPAAnalyzerName,
-	}
+var coreAnalyzerList = []string{"Pod", "ReplicaSet", "PersistentVolumeClaim", "Service", "Ingress"}
+var additionalAnalyzerList = []string{"HPA"}
 
-	additionalAnalyzers = []string{
-		HPAAnalyzerName,
-	}
-)
-
-func NewAnalyzer(analyzer string, client *kubernetes.Client, context context.Context, namespace string) (IAnalyzer, error) {
+func NewAnalyzer(analyzer string, client *kubernetes.Client, context context.Context, namespace string, aiClient ai.IAI, explain bool) (IAnalyzer, error) {
 	analyzerConfig := common.Analyzer{
+		AIClient:  aiClient,
 		Namespace: namespace,
 		Context:   context,
 		Client:    client,
+		Explain:   explain,
 	}
 
 	analyzerConfig.PreAnalysis = make(map[string]common.PreAnalysis)
-
-	switch analyzer {
-	case PodAnalyzerName:
-		return &pod.PodAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	case ReplicaSetAnalyzerName:
-		return &rs.ReplicaSetAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	case IngressAnalyzerName:
-		return &ingress.IngressAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	case HPAAnalyzerName:
-		return &hpa.HPAAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	case PersistentVolumeClaimAnalyzerName:
-		return &pvc.PvcAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	case ServiceAnalyzerName:
-		return &service.ServiceAnalyzer{
-			Analyzer: analyzerConfig,
-		}, nil
-	default:
-		return nil, fmt.Errorf("Analyzer %s not supported", analyzer)
-	}
+	return AnalyzerMap[analyzer], nil
 }
 
-/*
-func ParseViaAI(ctx context.Context, config *analysis.Analysis,
-
-		aiClient ai.IAI, prompt []string) (string, error) {
-		// parse the text with the AI backend
-		inputKey := strings.Join(prompt, " ")
-		// Check for cached data
-		sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-		// find in viper cache
-		if viper.IsSet(sEnc) && !config.NoCache {
-			// retrieve data from cache
-			response := viper.GetString(sEnc)
-			if response == "" {
-				color.Red("error retrieving cached data")
-				return "", nil
-			}
-			output, err := base64.StdEncoding.DecodeString(response)
-			if err != nil {
-				color.Red("error decoding cached data: %v", err)
-				return "", nil
-			}
-			return string(output), nil
-		}
-
-		response, err := aiClient.GetCompletion(ctx, inputKey)
-		if err != nil {
-			color.Red("error getting completion: %v", err)
-			return "", err
-		}
-
-		if !viper.IsSet(sEnc) {
-			viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
-			if err := viper.WriteConfig(); err != nil {
-				color.Red("error writing config: %v", err)
-				return "", nil
-			}
-		}
-		return response, nil
-	}
-*/
 func ListFilters() ([]string, []string) {
 	coreKeys := []string{}
 	for _, filter := range coreAnalyzerList {
@@ -128,7 +50,7 @@ func ListFilters() ([]string, []string) {
 	}
 
 	additionalKeys := []string{}
-	for _, filter := range additionalAnalyzers {
+	for _, filter := range coreAnalyzerList {
 		coreKeys = append(additionalKeys, filter)
 	}
 	return coreKeys, additionalKeys
@@ -138,13 +60,12 @@ func GetAnalyzerList() []string {
 	list := []string{}
 
 	list = append(list, coreAnalyzerList...)
-	list = append(list, additionalAnalyzers...)
+	list = append(list, additionalAnalyzerList...)
 
 	list = removeDuplicateStr(list)
 
 	return list
 }
-
 func removeDuplicateStr(strSlice []string) []string {
 	allKeys := make(map[string]bool)
 	list := []string{}

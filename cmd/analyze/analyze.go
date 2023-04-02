@@ -1,12 +1,10 @@
 package analyze
 
 import (
-	"context"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -49,38 +47,24 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var aiClient ai.IAI
-		switch backendType {
-		case "openai":
-			aiClient = &ai.OpenAIClient{}
-			if err := aiClient.Configure(token, language); err != nil {
-				color.Red("Error: %v", err)
-				os.Exit(1)
-			}
-		default:
-			color.Red("Backend not supported")
+		// AnalysisResult configuration
+
+		aiClient, err := ai.NewAIClient("openai")
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+		if err := aiClient.Configure(token, language); err != nil {
+			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		ctx := context.Background()
-		// Get kubernetes client from viper
-		client := viper.Get("kubernetesClient").(*kubernetes.Client)
-		// AnalysisResult configuration
-
-		analysis := &analysis.Analysis{
-			Context:   ctx,
-			Namespace: namespace,
-			NoCache:   nocache,
-			Explain:   explain,
-			AIClient:  aiClient,
-			Filters:   filters,
-			Client:    client,
-		}
+		analysis := analysis.NewAnalysis(namespace, nocache, explain, filters, backend)
 
 		// Run analysis
 		_ = analysis.RunAnalysis()
 
-		analysis.PrintAnalysisResult()
+		analysis.PrintJsonResult()
 	},
 }
 
