@@ -27,7 +27,7 @@ func AnalyzePersistentVolumeClaim(ctx context.Context, config *AnalysisConfigura
 		if pvc.Status.Phase == "Pending" {
 
 			// parse the event log and append details
-			evt, err := FetchLatestPvcEvent(ctx, client, &pvc)
+			evt, err := FetchLatestEvent(ctx, client, pvc.Namespace, pvc.Name)
 			if err != nil || evt == nil {
 				continue
 			}

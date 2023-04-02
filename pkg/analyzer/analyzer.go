@@ -23,6 +23,7 @@ var coreAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfi
 var additionalAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
 	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
 	"HorizontalPodAutoScaler": AnalyzeHpa,
+	"PodDisruptionBudget":     AnalyzePdb,
 }
 
 func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,

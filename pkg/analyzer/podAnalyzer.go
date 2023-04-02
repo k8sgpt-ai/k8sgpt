@@ -47,7 +47,7 @@ func AnalyzePod(ctx context.Context, config *AnalysisConfiguration,
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
 
 					// parse the event log and append details
-					evt, err := FetchLatestPodEvent(ctx, client, &pod)
+					evt, err := FetchLatestEvent(ctx, client, pod.Namespace, pod.Name)
 					if err != nil || evt == nil {
 						continue
 					}
