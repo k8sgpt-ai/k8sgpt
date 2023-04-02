@@ -2,6 +2,11 @@
   <source media="(prefers-color-scheme: dark)" srcset="./images/banner-white.png" width="600px;">
   <img alt="Text changing depending on mode. Light: 'So light!' Dark: 'So dark!'" src="./images/banner-black.png" width="600px;">
 </picture>
+<br/>
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/k8sgpt-ai/k8sgpt)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/k8sgpt-ai/k8sgpt/release.yaml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 
 `k8sgpt` is a tool for scanning your Kubernetes clusters, diagnosing, and triaging issues in simple English.
 
@@ -178,4 +183,8 @@ the root cause of an issue.
 
 Please read our [contributing guide](./CONTRIBUTING.md).
 ## Community
-* Find us on [Slack](https://k8sgpt.slack.com/)
+Find us on [Slack](https://k8sgpt.slack.com/)
+
+<a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
+</a>
