@@ -10,7 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeHpa(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
+type HpaAnalyzer struct{}
+
+func (HpaAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
 	analysisResults *[]Analysis) error {
 
 	list, err := client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(config.Namespace).List(ctx, metav1.ListOptions{})

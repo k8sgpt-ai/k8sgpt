@@ -3,13 +3,16 @@ package analyzer
 import (
 	"context"
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzePdb(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
+type PdbAnalyzer struct{}
+
+func (PdbAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
 	analysisResults *[]Analysis) error {
 
 	list, err := client.GetClient().PolicyV1().PodDisruptionBudgets(config.Namespace).List(ctx, metav1.ListOptions{})

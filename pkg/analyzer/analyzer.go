@@ -11,19 +11,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-var coreAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
-	"Pod":                   AnalyzePod,
-	"ReplicaSet":            AnalyzeReplicaSet,
-	"PersistentVolumeClaim": AnalyzePersistentVolumeClaim,
-	"Service":               AnalyzeEndpoints,
-	"Ingress":               AnalyzeIngress,
+var coreAnalyzerMap = map[string]IAnalyzer{
+	"Pod":                   PodAnalyzer{},
+	"ReplicaSet":            ReplicaSetAnalyzer{},
+	"PersistentVolumeClaim": PvcAnalyzer{},
+	"Service":               ServiceAnalyzer{},
+	"Ingress":               IngressAnalyzer{},
 }
 
-var additionalAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
-	"HorizontalPodAutoScaler": AnalyzeHpa,
-	"PodDisruptionBudget":     AnalyzePdb,
+var additionalAnalyzerMap = map[string]IAnalyzer{
+	"HorizontalPodAutoScaler": HpaAnalyzer{},
+	"PodDisruptionBudget":     PdbAnalyzer{},
 }
 
 func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,
@@ -37,7 +35,7 @@ func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfigur
 	// if there are no filters selected and no active_filters then run all of them
 	if len(filters) == 0 && len(activeFilters) == 0 {
 		for _, analyzer := range analyzerMap {
-			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+			if err := analyzer.RunAnalysis(ctx, config, client, aiClient, analysisResults); err != nil {
 				return err
 			}
 		}
@@ -48,7 +46,7 @@ func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfigur
 	if len(filters) != 0 {
 		for _, filter := range filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
-				if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+				if err := analyzer.RunAnalysis(ctx, config, client, aiClient, analysisResults); err != nil {
 					return err
 				}
 			}
@@ -59,7 +57,7 @@ func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfigur
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
-			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
+			if err := analyzer.RunAnalysis(ctx, config, client, aiClient, analysisResults); err != nil {
 				return err
 			}
 		}
@@ -118,11 +116,9 @@ func ListFilters() ([]string, []string) {
 	return coreKeys, additionalKeys
 }
 
-func getAnalyzerMap() map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
+func getAnalyzerMap() map[string]IAnalyzer {
 
-	mergedMap := make(map[string]func(ctx context.Context, config *AnalysisConfiguration,
-		client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error)
+	mergedMap := make(map[string]IAnalyzer)
 
 	// add core analyzer
 	for key, value := range coreAnalyzerMap {
