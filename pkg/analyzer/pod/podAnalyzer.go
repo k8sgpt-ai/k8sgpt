@@ -1,25 +1,22 @@
-package analyzer
+package pod
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzePod(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
+type PodAnalyzer struct {
+	common.Analyzer ", inline"
+}
 
+func (a *PodAnalyzer) Analyze() error {
 	// search all namespaces for pods that are not running
-	list, err := client.GetClient().CoreV1().Pods(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
-	var preAnalysis = map[string]PreAnalysis{}
-
 	for _, pod := range list.Items {
 		var failures []string
 		// Check for pending pods
@@ -47,7 +44,7 @@ func AnalyzePod(ctx context.Context, config *AnalysisConfiguration,
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
 
 					// parse the event log and append details
-					evt, err := FetchLatestPodEvent(ctx, client, &pod)
+					evt, err := common.FetchLatestPodEvent(a.Context, a.Client, &pod)
 					if err != nil || evt == nil {
 						continue
 					}
@@ -58,24 +55,27 @@ func AnalyzePod(ctx context.Context, config *AnalysisConfiguration,
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = PreAnalysis{
+			a.PreAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
 				Pod:            pod,
 				FailureDetails: failures,
 			}
 		}
 	}
 
-	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+	for key, value := range a.PreAnalysis {
+		var currentAnalysis = common.Result{
 			Kind:  "Pod",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Pod.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.Pod.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Result = append(a.Result, currentAnalysis)
 	}
-
 	return nil
+}
+
+func (a *PodAnalyzer) GetResult() []common.Result {
+	return a.Result
 }

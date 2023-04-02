@@ -2,136 +2,157 @@ package analyzer
 
 import (
 	"context"
-	"encoding/base64"
-	"strings"
-
-	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/hpa"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/ingress"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/pod"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/pvc"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/rs"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/service"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/spf13/viper"
 )
 
-var coreAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
-	"Pod":                   AnalyzePod,
-	"ReplicaSet":            AnalyzeReplicaSet,
-	"PersistentVolumeClaim": AnalyzePersistentVolumeClaim,
-	"Service":               AnalyzeEndpoints,
-	"Ingress":               AnalyzeIngress,
+type IAnalyzer interface {
+	Analyze() error
+	GetResult() []common.Result
 }
 
-var additionalAnalyzerMap = map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error{
-	"HorizontalPodAutoScaler": AnalyzeHpa,
+const (
+	PodAnalyzerName                   = "Pod"
+	ReplicaSetAnalyzerName            = "ReplicaSet"
+	PersistentVolumeClaimAnalyzerName = "PersistentVolumeClaim"
+	ServiceAnalyzerName               = "Service"
+	IngressAnalyzerName               = "Ingress"
+	HPAAnalyzerName                   = "HorizontalPodAutoScaler"
+)
+
+var (
+	coreAnalyzerList = []string{
+		PodAnalyzerName,
+		ReplicaSetAnalyzerName,
+		PersistentVolumeClaimAnalyzerName,
+		ServiceAnalyzerName,
+		IngressAnalyzerName,
+		HPAAnalyzerName,
+	}
+
+	additionalAnalyzers = []string{
+		HPAAnalyzerName,
+	}
+)
+
+func NewAnalyzer(analyzer string, client *kubernetes.Client, context context.Context, namespace string) (IAnalyzer, error) {
+	analyzerConfig := common.Analyzer{
+		Namespace: namespace,
+		Context:   context,
+		Client:    client,
+	}
+
+	analyzerConfig.PreAnalysis = make(map[string]common.PreAnalysis)
+
+	switch analyzer {
+	case PodAnalyzerName:
+		return &pod.PodAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	case ReplicaSetAnalyzerName:
+		return &rs.ReplicaSetAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	case IngressAnalyzerName:
+		return &ingress.IngressAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	case HPAAnalyzerName:
+		return &hpa.HPAAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	case PersistentVolumeClaimAnalyzerName:
+		return &pvc.PvcAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	case ServiceAnalyzerName:
+		return &service.ServiceAnalyzer{
+			Analyzer: analyzerConfig,
+		}, nil
+	default:
+		return nil, fmt.Errorf("Analyzer %s not supported", analyzer)
+	}
 }
 
-func RunAnalysis(ctx context.Context, filters []string, config *AnalysisConfiguration,
-	client *kubernetes.Client,
-	aiClient ai.IAI, analysisResults *[]Analysis) error {
+/*
+func ParseViaAI(ctx context.Context, config *analysis.Analysis,
 
-	activeFilters := viper.GetStringSlice("active_filters")
-
-	analyzerMap := getAnalyzerMap()
-
-	// if there are no filters selected and no active_filters then run all of them
-	if len(filters) == 0 && len(activeFilters) == 0 {
-		for _, analyzer := range analyzerMap {
-			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
-				return err
+		aiClient ai.IAI, prompt []string) (string, error) {
+		// parse the text with the AI backend
+		inputKey := strings.Join(prompt, " ")
+		// Check for cached data
+		sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
+		// find in viper cache
+		if viper.IsSet(sEnc) && !config.NoCache {
+			// retrieve data from cache
+			response := viper.GetString(sEnc)
+			if response == "" {
+				color.Red("error retrieving cached data")
+				return "", nil
 			}
-		}
-		return nil
-	}
-
-	// if the filters flag is specified
-	if len(filters) != 0 {
-		for _, filter := range filters {
-			if analyzer, ok := analyzerMap[filter]; ok {
-				if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
-					return err
-				}
+			output, err := base64.StdEncoding.DecodeString(response)
+			if err != nil {
+				color.Red("error decoding cached data: %v", err)
+				return "", nil
 			}
+			return string(output), nil
 		}
-		return nil
-	}
 
-	// use active_filters
-	for _, filter := range activeFilters {
-		if analyzer, ok := analyzerMap[filter]; ok {
-			if err := analyzer(ctx, config, client, aiClient, analysisResults); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func ParseViaAI(ctx context.Context, config *AnalysisConfiguration,
-	aiClient ai.IAI, prompt []string) (string, error) {
-	// parse the text with the AI backend
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	// find in viper cache
-	if viper.IsSet(sEnc) && !config.NoCache {
-		// retrieve data from cache
-		response := viper.GetString(sEnc)
-		if response == "" {
-			color.Red("error retrieving cached data")
-			return "", nil
-		}
-		output, err := base64.StdEncoding.DecodeString(response)
+		response, err := aiClient.GetCompletion(ctx, inputKey)
 		if err != nil {
-			color.Red("error decoding cached data: %v", err)
-			return "", nil
+			color.Red("error getting completion: %v", err)
+			return "", err
 		}
-		return string(output), nil
-	}
 
-	response, err := aiClient.GetCompletion(ctx, inputKey)
-	if err != nil {
-		color.Red("error getting completion: %v", err)
-		return "", err
-	}
-
-	if !viper.IsSet(sEnc) {
-		viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
+		if !viper.IsSet(sEnc) {
+			viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
+			if err := viper.WriteConfig(); err != nil {
+				color.Red("error writing config: %v", err)
+				return "", nil
+			}
 		}
+		return response, nil
 	}
-	return response, nil
-}
-
+*/
 func ListFilters() ([]string, []string) {
-	coreKeys := make([]string, 0, len(coreAnalyzerMap))
-	for k := range coreAnalyzerMap {
-		coreKeys = append(coreKeys, k)
+	coreKeys := []string{}
+	for _, filter := range coreAnalyzerList {
+		coreKeys = append(coreKeys, filter)
 	}
 
-	additionalKeys := make([]string, 0, len(additionalAnalyzerMap))
-	for k := range additionalAnalyzerMap {
-		additionalKeys = append(additionalKeys, k)
+	additionalKeys := []string{}
+	for _, filter := range additionalAnalyzers {
+		coreKeys = append(additionalKeys, filter)
 	}
 	return coreKeys, additionalKeys
 }
 
-func getAnalyzerMap() map[string]func(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
+func GetAnalyzerList() []string {
+	list := []string{}
 
-	mergedMap := make(map[string]func(ctx context.Context, config *AnalysisConfiguration,
-		client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error)
+	list = append(list, coreAnalyzerList...)
+	list = append(list, additionalAnalyzers...)
 
-	// add core analyzer
-	for key, value := range coreAnalyzerMap {
-		mergedMap[key] = value
+	list = removeDuplicateStr(list)
+
+	return list
+}
+
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
 	}
-
-	// add additional analyzer
-	for key, value := range additionalAnalyzerMap {
-		mergedMap[key] = value
-	}
-
-	return mergedMap
+	return list
 }

@@ -2,18 +2,14 @@ package analyze
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"os"
-	"strings"
-
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var (
@@ -69,75 +65,26 @@ var AnalyzeCmd = &cobra.Command{
 		ctx := context.Background()
 		// Get kubernetes client from viper
 		client := viper.Get("kubernetesClient").(*kubernetes.Client)
-		// Analysis configuration
-		config := &analyzer.AnalysisConfiguration{
+		// AnalysisResult configuration
+
+		analysis := &analysis.Analysis{
+			Context:   ctx,
 			Namespace: namespace,
 			NoCache:   nocache,
 			Explain:   explain,
+			AIClient:  aiClient,
+			Filters:   filters,
+			Client:    client,
 		}
 
-		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-		if err := analyzer.RunAnalysis(ctx, filters, config, client,
-			aiClient, analysisResults); err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
+		// Run analysis
+		_ = analysis.RunAnalysis()
 
-		if len(*analysisResults) == 0 {
-			color.Green("{ \"status\": \"OK\" }")
-			os.Exit(0)
-		}
-		var bar = progressbar.Default(int64(len(*analysisResults)))
-		if !explain {
-			bar.Clear()
-		}
-		var printOutput []analyzer.Analysis
-
-		for _, analysis := range *analysisResults {
-
-			if explain {
-				parsedText, err := analyzer.ParseViaAI(ctx, config, aiClient, analysis.Error)
-				if err != nil {
-					// Check for exhaustion
-					if strings.Contains(err.Error(), "status code: 429") {
-						color.Red("Exhausted API quota. Please try again later")
-						os.Exit(1)
-					}
-					color.Red("Error: %v", err)
-					continue
-				}
-				analysis.Details = parsedText
-				bar.Add(1)
-			}
-			printOutput = append(printOutput, analysis)
-		}
-
-		// print results
-		for n, analysis := range printOutput {
-
-			switch output {
-			case "json":
-				analysis.Error = analysis.Error[0:]
-				j, err := json.Marshal(analysis)
-				if err != nil {
-					color.Red("Error: %v", err)
-					os.Exit(1)
-				}
-				fmt.Println(string(j))
-			default:
-				fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
-					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject))
-				for _, err := range analysis.Error {
-					fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
-				}
-				fmt.Println(color.GreenString(analysis.Details + "\n"))
-			}
-		}
+		analysis.PrintAnalysisResult()
 	},
 }
 
 func init() {
-
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag

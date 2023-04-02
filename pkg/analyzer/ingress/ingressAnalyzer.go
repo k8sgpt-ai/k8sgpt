@@ -1,24 +1,22 @@
-package analyzer
+package ingress
 
 import (
-	"context"
 	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
-	analysisResults *[]Analysis) error {
+type IngressAnalyzer struct {
+	common.Analyzer
+}
 
-	list, err := client.GetClient().NetworkingV1().Ingresses(config.Namespace).List(ctx, metav1.ListOptions{})
+func (a *IngressAnalyzer) Analyze() error {
+	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
-
-	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, ing := range list.Items {
 		var failures []string
@@ -36,7 +34,7 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 
 		// check if ingressclass exist
 		if ingressClassName != nil {
-			_, err := client.GetClient().NetworkingV1().IngressClasses().Get(ctx, *ingressClassName, metav1.GetOptions{})
+			_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
 			if err != nil {
 				failures = append(failures, fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName))
 			}
@@ -46,7 +44,7 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 		for _, rule := range ing.Spec.Rules {
 			// loop over paths
 			for _, path := range rule.HTTP.Paths {
-				_, err := client.GetClient().CoreV1().Services(ing.Namespace).Get(ctx, path.Backend.Service.Name, metav1.GetOptions{})
+				_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
 				if err != nil {
 					failures = append(failures, fmt.Sprintf("Ingress uses the service %s/%s which does not exist.", ing.Namespace, path.Backend.Service.Name))
 				}
@@ -54,13 +52,13 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 		}
 
 		for _, tls := range ing.Spec.TLS {
-			_, err := client.GetClient().CoreV1().Secrets(ing.Namespace).Get(ctx, tls.SecretName, metav1.GetOptions{})
+			_, err := a.Client.GetClient().CoreV1().Secrets(ing.Namespace).Get(a.Context, tls.SecretName, metav1.GetOptions{})
 			if err != nil {
 				failures = append(failures, fmt.Sprintf("Ingress uses the secret %s/%s as a TLS certificate which does not exist.", ing.Namespace, tls.SecretName))
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", ing.Namespace, ing.Name)] = PreAnalysis{
+			a.PreAnalysis[fmt.Sprintf("%s/%s", ing.Namespace, ing.Name)] = common.PreAnalysis{
 				Ingress:        ing,
 				FailureDetails: failures,
 			}
@@ -68,17 +66,20 @@ func AnalyzeIngress(ctx context.Context, config *AnalysisConfiguration, client *
 
 	}
 
-	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+	for key, value := range a.PreAnalysis {
+		var currentAnalysis = common.Result{
 			Kind:  "Ingress",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Ingress.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.Ingress.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Result = append(a.Result, currentAnalysis)
 	}
-
 	return nil
+}
+
+func (a *IngressAnalyzer) GetResult() []common.Result {
+	return a.Result
 }
