@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.7...v0.1.8) (2023-04-03)
+
+
+### Features
+
+* add password flag for backend authentication ([#199](https://github.com/k8sgpt-ai/k8sgpt/issues/199)) ([075a940](https://github.com/k8sgpt-ai/k8sgpt/commit/075a940d2c9bdd8aa9162940ed46abad47d46998))
+* adding shields to readme ([213ecd8](https://github.com/k8sgpt-ai/k8sgpt/commit/213ecd8e83933fabaa5d3d674c67958599dd72ce))
+* adding unit testing and example ([35b838b](https://github.com/k8sgpt-ai/k8sgpt/commit/35b838bfafa248dbf3932c7a3ee708b1a1539f18))
+* alias filter to filters ([dde4e83](https://github.com/k8sgpt-ai/k8sgpt/commit/dde4e833b0e87553dea4e5c1e17a14e303956bc1))
+* analyzer ifacing ([426f562](https://github.com/k8sgpt-ai/k8sgpt/commit/426f562be83ed0e708a07b9e1900ac06fa017c27))
+* service test ([44cc8f7](https://github.com/k8sgpt-ai/k8sgpt/commit/44cc8f7ad68d152ec577e57cab7d8d9ab9613378))
+* test workflow ([5f30a4d](https://github.com/k8sgpt-ai/k8sgpt/commit/5f30a4ddf44ebff949bb0573f261667539a2dcfb))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/sashabaranov/go-openai to v1.5.8 ([91fb065](https://github.com/k8sgpt-ai/k8sgpt/commit/91fb06530a21259da6e72c28342e743d2b481294))
+
+
+### Other
+
+* create linux packages ([#201](https://github.com/k8sgpt-ai/k8sgpt/issues/201)) ([67753be](https://github.com/k8sgpt-ai/k8sgpt/commit/67753be6f317c462ebe1d9a316f2b0c9684ca4e5))
+* **deps:** pin dependencies ([#198](https://github.com/k8sgpt-ai/k8sgpt/issues/198)) ([f8291aa](https://github.com/k8sgpt-ai/k8sgpt/commit/f8291aab085209f9fee13a6c92c96076163e2e90))
+
 ## [0.1.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.6...v0.1.7) (2023-04-02)
 
 
