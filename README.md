@@ -17,7 +17,7 @@ It has SRE experience codified into its analyzers and helps to pull out the most
 
 ## Linux
 
-#### For Ubuntu/Debian/Mint:
+### For Ubuntu/Debian/Mint:
 
 **32 bit:**
 - Download package: [k8sgpt_386.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb)
@@ -32,7 +32,7 @@ sudo dpkg -i k8sgpt_386.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
-#### For RedHat/CentOS/Fedora:
+### For RedHat/CentOS/Fedora:
 
 **32 bit:**
 - Download package: [k8sgpt_386.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm)
@@ -47,7 +47,7 @@ sudo rpm -ivh k8sgpt_386.rpm
 sudo rpm -ivh -i k8sgpt_amd64.rpm
 ```
 
-#### For Alpine:
+### For Alpine:
 
 **32 bit:**
 - Download package: [k8sgpt_386.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk)
@@ -94,9 +94,12 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
   tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
-### Verify installation
+
+## Verify installation
 
 * Run `k8sgpt version`
+
+<hr>
 
 ## Quick Start
 
