@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/viper"
 	"os/exec"
 	"runtime"
-	"time"
 )
 
 var (
@@ -31,10 +30,6 @@ var GenerateCmd = &cobra.Command{
 			backendType = backend
 		}
 		fmt.Println("")
-		color.Green("Opening: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
-		color.Green("Please copy the generated key and run `k8sgpt auth` to add it to your config file")
-		fmt.Println("")
-		time.Sleep(5 * time.Second)
 		openbrowser("https://beta.openai.com/account/api-keys")
 	},
 }
@@ -46,9 +41,15 @@ func init() {
 
 func openbrowser(url string) {
 	var err error
+	isGui := true
 	switch runtime.GOOS {
 	case "linux":
-		err = exec.Command("xdg-open", url).Start()
+		_, err = exec.LookPath("xdg-open")
+		if err != nil {
+			isGui = false
+		} else {
+			err = exec.Command("xdg-open", url).Start()
+		}
 	case "windows":
 		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
 	case "darwin":
@@ -56,7 +57,21 @@ func openbrowser(url string) {
 	default:
 		err = fmt.Errorf("unsupported platform")
 	}
+	printInstructions(isGui, backend)
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func printInstructions(isGui bool, backendType string) {
+	fmt.Println("")
+	if isGui {
+		color.Green("Opening: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		fmt.Println("")
+	} else {
+		color.Green("Please open: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		fmt.Println("")
+	}
+	color.Green("Please copy the generated key and run `k8sgpt auth` to add it to your config file")
+	fmt.Println("")
 }

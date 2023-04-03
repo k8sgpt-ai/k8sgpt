@@ -16,6 +16,27 @@ builds:
     ldflags:
           - -s -w -X main.version={{.Version}}
 
+nfpms:
+  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}'
+    homepage: https://k8sgpt.ai
+    description: >-
+      K8sGPT is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english. It has SRE experience codified into it’s analyzers and helps to pull out the most relevant information to enrich it with AI.
+    license: "MIT"
+    formats:
+      - deb
+      - rpm
+      - apk
+    bindir: /usr/bin
+    section: utils
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/nfpm/copyright
+        file_info:
+          mode: 0644
+
+sboms:
+  - artifacts: archive
+
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
