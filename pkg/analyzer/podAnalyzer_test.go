@@ -33,13 +33,15 @@ func TestPodAnalzyer(t *testing.T) {
 
 	podAnalyzer := PodAnalyzer{}
 	var analysisResults []Analysis
-	podAnalyzer.RunAnalysis(context.Background(),
+	err := podAnalyzer.RunAnalysis(context.Background(),
 		&AnalysisConfiguration{
 			Namespace: "default",
 		},
 		&kubernetes.Client{
 			Client: clientset,
 		}, nil, &analysisResults)
-
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	assert.Equal(t, len(analysisResults), 1)
 }
