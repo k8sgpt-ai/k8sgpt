@@ -12,10 +12,10 @@
 
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
-## Installation
+# Installation
 
 
-### Linux
+## Linux
 
 #### For Ubuntu/Debian/Mint:
 
@@ -63,7 +63,7 @@ apk add k8sgpt_amd64.apk
 ```
 
 
-### Mac
+## Mac
 
 ##### Using Brew
 ```
@@ -87,7 +87,8 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
   ```
 </details>
 
-### Windows
+
+## Windows
 
 * Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) 
   tab based on your system architecture.
