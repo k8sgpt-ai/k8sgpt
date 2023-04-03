@@ -1,26 +1,22 @@
-package analyzer
+package pod
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type PodAnalyzer struct{}
+type PodAnalyzer struct {
+}
 
-func (PodAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
-
+func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// search all namespaces for pods that are not running
-	list, err := client.GetClient().CoreV1().Pods(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pod := range list.Items {
 		var failures []string
@@ -49,7 +45,7 @@ func (PodAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
 
 					// parse the event log and append details
-					evt, err := FetchLatestEvent(ctx, client, pod.Namespace, pod.Name)
+					evt, err := common.FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
 					if err != nil || evt == nil {
 						continue
 					}
@@ -60,7 +56,7 @@ func (PodAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
 				Pod:            pod,
 				FailureDetails: failures,
 			}
@@ -68,16 +64,16 @@ func (PodAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+		var currentAnalysis = common.Result{
 			Kind:  "Pod",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Pod.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.Pod.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
-	return nil
+	return a.Results, nil
 }

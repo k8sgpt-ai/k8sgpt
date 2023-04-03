@@ -1,27 +1,23 @@
-package analyzer
+package rs
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ReplicaSetAnalyzer struct{}
 
-func (ReplicaSetAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration,
-	client *kubernetes.Client, aiClient ai.IAI, analysisResults *[]Analysis) error {
+func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// search all namespaces for pods that are not running
-	list, err := client.GetClient().AppsV1().ReplicaSets(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, rs := range list.Items {
 		var failures []string
@@ -37,7 +33,7 @@ func (ReplicaSetAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfi
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = common.PreAnalysis{
 				ReplicaSet:     rs,
 				FailureDetails: failures,
 			}
@@ -45,16 +41,15 @@ func (ReplicaSetAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfi
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+		var currentAnalysis = common.Result{
 			Kind:  "ReplicaSet",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.ReplicaSet.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.ReplicaSet.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
-
-	return nil
+	return a.Results, nil
 }

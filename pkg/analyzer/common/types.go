@@ -1,17 +1,23 @@
-package analyzer
+package common
 
 import (
+	"context"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
-	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	autov1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
+	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
 )
 
-type AnalysisConfiguration struct {
-	Namespace string
-	NoCache   bool
-	Explain   bool
+type Analyzer struct {
+	Client      *kubernetes.Client
+	Context     context.Context
+	Namespace   string
+	AIClient    ai.IAI
+	PreAnalysis map[string]PreAnalysis
+	Results     []Result
 }
 
 type PreAnalysis struct {
@@ -20,12 +26,12 @@ type PreAnalysis struct {
 	ReplicaSet               appsv1.ReplicaSet
 	PersistentVolumeClaim    v1.PersistentVolumeClaim
 	Endpoint                 v1.Endpoints
-	Ingress                  networkingv1.Ingress
-	HorizontalPodAutoscalers autoscalingv1.HorizontalPodAutoscaler
+	Ingress                  networkv1.Ingress
+	HorizontalPodAutoscalers autov1.HorizontalPodAutoscaler
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
 }
 
-type Analysis struct {
+type Result struct {
 	Kind         string   `json:"kind"`
 	Name         string   `json:"name"`
 	Error        []string `json:"error"`

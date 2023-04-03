@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"os"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
@@ -53,50 +54,44 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		var aiClient ai.IAI
-		switch backendType {
-		case "openai":
-			aiClient = &ai.OpenAIClient{}
-			if err := aiClient.Configure(token, language); err != nil {
-				color.Red("Error: %v", err)
-				os.Exit(1)
-			}
-		default:
-			color.Red("Backend not supported")
+		aiClient := ai.NewClient("openai")
+		if err := aiClient.Configure(token, language); err != nil {
+			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
 		ctx := context.Background()
 		// Get kubernetes client from viper
 		client := viper.Get("kubernetesClient").(*kubernetes.Client)
-		// Analysis configuration
-		config := &analyzer.AnalysisConfiguration{
+		// AnalysisResult configuration
+		config := &analysis.Analysis{
 			Namespace: namespace,
 			NoCache:   nocache,
 			Explain:   explain,
+			AIClient:  aiClient,
+			Client:    client,
+			Context:   ctx,
 		}
 
-		var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-		if err := analyzer.RunAnalysis(ctx, filters, config, client,
-			aiClient, analysisResults); err != nil {
+		err := config.RunAnalysis()
+		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		if len(*analysisResults) == 0 {
+		if len(config.Results) == 0 {
 			color.Green("{ \"status\": \"OK\" }")
 			os.Exit(0)
 		}
-		var bar = progressbar.Default(int64(len(*analysisResults)))
+		var bar = progressbar.Default(int64(len(config.Results)))
 		if !explain {
 			bar.Clear()
 		}
-		var printOutput []analyzer.Analysis
+		var printOutput []common.Result
 
-		for _, analysis := range *analysisResults {
-
+		for _, analysis := range config.Results {
 			if explain {
-				parsedText, err := analyzer.ParseViaAI(ctx, config, aiClient, analysis.Error)
+				parsedText, err := aiClient.Parse(ctx, analysis.Error, nocache)
 				if err != nil {
 					// Check for exhaustion
 					if strings.Contains(err.Error(), "status code: 429") {

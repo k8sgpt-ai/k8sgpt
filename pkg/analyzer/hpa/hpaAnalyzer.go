@@ -1,26 +1,22 @@
-package analyzer
+package hpa
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type HpaAnalyzer struct{}
 
-func (HpaAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
-	analysisResults *[]Analysis) error {
+func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
-	list, err := client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, hpa := range list.Items {
 		var failures []string
@@ -31,22 +27,22 @@ func (HpaAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-			_, err := client.GetClient().AppsV1().Deployments(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "ReplicationController":
-			_, err := client.GetClient().CoreV1().ReplicationControllers(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "ReplicaSet":
-			_, err := client.GetClient().AppsV1().ReplicaSets(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "StatefulSet":
-			_, err := client.GetClient().AppsV1().StatefulSets(config.Namespace).Get(ctx, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
@@ -59,7 +55,7 @@ func (HpaAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", hpa.Namespace, hpa.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", hpa.Namespace, hpa.Name)] = common.PreAnalysis{
 				HorizontalPodAutoscalers: hpa,
 				FailureDetails:           failures,
 			}
@@ -68,16 +64,16 @@ func (HpaAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+		var currentAnalysis = common.Result{
 			Kind:  "HorizontalPodAutoscaler",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.HorizontalPodAutoscalers.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.HorizontalPodAutoscalers.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
-	return nil
+	return a.Results, nil
 }
