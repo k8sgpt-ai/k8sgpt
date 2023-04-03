@@ -36,7 +36,6 @@ jobs:
     if: needs.release-please.outputs.releases_created == 'true'
     permissions:
       contents: write
-
     needs:
       - release-please
     runs-on: ubuntu-latest
@@ -49,6 +48,8 @@ jobs:
         uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
           go-version: '1.20'
+      - name: Download Syft
+        uses: anchore/sbom-action/download-syft@v0.13.4
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4
         with:
@@ -98,18 +99,18 @@ jobs:
             ${{ env.IMAGE_TAG }}
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
-          cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
+          cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
+          cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
 
       - name: Generate SBOM
         uses: anchore/sbom-action@422cb34a0f8b599678c41b21163ea6088edb2624 # v0.14.1
         with:
           image: ${{ env.IMAGE_TAG }}
-          artifact-name: sbom-${{ env.IMAGE_NAME }}
-          output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
+          artifact-name: sbom-${{ env.IMAGE_TAG }}
+          output-file: ./sbom-${{ env.IMAGE_TAG }}.spdx.json
 
       - name: Attach SBOM to release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
+          files: ./sbom-${{ env.IMAGE_TAG }}.spdx.json
