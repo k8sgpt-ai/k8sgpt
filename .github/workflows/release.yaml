@@ -71,6 +71,7 @@ jobs:
       id-token: write
     env:
       IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-please.outputs.tag_name }}
+      IMAGE_NAME: k8sgpt
     steps:
       - name: Checkout
         uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
@@ -106,11 +107,11 @@ jobs:
         uses: anchore/sbom-action@422cb34a0f8b599678c41b21163ea6088edb2624 # v0.14.1
         with:
           image: ${{ env.IMAGE_TAG }}
-          artifact-name: sbom-${{ env.IMAGE_TAG }}
-          output-file: ./sbom-${{ env.IMAGE_TAG }}.spdx.json
+          artifact-name: sbom-${{ env.IMAGE_NAME }}
+          output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
 
       - name: Attach SBOM to release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
-          files: ./sbom-${{ env.IMAGE_TAG }}.spdx.json
+          files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
