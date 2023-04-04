@@ -1,8 +1,7 @@
-package pod
+package analyzer
 
 import (
 	"context"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -32,7 +31,7 @@ func TestPodAnalyzer(t *testing.T) {
 		},
 	})
 
-	config := common.Analyzer{
+	config := Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -40,7 +39,7 @@ func TestPodAnalyzer(t *testing.T) {
 		Namespace: "default",
 	}
 	podAnalyzer := PodAnalyzer{}
-	var analysisResults []common.Result
+	var analysisResults []Result
 	analysisResults, err := podAnalyzer.Analyze(config)
 	if err != nil {
 		t.Error(err)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/viper"
 )
@@ -14,7 +13,7 @@ type Analysis struct {
 	Filters   []string
 	Client    *kubernetes.Client
 	AIClient  ai.IAI
-	Results   []common.Result
+	Results   []analyzer.Result
 	Namespace string
 	NoCache   bool
 	Explain   bool
@@ -26,7 +25,7 @@ func (a *Analysis) RunAnalysis() error {
 
 	analyzerMap := analyzer.GetAnalyzerMap()
 
-	analyzerConfig := common.Analyzer{
+	analyzerConfig := analyzer.Analyzer{
 		Client:    a.Client,
 		Context:   a.Context,
 		Namespace: a.Namespace,

@@ -1,31 +1,20 @@
 package analyzer
 
-import (
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/hpa"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/ingress"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/pdb"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/pod"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/pvc"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/rs"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/service"
-)
-
 type IAnalyzer interface {
-	Analyze(analysis common.Analyzer) ([]common.Result, error)
+	Analyze(analysis Analyzer) ([]Result, error)
 }
 
 var coreAnalyzerMap = map[string]IAnalyzer{
-	"Pod":                   pod.PodAnalyzer{},
-	"ReplicaSet":            rs.ReplicaSetAnalyzer{},
-	"PersistentVolumeClaim": pvc.PvcAnalyzer{},
-	"Service":               service.ServiceAnalyzer{},
-	"Ingress":               ingress.IngressAnalyzer{},
+	"Pod":                   PodAnalyzer{},
+	"ReplicaSet":            ReplicaSetAnalyzer{},
+	"PersistentVolumeClaim": PvcAnalyzer{},
+	"Service":               ServiceAnalyzer{},
+	"Ingress":               IngressAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]IAnalyzer{
-	"HorizontalPodAutoScaler": hpa.HpaAnalyzer{},
-	"PodDisruptionBudget":     pdb.PdbAnalyzer{},
+	"HorizontalPodAutoScaler": HpaAnalyzer{},
+	"PodDisruptionBudget":     PdbAnalyzer{},
 }
 
 func ListFilters() ([]string, []string) {

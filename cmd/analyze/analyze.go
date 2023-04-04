@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"os"
 	"strings"
 
@@ -87,7 +87,7 @@ var AnalyzeCmd = &cobra.Command{
 		if !explain {
 			bar.Clear()
 		}
-		var printOutput []common.Result
+		var printOutput []analyzer.Result
 
 		for _, analysis := range config.Results {
 			if explain {

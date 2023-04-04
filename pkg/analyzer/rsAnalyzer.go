@@ -1,15 +1,14 @@
-package rs
+package analyzer
 
 import (
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ReplicaSetAnalyzer struct{}
 
-func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+func (ReplicaSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).List(a.Context, metav1.ListOptions{})
@@ -17,7 +16,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, rs := range list.Items {
 		var failures []string
@@ -33,7 +32,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = PreAnalysis{
 				ReplicaSet:     rs,
 				FailureDetails: failures,
 			}
@@ -41,7 +40,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		var currentAnalysis = Result{
 			Kind:  "ReplicaSet",
 			Name:  key,
 			Error: value.FailureDetails,

@@ -1,8 +1,7 @@
-package pod
+package analyzer
 
 import (
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -10,13 +9,13 @@ import (
 type PodAnalyzer struct {
 }
 
-func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]common.PreAnalysis{}
+	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, pod := range list.Items {
 		var failures []string
@@ -45,7 +44,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
 
 					// parse the event log and append details
-					evt, err := common.FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
+					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
 					if err != nil || evt == nil {
 						continue
 					}
@@ -56,7 +55,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = PreAnalysis{
 				Pod:            pod,
 				FailureDetails: failures,
 			}
@@ -64,7 +63,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		var currentAnalysis = Result{
 			Kind:  "Pod",
 			Name:  key,
 			Error: value.FailureDetails,
