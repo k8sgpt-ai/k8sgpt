@@ -15,61 +15,64 @@ It has SRE experience codified into its analyzers and helps to pull out the most
 # Installation
 
 
-## Linux
+## Linux/Mac via brew
 
-### For Ubuntu/Debian/Mint:
-
-**32 bit:**
-- Download package: [k8sgpt_386.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb)
-
-```
-sudo dpkg -i k8sgpt_386.deb
-```
-**64 bit:**
-- Download package: [k8sgpt_amd64.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.deb)
-
-```
-sudo dpkg -i k8sgpt_amd64.deb
-```
-
-### For RedHat/CentOS/Fedora:
-
-**32 bit:**
-- Download package: [k8sgpt_386.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm)
-
-```
-sudo rpm -ivh k8sgpt_386.rpm
-```
-**64 bit:**
-- Download package: [k8sgpt_amd64.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.rpm)
-
-```
-sudo rpm -ivh -i k8sgpt_amd64.rpm
-```
-
-### For Alpine:
-
-**32 bit:**
-- Download package: [k8sgpt_386.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk)
-
-```
-apk add k8sgpt_386.apk
-```
-**64 bit:**
-- Download package: [k8sgpt_amd64.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.apk)
-
-```
-apk add k8sgpt_amd64.apk
-```
-
-
-## Mac
-
-##### Using Brew
 ```
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
+
+<details>
+  <summary>RPM-based installation (RedHat/CentOS/Fedora)</summary>
+
+  **32 bit:**
+  - Download package: [k8sgpt_386.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm)
+
+  ```
+  sudo rpm -ivh k8sgpt_386.rpm
+  ```
+  **64 bit:**
+  - Download package: [k8sgpt_amd64.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.rpm)
+
+  ```
+  sudo rpm -ivh -i k8sgpt_amd64.rpm
+  ```
+</details>
+
+<details>
+  <summary>DEB-based installation (Ubuntu/Debian)</summary>
+
+  **32 bit:**
+  - Download package: [k8sgpt_386.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb)
+
+  ```
+  sudo dpkg -i k8sgpt_386.deb
+  ```
+  **64 bit:**
+  - Download package: [k8sgpt_amd64.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.deb)
+
+  ```
+  sudo dpkg -i k8sgpt_amd64.deb
+  ```
+</details>
+
+<details>
+
+  <summary>APK-based installation (RedHat/CentOS/Fedora)</summary>
+  
+  **32 bit:**
+  - Download package: [k8sgpt_386.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk)
+
+  ```
+  apk add k8sgpt_386.apk
+  ```
+  **64 bit:**
+  - Download package: [k8sgpt_amd64.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.apk)
+
+  ```
+  apk add k8sgpt_amd64.apk
+  ```
+</details>
 
 <details>
   <summary>Failing Installation on WSL or Linux (missing gcc)</summary>
