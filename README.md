@@ -26,34 +26,41 @@ brew install k8sgpt
   <summary>RPM-based installation (RedHat/CentOS/Fedora)</summary>
 
   **32 bit:**
-  - Download package: [k8sgpt_386.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm)
-
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
-  **64 bit:**
-  - Download package: [k8sgpt_amd64.rpm](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.rpm)
+  <!---x-release-please-end-->
 
+  **64 bit:**
+ 
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
+  <!---x-release-please-end-->
 </details>
 
 <details>
   <summary>DEB-based installation (Ubuntu/Debian)</summary>
 
   **32 bit:**
-  - Download package: [k8sgpt_386.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb)
-
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
+  <!---x-release-please-end-->
   **64 bit:**
-  - Download package: [k8sgpt_amd64.deb](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.deb)
-
+ 
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
+  <!---x-release-please-end-->
 </details>
 
 <details>
@@ -61,17 +68,19 @@ brew install k8sgpt
   <summary>APK-based installation (Alpine)</summary>
 
   **32 bit:**
-  - Download package: [k8sgpt_386.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk)
-
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
+  <!---x-release-please-end-->
   **64 bit:**
-  - Download package: [k8sgpt_amd64.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.apk)
-
+  <!---x-release-please-start-version-->
   ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
+  <!---x-release-please-end-->x
 </details>
 
 <details>
