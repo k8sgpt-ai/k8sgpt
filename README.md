@@ -12,14 +12,76 @@
 
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
-## Installation
+# Installation
 
-### Linux/Mac via brew
+
+## Linux/Mac via brew
 
 ```
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
+
+<details>
+  <summary>RPM-based installation (RedHat/CentOS/Fedora)</summary>
+
+  **32 bit:**
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.rpm
+  sudo rpm -ivh k8sgpt_386.rpm
+  ```
+  <!---x-release-please-end-->
+
+  **64 bit:**
+ 
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.rpm
+  sudo rpm -ivh -i k8sgpt_amd64.rpm
+  ```
+  <!---x-release-please-end-->
+</details>
+
+<details>
+  <summary>DEB-based installation (Ubuntu/Debian)</summary>
+
+  **32 bit:**
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.deb
+  sudo dpkg -i k8sgpt_386.deb
+  ```
+  <!---x-release-please-end-->
+  **64 bit:**
+ 
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.deb
+  sudo dpkg -i k8sgpt_amd64.deb
+  ```
+  <!---x-release-please-end-->
+</details>
+
+<details>
+
+  <summary>APK-based installation (Alpine)</summary>
+
+  **32 bit:**
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk
+  apk add k8sgpt_386.apk
+  ```
+  <!---x-release-please-end-->
+  **64 bit:**
+  <!---x-release-please-start-version-->
+  ```
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_amd64.apk
+  apk add k8sgpt_amd64.apk
+  ```
+  <!---x-release-please-end-->x
+</details>
 
 <details>
   <summary>Failing Installation on WSL or Linux (missing gcc)</summary>
@@ -37,15 +99,19 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
   ```
 </details>
 
-### Windows
+
+## Windows
 
 * Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) 
   tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
-### Verify installation
+
+## Verify installation
 
 * Run `k8sgpt version`
+
+<hr>
 
 ## Quick Start
 
