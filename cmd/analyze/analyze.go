@@ -54,7 +54,7 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		aiClient := ai.NewClient("openai")
+		aiClient := ai.NewClient(backendType)
 		if err := aiClient.Configure(token, language); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
