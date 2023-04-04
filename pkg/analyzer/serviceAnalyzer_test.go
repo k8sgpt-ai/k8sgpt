@@ -34,13 +34,15 @@ func TestServiceAnalzyer(t *testing.T) {
 
 	serviceAnalyzer := ServiceAnalyzer{}
 	var analysisResults []Analysis
-	serviceAnalyzer.RunAnalysis(context.Background(),
+	err := serviceAnalyzer.RunAnalysis(context.Background(),
 		&AnalysisConfiguration{
 			Namespace: "default",
 		},
 		&kubernetes.Client{
 			Client: clientset,
 		}, nil, &analysisResults)
-
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	assert.Equal(t, len(analysisResults), 1)
 }
