@@ -58,8 +58,8 @@ brew install k8sgpt
 
 <details>
 
-  <summary>APK-based installation (RedHat/CentOS/Fedora)</summary>
-  
+  <summary>APK-based installation (Alpine)</summary>
+
   **32 bit:**
   - Download package: [k8sgpt_386.apk](https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.1.8/k8sgpt_386.apk)
 
