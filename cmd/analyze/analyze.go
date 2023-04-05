@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"os"
 	"strings"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -36,26 +37,34 @@ var AnalyzeCmd = &cobra.Command{
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// get backend from file
-		backendType := viper.GetString("backend_type")
-		if backendType == "" {
-			color.Red("No backend set. Please run k8sgpt auth")
-			os.Exit(1)
-		}
-		// override the default backend if a flag is provided
-		if backend != "" {
-			backendType = backend
-		}
-		// get the token with viper
-		token := viper.GetString(fmt.Sprintf("%s_key", backendType))
-		// check if nil
-		if token == "" {
-			color.Red("No %s key set. Please run k8sgpt auth", backendType)
+		// get ai configuration
+		var configAI ai.AIConfiguration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		aiClient := ai.NewClient(backendType)
-		if err := aiClient.Configure(token, language); err != nil {
+		if len(configAI.Providers) == 0 {
+			color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+			os.Exit(1)
+		}
+
+		var aiProvider ai.AIProvider
+		for _, provider := range configAI.Providers {
+			if backend == provider.Name {
+				aiProvider = provider
+				break
+			}
+		}
+
+		if aiProvider.Name == "" {
+			color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
+			os.Exit(1)
+		}
+
+		aiClient := ai.NewClient(aiProvider.Name)
+		if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
@@ -73,7 +82,7 @@ var AnalyzeCmd = &cobra.Command{
 			Context:   ctx,
 		}
 
-		err := config.RunAnalysis()
+		err = config.RunAnalysis()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
