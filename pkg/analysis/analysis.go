@@ -103,7 +103,7 @@ func (a *Analysis) JsonOutput() ([]byte, error) {
 	}
 
 	result := JsonOutput{
-		Problems: len(a.Results),
+		Problems: problems,
 		Results:  a.Results,
 		Status:   status,
 	}
