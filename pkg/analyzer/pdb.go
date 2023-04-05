@@ -1,23 +1,18 @@
 package analyzer
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type PdbAnalyzer struct{}
 
-func (PdbAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
-	analysisResults *[]Analysis) error {
+func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 
-	list, err := client.GetClient().PolicyV1().PodDisruptionBudgets(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().PolicyV1().PodDisruptionBudgets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var preAnalysis = map[string]PreAnalysis{}
@@ -25,7 +20,7 @@ func (PdbAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 	for _, pdb := range list.Items {
 		var failures []string
 
-		evt, err := FetchLatestEvent(ctx, client, pdb.Namespace, pdb.Name)
+		evt, err := FetchLatestEvent(a.Context, a.Client, pdb.Namespace, pdb.Name)
 		if err != nil || evt == nil {
 			continue
 		}
@@ -52,16 +47,16 @@ func (PdbAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguratio
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+		var currentAnalysis = Result{
 			Kind:  "PodDisruptionBudget",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.PodDisruptionBudget.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.PodDisruptionBudget.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
-	return nil
+	return a.Results, err
 }
