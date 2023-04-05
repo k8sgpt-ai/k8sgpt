@@ -23,16 +23,16 @@ func TestHPAAnalyzer(t *testing.T) {
 			},
 		})
 	hpaAnalyzer := HpaAnalyzer{}
-	var analysisResults []Analysis
-	err := hpaAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
@@ -55,16 +55,16 @@ func TestHPAAnalyzerWithMultipleHPA(t *testing.T) {
 		},
 	)
 	hpaAnalyzer := HpaAnalyzer{}
-	var analysisResults []Analysis
-	err := hpaAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 2)
 }
@@ -86,16 +86,16 @@ func TestHPAAnalyzerWithUnsuportedScaleTargetRef(t *testing.T) {
 		})
 	hpaAnalyzer := HpaAnalyzer{}
 
-	var analysisResults []Analysis
-	err := hpaAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 
 	var errorFound bool
@@ -133,16 +133,16 @@ func TestHPAAnalyzerWithUnexistentScaleTargetRef(t *testing.T) {
 		})
 	hpaAnalyzer := HpaAnalyzer{}
 
-	var analysisResults []Analysis
-	err := hpaAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 
 	var errorFound bool
@@ -188,16 +188,16 @@ func TestHPAAnalyzerWithExistingScaleTargetRef(t *testing.T) {
 	)
 	hpaAnalyzer := HpaAnalyzer{}
 
-	var analysisResults []Analysis
-	err := hpaAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	for _, analysis := range analysisResults {
 		assert.Equal(t, len(analysis.Error), 0)
