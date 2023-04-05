@@ -2,19 +2,14 @@ package analyze
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
-	"os"
-	"strings"
-
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var (
@@ -79,54 +74,25 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if len(config.Results) == 0 {
-			color.Green("{ \"status\": \"OK\" }")
-			os.Exit(0)
-		}
-		var bar = progressbar.Default(int64(len(config.Results)))
-		if !explain {
-			bar.Clear()
-		}
-		var printOutput []analyzer.Result
-
-		for _, analysis := range config.Results {
-			if explain {
-				parsedText, err := aiClient.Parse(ctx, analysis.Error, nocache)
-				if err != nil {
-					// Check for exhaustion
-					if strings.Contains(err.Error(), "status code: 429") {
-						color.Red("Exhausted API quota. Please try again later")
-						os.Exit(1)
-					}
-					color.Red("Error: %v", err)
-					continue
-				}
-				analysis.Details = parsedText
-				bar.Add(1)
+		if explain && output != "json" {
+			err := config.GetAIResults(true)
+			if err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
 			}
-			printOutput = append(printOutput, analysis)
 		}
 
 		// print results
-		for n, analysis := range printOutput {
-
-			switch output {
-			case "json":
-				analysis.Error = analysis.Error[0:]
-				j, err := json.Marshal(analysis)
-				if err != nil {
-					color.Red("Error: %v", err)
-					os.Exit(1)
-				}
-				fmt.Println(string(j))
-			default:
-				fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
-					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject))
-				for _, err := range analysis.Error {
-					fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
-				}
-				fmt.Println(color.GreenString(analysis.Details + "\n"))
+		switch output {
+		case "json":
+			output, err := config.JsonOutput()
+			if err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
 			}
+			fmt.Println(string(output))
+		default:
+			config.PrintOutput()
 		}
 	},
 }
