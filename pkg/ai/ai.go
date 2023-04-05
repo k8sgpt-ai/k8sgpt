@@ -43,7 +43,6 @@ func (c *OpenAIClient) Configure(token string, model string, language string) er
 }
 
 func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
-
 	// Create a completion request
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: c.model,

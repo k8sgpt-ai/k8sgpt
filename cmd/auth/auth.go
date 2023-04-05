@@ -26,41 +26,64 @@ var AuthCmd = &cobra.Command{
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		configAI := ai.AIConfiguration{
-			Providers: []ai.AIProvider{},
+		// get ai configuration
+		var configAI ai.AIConfiguration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
 
-		defaultProvider := ai.AIProvider{}
-
-		backendType := viper.GetString("backend_type")
-		if backendType == "" {
-			// Set the default backend
-			defaultProvider.Name = "openai"
-		}
-		// override the default backend if a flag is provided
-		if backend != "" {
-			defaultProvider.Name = backend
-			color.Green("Using %s as backend AI provider", backendType)
+		// search for provider with same name
+		providerIndex := -1
+		for i, provider := range configAI.Providers {
+			if backend == provider.Name {
+				providerIndex = i
+				break
+			}
 		}
 
-		if model != "" {
-			defaultProvider.Model = model
+		// check if backend is not empty
+		if backend == "" {
+			color.Red("Error: Backend AI cannot be empty.")
+			os.Exit(1)
+		}
+
+		color.Green("Using %s as backend AI provider", backend)
+
+		// check if model is not empty
+		if model == "" {
+			color.Red("Error: Model cannot be empty.")
+			os.Exit(1)
 		}
 
 		if password == "" {
-			fmt.Printf("Enter %s Key: ", backendType)
+			fmt.Printf("Enter %s Key: ", backend)
 			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 			if err != nil {
-				color.Red("Error reading %s Key from stdin: %s", backendType,
+				color.Red("Error reading %s Key from stdin: %s", backend,
 					err.Error())
 				os.Exit(1)
 			}
 			password = strings.TrimSpace(string(bytePassword))
 		}
 
-		defaultProvider.Password = password
+		// create new provider object
+		newProvider := ai.AIProvider{
+			Name:     backend,
+			Model:    model,
+			Password: password,
+		}
 
-		configAI.Providers = append(configAI.Providers, defaultProvider)
+		if providerIndex == -1 {
+			// provider with same name does not exist, add new provider to list
+			configAI.Providers = append(configAI.Providers, newProvider)
+			color.Green("New provider added")
+		} else {
+			// provider with same name exists, update provider info
+			configAI.Providers[providerIndex] = newProvider
+			color.Green("Provider updated")
+		}
 		viper.Set("ai", configAI)
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("Error writing config file: %s", err.Error())
