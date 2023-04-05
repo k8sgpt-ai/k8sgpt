@@ -22,16 +22,17 @@ func TestIngressAnalyzer(t *testing.T) {
 			},
 		})
 	ingressAnalyzer := IngressAnalyzer{}
-	var analysisResults []Analysis
-	err := ingressAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := ingressAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
@@ -54,16 +55,18 @@ func TestIngressAnalyzerWithMultipleIngresses(t *testing.T) {
 		},
 	)
 	ingressAnalyzer := IngressAnalyzer{}
-	var analysisResults []Analysis
-	err := ingressAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analysisResults, err := ingressAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 2)
 }
@@ -80,16 +83,17 @@ func TestIngressAnalyzerWithoutIngressClassAnnotation(t *testing.T) {
 		})
 	ingressAnalyzer := IngressAnalyzer{}
 
-	var analysisResults []Analysis
-	err := ingressAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analysisResults, err := ingressAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 
 	var errorFound bool

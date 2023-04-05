@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestPodAnalzyer(t *testing.T) {
+func TestPodAnalyzer(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(&v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -31,17 +31,18 @@ func TestPodAnalzyer(t *testing.T) {
 		},
 	})
 
-	podAnalyzer := PodAnalyzer{}
-	var analysisResults []Analysis
-	err := podAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	podAnalyzer := PodAnalyzer{}
+	var analysisResults []Result
+	analysisResults, err := podAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }

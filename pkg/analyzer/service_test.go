@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestServiceAnalzyer(t *testing.T) {
+func TestServiceAnalyzer(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(&v1.Endpoints{
 		ObjectMeta: metav1.ObjectMeta{
@@ -32,17 +32,18 @@ func TestServiceAnalzyer(t *testing.T) {
 				},
 			}})
 
-	serviceAnalyzer := ServiceAnalyzer{}
-	var analysisResults []Analysis
-	err := serviceAnalyzer.RunAnalysis(context.Background(),
-		&AnalysisConfiguration{
-			Namespace: "default",
-		},
-		&kubernetes.Client{
+	config := Analyzer{
+		Client: &kubernetes.Client{
 			Client: clientset,
-		}, nil, &analysisResults)
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	serviceAnalyzer := ServiceAnalyzer{}
+	analysisResults, err := serviceAnalyzer.Analyze(config)
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }

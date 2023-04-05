@@ -1,25 +1,20 @@
 package analyzer
 
 import (
-	"context"
 	"fmt"
-
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ServiceAnalyzer struct{}
 
-func (ServiceAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfiguration, client *kubernetes.Client, aiClient ai.IAI,
-	analysisResults *[]Analysis) error {
+func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 
 	// search all namespaces for pods that are not running
-	list, err := client.GetClient().CoreV1().Endpoints(config.Namespace).List(ctx, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var preAnalysis = map[string]PreAnalysis{}
@@ -29,7 +24,7 @@ func (ServiceAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfigur
 
 		// Check for empty service
 		if len(ep.Subsets) == 0 {
-			svc, err := client.GetClient().CoreV1().Services(ep.Namespace).Get(ctx, ep.Name, metav1.GetOptions{})
+			svc, err := a.Client.GetClient().CoreV1().Services(ep.Namespace).Get(a.Context, ep.Name, metav1.GetOptions{})
 			if err != nil {
 				color.Yellow("Service %s/%s does not exist", ep.Namespace, ep.Name)
 				continue
@@ -63,15 +58,15 @@ func (ServiceAnalyzer) RunAnalysis(ctx context.Context, config *AnalysisConfigur
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Analysis{
+		var currentAnalysis = Result{
 			Kind:  "Service",
 			Name:  key,
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(client, value.Endpoint.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.Endpoint.ObjectMeta)
 		currentAnalysis.ParentObject = parent
-		*analysisResults = append(*analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
-	return nil
+	return a.Results, nil
 }
