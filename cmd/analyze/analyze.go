@@ -74,8 +74,8 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if explain && output != "json" {
-			err := config.GetAIResults(true)
+		if explain {
+			err := config.GetAIResults(output)
 			if err != nil {
 				color.Red("Error: %v", err)
 				os.Exit(1)

@@ -129,13 +129,13 @@ func (a *Analysis) PrintOutput() {
 	}
 }
 
-func (a *Analysis) GetAIResults(progressBar bool) error {
+func (a *Analysis) GetAIResults(output string) error {
 	if len(a.Results) == 0 {
 		return nil
 	}
 
 	var bar *progressbar.ProgressBar
-	if progressBar {
+	if output != "json" {
 		bar = progressbar.Default(int64(len(a.Results)))
 	}
 
@@ -151,7 +151,9 @@ func (a *Analysis) GetAIResults(progressBar bool) error {
 			continue
 		}
 		analysis.Details = parsedText
-		bar.Add(1)
+		if output != "json" {
+			bar.Add(1)
+		}
 		a.Results[index] = analysis
 	}
 	return nil
