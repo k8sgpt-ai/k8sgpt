@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 	"strings"
@@ -11,11 +12,13 @@ import (
 type NoOpAIClient struct {
 	client   string
 	language string
+	model    string
 }
 
-func (c *NoOpAIClient) Configure(token string, language string) error {
+func (c *NoOpAIClient) Configure(token string, model string, language string) error {
 	c.language = language
-	c.client = "I am a noop client with the token " + token
+	c.client = fmt.Sprintf("I am a noop client with the token %s ", token)
+	c.model = model
 	return nil
 }
 

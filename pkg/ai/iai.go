@@ -21,3 +21,13 @@ func NewClient(provider string) IAI {
 		return &OpenAIClient{}
 	}
 }
+
+type AIConfiguration struct {
+	Providers []AIProvider `mapstructure:"providers"`
+}
+
+type AIProvider struct {
+	Name     string `mapstructure:"name"`
+	Model    string `mapstructure:"model"`
+	Password string `mapstructure:"password"`
+}
