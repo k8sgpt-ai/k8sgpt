@@ -3,13 +3,14 @@ package analyze
 import (
 	"context"
 	"fmt"
+	"os"
+
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var (
@@ -70,6 +71,7 @@ var AnalyzeCmd = &cobra.Command{
 		config := &analysis.Analysis{
 			Namespace: namespace,
 			NoCache:   nocache,
+			Filters:   filters,
 			Explain:   explain,
 			AIClient:  aiClient,
 			Client:    client,
