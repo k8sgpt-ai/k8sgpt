@@ -89,5 +89,5 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 }
 
 func (a *OpenAIClient) GetName() string {
-	return "fakeai"
+	return "openai"
 }
