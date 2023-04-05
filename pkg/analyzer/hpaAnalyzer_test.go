@@ -80,7 +80,7 @@ func TestHPAAnalyzerWithUnsuportedScaleTargetRef(t *testing.T) {
 			},
 			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
-					Kind: "unsuported",
+					Kind: "unsupported",
 				},
 			},
 		})
@@ -115,7 +115,7 @@ func TestHPAAnalyzerWithUnsuportedScaleTargetRef(t *testing.T) {
 	}
 }
 
-func TestHPAAnalyzerWithUnexistentScaleTargetRef(t *testing.T) {
+func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv1.HorizontalPodAutoscaler{
@@ -127,7 +127,7 @@ func TestHPAAnalyzerWithUnexistentScaleTargetRef(t *testing.T) {
 			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
 				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
 					Kind: "Deployment",
-					Name: "unexistent",
+					Name: "non-existent",
 				},
 			},
 		})
