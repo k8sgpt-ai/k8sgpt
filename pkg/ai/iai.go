@@ -5,7 +5,7 @@ import (
 )
 
 type IAI interface {
-	Configure(token string, language string) error
+	Configure(token string, model string, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
 	Parse(ctx context.Context, prompt []string, nocache bool) (string, error)
 	GetName() string

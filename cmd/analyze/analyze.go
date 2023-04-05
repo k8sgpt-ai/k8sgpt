@@ -2,17 +2,13 @@ package analyze
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"os"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,26 +32,34 @@ var AnalyzeCmd = &cobra.Command{
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// get backend from file
-		backendType := viper.GetString("backend_type")
-		if backendType == "" {
-			color.Red("No backend set. Please run k8sgpt auth")
-			os.Exit(1)
-		}
-		// override the default backend if a flag is provided
-		if backend != "" {
-			backendType = backend
-		}
-		// get the token with viper
-		token := viper.GetString(fmt.Sprintf("%s_key", backendType))
-		// check if nil
-		if token == "" {
-			color.Red("No %s key set. Please run k8sgpt auth", backendType)
+		// get ai configuration
+		var configAI ai.AIConfiguration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		aiClient := ai.NewClient(backendType)
-		if err := aiClient.Configure(token, language); err != nil {
+		if len(configAI.Providers) == 0 {
+			color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+			os.Exit(1)
+		}
+
+		var aiProvider ai.AIProvider
+		for _, provider := range configAI.Providers {
+			if backend == provider.Name {
+				aiProvider = provider
+				break
+			}
+		}
+
+		if aiProvider.Name == "" {
+			color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
+			os.Exit(1)
+		}
+
+		aiClient := ai.NewClient(aiProvider.Name)
+		if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
@@ -67,66 +71,38 @@ var AnalyzeCmd = &cobra.Command{
 		config := &analysis.Analysis{
 			Namespace: namespace,
 			NoCache:   nocache,
+			Filters:   filters,
 			Explain:   explain,
 			AIClient:  aiClient,
 			Client:    client,
 			Context:   ctx,
 		}
 
-		err := config.RunAnalysis()
+		err = config.RunAnalysis()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		if len(config.Results) == 0 {
-			color.Green("{ \"status\": \"OK\" }")
-			os.Exit(0)
-		}
-		var bar = progressbar.Default(int64(len(config.Results)))
-		if !explain {
-			bar.Clear()
-		}
-		var printOutput []analyzer.Result
-
-		for _, analysis := range config.Results {
-			if explain {
-				parsedText, err := aiClient.Parse(ctx, analysis.Error, nocache)
-				if err != nil {
-					// Check for exhaustion
-					if strings.Contains(err.Error(), "status code: 429") {
-						color.Red("Exhausted API quota. Please try again later")
-						os.Exit(1)
-					}
-					color.Red("Error: %v", err)
-					continue
-				}
-				analysis.Details = parsedText
-				bar.Add(1)
+		if explain {
+			err := config.GetAIResults(output)
+			if err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
 			}
-			printOutput = append(printOutput, analysis)
 		}
 
 		// print results
-		for n, analysis := range printOutput {
-
-			switch output {
-			case "json":
-				analysis.Error = analysis.Error[0:]
-				j, err := json.Marshal(analysis)
-				if err != nil {
-					color.Red("Error: %v", err)
-					os.Exit(1)
-				}
-				fmt.Println(string(j))
-			default:
-				fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
-					color.YellowString(analysis.Name), color.CyanString(analysis.ParentObject))
-				for _, err := range analysis.Error {
-					fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
-				}
-				fmt.Println(color.GreenString(analysis.Details + "\n"))
+		switch output {
+		case "json":
+			output, err := config.JsonOutput()
+			if err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
 			}
+			fmt.Println(string(output))
+		default:
+			config.PrintOutput()
 		}
 	},
 }
