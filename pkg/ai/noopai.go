@@ -8,24 +8,24 @@ import (
 	"strings"
 )
 
-type FakeAIClient struct {
+type NoOpAIClient struct {
 	client   string
 	language string
 }
 
-func (c *FakeAIClient) Configure(token string, language string) error {
+func (c *NoOpAIClient) Configure(token string, language string) error {
 	c.language = language
-	c.client = "I am a fake client with the token " + token
+	c.client = "I am a noop client with the token " + token
 	return nil
 }
 
-func (c *FakeAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	response := "I am a fake response to the prompt " + prompt
+	response := "I am a noop response to the prompt " + prompt
 	return response, nil
 }
 
-func (a *FakeAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
@@ -47,6 +47,6 @@ func (a *FakeAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	return response, nil
 }
 
-func (a *FakeAIClient) GetName() string {
-	return "fakeai"
+func (a *NoOpAIClient) GetName() string {
+	return "noopai"
 }

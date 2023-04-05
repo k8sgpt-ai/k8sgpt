@@ -15,8 +15,8 @@ func NewClient(provider string) IAI {
 	switch provider {
 	case "openai":
 		return &OpenAIClient{}
-	case "fakeai":
-		return &FakeAIClient{}
+	case "noopai":
+		return &NoOpAIClient{}
 	default:
 		return &OpenAIClient{}
 	}
