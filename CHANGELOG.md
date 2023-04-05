@@ -1,5 +1,49 @@
 # Changelog
 
+## [0.2.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.8...v0.2.0) (2023-04-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* The format of the configuration file has changed. Users must update their configuration files to use the new format.
+
+### Features
+
+* add support for new configuration format ([9b243cd](https://github.com/k8sgpt-ai/k8sgpt/commit/9b243cdcaab1742fca2516bc1ae5710505e0eb65))
+* add tests for hpa analyzer ([5a59abb](https://github.com/k8sgpt-ai/k8sgpt/commit/5a59abb55d9e76f3095b903ea973138b1afdccf2))
+* add tests for ingress analyzer && Use t.Fatalf to report a fatal error if RunAnalysis returns an unexpected error ([e27e940](https://github.com/k8sgpt-ai/k8sgpt/commit/e27e9409dcaad78eefd79659e91364617407ae59))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/sashabaranov/go-openai to v1.6.1 ([#207](https://github.com/k8sgpt-ai/k8sgpt/issues/207)) ([eeac731](https://github.com/k8sgpt-ai/k8sgpt/commit/eeac731858999f6f462a7b6ccf210af603674b30))
+* **deps:** update module github.com/spf13/cobra to v1.7.0 ([5d5e082](https://github.com/k8sgpt-ai/k8sgpt/commit/5d5e082f417905954be33b3a620efef674f2588d))
+* **deps:** update module github.com/stretchr/testify to v1.8.2 ([f5e3ca0](https://github.com/k8sgpt-ai/k8sgpt/commit/f5e3ca0bcab9325145a2e1d8624f585ffee8e29f))
+* **deps:** update module golang.org/x/term to v0.7.0 ([8ab3573](https://github.com/k8sgpt-ai/k8sgpt/commit/8ab3573e13a3e3ab98e6f0aa76e429117c888f7f))
+* details in json output ([2f21002](https://github.com/k8sgpt-ai/k8sgpt/commit/2f2100289953af7820bbb01f2c980cf5492de079))
+* fixed hpa tests after rebase ([a24d1f1](https://github.com/k8sgpt-ai/k8sgpt/commit/a24d1f1b304e9448e63c1b7fc283b4cc8bc639aa))
+* regression on dynamic filters ([93bcc62](https://github.com/k8sgpt-ai/k8sgpt/commit/93bcc627ba64a9139e65290a8512e0a9b4bf1a69))
+* Spelling ([ba4d701](https://github.com/k8sgpt-ai/k8sgpt/commit/ba4d7016814ce97353e98658d5bbcd692007e4a9))
+
+
+### Docs
+
+* add curl command and release-please annoations ([1849209](https://github.com/k8sgpt-ai/k8sgpt/commit/184920988f7da928cca7fae4a676e4ee5f13cad1))
+* add guide to details block ([ddc120e](https://github.com/k8sgpt-ai/k8sgpt/commit/ddc120e7c2657385737d3490def28dbabdd2242d))
+* add installation guide via packages ([8e4ce6a](https://github.com/k8sgpt-ai/k8sgpt/commit/8e4ce6a974813258fb9cbeabbcaa3b8f6966a748))
+* minor change ([53c1330](https://github.com/k8sgpt-ai/k8sgpt/commit/53c13305383eb454fe45fefa3483cef4821d5d34))
+* modify README ([fc47c58](https://github.com/k8sgpt-ai/k8sgpt/commit/fc47c58ae1c2b5511ebbe0ed35714e4ecbb4bb7a))
+* modify README ([0f46ceb](https://github.com/k8sgpt-ai/k8sgpt/commit/0f46ceb4456a90e7e05aeff23d25d5775bbf9c2b))
+
+
+### Other
+
+* added initial tests for json output ([22e3166](https://github.com/k8sgpt-ai/k8sgpt/commit/22e31661bff27b28339898826a34ffdcfcff3583))
+* analyzer and ai interfacing ([#200](https://github.com/k8sgpt-ai/k8sgpt/issues/200)) ([0195bfa](https://github.com/k8sgpt-ai/k8sgpt/commit/0195bfab30ab748b3bb7f1b8c8f0e988b99ee54d))
+* **deps:** pin anchore/sbom-action action to 448520c ([#203](https://github.com/k8sgpt-ai/k8sgpt/issues/203)) ([9ff3fbc](https://github.com/k8sgpt-ai/k8sgpt/commit/9ff3fbc382ed78b55a7a1966ecdae186c03b2848))
+* **deps:** update golang docker tag to v1.20.3 ([e9994b8](https://github.com/k8sgpt-ai/k8sgpt/commit/e9994b8d167d4f1d9c0d0dabf8385ff22cfd16a4))
+* made json output prettier and improved output ([db40734](https://github.com/k8sgpt-ai/k8sgpt/commit/db40734a0db89850a2a685c9a7f5f5559875b7b3))
+
 ## [0.1.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.7...v0.1.8) (2023-04-03)
 
 
