@@ -29,6 +29,7 @@ type PreAnalysis struct {
 	Ingress                  networkv1.Ingress
 	HorizontalPodAutoscalers autov1.HorizontalPodAutoscaler
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
+	StatefulSet              appsv1.StatefulSet
 }
 
 type Result struct {
