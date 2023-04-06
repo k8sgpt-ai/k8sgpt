@@ -10,6 +10,7 @@ var coreAnalyzerMap = map[string]IAnalyzer{
 	"PersistentVolumeClaim": PvcAnalyzer{},
 	"Service":               ServiceAnalyzer{},
 	"Ingress":               IngressAnalyzer{},
+	"StatefulSet":           StatefulSetAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]IAnalyzer{
