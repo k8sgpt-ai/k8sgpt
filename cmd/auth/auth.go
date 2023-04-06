@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/lockandkey"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
@@ -25,6 +26,8 @@ var AuthCmd = &cobra.Command{
 	Short: "Authenticate with your chosen backend",
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		var key = []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00}
 
 		// get ai configuration
 		var configAI ai.AIConfiguration
@@ -57,6 +60,7 @@ var AuthCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		var encryptedPassword string
 		if password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
 			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
@@ -68,11 +72,19 @@ var AuthCmd = &cobra.Command{
 			password = strings.TrimSpace(string(bytePassword))
 		}
 
+		//encrypting password
+		encryptedPassword, err = lockandkey.Encrypt(key, []byte(password))
+		if err != nil {
+			color.Red("Encryption of API key failed with: %s",
+				err.Error())
+			os.Exit(1)
+		}
+
 		// create new provider object
 		newProvider := ai.AIProvider{
 			Name:     backend,
 			Model:    model,
-			Password: password,
+			Password: encryptedPassword,
 		}
 
 		if providerIndex == -1 {

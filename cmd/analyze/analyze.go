@@ -45,6 +45,8 @@ var AnalyzeCmd = &cobra.Command{
 		for _, provider := range configAI.Providers {
 			if backend == provider.Name {
 				aiProvider = provider
+				decryptedPassword := []byte(aiProvider.Password)
+				aiProvider.Password = string(decryptedPassword)
 				break
 			}
 		}
