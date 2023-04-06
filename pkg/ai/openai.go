@@ -20,16 +20,6 @@ const (
 	prompt_c       = "Reading the following %s error message and it's accompanying log message %s, how would you simplify this message?"
 )
 
-type AIConfiguration struct {
-	Providers []AIProvider `mapstructure:"providers"`
-}
-
-type AIProvider struct {
-	Name     string `mapstructure:"name"`
-	Model    string `mapstructure:"model"`
-	Password string `mapstructure:"password"`
-}
-
 type OpenAIClient struct {
 	client   *openai.Client
 	language string
@@ -99,4 +89,8 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		}
 	}
 	return response, nil
+}
+
+func (a *OpenAIClient) GetName() string {
+	return "openai"
 }
