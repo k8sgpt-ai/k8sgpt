@@ -1,6 +1,12 @@
 name: Run tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 env:
     GO_VERSION: "~1.20"
