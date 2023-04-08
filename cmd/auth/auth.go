@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"os"
+	"os/user"
 	"strings"
 	"syscall"
 
@@ -27,11 +28,19 @@ var AuthCmd = &cobra.Command{
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		var key = []byte{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00}
+		// Getting the user running the script to convert it as a key for encryption
+		currentUser, err := user.Current()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		username := currentUser.Username
+		key := []byte(username)
 
 		// get ai configuration
 		var configAI ai.AIConfiguration
-		err := viper.UnmarshalKey("ai", &configAI)
+		err = viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
