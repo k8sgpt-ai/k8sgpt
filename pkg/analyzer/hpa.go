@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -26,22 +27,22 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-			_, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "ReplicationController":
-			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "ReplicaSet":
-			_, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
 		case "StatefulSet":
-			_, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
 			}
