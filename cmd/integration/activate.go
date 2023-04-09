@@ -23,6 +23,11 @@ var activateCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			return
 		}
+
+		color.Yellow("Activating analyzer for integration %s", intName)
+
+		// TODO:
+
 		color.Green("Activate integration %s", intName)
 	},
 }

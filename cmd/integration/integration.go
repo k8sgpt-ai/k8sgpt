@@ -6,6 +6,7 @@ import (
 
 var (
 	namespace string
+	name      string
 )
 
 // IntegrationCmd represents the integrate command
@@ -22,5 +23,6 @@ var IntegrationCmd = &cobra.Command{
 }
 
 func init() {
+	IntegrationCmd.PersistentFlags().StringVarP(&name, "name", "a", "", "The name of the integration")
 	IntegrationCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", "default", "The namespace to use for the integration")
 }
