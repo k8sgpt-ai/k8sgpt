@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -20,7 +21,7 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, ep := range list.Items {
-		var failures []string
+		var failures []Failure
 
 		// Check for empty service
 		if len(ep.Subsets) == 0 {
@@ -31,7 +32,19 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			}
 
 			for k, v := range svc.Spec.Selector {
-				failures = append(failures, fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v))
+				failures = append(failures, Failure{
+					Text: fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
+					Sensitive: []Sensitive{
+						Sensitive{
+							Unmasked: k,
+							Masked:   util.MaskString(k),
+						},
+						Sensitive{
+							Unmasked: v,
+							Masked:   util.MaskString(v),
+						},
+					},
+				})
 			}
 		} else {
 			count := 0
@@ -44,7 +57,10 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
-					failures = append(failures, fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count))
+					failures = append(failures, Failure{
+						Text:      fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
+						Sensitive: []Sensitive{},
+					})
 				}
 			}
 		}

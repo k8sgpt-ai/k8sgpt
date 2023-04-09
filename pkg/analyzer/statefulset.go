@@ -17,20 +17,40 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, sts := range list.Items {
-		var failures []string
+		var failures []Failure
 
 		// get serviceName
 		serviceName := sts.Spec.ServiceName
 		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
 		if err != nil {
-			failures = append(failures, fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName))
+			failures = append(failures, Failure{
+				Text: fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName),
+				Sensitive: []Sensitive{
+					Sensitive{
+						Unmasked: sts.Namespace,
+						Masked:   util.MaskString(sts.Namespace),
+					},
+					Sensitive{
+						Unmasked: serviceName,
+						Masked:   util.MaskString(serviceName),
+					},
+				},
+			})
 		}
 		if len(sts.Spec.VolumeClaimTemplates) > 0 {
 			for _, volumeClaimTemplate := range sts.Spec.VolumeClaimTemplates {
 				if volumeClaimTemplate.Spec.StorageClassName != nil {
 					_, err := a.Client.GetClient().StorageV1().StorageClasses().Get(a.Context, *volumeClaimTemplate.Spec.StorageClassName, metav1.GetOptions{})
 					if err != nil {
-						failures = append(failures, fmt.Sprintf("StatefulSet uses the storage class %s which does not exist.", *volumeClaimTemplate.Spec.StorageClassName))
+						failures = append(failures, Failure{
+							Text: fmt.Sprintf("StatefulSet uses the storage class %s which does not exist.", *volumeClaimTemplate.Spec.StorageClassName),
+							Sensitive: []Sensitive{
+								Sensitive{
+									Unmasked: *volumeClaimTemplate.Spec.StorageClassName,
+									Masked:   util.MaskString(*volumeClaimTemplate.Spec.StorageClassName),
+								},
+							},
+						})
 					}
 				}
 			}

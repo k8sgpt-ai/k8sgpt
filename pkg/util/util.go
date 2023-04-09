@@ -2,6 +2,9 @@ package util
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"regexp"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -95,4 +98,21 @@ func SliceDiff(source, dest []string) []string {
 		}
 	}
 	return diff
+}
+
+func MaskString(input string) string {
+	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	result := make([]rune, len(input))
+	for i := range result {
+		result[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(result)
+}
+
+func ReplaceIfMatch(text string, pattern string, replacement string) string {
+	re := regexp.MustCompile(fmt.Sprintf(`%s(\b\s)`, pattern))
+	if re.MatchString(text) {
+		text = re.ReplaceAllString(text, replacement+" ")
+	}
+	return text
 }

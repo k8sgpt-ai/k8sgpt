@@ -101,7 +101,7 @@ func TestHPAAnalyzerWithUnsuportedScaleTargetRef(t *testing.T) {
 	var errorFound bool
 	for _, analysis := range analysisResults {
 		for _, err := range analysis.Error {
-			if strings.Contains(err, "does not possible option.") {
+			if strings.Contains(err.Text, "does not possible option.") {
 				errorFound = true
 				break
 			}
@@ -148,7 +148,7 @@ func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 	var errorFound bool
 	for _, analysis := range analysisResults {
 		for _, err := range analysis.Error {
-			if strings.Contains(err, "does not exist.") {
+			if strings.Contains(err.Text, "does not exist.") {
 				errorFound = true
 				break
 			}

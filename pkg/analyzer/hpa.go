@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,7 +19,7 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, hpa := range list.Items {
-		var failures []string
+		var failures []Failure
 
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
@@ -46,11 +47,22 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				scaleTargetRefNotFound = true
 			}
 		default:
-			failures = append(failures, fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which does not possible option.", scaleTargetRef.Kind))
+			failures = append(failures, Failure{
+				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which does not possible option.", scaleTargetRef.Kind),
+				Sensitive: []Sensitive{},
+			})
 		}
 
 		if scaleTargetRefNotFound {
-			failures = append(failures, fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name))
+			failures = append(failures, Failure{
+				Text: fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+				Sensitive: []Sensitive{
+					Sensitive{
+						Unmasked: scaleTargetRef.Name,
+						Masked:   util.MaskString(scaleTargetRef.Name),
+					},
+				},
+			})
 		}
 
 		if len(failures) > 0 {

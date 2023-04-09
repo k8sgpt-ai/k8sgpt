@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -19,7 +20,7 @@ func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, pvc := range list.Items {
-		var failures []string
+		var failures []Failure
 
 		// Check for empty rs
 		if pvc.Status.Phase == "Pending" {
@@ -30,7 +31,10 @@ func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				continue
 			}
 			if evt.Reason == "ProvisioningFailed" && evt.Message != "" {
-				failures = append(failures, evt.Message)
+				failures = append(failures, Failure{
+					Text:      evt.Message,
+					Sensitive: []Sensitive{},
+				})
 			}
 		}
 		if len(failures) > 0 {

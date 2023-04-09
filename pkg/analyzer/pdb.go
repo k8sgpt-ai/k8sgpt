@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,7 +19,7 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, pdb := range list.Items {
-		var failures []string
+		var failures []Failure
 
 		evt, err := FetchLatestEvent(a.Context, a.Client, pdb.Namespace, pdb.Name)
 		if err != nil || evt == nil {
@@ -28,13 +29,31 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		if evt.Reason == "NoPods" && evt.Message != "" {
 			if pdb.Spec.Selector != nil {
 				for k, v := range pdb.Spec.Selector.MatchLabels {
-					failures = append(failures, fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v))
+					failures = append(failures, Failure{
+						Text: fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
+						Sensitive: []Sensitive{
+							Sensitive{
+								Unmasked: k,
+								Masked:   util.MaskString(k),
+							},
+							Sensitive{
+								Unmasked: v,
+								Masked:   util.MaskString(v),
+							},
+						},
+					})
 				}
 				for _, v := range pdb.Spec.Selector.MatchExpressions {
-					failures = append(failures, fmt.Sprintf("%s, expected expression %s", evt.Message, v))
+					failures = append(failures, Failure{
+						Text:      fmt.Sprintf("%s, expected expression %s=%s", evt.Message, v),
+						Sensitive: []Sensitive{},
+					})
 				}
 			} else {
-				failures = append(failures, fmt.Sprintf("%s, selector is nil", evt.Message))
+				failures = append(failures, Failure{
+					Text:      fmt.Sprintf("%s, selector is nil", evt.Message),
+					Sensitive: []Sensitive{},
+				})
 			}
 		}
 

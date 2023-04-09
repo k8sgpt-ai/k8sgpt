@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,7 +19,7 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	var preAnalysis = map[string]PreAnalysis{}
 
 	for _, pod := range list.Items {
-		var failures []string
+		var failures []Failure
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
 
@@ -26,7 +27,10 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			for _, containerStatus := range pod.Status.Conditions {
 				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
 					if containerStatus.Message != "" {
-						failures = []string{containerStatus.Message}
+						failures = append(failures, Failure{
+							Text:      containerStatus.Message,
+							Sensitive: []Sensitive{},
+						})
 					}
 				}
 			}
@@ -37,7 +41,10 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			if containerStatus.State.Waiting != nil {
 				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
 					if containerStatus.State.Waiting.Message != "" {
-						failures = append(failures, containerStatus.State.Waiting.Message)
+						failures = append(failures, Failure{
+							Text:      containerStatus.State.Waiting.Message,
+							Sensitive: []Sensitive{},
+						})
 					}
 				}
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
@@ -49,7 +56,10 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 						continue
 					}
 					if evt.Reason == "FailedCreatePodSandBox" && evt.Message != "" {
-						failures = append(failures, evt.Message)
+						failures = append(failures, Failure{
+							Text:      evt.Message,
+							Sensitive: []Sensitive{},
+						})
 					}
 				}
 			}

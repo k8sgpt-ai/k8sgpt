@@ -3,9 +3,10 @@ package analysis
 import (
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
@@ -42,11 +43,16 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []analyzer.Result{
 			{
-				"Deployment",
-				"test-deployment",
-				[]string{"test-problem"},
-				"test-solution",
-				"parent-resource"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []analyzer.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+				},
+				Details:      "test-solution",
+				ParentObject: "parent-resource"},
 		},
 		Namespace: "default",
 	}
@@ -55,11 +61,17 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 		Status:   StateProblemDetected,
 		Problems: 1,
 		Results: []analyzer.Result{
-			{"Deployment",
-				"test-deployment",
-				[]string{"test-problem"},
-				"test-solution",
-				"parent-resource"},
+			{
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []analyzer.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+				},
+				Details:      "test-solution",
+				ParentObject: "parent-resource"},
 		},
 	}
 
@@ -84,11 +96,20 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []analyzer.Result{
 			{
-				"Deployment",
-				"test-deployment",
-				[]string{"test-problem", "another-test-problem"},
-				"test-solution",
-				"parent-resource"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []analyzer.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+					{
+						Text:      "another-test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+				},
+				Details:      "test-solution",
+				ParentObject: "parent-resource"},
 		},
 		Namespace: "default",
 	}
@@ -97,11 +118,21 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 		Status:   StateProblemDetected,
 		Problems: 2,
 		Results: []analyzer.Result{
-			{"Deployment",
-				"test-deployment",
-				[]string{"test-problem", "another-test-problem"},
-				"test-solution",
-				"parent-resource"},
+			{
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []analyzer.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+					{
+						Text:      "another-test-problem",
+						Sensitive: []analyzer.Sensitive{},
+					},
+				},
+				Details:      "test-solution",
+				ParentObject: "parent-resource"},
 		},
 	}
 

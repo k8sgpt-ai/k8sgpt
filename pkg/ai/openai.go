@@ -55,7 +55,6 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 }
 
 func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
-	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
