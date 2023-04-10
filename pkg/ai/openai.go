@@ -76,7 +76,6 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 
 	response, err := a.GetCompletion(ctx, inputKey)
 	if err != nil {
-		color.Red("error getting completion: %v", err)
 		return "", err
 	}
 
