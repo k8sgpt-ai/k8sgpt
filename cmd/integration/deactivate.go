@@ -12,20 +12,22 @@ import (
 
 // deactivateCmd represents the deactivate command
 var deactivateCmd = &cobra.Command{
-	Use:   "deactivate",
+	Use:   "deactivate [integration]",
 	Short: "Deactivate an integration",
-	Long:  ``,
+	Args:  cobra.ExactArgs(1),
+	Long:  `For example e.g. k8sgpt integration deactivate trivy`,
 	Run: func(cmd *cobra.Command, args []string) {
+		intName := args[0]
 
 		// Check if the integation exists
 		integration := viper.Get("integration").(*integration.Integration)
 
-		if err := integration.Deactivate(name, namespace); err != nil {
+		if err := integration.Deactivate(intName, namespace); err != nil {
 			color.Red("Error: %v", err)
 			return
 		}
 
-		color.Green("Deactivate integration %s", name)
+		color.Green("Deactivate integration %s", intName)
 
 	},
 }

@@ -1,9 +1,11 @@
 package kubernetes
 
 import (
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kubectl/pkg/scheme"
 )
 
 type Client struct {
@@ -35,6 +37,9 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	c.APIPath = "/api"
+	c.GroupVersion = &scheme.Scheme.PrioritizedVersionsForGroup("")[0]
+	c.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 
 	restClient, err := rest.RESTClientFor(c)
 	if err != nil {

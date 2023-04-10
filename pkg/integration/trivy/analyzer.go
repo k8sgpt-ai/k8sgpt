@@ -1,8 +1,11 @@
 package trivy
 
 import (
+	"fmt"
+
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
 type TrivyAnalyzer struct {
@@ -18,7 +21,40 @@ func (TrivyAnalyzer) Analyze(a analyzer.Analyzer) ([]analyzer.Result, error) {
 		return nil, err
 	}
 
-	// WIP
+	// Find criticals and get CVE
+	var preAnalysis = map[string]analyzer.PreAnalysis{}
 
-	return nil, nil
+	for _, report := range result.Items {
+
+		// For each pod there may be multiple vulnerabilities
+		var failures []string
+		for _, vuln := range report.Report.Vulnerabilities {
+			if vuln.Severity == "CRITICAL" {
+				// get the vulnerability ID
+				// get the vulnerability description
+				failures = append(failures, fmt.Sprintf("Critical Vulnerability found ID: %s, Description: %s", vuln.VulnerabilityID, vuln.Description))
+			}
+		}
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
+				report.Labels["trivy-operator.resource.name"])] = analyzer.PreAnalysis{
+				TrivyVulnerabilityReport: report,
+				FailureDetails:           failures,
+			}
+		}
+	}
+
+	for key, value := range preAnalysis {
+		var currentAnalysis = analyzer.Result{
+			Kind:  "VulnerabilityReport",
+			Name:  key,
+			Error: value.FailureDetails,
+		}
+
+		parent, _ := util.GetParent(a.Client, value.TrivyVulnerabilityReport.ObjectMeta)
+		currentAnalysis.ParentObject = parent
+		a.Results = append(a.Results, currentAnalysis)
+	}
+
+	return a.Results, nil
 }

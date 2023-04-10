@@ -3,14 +3,17 @@ module github.com/k8sgpt-ai/k8sgpt
 go 1.20
 
 require (
+	github.com/aquasecurity/trivy-operator v0.13.0
 	github.com/fatih/color v1.15.0
 	github.com/magiconair/properties v1.8.7
+	github.com/mittwald/go-helm-client v0.12.1
 	github.com/sashabaranov/go-openai v1.7.0
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/term v0.7.0
+	helm.sh/helm/v3 v3.11.2
 	k8s.io/api v0.26.3
 	k8s.io/apimachinery v0.26.3
 	k8s.io/client-go v0.26.3
@@ -24,14 +27,12 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
-	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
 	github.com/aquasecurity/defsec v0.85.0 // indirect
 	github.com/aquasecurity/go-dep-parser v0.0.0-20230324043952-2172dc218241 // indirect
 	github.com/aquasecurity/table v1.8.0 // indirect
 	github.com/aquasecurity/tml v0.6.1 // indirect
 	github.com/aquasecurity/trivy v0.39.0 // indirect
 	github.com/aquasecurity/trivy-db v0.0.0-20230116084806-4bcdf1c414d0 // indirect
-	github.com/aquasecurity/trivy-operator v0.13.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -92,7 +93,6 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/mittwald/go-helm-client v0.12.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
@@ -148,7 +148,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.11.2 // indirect
 	k8s.io/apiextensions-apiserver v0.26.3 // indirect
 	k8s.io/apiserver v0.26.3 // indirect
 	k8s.io/cli-runtime v0.26.3 // indirect
@@ -164,3 +163,11 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+// v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
+// v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
+replace oras.land/oras-go => oras.land/oras-go v1.1.1
+
+// v0.3.1-0.20230104082527-d6f58551be3f is taken from github.com/moby/buildkit v0.11.0
+// spdx logic write on v0.3.0 and incompatible with v0.3.1-0.20230104082527-d6f58551be3f
+replace github.com/spdx/tools-golang => github.com/spdx/tools-golang v0.3.0
