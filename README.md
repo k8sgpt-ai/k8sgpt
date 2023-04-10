@@ -140,6 +140,7 @@ you will be able to write your own analyzers.
 - [x] serviceAnalyzer
 - [x] eventAnalyzer
 - [x] ingressAnalyzer
+- [x] statefulSetAnalyzer
 
 #### Optional
 
