@@ -35,11 +35,11 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				failures = append(failures, Failure{
 					Text: fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
 					Sensitive: []Sensitive{
-						Sensitive{
+						{
 							Unmasked: k,
 							Masked:   util.MaskString(k),
 						},
-						Sensitive{
+						{
 							Unmasked: v,
 							Masked:   util.MaskString(v),
 						},

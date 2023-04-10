@@ -26,11 +26,11 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			failures = append(failures, Failure{
 				Text: fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName),
 				Sensitive: []Sensitive{
-					Sensitive{
+					{
 						Unmasked: sts.Namespace,
 						Masked:   util.MaskString(sts.Namespace),
 					},
-					Sensitive{
+					{
 						Unmasked: serviceName,
 						Masked:   util.MaskString(serviceName),
 					},
@@ -45,7 +45,7 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 						failures = append(failures, Failure{
 							Text: fmt.Sprintf("StatefulSet uses the storage class %s which does not exist.", *volumeClaimTemplate.Spec.StorageClassName),
 							Sensitive: []Sensitive{
-								Sensitive{
+								{
 									Unmasked: *volumeClaimTemplate.Spec.StorageClassName,
 									Masked:   util.MaskString(*volumeClaimTemplate.Spec.StorageClassName),
 								},

@@ -32,11 +32,11 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 					failures = append(failures, Failure{
 						Text: fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
 						Sensitive: []Sensitive{
-							Sensitive{
+							{
 								Unmasked: k,
 								Masked:   util.MaskString(k),
 							},
-							Sensitive{
+							{
 								Unmasked: v,
 								Masked:   util.MaskString(v),
 							},
@@ -45,7 +45,7 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				}
 				for _, v := range pdb.Spec.Selector.MatchExpressions {
 					failures = append(failures, Failure{
-						Text:      fmt.Sprintf("%s, expected expression %s=%s", evt.Message, v),
+						Text:      fmt.Sprintf("%s, expected expression %s", evt.Message, v),
 						Sensitive: []Sensitive{},
 					})
 				}
