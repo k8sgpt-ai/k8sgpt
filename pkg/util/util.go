@@ -110,9 +110,9 @@ func MaskString(input string) string {
 }
 
 func ReplaceIfMatch(text string, pattern string, replacement string) string {
-	re := regexp.MustCompile(fmt.Sprintf(`%s(\b\s)`, pattern))
+	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, pattern))
 	if re.MatchString(text) {
-		text = re.ReplaceAllString(text, replacement+" ")
+		text = re.ReplaceAllString(text, replacement)
 	}
 	return text
 }
