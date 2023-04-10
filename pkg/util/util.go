@@ -3,8 +3,10 @@ package util
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"regexp"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -149,4 +151,24 @@ func GetPodListByLabels(client k.Interface,
 	}
 
 	return pods, nil
+}
+
+func FileExists(path string) (bool, error) {
+	if _, err := os.Stat(path); err == nil {
+		return true, nil
+	} else if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	} else {
+		return false, err
+	}
+}
+
+func EnsureDirExists(dir string) error {
+	err := os.Mkdir(dir, 0755)
+
+	if errors.Is(err, os.ErrExist) {
+		return nil
+	}
+
+	return err
 }
