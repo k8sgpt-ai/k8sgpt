@@ -227,6 +227,12 @@ _Output to JSON_
 k8sgpt analyze --explain --filter=Service --output=json
 ```
 
+_Anonymize during explain_
+
+```
+k8sgpt analyze --explain --filter=Service --output=json --anonymize
+```
+
 ## Upcoming major milestones
 
 - [ ] Multiple AI backend support
