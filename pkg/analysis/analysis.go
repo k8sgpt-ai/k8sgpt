@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -143,13 +142,18 @@ func (a *Analysis) GetAIResults(output string) error {
 	for index, analysis := range a.Results {
 		parsedText, err := a.AIClient.Parse(a.Context, analysis.Error, a.NoCache)
 		if err != nil {
+			// FIXME: can we avoid checking if output is json multiple times?
+			//   maybe implement the progress bar better?
+			if output != "json" {
+				bar.Exit()
+			}
+
 			// Check for exhaustion
 			if strings.Contains(err.Error(), "status code: 429") {
-				color.Red("Exhausted API quota. Please try again later")
-				os.Exit(1)
+				return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
+			} else {
+				return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
 			}
-			color.Red("Error: %v", err)
-			continue
 		}
 		analysis.Details = parsedText
 		if output != "json" {
