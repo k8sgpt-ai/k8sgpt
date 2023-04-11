@@ -48,7 +48,7 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			}
 		default:
 			failures = append(failures, Failure{
-				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which does not possible option.", scaleTargetRef.Kind),
+				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
 				Sensitive: []Sensitive{},
 			})
 		}
@@ -57,7 +57,7 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			failures = append(failures, Failure{
 				Text: fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
 				Sensitive: []Sensitive{
-					Sensitive{
+					{
 						Unmasked: scaleTargetRef.Name,
 						Masked:   util.MaskString(scaleTargetRef.Name),
 					},

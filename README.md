@@ -233,6 +233,32 @@ _Anonymize during explain_
 k8sgpt analyze --explain --filter=Service --output=json --anonymize
 ```
 
+With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
+
+For example:
+
+1. Error reported during analysis:
+```bash
+Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
+```
+
+2. Payload sent to the AI backend:
+```bash
+Error: HorizontalPodAutoscaler uses StatefulSet/tGLcCRcHa1Ce5Rs as ScaleTargetRef which does not exist.
+```
+
+3. Payload returned by the AI:
+```bash
+The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
+```
+
+4. Payload returned to the user:
+```bash
+The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
+```
+
+**Anonymization does not currently apply to events.**
+
 ## Upcoming major milestones
 
 - [ ] Multiple AI backend support
