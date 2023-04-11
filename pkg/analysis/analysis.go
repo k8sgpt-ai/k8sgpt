@@ -144,8 +144,8 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		var texts []string
 
 		for _, failure := range analysis.Error {
-			for _, s := range failure.Sensitive {
-				if anonymize {
+			if anonymize {
+				for _, s := range failure.Sensitive {
 					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
 				}
 			}
