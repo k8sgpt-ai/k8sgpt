@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/magiconair/properties/assert"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -23,7 +24,7 @@ func TestIngressAnalyzer(t *testing.T) {
 		})
 	ingressAnalyzer := IngressAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -56,7 +57,7 @@ func TestIngressAnalyzerWithMultipleIngresses(t *testing.T) {
 	)
 	ingressAnalyzer := IngressAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -83,7 +84,7 @@ func TestIngressAnalyzerWithoutIngressClassAnnotation(t *testing.T) {
 		})
 	ingressAnalyzer := IngressAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},

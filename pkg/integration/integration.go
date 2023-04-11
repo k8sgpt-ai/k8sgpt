@@ -23,10 +23,6 @@ type IIntegration interface {
 type Integration struct {
 }
 
-type IntegrationProvider struct {
-	Active []string `mapstructure:"active"`
-}
-
 var integrations = map[string]IIntegration{
 	"trivy": trivy.NewTrivy(),
 }
