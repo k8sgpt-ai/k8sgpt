@@ -153,7 +153,11 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		}
 		parsedText, err := a.AIClient.Parse(a.Context, texts, a.NoCache)
 		if err != nil {
-			bar.Exit()
+			// FIXME: can we avoid checking if output is json multiple times?
+			//   maybe implement the progress bar better?
+			if output != "json" {
+				bar.Exit()
+			}
 
 			// Check for exhaustion
 			if strings.Contains(err.Error(), "status code: 429") {
