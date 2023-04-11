@@ -43,7 +43,7 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if vuln.Severity == "CRITICAL" {
 				// get the vulnerability ID
 				// get the vulnerability description
-				failures = append(failures, fmt.Sprintf("critical Vulnerability found ID: %s", vuln.VulnerabilityID))
+				failures = append(failures, fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.VulnerabilityID, vuln.PrimaryLink))
 			}
 		}
 		if len(failures) > 0 {
