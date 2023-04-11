@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -9,6 +10,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
 
 func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool) {
 	if meta.OwnerReferences != nil {
@@ -101,12 +104,13 @@ func SliceDiff(source, dest []string) []string {
 }
 
 func MaskString(input string) string {
-	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	key := make([]byte, len(input))
 	result := make([]rune, len(input))
+	rand.Read(key)
 	for i := range result {
-		result[i] = letters[rand.Intn(len(letters))]
+		result[i] = anonymizePattern[int(key[i])%len(anonymizePattern)]
 	}
-	return string(result)
+	return base64.StdEncoding.EncodeToString([]byte(string(result)))
 }
 
 func ReplaceIfMatch(text string, pattern string, replacement string) string {
