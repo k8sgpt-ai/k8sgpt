@@ -29,7 +29,7 @@ var listCmd = &cobra.Command{
 
 			// if the filter is an integration, mark this differently
 			if util.SliceContainsString(integrationFilters, filter) {
-				fmt.Printf("> %s\n", color.BlueString("%s (integration)\n", filter))
+				fmt.Printf("> %s\n", color.BlueString("%s (integration)", filter))
 			} else {
 				fmt.Printf("> %s\n", color.GreenString(filter))
 			}
@@ -41,7 +41,7 @@ var listCmd = &cobra.Command{
 			for _, filter := range inactiveFilters {
 				// if the filter is an integration, mark this differently
 				if util.SliceContainsString(integrationFilters, filter) {
-					fmt.Printf("> %s\n", color.BlueString("%s (integration)\n", filter))
+					fmt.Printf("> %s\n", color.BlueString("%s (integration)", filter))
 				} else {
 					fmt.Printf("> %s\n", color.RedString(filter))
 				}
