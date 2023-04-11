@@ -7,7 +7,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // deactivateCmd represents the deactivate command
@@ -19,8 +18,7 @@ var deactivateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		intName := args[0]
 
-		// Check if the integation exists
-		integration := viper.Get("integration").(*integration.Integration)
+		integration := integration.NewIntegration()
 
 		if err := integration.Deactivate(intName, namespace); err != nil {
 			color.Red("Error: %v", err)

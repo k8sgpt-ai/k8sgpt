@@ -2,20 +2,22 @@ package analyzer
 
 import (
 	"fmt"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type HpaAnalyzer struct{}
 
-func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	list, err := a.Client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, hpa := range list.Items {
 		var failures []string
@@ -54,7 +56,7 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", hpa.Namespace, hpa.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", hpa.Namespace, hpa.Name)] = common.PreAnalysis{
 				HorizontalPodAutoscalers: hpa,
 				FailureDetails:           failures,
 			}
@@ -63,7 +65,7 @@ func (HpaAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "HorizontalPodAutoscaler",
 			Name:  key,
 			Error: value.FailureDetails,

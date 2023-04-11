@@ -2,11 +2,11 @@ package integration
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // listCmd represents the list command
@@ -15,12 +15,31 @@ var listCmd = &cobra.Command{
 	Short: "Lists built-in integrations",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		integration := viper.Get("integration").(*integration.Integration)
+		integration := integration.NewIntegration()
 		integrations := integration.List()
 
-		for _, integration := range integrations {
-			fmt.Printf("> %s\n", color.GreenString(integration))
+		fmt.Println(color.YellowString("Active:"))
+		for _, i := range integrations {
+			b, err := integration.IsActivate(i)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			if b {
+				fmt.Printf("> %s\n", color.GreenString(i))
+			}
+		}
+
+		fmt.Println(color.YellowString("Unused: "))
+		for _, i := range integrations {
+			b, err := integration.IsActivate(i)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			if !b {
+				fmt.Printf("> %s\n", color.GreenString(i))
+			}
 		}
 	},
 }

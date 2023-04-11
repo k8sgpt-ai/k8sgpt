@@ -4,7 +4,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // activateCmd represents the activate command
@@ -16,7 +15,7 @@ var activateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		intName := args[0]
 
-		integration := viper.Get("integration").(*integration.Integration)
+		integration := integration.NewIntegration()
 		// Check if the integation exists
 		err := integration.Activate(intName, namespace)
 		if err != nil {
@@ -26,7 +25,7 @@ var activateCmd = &cobra.Command{
 
 		color.Yellow("Activating analyzer for integration %s", intName)
 
-		// TODO:
+		// Write the integration to the config file
 
 		color.Green("Activate integration %s", intName)
 	},

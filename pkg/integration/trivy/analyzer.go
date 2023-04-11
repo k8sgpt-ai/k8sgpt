@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
 type TrivyAnalyzer struct {
 }
 
-func (TrivyAnalyzer) Analyze(a analyzer.Analyzer) ([]analyzer.Result, error) {
+func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
@@ -22,7 +22,7 @@ func (TrivyAnalyzer) Analyze(a analyzer.Analyzer) ([]analyzer.Result, error) {
 	}
 
 	// Find criticals and get CVE
-	var preAnalysis = map[string]analyzer.PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, report := range result.Items {
 
@@ -37,7 +37,7 @@ func (TrivyAnalyzer) Analyze(a analyzer.Analyzer) ([]analyzer.Result, error) {
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
-				report.Labels["trivy-operator.resource.name"])] = analyzer.PreAnalysis{
+				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{
 				TrivyVulnerabilityReport: report,
 				FailureDetails:           failures,
 			}
@@ -45,7 +45,7 @@ func (TrivyAnalyzer) Analyze(a analyzer.Analyzer) ([]analyzer.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = analyzer.Result{
+		var currentAnalysis = common.Result{
 			Kind:  "VulnerabilityReport",
 			Name:  key,
 			Error: value.FailureDetails,

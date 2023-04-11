@@ -2,14 +2,16 @@ package analyzer
 
 import (
 	"fmt"
+
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ServiceAnalyzer struct{}
 
-func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
@@ -17,7 +19,7 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, ep := range list.Items {
 		var failures []string
@@ -50,7 +52,7 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)] = common.PreAnalysis{
 				Endpoint:       ep,
 				FailureDetails: failures,
 			}
@@ -58,7 +60,7 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "Service",
 			Name:  key,
 			Error: value.FailureDetails,

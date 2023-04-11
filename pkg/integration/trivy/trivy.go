@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	helmclient "github.com/mittwald/go-helm-client"
 	"helm.sh/helm/v3/pkg/repo"
 )
@@ -88,8 +88,10 @@ func (t *Trivy) IsActivate() bool {
 	return true
 }
 
-func (t *Trivy) AddAnalyzer() (string, analyzer.IAnalyzer, error) {
-	return "trivy", TrivyAnalyzer{}, nil
+func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
+
+	(*mergedMap)["trivy"] = &TrivyAnalyzer{}
+
 }
 
 func (t *Trivy) RemoveAnalyzer() error {

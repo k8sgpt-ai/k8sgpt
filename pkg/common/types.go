@@ -1,4 +1,4 @@
-package analyzer
+package common
 
 import (
 	"context"
@@ -12,6 +12,10 @@ import (
 	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
 )
+
+type IAnalyzer interface {
+	Analyze(analysis Analyzer) ([]Result, error)
+}
 
 type Analyzer struct {
 	Client      *kubernetes.Client

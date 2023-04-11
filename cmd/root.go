@@ -10,7 +10,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
-	in "github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -59,10 +58,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.yaml)")
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", kubeconfigPath, "Path to a kubeconfig. Only required if out-of-cluster.")
-
-	// Integration start up
-	integration := in.NewIntegration()
-	viper.Set("integration", integration)
 }
 
 // initConfig reads in config file and ENV variables if set.
