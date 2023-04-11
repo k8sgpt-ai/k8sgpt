@@ -39,7 +39,12 @@ var listCmd = &cobra.Command{
 		if len(inactiveFilters) != 0 {
 			fmt.Printf(color.YellowString("Unused: \n"))
 			for _, filter := range inactiveFilters {
-				fmt.Printf("> %s\n", color.RedString(filter))
+				// if the filter is an integration, mark this differently
+				if util.SliceContainsString(integrationFilters, filter) {
+					fmt.Printf("> %s\n", color.BlueString("%s (integration)\n", filter))
+				} else {
+					fmt.Printf("> %s\n", color.RedString(filter))
+				}
 			}
 		}
 
