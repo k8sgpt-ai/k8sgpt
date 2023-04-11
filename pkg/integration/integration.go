@@ -24,7 +24,7 @@ type Integration struct {
 }
 
 var integrations = map[string]IIntegration{
-	"trivy": trivy.NewTrivy(),
+	"VulnerabilityReport": trivy.NewTrivy(),
 }
 
 func NewIntegration() *Integration {

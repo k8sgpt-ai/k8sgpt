@@ -21,7 +21,7 @@ var removeCmd = &cobra.Command{
 
 		// Get defined active_filters
 		activeFilters := viper.GetStringSlice("active_filters")
-		coreFilters, _ := analyzer.ListFilters()
+		coreFilters, _, _ := analyzer.ListFilters()
 
 		if len(activeFilters) == 0 {
 			activeFilters = coreFilters

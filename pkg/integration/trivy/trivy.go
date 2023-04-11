@@ -90,7 +90,7 @@ func (t *Trivy) IsActivate() bool {
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
 
-	(*mergedMap)["trivy"] = &TrivyAnalyzer{}
+	(*mergedMap)["VulnerabilityReport"] = &TrivyAnalyzer{}
 
 }
 

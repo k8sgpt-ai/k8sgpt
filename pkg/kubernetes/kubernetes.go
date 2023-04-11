@@ -11,6 +11,11 @@ import (
 type Client struct {
 	Client     kubernetes.Interface
 	RestClient rest.Interface
+	Config     *rest.Config
+}
+
+func (c *Client) GetConfig() *rest.Config {
+	return c.Config
 }
 
 func (c *Client) GetClient() kubernetes.Interface {
@@ -49,5 +54,6 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	return &Client{
 		Client:     clientSet,
 		RestClient: restClient,
+		Config:     c,
 	}, nil
 }

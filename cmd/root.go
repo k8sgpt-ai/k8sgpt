@@ -4,13 +4,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/util/homedir"
@@ -78,14 +76,8 @@ func initConfig() {
 		viper.SafeWriteConfig()
 	}
 
-	//Initialise the kubeconfig
-	kubernetesClient, err := kubernetes.NewClient(kubecontext, kubeconfig)
-	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
-		os.Exit(1)
-	}
-
-	viper.Set("kubernetesClient", kubernetesClient)
+	viper.Set("kubecontext", kubecontext)
+	viper.Set("kubeconfig", kubeconfig)
 
 	viper.AutomaticEnv() // read in environment variables that match
 

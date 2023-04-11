@@ -6,6 +6,7 @@ import (
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	"k8s.io/client-go/rest"
 )
 
 type TrivyAnalyzer struct {
@@ -16,7 +17,17 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
-	err := a.Client.GetRestClient().Get().Namespace(a.Namespace).Resource("vulnerabilityreports").Do(a.Context).Into(result)
+	config := a.Client.GetConfig()
+	// Add group version to sceheme
+	config.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	config.APIPath = "/apis"
+
+	restClient, err := rest.UnversionedRESTClientFor(config)
+	if err != nil {
+		return nil, err
+	}
+	err = restClient.Get().Resource("vulnerabilityreports").Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +43,7 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if vuln.Severity == "CRITICAL" {
 				// get the vulnerability ID
 				// get the vulnerability description
-				failures = append(failures, fmt.Sprintf("Critical Vulnerability found ID: %s, Description: %s", vuln.VulnerabilityID, vuln.Description))
+				failures = append(failures, fmt.Sprintf("critical Vulnerability found ID: %s", vuln.VulnerabilityID))
 			}
 		}
 		if len(failures) > 0 {

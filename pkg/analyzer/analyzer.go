@@ -23,7 +23,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"PodDisruptionBudget":     PdbAnalyzer{},
 }
 
-func ListFilters() ([]string, []string) {
+func ListFilters() ([]string, []string, []string) {
 	coreKeys := make([]string, 0, len(coreAnalyzerMap))
 	for k := range coreAnalyzerMap {
 		coreKeys = append(coreKeys, k)
@@ -33,7 +33,14 @@ func ListFilters() ([]string, []string) {
 	for k := range additionalAnalyzerMap {
 		additionalKeys = append(additionalKeys, k)
 	}
-	return coreKeys, additionalKeys
+
+	intList := integration.NewIntegration().List()
+	integrationKeys := make([]string, 0, len(intList))
+	for _, k := range integration.NewIntegration().List() {
+		integrationKeys = append(integrationKeys, k)
+	}
+
+	return coreKeys, additionalKeys, integrationKeys
 }
 
 func GetAnalyzerMap() map[string]common.IAnalyzer {
