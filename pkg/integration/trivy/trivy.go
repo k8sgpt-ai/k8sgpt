@@ -31,6 +31,10 @@ func NewTrivy() *Trivy {
 	}
 }
 
+func (t *Trivy) GetAnalyzerName() string {
+	return "VulnerabilityReport"
+}
+
 func (t *Trivy) Deploy(namespace string) error {
 
 	// Add the repository

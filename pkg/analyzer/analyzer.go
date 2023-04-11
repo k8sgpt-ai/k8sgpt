@@ -34,13 +34,22 @@ func ListFilters() ([]string, []string, []string) {
 		additionalKeys = append(additionalKeys, k)
 	}
 
-	intList := integration.NewIntegration().List()
-	integrationKeys := make([]string, 0, len(intList))
-	for _, k := range integration.NewIntegration().List() {
-		integrationKeys = append(integrationKeys, k)
+	integrationProvider := integration.NewIntegration()
+	var integrationAnalyzers []string
+
+	for _, i := range integrationProvider.List() {
+		b, _ := integrationProvider.IsActivate(i)
+		if b {
+			in, err := integrationProvider.Get(i)
+			if err != nil {
+				fmt.Println(color.RedString(err.Error()))
+				os.Exit(1)
+			}
+			integrationAnalyzers = append(integrationAnalyzers, in.GetAnalyzerName())
+		}
 	}
 
-	return coreKeys, additionalKeys, integrationKeys
+	return coreKeys, additionalKeys, integrationAnalyzers
 }
 
 func GetAnalyzerMap() map[string]common.IAnalyzer {

@@ -25,7 +25,7 @@ var deactivateCmd = &cobra.Command{
 			return
 		}
 
-		color.Green("Deactivate integration %s", intName)
+		color.Green("Deactivated integration %s", intName)
 
 	},
 }

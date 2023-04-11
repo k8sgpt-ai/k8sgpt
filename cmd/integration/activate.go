@@ -23,11 +23,7 @@ var activateCmd = &cobra.Command{
 			return
 		}
 
-		color.Yellow("Activating analyzer for integration %s", intName)
-
-		// Write the integration to the config file
-
-		color.Green("Activate integration %s", intName)
+		color.Green("Activated integration %s", intName)
 	},
 }
 
