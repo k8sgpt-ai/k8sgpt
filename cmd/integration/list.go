@@ -15,12 +15,12 @@ var listCmd = &cobra.Command{
 	Short: "Lists built-in integrations",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		integration := integration.NewIntegration()
-		integrations := integration.List()
+		integrationProvider := integration.NewIntegration()
+		integrations := integrationProvider.List()
 
 		fmt.Println(color.YellowString("Active:"))
 		for _, i := range integrations {
-			b, err := integration.IsActivate(i)
+			b, err := integrationProvider.IsActivate(i)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -32,7 +32,7 @@ var listCmd = &cobra.Command{
 
 		fmt.Println(color.YellowString("Unused: "))
 		for _, i := range integrations {
-			b, err := integration.IsActivate(i)
+			b, err := integrationProvider.IsActivate(i)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

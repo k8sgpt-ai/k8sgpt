@@ -13,17 +13,17 @@ var activateCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		intName := args[0]
+		integrationName := args[0]
 
 		integration := integration.NewIntegration()
 		// Check if the integation exists
-		err := integration.Activate(intName, namespace)
+		err := integration.Activate(integrationName, namespace)
 		if err != nil {
 			color.Red("Error: %v", err)
 			return
 		}
 
-		color.Green("Activated integration %s", intName)
+		color.Green("Activated integration %s", integrationName)
 	},
 }
 

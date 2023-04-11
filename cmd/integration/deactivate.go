@@ -16,16 +16,16 @@ var deactivateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Long:  `For example e.g. k8sgpt integration deactivate trivy`,
 	Run: func(cmd *cobra.Command, args []string) {
-		intName := args[0]
+		integrationName := args[0]
 
 		integration := integration.NewIntegration()
 
-		if err := integration.Deactivate(intName, namespace); err != nil {
+		if err := integration.Deactivate(integrationName, namespace); err != nil {
 			color.Red("Error: %v", err)
 			return
 		}
 
-		color.Green("Deactivated integration %s", intName)
+		color.Green("Deactivated integration %s", integrationName)
 
 	},
 }

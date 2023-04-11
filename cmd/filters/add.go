@@ -20,9 +20,7 @@ var addCmd = &cobra.Command{
 		inputFilters := strings.Split(args[0], ",")
 		coreFilters, additionalFilters, integrationFilters := analyzer.ListFilters()
 
-		availableFilters := append(coreFilters, additionalFilters...)
-		availableFilters = append(availableFilters, integrationFilters...)
-
+		availableFilters := append(append(coreFilters, additionalFilters...), integrationFilters...)
 		// Verify filter exist
 		invalidFilters := []string{}
 		for _, f := range inputFilters {

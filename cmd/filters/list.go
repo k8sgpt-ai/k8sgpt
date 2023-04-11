@@ -18,8 +18,8 @@ var listCmd = &cobra.Command{
 		activeFilters := viper.GetStringSlice("active_filters")
 		coreFilters, additionalFilters, integrationFilters := analyzer.ListFilters()
 
-		availableFilters := append(coreFilters, additionalFilters...)
-		availableFilters = append(availableFilters, integrationFilters...)
+		availableFilters := append(append(coreFilters, additionalFilters...), integrationFilters...)
+
 		if len(activeFilters) == 0 {
 			activeFilters = coreFilters
 		}
