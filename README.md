@@ -233,6 +233,8 @@ _Anonymize during explain_
 k8sgpt analyze --explain --filter=Service --output=json --anonymize
 ```
 
+### How does anonymization work?
+
 With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
 
 For example:
