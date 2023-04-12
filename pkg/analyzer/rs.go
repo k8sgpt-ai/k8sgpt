@@ -21,7 +21,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, rs := range list.Items {
-		var failures []string
+		var failures []common.Failure
 
 		// Check for empty rs
 		if rs.Status.Replicas == 0 {
@@ -29,7 +29,11 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// Check through container status to check for crashes
 			for _, rsStatus := range rs.Status.Conditions {
 				if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
-					failures = []string{rsStatus.Message}
+					failures = append(failures, common.Failure{
+						Text:      rsStatus.Message,
+						Sensitive: []common.Sensitive{},
+					})
+
 				}
 			}
 		}

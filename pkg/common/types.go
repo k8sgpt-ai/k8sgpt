@@ -28,7 +28,7 @@ type Analyzer struct {
 
 type PreAnalysis struct {
 	Pod                      v1.Pod
-	FailureDetails           []string
+	FailureDetails           []Failure
 	ReplicaSet               appsv1.ReplicaSet
 	PersistentVolumeClaim    v1.PersistentVolumeClaim
 	Endpoint                 v1.Endpoints
@@ -41,9 +41,19 @@ type PreAnalysis struct {
 }
 
 type Result struct {
-	Kind         string   `json:"kind"`
-	Name         string   `json:"name"`
-	Error        []string `json:"error"`
-	Details      string   `json:"details"`
-	ParentObject string   `json:"parentObject"`
+	Kind         string    `json:"kind"`
+	Name         string    `json:"name"`
+	Error        []Failure `json:"error"`
+	Details      string    `json:"details"`
+	ParentObject string    `json:"parentObject"`
+}
+
+type Failure struct {
+	Text      string
+	Sensitive []Sensitive
+}
+
+type Sensitive struct {
+	Unmasked string
+	Masked   string
 }

@@ -43,12 +43,16 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []common.Result{
 			{
-				Kind:         "Deployment",
-				Name:         "test-deployment",
-				Error:        []string{"test-problem"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []common.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+				},
 				Details:      "test-solution",
-				ParentObject: "parent-resource",
-			},
+				ParentObject: "parent-resource"},
 		},
 		Namespace: "default",
 	}
@@ -58,12 +62,16 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 		Problems: 1,
 		Results: []common.Result{
 			{
-				Kind:         "Deployment",
-				Name:         "test-deployment",
-				Error:        []string{"test-problem"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []common.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+				},
 				Details:      "test-solution",
-				ParentObject: "parent-resource",
-			},
+				ParentObject: "parent-resource"},
 		},
 	}
 
@@ -88,12 +96,20 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []common.Result{
 			{
-				Kind:         "Deployment",
-				Name:         "test-deployment",
-				Error:        []string{"test-problem", "another-test-problem"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []common.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+					{
+						Text:      "another-test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+				},
 				Details:      "test-solution",
-				ParentObject: "parent-resource",
-			},
+				ParentObject: "parent-resource"},
 		},
 		Namespace: "default",
 	}
@@ -103,12 +119,20 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 		Problems: 2,
 		Results: []common.Result{
 			{
-				Kind:         "Deployment",
-				Name:         "test-deployment",
-				Error:        []string{"test-problem", "another-test-problem"},
+				Kind: "Deployment",
+				Name: "test-deployment",
+				Error: []common.Failure{
+					{
+						Text:      "test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+					{
+						Text:      "another-test-problem",
+						Sensitive: []common.Sensitive{},
+					},
+				},
 				Details:      "test-solution",
-				ParentObject: "parent-resource",
-			},
+				ParentObject: "parent-resource"},
 		},
 	}
 
