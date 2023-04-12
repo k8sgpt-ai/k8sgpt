@@ -21,6 +21,7 @@ var (
 	language  string
 	nocache   bool
 	namespace string
+	anonymize bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -66,7 +67,15 @@ var AnalyzeCmd = &cobra.Command{
 
 		ctx := context.Background()
 		// Get kubernetes client from viper
-		client := viper.Get("kubernetesClient").(*kubernetes.Client)
+
+		kubecontext := viper.GetString("kubecontext")
+		kubeconfig := viper.GetString("kubeconfig")
+		client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+		if err != nil {
+			color.Red("Error initialising kubernetes client: %v", err)
+			os.Exit(1)
+		}
+
 		// AnalysisResult configuration
 		config := &analysis.Analysis{
 			Namespace: namespace,
@@ -85,7 +94,7 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		if explain {
-			err := config.GetAIResults(output)
+			err := config.GetAIResults(output, anonymize)
 			if err != nil {
 				color.Red("Error: %v", err)
 				os.Exit(1)
@@ -113,6 +122,8 @@ func init() {
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag
 	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "c", false, "Do not use cached data")
+	// anonymize flag
+	AnalyzeCmd.Flags().BoolVarP(&anonymize, "anonymize", "a", false, "Anonymize data before sending it to the AI backend. This flag masks sensitive data, such as Kubernetes object names and labels, by replacing it with a key. However, please note that this flag does not currently apply to events.")
 	// array of strings flag
 	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analyzers (e.g. Pod, PersistentVolumeClaim, Service, ReplicaSet)")
 	// explain flag

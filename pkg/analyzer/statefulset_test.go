@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/magiconair/properties/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -23,7 +24,7 @@ func TestStatefulSetAnalyzer(t *testing.T) {
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -50,7 +51,7 @@ func TestStatefulSetAnalyzerWithoutService(t *testing.T) {
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -66,7 +67,7 @@ func TestStatefulSetAnalyzerWithoutService(t *testing.T) {
 
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
-			if want == got {
+			if want == got.Text {
 				errorFound = true
 			}
 		}
@@ -115,7 +116,7 @@ func TestStatefulSetAnalyzerMissingStorageClass(t *testing.T) {
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -131,7 +132,7 @@ func TestStatefulSetAnalyzerMissingStorageClass(t *testing.T) {
 
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
-			if want == got {
+			if want == got.Text {
 				errorFound = true
 			}
 		}
