@@ -43,11 +43,12 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []common.Result{
 			{
-				"Deployment",
-				"test-deployment",
-				[]string{"test-problem"},
-				"test-solution",
-				"parent-resource"},
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []string{"test-problem"},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
 		},
 		Namespace: "default",
 	}
@@ -56,11 +57,13 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 		Status:   StateProblemDetected,
 		Problems: 1,
 		Results: []common.Result{
-			{"Deployment",
-				"test-deployment",
-				[]string{"test-problem"},
-				"test-solution",
-				"parent-resource"},
+			{
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []string{"test-problem"},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
 		},
 	}
 
@@ -85,11 +88,12 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
 		Results: []common.Result{
 			{
-				"Deployment",
-				"test-deployment",
-				[]string{"test-problem", "another-test-problem"},
-				"test-solution",
-				"parent-resource"},
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []string{"test-problem", "another-test-problem"},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
 		},
 		Namespace: "default",
 	}
@@ -98,11 +102,13 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 		Status:   StateProblemDetected,
 		Problems: 2,
 		Results: []common.Result{
-			{"Deployment",
-				"test-deployment",
-				[]string{"test-problem", "another-test-problem"},
-				"test-solution",
-				"parent-resource"},
+			{
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []string{"test-problem", "another-test-problem"},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
 		},
 	}
 
