@@ -3,6 +3,7 @@ package analysis
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -72,6 +73,8 @@ func (a *Analysis) RunAnalysis() error {
 					return err
 				}
 				a.Results = append(a.Results, results...)
+			} else {
+				return errors.New(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
 			}
 		}
 		return nil
