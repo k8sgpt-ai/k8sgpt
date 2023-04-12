@@ -2,20 +2,22 @@ package analyzer
 
 import (
 	"fmt"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type PdbAnalyzer struct{}
 
-func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	list, err := a.Client.GetClient().PolicyV1().PodDisruptionBudgets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pdb := range list.Items {
 		var failures []string
@@ -39,7 +41,7 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pdb.Namespace, pdb.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", pdb.Namespace, pdb.Name)] = common.PreAnalysis{
 				PodDisruptionBudget: pdb,
 				FailureDetails:      failures,
 			}
@@ -47,7 +49,7 @@ func (PdbAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "PodDisruptionBudget",
 			Name:  key,
 			Error: value.FailureDetails,

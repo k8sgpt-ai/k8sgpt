@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
@@ -20,7 +21,7 @@ type Analysis struct {
 	Filters   []string
 	Client    *kubernetes.Client
 	AIClient  ai.IAI
-	Results   []analyzer.Result
+	Results   []common.Result
 	Namespace string
 	NoCache   bool
 	Explain   bool
@@ -34,9 +35,9 @@ const (
 )
 
 type JsonOutput struct {
-	Status   AnalysisStatus    `json:"status"`
-	Problems int               `json:"problems"`
-	Results  []analyzer.Result `json:"results"`
+	Status   AnalysisStatus  `json:"status"`
+	Problems int             `json:"problems"`
+	Results  []common.Result `json:"results"`
 }
 
 func (a *Analysis) RunAnalysis() error {
@@ -45,7 +46,7 @@ func (a *Analysis) RunAnalysis() error {
 
 	analyzerMap := analyzer.GetAnalyzerMap()
 
-	analyzerConfig := analyzer.Analyzer{
+	analyzerConfig := common.Analyzer{
 		Client:    a.Client,
 		Context:   a.Context,
 		Namespace: a.Namespace,

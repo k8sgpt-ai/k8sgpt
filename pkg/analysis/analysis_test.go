@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/stretchr/testify/require"
 )
 
 func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
 
 	analysis := Analysis{
-		Results:   []analyzer.Result{},
+		Results:   []common.Result{},
 		Namespace: "default",
 	}
 
 	expected := JsonOutput{
 		Status:   StateOK,
 		Problems: 0,
-		Results:  []analyzer.Result{},
+		Results:  []common.Result{},
 	}
 
 	gotJson, err := analysis.JsonOutput()
@@ -41,7 +41,7 @@ func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
 
 func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
-		Results: []analyzer.Result{
+		Results: []common.Result{
 			{
 				Kind:         "Deployment",
 				Name:         "test-deployment",
@@ -56,7 +56,7 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 	expected := JsonOutput{
 		Status:   StateProblemDetected,
 		Problems: 1,
-		Results: []analyzer.Result{
+		Results: []common.Result{
 			{
 				Kind:         "Deployment",
 				Name:         "test-deployment",
@@ -86,7 +86,7 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 
 func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	analysis := Analysis{
-		Results: []analyzer.Result{
+		Results: []common.Result{
 			{
 				Kind:         "Deployment",
 				Name:         "test-deployment",
@@ -101,7 +101,7 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	expected := JsonOutput{
 		Status:   StateProblemDetected,
 		Problems: 2,
-		Results: []analyzer.Result{
+		Results: []common.Result{
 			{
 				Kind:         "Deployment",
 				Name:         "test-deployment",

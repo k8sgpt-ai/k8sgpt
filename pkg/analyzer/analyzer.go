@@ -1,10 +1,15 @@
 package analyzer
 
-type IAnalyzer interface {
-	Analyze(analysis Analyzer) ([]Result, error)
-}
+import (
+	"fmt"
+	"os"
 
-var coreAnalyzerMap = map[string]IAnalyzer{
+	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
+)
+
+var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Pod":                   PodAnalyzer{},
 	"ReplicaSet":            ReplicaSetAnalyzer{},
 	"PersistentVolumeClaim": PvcAnalyzer{},
@@ -13,12 +18,12 @@ var coreAnalyzerMap = map[string]IAnalyzer{
 	"StatefulSet":           StatefulSetAnalyzer{},
 }
 
-var additionalAnalyzerMap = map[string]IAnalyzer{
+var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"HorizontalPodAutoScaler": HpaAnalyzer{},
 	"PodDisruptionBudget":     PdbAnalyzer{},
 }
 
-func ListFilters() ([]string, []string) {
+func ListFilters() ([]string, []string, []string) {
 	coreKeys := make([]string, 0, len(coreAnalyzerMap))
 	for k := range coreAnalyzerMap {
 		coreKeys = append(coreKeys, k)
@@ -28,12 +33,28 @@ func ListFilters() ([]string, []string) {
 	for k := range additionalAnalyzerMap {
 		additionalKeys = append(additionalKeys, k)
 	}
-	return coreKeys, additionalKeys
+
+	integrationProvider := integration.NewIntegration()
+	var integrationAnalyzers []string
+
+	for _, i := range integrationProvider.List() {
+		b, _ := integrationProvider.IsActivate(i)
+		if b {
+			in, err := integrationProvider.Get(i)
+			if err != nil {
+				fmt.Println(color.RedString(err.Error()))
+				os.Exit(1)
+			}
+			integrationAnalyzers = append(integrationAnalyzers, in.GetAnalyzerName())
+		}
+	}
+
+	return coreKeys, additionalKeys, integrationAnalyzers
 }
 
-func GetAnalyzerMap() map[string]IAnalyzer {
+func GetAnalyzerMap() map[string]common.IAnalyzer {
 
-	mergedMap := make(map[string]IAnalyzer)
+	mergedMap := make(map[string]common.IAnalyzer)
 
 	// add core analyzer
 	for key, value := range coreAnalyzerMap {
@@ -43,6 +64,24 @@ func GetAnalyzerMap() map[string]IAnalyzer {
 	// add additional analyzer
 	for key, value := range additionalAnalyzerMap {
 		mergedMap[key] = value
+	}
+
+	integrationProvider := integration.NewIntegration()
+
+	for _, i := range integrationProvider.List() {
+		b, err := integrationProvider.IsActivate(i)
+		if err != nil {
+			fmt.Println(color.RedString(err.Error()))
+			os.Exit(1)
+		}
+		if b {
+			in, err := integrationProvider.Get(i)
+			if err != nil {
+				fmt.Println(color.RedString(err.Error()))
+				os.Exit(1)
+			}
+			in.AddAnalyzer(&mergedMap)
+		}
 	}
 
 	return mergedMap

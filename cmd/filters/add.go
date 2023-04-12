@@ -18,10 +18,9 @@ var addCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		inputFilters := strings.Split(args[0], ",")
-		coreFilters, additionalFilters := analyzer.ListFilters()
+		coreFilters, additionalFilters, integrationFilters := analyzer.ListFilters()
 
-		availableFilters := append(coreFilters, additionalFilters...)
-
+		availableFilters := append(append(coreFilters, additionalFilters...), integrationFilters...)
 		// Verify filter exist
 		invalidFilters := []string{}
 		for _, f := range inputFilters {
