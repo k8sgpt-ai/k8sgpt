@@ -2,17 +2,14 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type K8sGPTServer struct {
@@ -20,90 +17,92 @@ type K8sGPTServer struct {
 	Backend string
 	Key     string
 	Token   string
+	Output  string
 }
 
 type Result struct {
-	Analysis []analyzer.Analysis `json:"analysis"`
+	Analysis []analysis.Analysis `json:"analysis"`
 }
 
 func (s *K8sGPTServer) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	namespace := r.URL.Query().Get("namespace")
-	ex := r.URL.Query().Get("explain")
+	explain := getBoolParam(r.URL.Query().Get("explain"))
+	anonymize := getBoolParam(r.URL.Query().Get("anonymize"))
+	nocache := getBoolParam(r.URL.Query().Get("nocache"))
+	language := r.URL.Query().Get("language")
 
-	explain := false
-
-	if ex == "true" {
-		explain = true
+	// get ai configuration
+	var configAI ai.AIConfiguration
+	err := viper.UnmarshalKey("ai", &configAI)
+	if err != nil {
+		color.Red("Error: %v", err)
+		os.Exit(1)
 	}
 
-	output := Result{}
+	if len(configAI.Providers) == 0 {
+		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+		os.Exit(1)
+	}
 
-	var aiClient ai.IAI
-	switch s.Backend {
-	case "openai":
-		aiClient = &ai.OpenAIClient{}
-		if err := aiClient.Configure(s.Token, "english"); err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
+	var aiProvider ai.AIProvider
+	for _, provider := range configAI.Providers {
+		if s.Backend == provider.Name {
+			aiProvider = provider
+			break
 		}
-	default:
-		color.Red("Backend not supported")
+	}
+
+	if aiProvider.Name == "" {
+		color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", s.Backend)
+		os.Exit(1)
+	}
+
+	aiClient := ai.NewClient(aiProvider.Name)
+	if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
+		color.Red("Error: %v", err)
 		os.Exit(1)
 	}
 
 	ctx := context.Background()
 	// Get kubernetes client from viper
-	client := viper.Get("kubernetesClient").(*kubernetes.Client)
-	// Analysis configuration
-	config := &analyzer.AnalysisConfiguration{
+
+	kubecontext := viper.GetString("kubecontext")
+	kubeconfig := viper.GetString("kubeconfig")
+	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if err != nil {
+		color.Red("Error initialising kubernetes client: %v", err)
+		os.Exit(1)
+	}
+
+	config := &analysis.Analysis{
 		Namespace: namespace,
 		Explain:   explain,
+		AIClient:  aiClient,
+		Client:    client,
+		Context:   ctx,
+		NoCache:   nocache,
 	}
 
-	var analysisResults *[]analyzer.Analysis = &[]analyzer.Analysis{}
-	if err := analyzer.RunAnalysis(ctx, []string{}, config, client,
-		aiClient, analysisResults); err != nil {
-		color.Red("Error: %v", err)
-	}
-
-	fmt.Println(analysisResults)
-	if len(*analysisResults) == 0 {
-		fmt.Fprintf(w, "{ \"status\": \"OK\" }")
-	}
-
-	var bar = progressbar.Default(int64(len(*analysisResults)))
-	if !explain {
-		bar.Clear()
-	}
-	var printOutput []analyzer.Analysis
-
-	for _, analysis := range *analysisResults {
-
-		if explain {
-			parsedText, err := analyzer.ParseViaAI(ctx, config, aiClient, analysis.Error)
-			if err != nil {
-				// Check for exhaustion
-				if strings.Contains(err.Error(), "status code: 429") {
-					fmt.Fprintf(w, "Exhausted API quota. Please try again later")
-					os.Exit(1)
-				}
-				color.Red("Error: %v", err)
-				continue
-			}
-			analysis.Details = parsedText
-			bar.Add(1)
-		}
-		printOutput = append(printOutput, analysis)
-
-		analysis.Error = analysis.Error[0:]
-		output.Analysis = append(output.Analysis, analysis)
-	}
-	j, err := json.MarshalIndent(output, "", "  ")
+	err = config.RunAnalysis()
 	if err != nil {
 		color.Red("Error: %v", err)
 		os.Exit(1)
 	}
-	fmt.Fprintf(w, "%s", j)
+
+	if explain {
+		err := config.GetAIResults(s.Output, anonymize)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+	}
+
+	output, err := config.JsonOutput()
+	if err != nil {
+		color.Red("Error: %v", err)
+		os.Exit(1)
+	}
+	fmt.Fprintf(w, string(output))
 
 }
 
@@ -115,4 +114,11 @@ func (s *K8sGPTServer) Serve() error {
 		return err
 	}
 	return nil
+}
+
+func getBoolParam(param string) bool {
+	if param == "true" {
+		return true
+	}
+	return false
 }
