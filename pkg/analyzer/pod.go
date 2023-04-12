@@ -20,7 +20,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pod := range list.Items {
-		var failures []string
+		var failures []common.Failure
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
 
@@ -28,7 +28,10 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			for _, containerStatus := range pod.Status.Conditions {
 				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
 					if containerStatus.Message != "" {
-						failures = []string{containerStatus.Message}
+						failures = append(failures, common.Failure{
+							Text:      containerStatus.Message,
+							Sensitive: []common.Sensitive{},
+						})
 					}
 				}
 			}
@@ -39,7 +42,10 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if containerStatus.State.Waiting != nil {
 				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
 					if containerStatus.State.Waiting.Message != "" {
-						failures = append(failures, containerStatus.State.Waiting.Message)
+						failures = append(failures, common.Failure{
+							Text:      containerStatus.State.Waiting.Message,
+							Sensitive: []common.Sensitive{},
+						})
 					}
 				}
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
@@ -51,7 +57,10 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						continue
 					}
 					if evt.Reason == "FailedCreatePodSandBox" && evt.Message != "" {
-						failures = append(failures, evt.Message)
+						failures = append(failures, common.Failure{
+							Text:      evt.Message,
+							Sensitive: []common.Sensitive{},
+						})
 					}
 				}
 			}

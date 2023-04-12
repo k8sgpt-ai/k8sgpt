@@ -21,7 +21,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pvc := range list.Items {
-		var failures []string
+		var failures []common.Failure
 
 		// Check for empty rs
 		if pvc.Status.Phase == "Pending" {
@@ -32,7 +32,10 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				continue
 			}
 			if evt.Reason == "ProvisioningFailed" && evt.Message != "" {
-				failures = append(failures, evt.Message)
+				failures = append(failures, common.Failure{
+					Text:      evt.Message,
+					Sensitive: []common.Sensitive{},
+				})
 			}
 		}
 		if len(failures) > 0 {

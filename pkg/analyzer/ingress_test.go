@@ -100,7 +100,7 @@ func TestIngressAnalyzerWithoutIngressClassAnnotation(t *testing.T) {
 	var errorFound bool
 	for _, analysis := range analysisResults {
 		for _, err := range analysis.Error {
-			if strings.Contains(err, "does not specify an Ingress class") {
+			if strings.Contains(err.Text, "does not specify an Ingress class") {
 				errorFound = true
 				break
 			}

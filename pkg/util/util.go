@@ -2,10 +2,16 @@ package util
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"math/rand"
+	"regexp"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
 
 func SliceContainsString(slice []string, s string) bool {
 	for _, item := range slice {
@@ -104,4 +110,22 @@ func SliceDiff(source, dest []string) []string {
 		}
 	}
 	return diff
+}
+
+func MaskString(input string) string {
+	key := make([]byte, len(input))
+	result := make([]rune, len(input))
+	rand.Read(key)
+	for i := range result {
+		result[i] = anonymizePattern[int(key[i])%len(anonymizePattern)]
+	}
+	return base64.StdEncoding.EncodeToString([]byte(string(result)))
+}
+
+func ReplaceIfMatch(text string, pattern string, replacement string) string {
+	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, pattern))
+	if re.MatchString(text) {
+		text = re.ReplaceAllString(text, replacement)
+	}
+	return text
 }

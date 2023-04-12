@@ -67,7 +67,7 @@ func TestStatefulSetAnalyzerWithoutService(t *testing.T) {
 
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
-			if want == got {
+			if want == got.Text {
 				errorFound = true
 			}
 		}
@@ -132,7 +132,7 @@ func TestStatefulSetAnalyzerMissingStorageClass(t *testing.T) {
 
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
-			if want == got {
+			if want == got.Text {
 				errorFound = true
 			}
 		}

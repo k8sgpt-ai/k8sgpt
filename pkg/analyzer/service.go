@@ -22,7 +22,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, ep := range list.Items {
-		var failures []string
+		var failures []common.Failure
 
 		// Check for empty service
 		if len(ep.Subsets) == 0 {
@@ -33,7 +33,19 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 
 			for k, v := range svc.Spec.Selector {
-				failures = append(failures, fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v))
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: k,
+							Masked:   util.MaskString(k),
+						},
+						{
+							Unmasked: v,
+							Masked:   util.MaskString(v),
+						},
+					},
+				})
 			}
 		} else {
 			count := 0
@@ -46,7 +58,10 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
-					failures = append(failures, fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count))
+					failures = append(failures, common.Failure{
+						Text:      fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
+						Sensitive: []common.Sensitive{},
+					})
 				}
 			}
 		}

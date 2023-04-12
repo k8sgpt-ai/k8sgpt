@@ -38,12 +38,15 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, report := range result.Items {
 
 		// For each pod there may be multiple vulnerabilities
-		var failures []string
+		var failures []common.Failure
 		for _, vuln := range report.Report.Vulnerabilities {
 			if vuln.Severity == "CRITICAL" {
 				// get the vulnerability ID
 				// get the vulnerability description
-				failures = append(failures, fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.VulnerabilityID, vuln.PrimaryLink))
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.VulnerabilityID, vuln.PrimaryLink),
+					Sensitive: []common.Sensitive{},
+				})
 			}
 		}
 		if len(failures) > 0 {

@@ -12,6 +12,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
 )
@@ -127,13 +128,13 @@ func (a *Analysis) PrintOutput() {
 		fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
 			color.YellowString(result.Name), color.CyanString(result.ParentObject))
 		for _, err := range result.Error {
-			fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err))
+			fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text))
 		}
 		fmt.Println(color.GreenString(result.Details + "\n"))
 	}
 }
 
-func (a *Analysis) GetAIResults(output string) error {
+func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
 	}
@@ -144,7 +145,17 @@ func (a *Analysis) GetAIResults(output string) error {
 	}
 
 	for index, analysis := range a.Results {
-		parsedText, err := a.AIClient.Parse(a.Context, analysis.Error, a.NoCache)
+		var texts []string
+
+		for _, failure := range analysis.Error {
+			if anonymize {
+				for _, s := range failure.Sensitive {
+					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
+				}
+			}
+			texts = append(texts, failure.Text)
+		}
+		parsedText, err := a.AIClient.Parse(a.Context, texts, a.NoCache)
 		if err != nil {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?
@@ -159,6 +170,15 @@ func (a *Analysis) GetAIResults(output string) error {
 				return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
 			}
 		}
+
+		if anonymize {
+			for _, failure := range analysis.Error {
+				for _, s := range failure.Sensitive {
+					parsedText = strings.ReplaceAll(parsedText, s.Masked, s.Unmasked)
+				}
+			}
+		}
+
 		analysis.Details = parsedText
 		if output != "json" {
 			bar.Add(1)

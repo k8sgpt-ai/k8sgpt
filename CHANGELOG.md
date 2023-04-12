@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.2.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.0...v0.2.1) (2023-04-12)
+
+
+### Features
+
+* add anonymization example to README ([8a60b57](https://github.com/k8sgpt-ai/k8sgpt/commit/8a60b579409c67f092156ba1adf1be22cce37b8c))
+* add anonymization flag ([d2a84ea](https://github.com/k8sgpt-ai/k8sgpt/commit/d2a84ea2b5c800dd900aac3a48b1914bd9ddb917))
+* add more details on anonymize flag ([b687473](https://github.com/k8sgpt-ai/k8sgpt/commit/b687473e6169406002b0ee8be6ebb9ce43b46495))
+* add storage class names' check. ([c8ba7d6](https://github.com/k8sgpt-ai/k8sgpt/commit/c8ba7d62d2f1d262263d1dff8f980e91cdcd50e8))
+* improve documentation ([6f08654](https://github.com/k8sgpt-ai/k8sgpt/commit/6f0865413fc2854450d217225199cec199972490))
+* improve documentation & update hpa message ([11326c1](https://github.com/k8sgpt-ai/k8sgpt/commit/11326c1c5f307c718e8d1e56099537314ffedadd))
+* improve security of the MaskString function ([08f2a89](https://github.com/k8sgpt-ai/k8sgpt/commit/08f2a89e54a65544322814286977b2c05acce89d))
+* initial impl of integration ([b0e5170](https://github.com/k8sgpt-ai/k8sgpt/commit/b0e517006e65ac2b4e2d4e2696531d4bbf62c34b))
+* initial impl of integration ([61d6e52](https://github.com/k8sgpt-ai/k8sgpt/commit/61d6e524657272cf3a967c724f212677fcfe7d2b))
+* integration ready for first review ([3682f5c](https://github.com/k8sgpt-ai/k8sgpt/commit/3682f5c7ebb9590e92162eed214a8127f71bcd81))
+* introduce StatefulSet analyser. ([c041ce2](https://github.com/k8sgpt-ai/k8sgpt/commit/c041ce2bbb4ecbc6f5637207c9f3071eee022744))
+* refactor integration to use Failure object ([c0afc0f](https://github.com/k8sgpt-ai/k8sgpt/commit/c0afc0f5c91cfa50b1f7af901800ff0a2b492d18))
+* return errors if filter specified by flag does not exist. ([dd5824f](https://github.com/k8sgpt-ai/k8sgpt/commit/dd5824f4365b01e3c501d8b5cda914dff138e03d))
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.27.0 ([7a97034](https://github.com/k8sgpt-ai/k8sgpt/commit/7a97034cf41cb265111c752ee3d54fd90524ef59))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.7.0 ([#227](https://github.com/k8sgpt-ai/k8sgpt/issues/227)) ([5f3a5a5](https://github.com/k8sgpt-ai/k8sgpt/commit/5f3a5a54a02967acce40f8b4e9dd3a154c83f58c))
+* exit progressbar on error ([#99](https://github.com/k8sgpt-ai/k8sgpt/issues/99)) ([fe261b3](https://github.com/k8sgpt-ai/k8sgpt/commit/fe261b375f4d7990906620f53ac26e792a34731b))
+* exit progressbar on error ([#99](https://github.com/k8sgpt-ai/k8sgpt/issues/99)) ([ab55f15](https://github.com/k8sgpt-ai/k8sgpt/commit/ab55f157ef026502d29eadf5ad83e917fe085a6c))
+* improve ReplaceIfMatch regex ([fd936ce](https://github.com/k8sgpt-ai/k8sgpt/commit/fd936ceaf725d1c1ed1f53eaa2204455dcd1e2af))
+* pdb test ([705d2a0](https://github.com/k8sgpt-ai/k8sgpt/commit/705d2a0dcebb63783782e06b6b775393daf1efb7))
+* use hpa namespace instead analyzer namespace ([#230](https://github.com/k8sgpt-ai/k8sgpt/issues/230)) ([a582d44](https://github.com/k8sgpt-ai/k8sgpt/commit/a582d444c5c53f25d7172947c690b35cad2cc176))
+
+
+### Docs
+
+* add statefulSet analyzer in the docs. ([#233](https://github.com/k8sgpt-ai/k8sgpt/issues/233)) ([b45ff1a](https://github.com/k8sgpt-ai/k8sgpt/commit/b45ff1aa8ef447df2b74bb8c6225e2f3d7c5bd63))
+* add statefulSet analyzer in the docs. ([#233](https://github.com/k8sgpt-ai/k8sgpt/issues/233)) ([ba01bd4](https://github.com/k8sgpt-ai/k8sgpt/commit/ba01bd4b6ecd64fbe249be54f20471afc6339208))
+
+
+### Other
+
+* add fakeai provider ([#218](https://github.com/k8sgpt-ai/k8sgpt/issues/218)) ([e449cb6](https://github.com/k8sgpt-ai/k8sgpt/commit/e449cb60230d440d5b8e00062db63de5d6d413bf))
+* adding k8sgpt-approvers ([#238](https://github.com/k8sgpt-ai/k8sgpt/issues/238)) ([db1388f](https://github.com/k8sgpt-ai/k8sgpt/commit/db1388fd20dcf21069adcecd2796f2e1231162c8))
+* adding k8sgpt-approvers ([#238](https://github.com/k8sgpt-ai/k8sgpt/issues/238)) ([992b107](https://github.com/k8sgpt-ai/k8sgpt/commit/992b107c2d906663bb22998004a0859bccd45c77))
+* compiling successfully ([80ac51c](https://github.com/k8sgpt-ai/k8sgpt/commit/80ac51c804351226e1764e3e649ac56e22de3749))
+* **deps:** update anchore/sbom-action action to v0.14.1 ([#228](https://github.com/k8sgpt-ai/k8sgpt/issues/228)) ([9423b53](https://github.com/k8sgpt-ai/k8sgpt/commit/9423b53c1dbae3d0762420a0bacbdace9a2c18c9))
+* **deps:** update google-github-actions/release-please-action digest to c078ea3 ([a1d8012](https://github.com/k8sgpt-ai/k8sgpt/commit/a1d8012a5c748aee3f16621d6da9a0f0c8cba293))
+* **deps:** update google-github-actions/release-please-action digest to f7edb9e ([#241](https://github.com/k8sgpt-ai/k8sgpt/issues/241)) ([55dda43](https://github.com/k8sgpt-ai/k8sgpt/commit/55dda432ab89c4917bd28fceabcbe5569c0bf530))
+* **deps:** update google-github-actions/release-please-action digest to f7edb9e ([#241](https://github.com/k8sgpt-ai/k8sgpt/issues/241)) ([21dc61c](https://github.com/k8sgpt-ai/k8sgpt/commit/21dc61c04f4d772b5147b38a4d28e5dbddf5cdd8))
+* fix mistake introduced by ab55f157 ([#240](https://github.com/k8sgpt-ai/k8sgpt/issues/240)) ([428c348](https://github.com/k8sgpt-ai/k8sgpt/commit/428c3485868a7be95ea6776694e30b36badf4b5c))
+* fix mistake introduced by ab55f157 ([#240](https://github.com/k8sgpt-ai/k8sgpt/issues/240)) ([3845d47](https://github.com/k8sgpt-ai/k8sgpt/commit/3845d4747f4e0fc823d1bcf631d6ecdd5e4ccd03))
+* Fixing broken tests ([c809af3](https://github.com/k8sgpt-ai/k8sgpt/commit/c809af3f47388599fda3a88a4638feae1dc90492))
+* fixing filters ([258c69a](https://github.com/k8sgpt-ai/k8sgpt/commit/258c69a17c977867dfd0a7ad02727270b7c172e7))
+* fixing filters ([4d20f70](https://github.com/k8sgpt-ai/k8sgpt/commit/4d20f70fb40ff326ceb279f699068ec4956a2f10))
+* merged ([096321b](https://github.com/k8sgpt-ai/k8sgpt/commit/096321b31a6cf0d53b1861a3e4ad1efe84f697cc))
+* updated analysis_test.go ([825e9a4](https://github.com/k8sgpt-ai/k8sgpt/commit/825e9a43bd3ab7aa3ea52f315993cd778ea039e3))
+* updated link output ([1b7f4ce](https://github.com/k8sgpt-ai/k8sgpt/commit/1b7f4ce44a499e5389aec42fdee00bfa81ef0888))
+* updating based on feedback ([5e5d4b6](https://github.com/k8sgpt-ai/k8sgpt/commit/5e5d4b6de160dc7533067e1c0d8403c3faac1a9f))
+* weird new line after filter removed ([fabe01a](https://github.com/k8sgpt-ai/k8sgpt/commit/fabe01aa019f1db45ed2ff780f0d6d63297b230b))
+
 ## [0.2.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.1.8...v0.2.0) (2023-04-05)
 
 
