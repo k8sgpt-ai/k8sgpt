@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/magiconair/properties/assert"
 	appsv1 "k8s.io/api/apps/v1"
@@ -23,7 +24,7 @@ func TestHPAAnalyzer(t *testing.T) {
 			},
 		})
 	hpaAnalyzer := HpaAnalyzer{}
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -55,7 +56,7 @@ func TestHPAAnalyzerWithMultipleHPA(t *testing.T) {
 		},
 	)
 	hpaAnalyzer := HpaAnalyzer{}
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -86,7 +87,7 @@ func TestHPAAnalyzerWithUnsuportedScaleTargetRef(t *testing.T) {
 		})
 	hpaAnalyzer := HpaAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -133,7 +134,7 @@ func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 		})
 	hpaAnalyzer := HpaAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
@@ -188,7 +189,7 @@ func TestHPAAnalyzerWithExistingScaleTargetRef(t *testing.T) {
 	)
 	hpaAnalyzer := HpaAnalyzer{}
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},

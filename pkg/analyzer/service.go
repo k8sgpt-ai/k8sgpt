@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ServiceAnalyzer struct{}
 
-func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
@@ -18,10 +19,10 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, ep := range list.Items {
-		var failures []Failure
+		var failures []common.Failure
 
 		// Check for empty service
 		if len(ep.Subsets) == 0 {
@@ -32,9 +33,9 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			}
 
 			for k, v := range svc.Spec.Selector {
-				failures = append(failures, Failure{
+				failures = append(failures, common.Failure{
 					Text: fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
-					Sensitive: []Sensitive{
+					Sensitive: []common.Sensitive{
 						{
 							Unmasked: k,
 							Masked:   util.MaskString(k),
@@ -57,16 +58,16 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
-					failures = append(failures, Failure{
+					failures = append(failures, common.Failure{
 						Text:      fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
-						Sensitive: []Sensitive{},
+						Sensitive: []common.Sensitive{},
 					})
 				}
 			}
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)] = common.PreAnalysis{
 				Endpoint:       ep,
 				FailureDetails: failures,
 			}
@@ -74,7 +75,7 @@ func (ServiceAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "Service",
 			Name:  key,
 			Error: value.FailureDetails,

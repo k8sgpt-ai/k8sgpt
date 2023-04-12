@@ -67,7 +67,15 @@ var AnalyzeCmd = &cobra.Command{
 
 		ctx := context.Background()
 		// Get kubernetes client from viper
-		client := viper.Get("kubernetesClient").(*kubernetes.Client)
+
+		kubecontext := viper.GetString("kubecontext")
+		kubeconfig := viper.GetString("kubeconfig")
+		client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+		if err != nil {
+			color.Red("Error initialising kubernetes client: %v", err)
+			os.Exit(1)
+		}
+
 		// AnalysisResult configuration
 		config := &analysis.Analysis{
 			Namespace: namespace,

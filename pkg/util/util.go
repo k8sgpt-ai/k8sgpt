@@ -13,6 +13,15 @@ import (
 
 var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
 
+func SliceContainsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
 func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool) {
 	if meta.OwnerReferences != nil {
 		for _, owner := range meta.OwnerReferences {

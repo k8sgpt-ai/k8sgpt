@@ -3,6 +3,7 @@ package analyzer
 import (
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -10,16 +11,16 @@ import (
 type PodAnalyzer struct {
 }
 
-func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pod := range list.Items {
-		var failures []Failure
+		var failures []common.Failure
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
 
@@ -27,9 +28,9 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			for _, containerStatus := range pod.Status.Conditions {
 				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
 					if containerStatus.Message != "" {
-						failures = append(failures, Failure{
+						failures = append(failures, common.Failure{
 							Text:      containerStatus.Message,
-							Sensitive: []Sensitive{},
+							Sensitive: []common.Sensitive{},
 						})
 					}
 				}
@@ -41,9 +42,9 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			if containerStatus.State.Waiting != nil {
 				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
 					if containerStatus.State.Waiting.Message != "" {
-						failures = append(failures, Failure{
+						failures = append(failures, common.Failure{
 							Text:      containerStatus.State.Waiting.Message,
-							Sensitive: []Sensitive{},
+							Sensitive: []common.Sensitive{},
 						})
 					}
 				}
@@ -56,16 +57,16 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 						continue
 					}
 					if evt.Reason == "FailedCreatePodSandBox" && evt.Message != "" {
-						failures = append(failures, Failure{
+						failures = append(failures, common.Failure{
 							Text:      evt.Message,
-							Sensitive: []Sensitive{},
+							Sensitive: []common.Sensitive{},
 						})
 					}
 				}
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
 				Pod:            pod,
 				FailureDetails: failures,
 			}
@@ -73,7 +74,7 @@ func (PodAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "Pod",
 			Name:  key,
 			Error: value.FailureDetails,

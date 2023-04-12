@@ -3,13 +3,14 @@ package analyzer
 import (
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type PvcAnalyzer struct{}
 
-func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{})
@@ -17,10 +18,10 @@ func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, pvc := range list.Items {
-		var failures []Failure
+		var failures []common.Failure
 
 		// Check for empty rs
 		if pvc.Status.Phase == "Pending" {
@@ -31,14 +32,14 @@ func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				continue
 			}
 			if evt.Reason == "ProvisioningFailed" && evt.Message != "" {
-				failures = append(failures, Failure{
+				failures = append(failures, common.Failure{
 					Text:      evt.Message,
-					Sensitive: []Sensitive{},
+					Sensitive: []common.Sensitive{},
 				})
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name)] = common.PreAnalysis{
 				PersistentVolumeClaim: pvc,
 				FailureDetails:        failures,
 			}
@@ -46,7 +47,7 @@ func (PvcAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "PersistentVolumeClaim",
 			Name:  key,
 			Error: value.FailureDetails,

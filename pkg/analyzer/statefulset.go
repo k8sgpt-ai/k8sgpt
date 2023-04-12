@@ -3,29 +3,30 @@ package analyzer
 import (
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StatefulSetAnalyzer struct{}
 
-func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
+func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	list, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]PreAnalysis{}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, sts := range list.Items {
-		var failures []Failure
+		var failures []common.Failure
 
 		// get serviceName
 		serviceName := sts.Spec.ServiceName
 		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
 		if err != nil {
-			failures = append(failures, Failure{
+			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName),
-				Sensitive: []Sensitive{
+				Sensitive: []common.Sensitive{
 					{
 						Unmasked: sts.Namespace,
 						Masked:   util.MaskString(sts.Namespace),
@@ -42,9 +43,9 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 				if volumeClaimTemplate.Spec.StorageClassName != nil {
 					_, err := a.Client.GetClient().StorageV1().StorageClasses().Get(a.Context, *volumeClaimTemplate.Spec.StorageClassName, metav1.GetOptions{})
 					if err != nil {
-						failures = append(failures, Failure{
+						failures = append(failures, common.Failure{
 							Text: fmt.Sprintf("StatefulSet uses the storage class %s which does not exist.", *volumeClaimTemplate.Spec.StorageClassName),
-							Sensitive: []Sensitive{
+							Sensitive: []common.Sensitive{
 								{
 									Unmasked: *volumeClaimTemplate.Spec.StorageClassName,
 									Masked:   util.MaskString(*volumeClaimTemplate.Spec.StorageClassName),
@@ -56,7 +57,7 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", sts.Namespace, sts.Name)] = PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", sts.Namespace, sts.Name)] = common.PreAnalysis{
 				StatefulSet:    sts,
 				FailureDetails: failures,
 			}
@@ -64,7 +65,7 @@ func (StatefulSetAnalyzer) Analyze(a Analyzer) ([]Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = Result{
+		var currentAnalysis = common.Result{
 			Kind:  "StatefulSet",
 			Name:  key,
 			Error: value.FailureDetails,

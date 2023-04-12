@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/magiconair/properties/assert"
 	v1 "k8s.io/api/core/v1"
@@ -32,7 +33,7 @@ func TestServiceAnalyzer(t *testing.T) {
 				},
 			}})
 
-	config := Analyzer{
+	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
