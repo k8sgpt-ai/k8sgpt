@@ -6,6 +6,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -67,8 +69,10 @@ func (s *Config) Serve() error {
 }
 
 func getBoolParam(param string) bool {
-	if param == "true" {
-		return true
+	b, err := strconv.ParseBool(strings.ToLower(param))
+	if err != nil {
+		// Handle error if conversion fails
+		return false
 	}
-	return false
+	return b
 }
