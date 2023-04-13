@@ -81,24 +81,24 @@ var AuthCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			passphrase = strings.TrimSpace(string(bytePassphrase))
-			if passphrase != "" {
-				key = passphrase
-				if len(key) != 16 {
-					color.Red("Encryption passphrase is not of suitable lenght of 16")
-					os.Exit(1)
-				}
-				encryptionKey := []byte(key)
-				//encrypting password
-				encryptedPassword, err = lockandkey.Encrypt(encryptionKey, []byte(password))
-				if err != nil {
-					color.Red("Encryption of API key failed with: %s",
-						err.Error())
-					os.Exit(1)
-				}
-			} else {
-				key = ""
-				encryptedPassword = password
+		}
+		if passphrase != "" {
+			key = passphrase
+			if len(key) != 16 {
+				color.Red("Encryption passphrase is not of suitable lenght of 16")
+				os.Exit(1)
 			}
+			encryptionKey := []byte(key)
+			//encrypting password
+			encryptedPassword, err = lockandkey.Encrypt(encryptionKey, []byte(password))
+			if err != nil {
+				color.Red("Encryption of API key failed with: %s",
+					err.Error())
+				os.Exit(1)
+			}
+		} else {
+			key = ""
+			encryptedPassword = password
 		}
 
 		// create new provider object
