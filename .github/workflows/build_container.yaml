@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3
 
       - name: Extract branch name
         id: extract_branch
@@ -70,7 +70,7 @@ jobs:
       RELEASE_REGISTRY: "localhost:5000/k8sgpt"
     steps:
       - name: Check out code
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3
 
       - name: Set up Docker Buildx
         id: buildx
@@ -115,7 +115,7 @@ jobs:
       contents: read # Needed for checking out the repository
     steps:
       - name: Check out code
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
+        uses: actions/checkout@83b7061638ee4956cf7545a6f7efe594e5ad0247 # v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2
