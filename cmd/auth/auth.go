@@ -135,5 +135,5 @@ func init() {
 	// add flag for password
 	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for passphrase
-	AuthCmd.Flags().StringVarP(&passphrase, "with-passphrase", "e", "", "Passphrase(of lenght 16) for encryption of API Key")
+	AuthCmd.Flags().StringVarP(&passphrase, "with-passphrase", "e", "", "Passphrase(of length 16) for encryption of API Key")
 }
