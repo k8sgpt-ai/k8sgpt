@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"strings"
 
 	"github.com/fatih/color"
@@ -58,10 +59,11 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
+	cacheKey := util.GetCacheKey(a.GetName(), sEnc)
 	// find in viper cache
-	if viper.IsSet(sEnc) && !nocache {
+	if viper.IsSet(cacheKey) && !nocache {
 		// retrieve data from cache
-		response := viper.GetString(sEnc)
+		response := viper.GetString(cacheKey)
 		if response == "" {
 			color.Red("error retrieving cached data")
 			return "", nil
@@ -79,8 +81,8 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		return "", err
 	}
 
-	if !viper.IsSet(sEnc) {
-		viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
+	if !viper.IsSet(cacheKey) || nocache {
+		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("error writing config: %v", err)
 			return "", nil

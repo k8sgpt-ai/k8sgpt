@@ -1,13 +1,9 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/spf13/viper"
 	"net/http"
 	"os"
 )
@@ -31,56 +27,9 @@ func (s *K8sGPTServer) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	nocache := getBoolParam(r.URL.Query().Get("nocache"))
 	language := r.URL.Query().Get("language")
 
-	// get ai configuration
-	var configAI ai.AIConfiguration
-	err := viper.UnmarshalKey("ai", &configAI)
+	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain)
 	if err != nil {
-		color.Red("Error: %v", err)
-		os.Exit(1)
-	}
-
-	if len(configAI.Providers) == 0 {
-		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
-		os.Exit(1)
-	}
-
-	var aiProvider ai.AIProvider
-	for _, provider := range configAI.Providers {
-		if s.Backend == provider.Name {
-			aiProvider = provider
-			break
-		}
-	}
-
-	if aiProvider.Name == "" {
-		color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", s.Backend)
-		os.Exit(1)
-	}
-
-	aiClient := ai.NewClient(aiProvider.Name)
-	if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
-		color.Red("Error: %v", err)
-		os.Exit(1)
-	}
-
-	ctx := context.Background()
-	// Get kubernetes client from viper
-
-	kubecontext := viper.GetString("kubecontext")
-	kubeconfig := viper.GetString("kubeconfig")
-	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
-	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
-		os.Exit(1)
-	}
-
-	config := &analysis.Analysis{
-		Namespace: namespace,
-		Explain:   explain,
-		AIClient:  aiClient,
-		Client:    client,
-		Context:   ctx,
-		NoCache:   nocache,
+		fmt.Fprintf(w, err.Error())
 	}
 
 	err = config.RunAnalysis()
@@ -108,6 +57,7 @@ func (s *K8sGPTServer) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *K8sGPTServer) Serve() error {
 	http.HandleFunc("/analyze", s.analyzeHandler)
+	color.Green("Starting server on port " + s.Port)
 	err := http.ListenAndServe(":"+s.Port, nil)
 	if err != nil {
 		fmt.Printf("error starting server: %s\n", err)

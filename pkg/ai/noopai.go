@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
 	"strings"
 )
@@ -33,6 +34,7 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
+	cacheKey := util.GetCacheKey(a.GetName(), sEnc)
 
 	response, err := a.GetCompletion(ctx, inputKey)
 	if err != nil {
@@ -40,8 +42,8 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		return "", err
 	}
 
-	if !viper.IsSet(sEnc) {
-		viper.Set(sEnc, base64.StdEncoding.EncodeToString([]byte(response)))
+	if !viper.IsSet(cacheKey) {
+		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("error writing config: %v", err)
 			return "", nil

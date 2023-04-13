@@ -44,8 +44,6 @@ var ServeCmd = &cobra.Command{
 			Token:   token,
 		}
 
-		fmt.Println(server)
-
 		err := server.Serve()
 		if err != nil {
 			color.Red("Error: %v", err)
