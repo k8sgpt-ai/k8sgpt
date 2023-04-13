@@ -129,3 +129,7 @@ func ReplaceIfMatch(text string, pattern string, replacement string) string {
 	}
 	return text
 }
+
+func GetCacheKey(provider string, sEnc string) string {
+	return fmt.Sprintf("%s-%s", provider, sEnc)
+}

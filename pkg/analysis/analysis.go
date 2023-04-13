@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -41,8 +42,61 @@ type JsonOutput struct {
 	Results  []common.Result `json:"results"`
 }
 
-func (a *Analysis) RunAnalysis() error {
+func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool) (*Analysis, error) {
+	var configAI ai.AIConfiguration
+	err := viper.UnmarshalKey("ai", &configAI)
+	if err != nil {
+		color.Red("Error: %v", err)
+		os.Exit(1)
+	}
 
+	if len(configAI.Providers) == 0 && explain {
+		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+		os.Exit(1)
+	}
+
+	var aiProvider ai.AIProvider
+	for _, provider := range configAI.Providers {
+		if backend == provider.Name {
+			aiProvider = provider
+			break
+		}
+	}
+
+	if aiProvider.Name == "" {
+		color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
+		return nil, errors.New("AI provider not specified in configuration")
+	}
+
+	aiClient := ai.NewClient(aiProvider.Name)
+	if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
+		color.Red("Error: %v", err)
+		return nil, err
+	}
+
+	ctx := context.Background()
+	// Get kubernetes client from viper
+
+	kubecontext := viper.GetString("kubecontext")
+	kubeconfig := viper.GetString("kubeconfig")
+	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if err != nil {
+		color.Red("Error initialising kubernetes client: %v", err)
+		return nil, err
+	}
+
+	return &Analysis{
+		Context:   ctx,
+		Filters:   filters,
+		Client:    client,
+		AIClient:  aiClient,
+		Namespace: namespace,
+		NoCache:   noCache,
+		Explain:   explain,
+	}, nil
+}
+
+func (a *Analysis) RunAnalysis() error {
 	activeFilters := viper.GetStringSlice("active_filters")
 
 	analyzerMap := analyzer.GetAnalyzerMap()

@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/aquasecurity/trivy-operator v0.13.0
 	github.com/fatih/color v1.15.0
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.1
 	github.com/sashabaranov/go-openai v1.7.0
