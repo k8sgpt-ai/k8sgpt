@@ -36,6 +36,7 @@ type PreAnalysis struct {
 	HorizontalPodAutoscalers autov1.HorizontalPodAutoscaler
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
 	StatefulSet              appsv1.StatefulSet
+	NetworkPolicy            networkv1.NetworkPolicy
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
 }
