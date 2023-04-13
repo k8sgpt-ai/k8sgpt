@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -47,8 +48,8 @@ var AnalyzeCmd = &cobra.Command{
 			if backend == provider.Name {
 				aiProvider = provider
 				//if passprahse exists then decrypt the password
-				if provider.Passphrase != "" {
-					decryptedPassword, err := lockandkey.Decrypt([]byte(aiProvider.Passphrase), []byte(aiProvider.Password))
+				if auth.Key != "" {
+					decryptedPassword, err := lockandkey.Decrypt([]byte(auth.Key), []byte(aiProvider.Password))
 					if err != nil {
 						color.Red("Error decrypting the API Key: %v", err)
 						os.Exit(1)

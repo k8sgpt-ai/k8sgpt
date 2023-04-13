@@ -21,6 +21,9 @@ var (
 	passphrase string
 )
 
+// making key global
+var Key string
+
 // authCmd represents the auth command
 var AuthCmd = &cobra.Command{
 	Use:   "auth",
@@ -71,7 +74,6 @@ var AuthCmd = &cobra.Command{
 			password = strings.TrimSpace(string(bytePassword))
 		}
 
-		var key string
 		if passphrase == "" {
 			fmt.Printf("\nEnter Passphrase for the API Key: ")
 			bytePassphrase, err := term.ReadPassword(int(syscall.Stdin))
@@ -83,12 +85,12 @@ var AuthCmd = &cobra.Command{
 			passphrase = strings.TrimSpace(string(bytePassphrase))
 		}
 		if passphrase != "" {
-			key = passphrase
-			if len(key) != 16 {
+			Key = passphrase
+			if len(Key) != 16 {
 				color.Red("Encryption passphrase is not of suitable lenght of 16")
 				os.Exit(1)
 			}
-			encryptionKey := []byte(key)
+			encryptionKey := []byte(Key)
 			//encrypting password
 			encryptedPassword, err = lockandkey.Encrypt(encryptionKey, []byte(password))
 			if err != nil {
@@ -97,16 +99,14 @@ var AuthCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		} else {
-			key = ""
 			encryptedPassword = password
 		}
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:       backend,
-			Model:      model,
-			Password:   encryptedPassword,
-			Passphrase: key,
+			Name:     backend,
+			Model:    model,
+			Password: encryptedPassword,
 		}
 
 		if providerIndex == -1 {

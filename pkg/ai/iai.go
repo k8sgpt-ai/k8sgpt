@@ -27,8 +27,7 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
-	Name       string `mapstructure:"name"`
-	Model      string `mapstructure:"model"`
-	Password   string `mapstructure:"password"`
-	Passphrase string `mapstructure:"passphrase"`
+	Name     string `mapstructure:"name"`
+	Model    string `mapstructure:"model"`
+	Password string `mapstructure:"password"`
 }
