@@ -57,7 +57,7 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Config) Serve() error {
 	http.HandleFunc("/analyze", s.analyzeHandler)
-	color.Green("Starting server on port " + s.Port)
+	color.Green("Starting server on port %d", s.Port)
 	err := http.ListenAndServe(":"+s.Port, nil)
 	if err != nil {
 		fmt.Printf("error starting server: %s\n", err)
