@@ -41,11 +41,6 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if len(configAI.Providers) == 0 {
-			color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
-			os.Exit(1)
-		}
-
 		var aiProvider ai.AIProvider
 		for _, provider := range configAI.Providers {
 			if backend == provider.Name {
@@ -94,6 +89,11 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		if explain {
+			if len(configAI.Providers) == 0 {
+				color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+				os.Exit(1)
+			}
+
 			err := config.GetAIResults(output, anonymize)
 			if err != nil {
 				color.Red("Error: %v", err)
