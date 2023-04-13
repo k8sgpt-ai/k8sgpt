@@ -11,30 +11,28 @@ import (
 
 type CronJobAnalyzer struct{}
 
-func (analyzer CronJobAnalyzer) Analyze(config common.Analyzer) ([]common.Result, error) {
+func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	cronJobList, err := config.Client.GetClient().BatchV1().CronJobs("").List(config.Context, v1.ListOptions{})
+	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs("").List(a.Context, v1.ListOptions{})
 	if err != nil {
 		return results, err
 	}
 
-	for _, cronJob := range cronJobList.Items {
-		result := common.Result{
-			Kind: "CronJob",
-			Name: cronJob.Name,
-		}
+	var preAnalysis = map[string]common.PreAnalysis{}
 
+	for _, cronJob := range cronJobList.Items {
+		var failures []common.Failure
 		if cronJob.Spec.Suspend != nil && *cronJob.Spec.Suspend {
-			result.Error = append(result.Error, common.Failure{
+			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("CronJob %s is suspended", cronJob.Name),
 				Sensitive: []common.Sensitive{},
 			})
 		} else {
 			// check the schedule format
 			if _, err := CheckCronScheduleIsValid(cronJob.Spec.Schedule); err != nil {
-				result.Error = append(result.Error, common.Failure{
-					Text:      fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, cronJob.Spec.Schedule),
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, err.Error()),
 					Sensitive: []common.Sensitive{},
 				})
 			}
@@ -44,25 +42,34 @@ func (analyzer CronJobAnalyzer) Analyze(config common.Analyzer) ([]common.Result
 				deadline := time.Duration(*cronJob.Spec.StartingDeadlineSeconds) * time.Second
 				if deadline < 0 {
 
-					result = common.Result{
-						Kind: "CronJob",
-						Name: cronJob.Name,
-						Error: []common.Failure{
-							{
-								Text:      fmt.Sprintf("CronJob %s has a negative starting deadline: %d seconds", cronJob.Name, *cronJob.Spec.StartingDeadlineSeconds),
-								Sensitive: []common.Sensitive{},
-							},
-						},
-					}
+					failures = append(failures, common.Failure{
+						Text:      fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
+						Sensitive: []common.Sensitive{},
+					})
 
 				}
 			}
 
 		}
-		results = append(results, result)
+
+		if len(failures) > 0 {
+			preAnalysis[cronJob.Name] = common.PreAnalysis{
+				FailureDetails: failures,
+			}
+		}
+
+		for key, value := range preAnalysis {
+			currentAnalysis := common.Result{
+				Kind:         "CronJob",
+				Name:         key,
+				Error:        value.FailureDetails,
+				ParentObject: "",
+			}
+			a.Results = append(results, currentAnalysis)
+		}
 	}
 
-	return results, nil
+	return a.Results, nil
 }
 
 // Check CRON schedule format

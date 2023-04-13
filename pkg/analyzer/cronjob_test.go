@@ -66,10 +66,6 @@ func TestCronJobSuccess(t *testing.T) {
 	}
 
 	assert.Equal(t, len(analysisResults), 0)
-	assert.Equal(t, analysisResults[0].Name, "example-cronjob")
-	assert.Equal(t, analysisResults[0].Kind, "CronJob")
-	assert.Equal(t, analysisResults[0].Error, "CronJob 'example-cronjob' has an annotation 'analysisDate', indicating it may need to be reviewed.")
-
 }
 
 func TestCronJobBroken(t *testing.T) {

@@ -21,16 +21,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	for _, policy := range policies.Items {
+		var failures []common.Failure
+
 		// Check if policy allows traffic to all pods in the namespace
 		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", policy.Namespace, policy.Name)] = common.PreAnalysis{
-				NetworkPolicy: policy,
-				FailureDetails: []common.Failure{
-					{
-						Text: fmt.Sprintf("Network policy allows traffic to all pods in the namespace: %s", policy.Name),
-					},
-				},
-			}
+			failures = append(failures, common.Failure{
+				Text: fmt.Sprintf("Network policy allows traffic to all pods in the namespace: %s", policy.Name),
+			})
 			continue
 		}
 		// Check if policy is not applied to any pods
@@ -39,18 +36,18 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			return nil, err
 		}
 		if len(podList.Items) == 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", policy.Namespace, policy.Name)] = common.PreAnalysis{
-				NetworkPolicy: policy,
-				FailureDetails: []common.Failure{
-					{
-						Text: fmt.Sprintf("Network policy is not applied to any pods: %s", policy.Name),
-					},
-				},
+			failures = append(failures, common.Failure{
+				Text: fmt.Sprintf("Network policy is not applied to any pods: %s", policy.Name),
+			})
+		}
+
+		if len(failures) > 0 {
+			preAnalysis[policy.Name] = common.PreAnalysis{
+				FailureDetails: failures,
+				NetworkPolicy:  policy,
 			}
 		}
 	}
-
-	var analysisResults []common.Result
 
 	for key, value := range preAnalysis {
 		currentAnalysis := common.Result{
@@ -59,8 +56,8 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			Error:        value.FailureDetails,
 			ParentObject: "",
 		}
-		analysisResults = append(analysisResults, currentAnalysis)
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
-	return analysisResults, nil
+	return a.Results, nil
 }

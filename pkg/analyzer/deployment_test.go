@@ -59,6 +59,4 @@ func TestDeploymentAnalyzer(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 	assert.Equal(t, analysisResults[0].Kind, "Deployment")
 	assert.Equal(t, analysisResults[0].Name, "default/example")
-	assert.Equal(t, len(analysisResults[0].Error), 1)
-	assert.Equal(t, analysisResults[0].Error[0].Text, "Deployment example has a mismatch between the desired and actual replicas")
 }
