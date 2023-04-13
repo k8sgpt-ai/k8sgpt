@@ -3,7 +3,7 @@ package serve
 import (
 	"fmt"
 	"github.com/fatih/color"
-	server2 "github.com/k8sgpt-ai/k8sgpt/pkg/server"
+	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -38,7 +38,7 @@ var ServeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		server := server2.K8sGPTServer{
+		server := k8sgptserver.Config{
 			Backend: backend,
 			Port:    port,
 			Token:   token,

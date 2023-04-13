@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-type K8sGPTServer struct {
+type Config struct {
 	Port    string
 	Backend string
 	Key     string
@@ -20,7 +20,7 @@ type Result struct {
 	Analysis []analysis.Analysis `json:"analysis"`
 }
 
-func (s *K8sGPTServer) analyzeHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	namespace := r.URL.Query().Get("namespace")
 	explain := getBoolParam(r.URL.Query().Get("explain"))
 	anonymize := getBoolParam(r.URL.Query().Get("anonymize"))
@@ -55,7 +55,7 @@ func (s *K8sGPTServer) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (s *K8sGPTServer) Serve() error {
+func (s *Config) Serve() error {
 	http.HandleFunc("/analyze", s.analyzeHandler)
 	color.Green("Starting server on port " + s.Port)
 	err := http.ListenAndServe(":"+s.Port, nil)
