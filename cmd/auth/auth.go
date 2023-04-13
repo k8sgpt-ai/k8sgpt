@@ -3,7 +3,6 @@ package auth
 import (
 	"fmt"
 	"os"
-	"os/user"
 	"strings"
 	"syscall"
 
@@ -16,9 +15,10 @@ import (
 )
 
 var (
-	backend  string
-	password string
-	model    string
+	backend    string
+	password   string
+	model      string
+	passphrase string
 )
 
 // authCmd represents the auth command
@@ -28,19 +28,9 @@ var AuthCmd = &cobra.Command{
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// Getting the user running the script to convert it as a key for encryption
-		currentUser, err := user.Current()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		username := currentUser.Username
-		key := []byte(username)
-
 		// get ai configuration
 		var configAI ai.AIConfiguration
-		err = viper.UnmarshalKey("ai", &configAI)
+		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -81,19 +71,42 @@ var AuthCmd = &cobra.Command{
 			password = strings.TrimSpace(string(bytePassword))
 		}
 
-		//encrypting password
-		encryptedPassword, err = lockandkey.Encrypt(key, []byte(password))
-		if err != nil {
-			color.Red("Encryption of API key failed with: %s",
-				err.Error())
-			os.Exit(1)
+		var key string
+		if passphrase == "" {
+			fmt.Printf("\nEnter Passphrase for the API Key: ")
+			bytePassphrase, err := term.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				color.Red("Error reading Passphrase for the API Key Key from stdin: %s",
+					err.Error())
+				os.Exit(1)
+			}
+			passphrase = strings.TrimSpace(string(bytePassphrase))
+			if passphrase != "" {
+				key = passphrase
+				if len(key) != 16 {
+					color.Red("Encryption passphrase is not of suitable lenght of 16")
+					os.Exit(1)
+				}
+				encryptionKey := []byte(key)
+				//encrypting password
+				encryptedPassword, err = lockandkey.Encrypt(encryptionKey, []byte(password))
+				if err != nil {
+					color.Red("Encryption of API key failed with: %s",
+						err.Error())
+					os.Exit(1)
+				}
+			} else {
+				key = ""
+				encryptedPassword = password
+			}
 		}
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:     backend,
-			Model:    model,
-			Password: encryptedPassword,
+			Name:       backend,
+			Model:      model,
+			Password:   encryptedPassword,
+			Passphrase: key,
 		}
 
 		if providerIndex == -1 {
@@ -121,4 +134,6 @@ func init() {
 	AuthCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
 	// add flag for password
 	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
+	// add flag for passphrase
+	AuthCmd.Flags().StringVarP(&passphrase, "with-passphrase", "e", "", "Passphrase(of lenght 16) for encryption of API Key")
 }

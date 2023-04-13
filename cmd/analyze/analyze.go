@@ -9,6 +9,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/lockandkey"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -45,8 +46,15 @@ var AnalyzeCmd = &cobra.Command{
 		for _, provider := range configAI.Providers {
 			if backend == provider.Name {
 				aiProvider = provider
-				decryptedPassword := []byte(aiProvider.Password)
-				aiProvider.Password = string(decryptedPassword)
+				//if passprahse exists then decrypt the password
+				if provider.Passphrase != "" {
+					decryptedPassword, err := lockandkey.Decrypt([]byte(aiProvider.Passphrase), []byte(aiProvider.Password))
+					if err != nil {
+						color.Red("Error decrypting the API Key: %v", err)
+						os.Exit(1)
+					}
+					aiProvider.Password = decryptedPassword
+				}
 				break
 			}
 		}
