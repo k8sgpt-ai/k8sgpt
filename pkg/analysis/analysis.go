@@ -50,7 +50,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 		os.Exit(1)
 	}
 
-	if len(configAI.Providers) == 0 {
+	if len(configAI.Providers) == 0 && explain {
 		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
 		os.Exit(1)
 	}
