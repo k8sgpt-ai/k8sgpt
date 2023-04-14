@@ -11,6 +11,13 @@ import (
 type StatefulSetAnalyzer struct{}
 
 func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	kind := "StatefulSet"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	list, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -61,12 +68,13 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				StatefulSet:    sts,
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, sts.Name, sts.Namespace).Set(float64(len(failures)))
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "StatefulSet",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

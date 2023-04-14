@@ -3,11 +3,13 @@ package server
 import (
 	json "encoding/json"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Config struct {
@@ -74,6 +76,7 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Config) Serve() error {
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/analyze", s.analyzeHandler)
 	http.HandleFunc("/healthz", s.healthzHandler)
 	color.Green("Starting server on port %s", s.Port)

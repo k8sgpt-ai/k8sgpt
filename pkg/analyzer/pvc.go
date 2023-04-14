@@ -12,6 +12,12 @@ type PvcAnalyzer struct{}
 
 func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "PersistentVolumeClaim"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
@@ -43,12 +49,13 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				PersistentVolumeClaim: pvc,
 				FailureDetails:        failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, pvc.Name, pvc.Namespace).Set(float64(len(failures)))
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "PersistentVolumeClaim",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

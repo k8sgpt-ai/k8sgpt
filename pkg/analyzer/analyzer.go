@@ -7,6 +7,15 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+)
+
+var (
+	AnalyzerErrorsMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "analyzer_errors",
+		Help: "Number of errors detected by analyzer",
+	}, []string{"analyzer_name", "object_name", "namespace"})
 )
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
