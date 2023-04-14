@@ -27,6 +27,12 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("Network policy allows traffic to all pods in the namespace: %s", policy.Name),
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: policy.Name,
+						Masked:   util.MaskString(policy.Name),
+					},
+				},
 			})
 			continue
 		}
@@ -38,6 +44,12 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		if len(podList.Items) == 0 {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("Network policy is not applied to any pods: %s", policy.Name),
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: policy.Name,
+						Masked:   util.MaskString(policy.Name),
+					},
+				},
 			})
 		}
 

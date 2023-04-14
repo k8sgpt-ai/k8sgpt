@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	cron "github.com/robfig/cron/v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -25,15 +26,33 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		var failures []common.Failure
 		if cronJob.Spec.Suspend != nil && *cronJob.Spec.Suspend {
 			failures = append(failures, common.Failure{
-				Text:      fmt.Sprintf("CronJob %s is suspended", cronJob.Name),
-				Sensitive: []common.Sensitive{},
+				Text: fmt.Sprintf("CronJob %s is suspended", cronJob.Name),
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: cronJob.Namespace,
+						Masked:   util.MaskString(cronJob.Namespace),
+					},
+					{
+						Unmasked: cronJob.Name,
+						Masked:   util.MaskString(cronJob.Name),
+					},
+				},
 			})
 		} else {
 			// check the schedule format
 			if _, err := CheckCronScheduleIsValid(cronJob.Spec.Schedule); err != nil {
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, err.Error()),
-					Sensitive: []common.Sensitive{},
+					Text: fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, err.Error()),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: cronJob.Namespace,
+							Masked:   util.MaskString(cronJob.Namespace),
+						},
+						{
+							Unmasked: cronJob.Name,
+							Masked:   util.MaskString(cronJob.Name),
+						},
+					},
 				})
 			}
 
@@ -43,8 +62,17 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 				if deadline < 0 {
 
 					failures = append(failures, common.Failure{
-						Text:      fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
-						Sensitive: []common.Sensitive{},
+						Text: fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: cronJob.Namespace,
+								Masked:   util.MaskString(cronJob.Namespace),
+							},
+							{
+								Unmasked: cronJob.Name,
+								Masked:   util.MaskString(cronJob.Name),
+							},
+						},
 					})
 
 				}

@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
 // DeploymentAnalyzer is an analyzer that checks for misconfigured Deployments
@@ -28,9 +29,15 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas),
 				Sensitive: []common.Sensitive{
-					{},
-				},
-			})
+					{
+						Unmasked: deployment.Namespace,
+						Masked:   util.MaskString(deployment.Namespace),
+					},
+					{
+						Unmasked: deployment.Name,
+						Masked:   util.MaskString(deployment.Name),
+					},
+				}})
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{
