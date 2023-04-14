@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.2.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.1...v0.2.2) (2023-04-14)
+
+
+### Features
+
+* add simple health endpoint ([26c0cb2](https://github.com/k8sgpt-ai/k8sgpt/commit/26c0cb2eed75695220007e6d6f7b492c2641a149))
+* anoymization based on pr feedback ([19e1b94](https://github.com/k8sgpt-ai/k8sgpt/commit/19e1b94e7c9ce4092f1dabd659023a193b2c4a92))
+* anoymization based on pr feedback ([fe52951](https://github.com/k8sgpt-ai/k8sgpt/commit/fe529510b68ac5fbd39c147c7719abe2e7d20894))
+* check for auth only in case of --explain ([57790e5](https://github.com/k8sgpt-ai/k8sgpt/commit/57790e5bc7037f57a4f73248fe05cac192511470))
+* first version of serve ([b2e8add](https://github.com/k8sgpt-ai/k8sgpt/commit/b2e8adda333fbd508f0f01f2afcabc57bf9948c2))
+* unified cmd and api ([9157d4d](https://github.com/k8sgpt-ai/k8sgpt/commit/9157d4dd1312bf75b336beb0e097422b303d22f1))
+* updated api ([adae2ef](https://github.com/k8sgpt-ai/k8sgpt/commit/adae2ef71d81431711c552159362336e496b21ee))
+
+
+### Bug Fixes
+
+* bool conversion ([336ec2a](https://github.com/k8sgpt-ai/k8sgpt/commit/336ec2a42693d0df325b95cbebd9545b19e27725))
+* **deps:** update module helm.sh/helm/v3 to v3.11.3 ([4dd91ed](https://github.com/k8sgpt-ai/k8sgpt/commit/4dd91ed8263292476054bc70d3d6a3149f88f1b3))
+* naming ([159b385](https://github.com/k8sgpt-ai/k8sgpt/commit/159b3851ec54e93a447b0f13aa4ceb7b8b8f62db))
+* start message ([6b63027](https://github.com/k8sgpt-ai/k8sgpt/commit/6b630275eb64b799c50e3074cb22a3b41bb893de))
+
+
+### Docs
+
+* fix Slack link ([1dccaea](https://github.com/k8sgpt-ai/k8sgpt/commit/1dccaea3f4f96b2da52999eed5031f02a89c0b6e))
+
+
+### Other
+
+* added oidc ([bffad41](https://github.com/k8sgpt-ai/k8sgpt/commit/bffad41134d231b16f136a619174ff3bee61765a))
+* additional analyzers ([23071fd](https://github.com/k8sgpt-ai/k8sgpt/commit/23071fd2e6b421f0f5fcd6e7e4985c6900e5405c))
+* **deps:** bump github.com/docker/docker ([#268](https://github.com/k8sgpt-ai/k8sgpt/issues/268)) ([7d1e2ac](https://github.com/k8sgpt-ai/k8sgpt/commit/7d1e2acaf3eaf00929ff43b9373df6a4be100795))
+* **deps:** update actions/checkout digest to 83b7061 ([cbe6f27](https://github.com/k8sgpt-ai/k8sgpt/commit/cbe6f27c05e82f55f41b648b01972ba2c43f1534))
+* **deps:** update actions/checkout digest to 8e5e7e5 ([#266](https://github.com/k8sgpt-ai/k8sgpt/issues/266)) ([0af34a1](https://github.com/k8sgpt-ai/k8sgpt/commit/0af34a1a95502dc26d7e08bac896f691e4969090))
+* **deps:** update module oras.land/oras-go to v1.2.3 ([#249](https://github.com/k8sgpt-ai/k8sgpt/issues/249)) ([13c9231](https://github.com/k8sgpt-ai/k8sgpt/commit/13c9231aafef3a259fd678a80063ad2e968d6e95))
+* fixing up tests ([f9b25d9](https://github.com/k8sgpt-ai/k8sgpt/commit/f9b25d9e85a8faaf1aae59d7bedc4c0f3538181e))
+* fixing up tests ([498d454](https://github.com/k8sgpt-ai/k8sgpt/commit/498d454c174c7d39da1ca63b2a201e797d7e5e1c))
+* Merge branch 'main' into feat/additional-analyzers ([4d36248](https://github.com/k8sgpt-ai/k8sgpt/commit/4d3624830ff840f9ccf11d7da20953bdf4c7c7fc))
+* removing field ([ddb51c7](https://github.com/k8sgpt-ai/k8sgpt/commit/ddb51c7af470044a8514ed013b44cc135e4c0f10))
+
 ## [0.2.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.0...v0.2.1) (2023-04-12)
 
 
