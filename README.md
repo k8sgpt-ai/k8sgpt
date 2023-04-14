@@ -264,6 +264,8 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 **Anonymization does not currently apply to events.**
 
+</details>
+
 ## Upcoming major milestones
 
 - [ ] Multiple AI backend support
@@ -288,7 +290,7 @@ the root cause of an issue.
 
 Please read our [contributing guide](./CONTRIBUTING.md).
 ## Community
-Find us on [Slack](https://k8sgpt.slack.com/)
+Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-1rwe5fpzq-VNtJK8DmYbbm~iWL1H34nw)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
