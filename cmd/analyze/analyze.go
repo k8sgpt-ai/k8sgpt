@@ -1,16 +1,12 @@
 package analyze
 
 import (
-	"context"
 	"fmt"
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -33,53 +29,11 @@ var AnalyzeCmd = &cobra.Command{
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// get ai configuration
-		var configAI ai.AIConfiguration
-		err := viper.UnmarshalKey("ai", &configAI)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		var aiProvider ai.AIProvider
-		for _, provider := range configAI.Providers {
-			if backend == provider.Name {
-				aiProvider = provider
-				break
-			}
-		}
-
-		if aiProvider.Name == "" {
-			color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
-			os.Exit(1)
-		}
-
-		aiClient := ai.NewClient(aiProvider.Name)
-		if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		ctx := context.Background()
-		// Get kubernetes client from viper
-
-		kubecontext := viper.GetString("kubecontext")
-		kubeconfig := viper.GetString("kubeconfig")
-		client, err := kubernetes.NewClient(kubecontext, kubeconfig)
-		if err != nil {
-			color.Red("Error initialising kubernetes client: %v", err)
-			os.Exit(1)
-		}
-
 		// AnalysisResult configuration
-		config := &analysis.Analysis{
-			Namespace: namespace,
-			NoCache:   nocache,
-			Filters:   filters,
-			Explain:   explain,
-			AIClient:  aiClient,
-			Client:    client,
-			Context:   ctx,
+		config, err := analysis.NewAnalysis(backend, language, filters, namespace, nocache, explain)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
 
 		err = config.RunAnalysis()
@@ -89,11 +43,6 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		if explain {
-			if len(configAI.Providers) == 0 {
-				color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
-				os.Exit(1)
-			}
-
 			err := config.GetAIResults(output, anonymize)
 			if err != nil {
 				color.Red("Error: %v", err)

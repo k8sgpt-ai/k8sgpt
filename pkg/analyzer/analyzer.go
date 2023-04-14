@@ -11,16 +11,19 @@ import (
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Pod":                   PodAnalyzer{},
+	"Deployment":            DeploymentAnalyzer{},
 	"ReplicaSet":            ReplicaSetAnalyzer{},
 	"PersistentVolumeClaim": PvcAnalyzer{},
 	"Service":               ServiceAnalyzer{},
 	"Ingress":               IngressAnalyzer{},
 	"StatefulSet":           StatefulSetAnalyzer{},
+	"CronJob":               CronJobAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"HorizontalPodAutoScaler": HpaAnalyzer{},
 	"PodDisruptionBudget":     PdbAnalyzer{},
+	"NetworkPolicy":           NetworkPolicyAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {

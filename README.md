@@ -141,11 +141,14 @@ you will be able to write your own analyzers.
 - [x] eventAnalyzer
 - [x] ingressAnalyzer
 - [x] statefulSetAnalyzer
+- [x] deploymentAnalyzer
+- [x] cronJobAnalyzer
 
 #### Optional
 
 - [x] hpaAnalyzer
 - [x] pdbAnalyzer
+- [x] networkPolicyAnalyzer
 
 ## Usage
 
