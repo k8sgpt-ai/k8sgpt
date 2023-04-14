@@ -8,7 +8,9 @@ import (
 	"regexp"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k "k8s.io/client-go/kubernetes"
 )
 
 var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
@@ -132,4 +134,19 @@ func ReplaceIfMatch(text string, pattern string, replacement string) string {
 
 func GetCacheKey(provider string, sEnc string) string {
 	return fmt.Sprintf("%s-%s", provider, sEnc)
+}
+
+func GetPodListByLabels(client k.Interface,
+	namespace string,
+	labels map[string]string) (*v1.PodList, error) {
+	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
+			MatchLabels: labels,
+		}),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return pods, nil
 }
