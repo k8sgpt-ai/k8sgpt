@@ -143,6 +143,7 @@ you will be able to write your own analyzers.
 - [x] statefulSetAnalyzer
 - [x] deploymentAnalyzer
 - [x] cronJobAnalyzer
+- [x] nodeAnalyzer
 
 #### Optional
 
