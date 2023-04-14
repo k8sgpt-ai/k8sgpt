@@ -26,7 +26,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		// Check if policy allows traffic to all pods in the namespace
 		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Network policy allows traffic to all pods in the namespace: %s", policy.Name),
+				Text: fmt.Sprintf("Network policy allows traffic to all pods: %s", policy.Name),
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: policy.Name,
