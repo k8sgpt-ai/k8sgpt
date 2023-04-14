@@ -38,6 +38,7 @@ type PreAnalysis struct {
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
 	StatefulSet              appsv1.StatefulSet
 	NetworkPolicy            networkv1.NetworkPolicy
+	Node                     v1.Node
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
 }

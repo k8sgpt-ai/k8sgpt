@@ -27,6 +27,7 @@ var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Ingress":               IngressAnalyzer{},
 	"StatefulSet":           StatefulSetAnalyzer{},
 	"CronJob":               CronJobAnalyzer{},
+	"Node":                  NodeAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
