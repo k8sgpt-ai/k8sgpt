@@ -29,6 +29,7 @@ type Analyzer struct {
 type PreAnalysis struct {
 	Pod                      v1.Pod
 	FailureDetails           []Failure
+	Deployment               appsv1.Deployment
 	ReplicaSet               appsv1.ReplicaSet
 	PersistentVolumeClaim    v1.PersistentVolumeClaim
 	Endpoint                 v1.Endpoints
@@ -36,6 +37,7 @@ type PreAnalysis struct {
 	HorizontalPodAutoscalers autov1.HorizontalPodAutoscaler
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
 	StatefulSet              appsv1.StatefulSet
+	NetworkPolicy            networkv1.NetworkPolicy
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
 }
