@@ -63,10 +63,9 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 	for key, value := range preAnalysis {
 		currentAnalysis := common.Result{
-			Kind:         "NetworkPolicy",
-			Name:         key,
-			Error:        value.FailureDetails,
-			ParentObject: "",
+			Kind:  "NetworkPolicy",
+			Name:  key,
+			Error: value.FailureDetails,
 		}
 		a.Results = append(a.Results, currentAnalysis)
 	}

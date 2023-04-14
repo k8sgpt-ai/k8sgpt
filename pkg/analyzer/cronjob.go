@@ -88,10 +88,9 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 
 		for key, value := range preAnalysis {
 			currentAnalysis := common.Result{
-				Kind:         "CronJob",
-				Name:         key,
-				Error:        value.FailureDetails,
-				ParentObject: "",
+				Kind:  "CronJob",
+				Name:  key,
+				Error: value.FailureDetails,
 			}
 			a.Results = append(results, currentAnalysis)
 		}
