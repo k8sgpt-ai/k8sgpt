@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
 	"os"
 	"path/filepath"
+
+	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
 
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
@@ -81,6 +82,7 @@ func initConfig() {
 	viper.Set("kubecontext", kubecontext)
 	viper.Set("kubeconfig", kubeconfig)
 
+	viper.SetEnvPrefix("K8SGPT")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
