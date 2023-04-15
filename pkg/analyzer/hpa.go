@@ -28,10 +28,23 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-			_, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-			if err != nil {
-				scaleTargetRefNotFound = true
-			}
+            deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+            if err != nil {
+                scaleTargetRefNotFound = true
+            } else {
+                // check if the deployment has resource configured
+                if (deployment.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (deployment.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
+                    failures = append(failures, common.Failure{
+                        Text: fmt.Sprintf("Deployment %s/%s does not have resource configured.", deployment.Namespace, deployment.Name),
+                        Sensitive: []common.Sensitive{
+                            {
+                                Unmasked: deployment.Name,
+                                Masked: util.MaskString(deployment.Name),
+                            },
+                        },
+                    })
+                }
+            }
 		case "ReplicationController":
 			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
