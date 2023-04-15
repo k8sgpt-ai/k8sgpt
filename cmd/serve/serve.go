@@ -28,17 +28,31 @@ var ServeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-
+		var aiProvider *ai.AIProvider
 		if len(configAI.Providers) == 0 {
-			color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
-			os.Exit(1)
+			// Check for env injection
+			backend = os.Getenv("K8SGPT_BACKEND")
+			password := os.Getenv("K8SGPT_PASSWORD")
+			model := os.Getenv("K8SGPT_MODEL")
+			// If the envs are set, alocate in place to the aiProvider
+			// else exit with error
+			if backend != "" || password != "" || model != "" {
+				aiProvider = &ai.AIProvider{
+					Name:     backend,
+					Password: password,
+					Model:    model,
+				}
+			} else {
+				color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
+				os.Exit(1)
+			}
 		}
-
-		var aiProvider ai.AIProvider
-		for _, provider := range configAI.Providers {
-			if backend == provider.Name {
-				aiProvider = provider
-				break
+		if aiProvider == nil {
+			for _, provider := range configAI.Providers {
+				if backend == provider.Name {
+					aiProvider = &provider
+					break
+				}
 			}
 		}
 
