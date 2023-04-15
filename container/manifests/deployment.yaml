@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: k8sgpt-container
-        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.2
+        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.2 #x-release-please-version
         ports:
         - containerPort: 8080
         args: ["serve"]
