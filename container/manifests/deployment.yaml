@@ -28,7 +28,11 @@ spec:
             cpu: "0.5"
             memory: "256Mi"
         env:
-        - name: AI_BACKEND_SECRET
+        - name: K8SGPT_MODEL
+          value: "gpt-3.5-turbo"
+        - name: K8SGPT_BACKEND
+          value: "openai"
+        - name: K8SGPT_PASSWORD
           valueFrom:
             secretKeyRef:
               name: ai-backend-secret
