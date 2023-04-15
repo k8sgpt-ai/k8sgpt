@@ -121,6 +121,6 @@ func TestCronJobBroken(t *testing.T) {
 	}
 
 	assert.Equal(t, len(analysisResults), 1)
-	assert.Equal(t, analysisResults[0].Name, "example-cronjob")
+	assert.Equal(t, analysisResults[0].Name, "default/example-cronjob")
 	assert.Equal(t, analysisResults[0].Kind, "CronJob")
 }

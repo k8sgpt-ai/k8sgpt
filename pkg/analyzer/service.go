@@ -13,6 +13,12 @@ type ServiceAnalyzer struct{}
 
 func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "Service"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
@@ -71,12 +77,13 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Endpoint:       ep,
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, ep.Name, ep.Namespace).Set(float64(len(failures)))
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "Service",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}
