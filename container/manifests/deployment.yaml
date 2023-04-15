@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8sgpt-deployment
+  labels:
+    app: k8sgpt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8sgpt
+  template:
+    metadata:
+      labels:
+        app: k8sgpt
+    spec:
+      containers:
+      - name: k8sgpt-container
+        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.2
+        ports:
+        - containerPort: 8080
+        args: ["serve"]
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "0.5"
+            memory: "256Mi"
+        env:
+        - name: AI_BACKEND_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ai-backend-secret
+              key: secret-key
