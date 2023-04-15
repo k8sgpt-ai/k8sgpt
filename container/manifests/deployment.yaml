@@ -40,4 +40,3 @@ spec:
             secretKeyRef:
               name: ai-backend-secret
               key: secret-key
-              optional: true
