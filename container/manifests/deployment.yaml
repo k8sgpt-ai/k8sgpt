@@ -25,11 +25,11 @@ spec:
         args: ["serve"]
         resources:
           limits:
-            cpu: "1"
-            memory: "512Mi"
-          requests:
             cpu: "0.5"
             memory: "256Mi"
+          requests:
+            cpu: "0.125"
+            memory: "64Mi"
         env:
         - name: K8SGPT_MODEL
           value: "gpt-3.5-turbo"
