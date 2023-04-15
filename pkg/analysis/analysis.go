@@ -2,7 +2,6 @@ package analysis
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -147,45 +146,6 @@ func (a *Analysis) RunAnalysis() error {
 		}
 	}
 	return nil
-}
-
-func (a *Analysis) JsonOutput() ([]byte, error) {
-	var problems int
-	var status AnalysisStatus
-	for _, result := range a.Results {
-		problems += len(result.Error)
-	}
-	if problems > 0 {
-		status = StateProblemDetected
-	} else {
-		status = StateOK
-	}
-
-	result := JsonOutput{
-		Problems: problems,
-		Results:  a.Results,
-		Status:   status,
-	}
-	output, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling json: %v", err)
-	}
-	return output, nil
-}
-
-func (a *Analysis) PrintOutput() {
-	fmt.Println("")
-	if len(a.Results) == 0 {
-		fmt.Println(color.GreenString("No problems detected"))
-	}
-	for n, result := range a.Results {
-		fmt.Printf("%s %s(%s)\n", color.CyanString("%d", n),
-			color.YellowString(result.Name), color.CyanString(result.ParentObject))
-		for _, err := range result.Error {
-			fmt.Printf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text))
-		}
-		fmt.Println(color.GreenString(result.Details + "\n"))
-	}
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
