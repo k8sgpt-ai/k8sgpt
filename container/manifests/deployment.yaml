@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k8sgpt-deployment
+  namespace: k8sgpt
   labels:
     app: k8sgpt
 spec:
@@ -14,9 +15,11 @@ spec:
       labels:
         app: k8sgpt
     spec:
+      serviceAccountName: k8sgpt
       containers:
       - name: k8sgpt-container
-        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.2 #x-release-please-version
+        imagePullPolicy: Always
+        image: tibbar/test-k8sgpt:latest #x-release-please-version
         ports:
         - containerPort: 8080
         args: ["serve"]
