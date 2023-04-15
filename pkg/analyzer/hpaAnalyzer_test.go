@@ -10,6 +10,8 @@ import (
 	"github.com/magiconair/properties/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -184,6 +186,28 @@ func TestHPAAnalyzerWithExistingScaleTargetRef(t *testing.T) {
 				Name:        "example",
 				Namespace:   "default",
 				Annotations: map[string]string{},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu": resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu": resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	)
