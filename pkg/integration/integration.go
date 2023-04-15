@@ -3,10 +3,12 @@ package integration
 import (
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
 )
 
@@ -56,16 +58,24 @@ func (*Integration) Activate(name string, namespace string) error {
 		return errors.New("integration not found")
 	}
 
-	if err := integrations[name].Deploy(namespace); err != nil {
-		return err
-	}
-
 	// Update filters
 	activeFilters := viper.GetStringSlice("active_filters")
 
-	activeFilters = append(activeFilters, integrations[name].GetAnalyzerName())
+	mergedFilters := append(activeFilters, integrations[name].GetAnalyzerName())
 
-	viper.Set("active_filters", activeFilters)
+	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
+
+	// Verify dupplicate
+	if len(dupplicatedFilters) != 0 {
+		color.Red("Integration already activated : %s", strings.Join(dupplicatedFilters, ", "))
+		os.Exit(1)
+	}
+
+	viper.Set("active_filters", uniqueFilters)
+
+	if err := integrations[name].Deploy(namespace); err != nil {
+		return err
+	}
 
 	if err := viper.WriteConfig(); err != nil {
 		color.Red("Error writing config file: %s", err.Error())
@@ -80,21 +90,27 @@ func (*Integration) Deactivate(name string, namespace string) error {
 		return errors.New("integration not found")
 	}
 
-	if err := integrations[name].UnDeploy(namespace); err != nil {
-		return err
-	}
+	activeFilters := viper.GetStringSlice("active_filters")
 
 	// Update filters
 	// This might be a bad idea, but we cannot reference analyzer here
-	activeFilters := viper.GetStringSlice("active_filters")
-
-	// Remove filter
+	foundFilter := false
 	for i, v := range activeFilters {
 		if v == integrations[name].GetAnalyzerName() {
+			foundFilter = true
 			activeFilters = append(activeFilters[:i], activeFilters[i+1:]...)
 			break
 		}
 	}
+	if !foundFilter {
+		color.Red("Ingregation %s does not exist in configuration file. Please use k8sgpt integration add.", name)
+		os.Exit(1)
+	}
+
+	if err := integrations[name].UnDeploy(namespace); err != nil {
+		return err
+	}
+
 	viper.Set("active_filters", activeFilters)
 
 	if err := viper.WriteConfig(); err != nil {
