@@ -11,6 +11,13 @@ import (
 type NetworkPolicyAnalyzer struct{}
 
 func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	kind := "NetworkPolicy"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	// get all network policies in the namespace
 	policies, err := a.Client.GetClient().NetworkingV1().
 		NetworkPolicies(a.Namespace).List(a.Context, metav1.ListOptions{})
@@ -54,16 +61,18 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[policy.Name] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", policy.Namespace, policy.Name)] = common.PreAnalysis{
 				FailureDetails: failures,
 				NetworkPolicy:  policy,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, policy.Name, policy.Namespace).Set(float64(len(failures)))
+
 		}
 	}
 
 	for key, value := range preAnalysis {
 		currentAnalysis := common.Result{
-			Kind:  "NetworkPolicy",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

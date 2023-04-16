@@ -17,6 +17,12 @@ type DeploymentAnalyzer struct {
 // Analyze scans all namespaces for Deployments with misconfigurations
 func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "Deployment"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	deployments, err := a.Client.GetClient().AppsV1().Deployments("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -44,13 +50,14 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				FailureDetails: failures,
 				Deployment:     deployment,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, deployment.Name, deployment.Namespace).Set(float64(len(failures)))
 		}
 
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "Deployment",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

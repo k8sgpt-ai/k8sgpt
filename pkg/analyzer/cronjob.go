@@ -13,6 +13,13 @@ import (
 type CronJobAnalyzer struct{}
 
 func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	kind := "CronJob"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	var results []common.Result
 
 	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs("").List(a.Context, v1.ListOptions{})
@@ -81,14 +88,16 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[cronJob.Name] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", cronJob.Namespace, cronJob.Name)] = common.PreAnalysis{
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, cronJob.Name, cronJob.Namespace).Set(float64(len(failures)))
+
 		}
 
 		for key, value := range preAnalysis {
 			currentAnalysis := common.Result{
-				Kind:  "CronJob",
+				Kind:  kind,
 				Name:  key,
 				Error: value.FailureDetails,
 			}
