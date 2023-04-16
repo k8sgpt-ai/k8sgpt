@@ -51,17 +51,12 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		// print results
-		switch output {
-		case "json":
-			output, err := config.JsonOutput()
-			if err != nil {
-				color.Red("Error: %v", err)
-				os.Exit(1)
-			}
-			fmt.Println(string(output))
-		default:
-			config.PrintOutput()
+		output, err := config.PrintOutput(output)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
+		fmt.Println(string(output))
 	},
 }
 
