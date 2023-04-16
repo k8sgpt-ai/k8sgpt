@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.2...v0.2.3) (2023-04-16)
+
+
+### Features
+
+* add node analyzer ([#272](https://github.com/k8sgpt-ai/k8sgpt/issues/272)) ([6247a1c](https://github.com/k8sgpt-ai/k8sgpt/commit/6247a1c0f3c2ead6a59661afed06973c29e57eca))
+* add output query param on serve mode & refactor output logic ([9642202](https://github.com/k8sgpt-ai/k8sgpt/commit/9642202ed1b09c06a687651b7818c2a4df8a0c06))
+* add server metrics ([#273](https://github.com/k8sgpt-ai/k8sgpt/issues/273)) ([a3becc9](https://github.com/k8sgpt-ai/k8sgpt/commit/a3becc9906515d0567808fee9a4e322451d6dc3f))
+* envs to initialise server ([0071e25](https://github.com/k8sgpt-ai/k8sgpt/commit/0071e25992fc86c3882c2066873a2b04b43fe476))
+* rename server/main.go to server/server.go ([9121a98](https://github.com/k8sgpt-ai/k8sgpt/commit/9121a983e52fa15c07bcc3bb361df97b8085c24c))
+* running in cluster ([842f08c](https://github.com/k8sgpt-ai/k8sgpt/commit/842f08c655fde66b6b628192490e50be2ac3dcef))
+* running in cluster ([3988eb2](https://github.com/k8sgpt-ai/k8sgpt/commit/3988eb2fd0a7d29ffa7b7bbc59960ca91e50466e))
+* switch config file to XDG conform location ([dee4355](https://github.com/k8sgpt-ai/k8sgpt/commit/dee435514d7f717e4eb63b15a9d9fdb0722330ac))
+* wip blocked until we have envs ([fe2c08c](https://github.com/k8sgpt-ai/k8sgpt/commit/fe2c08cf72a6ca271d1b431be66653f1396f304d))
+
+
+### Bug Fixes
+
+* add new line after version cmd output ([92e7b3d](https://github.com/k8sgpt-ai/k8sgpt/commit/92e7b3d3fb00c33ac48230caac34f45729e2f6b2))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.8.0 ([#277](https://github.com/k8sgpt-ai/k8sgpt/issues/277)) ([51b1b35](https://github.com/k8sgpt-ai/k8sgpt/commit/51b1b352acd24ebdc4cf9d9121f25c90e8f76ba7))
+* resolve issue with duplicated integration filters. ([960ba56](https://github.com/k8sgpt-ai/k8sgpt/commit/960ba568d0dcc2ace722dc5c9b7c846366a98070))
+* use the aiProvider object when launching the server instead of the deprecated configuration keys ([e7076ed](https://github.com/k8sgpt-ai/k8sgpt/commit/e7076ed6093aa9609d8c884b7a03e295057aaa8e))
+
+
+### Other
+
+* updated ([f0a0c9a](https://github.com/k8sgpt-ai/k8sgpt/commit/f0a0c9aebf627d65b0192ba3d0786cefd81e1fef))
+
 ## [0.2.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.1...v0.2.2) (2023-04-14)
 
 
