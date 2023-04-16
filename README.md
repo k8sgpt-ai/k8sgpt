@@ -34,7 +34,7 @@ brew install k8sgpt
   <!---x-release-please-end-->
 
   **64 bit:**
- 
+
   <!---x-release-please-start-version-->
   ```
   curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.2/k8sgpt_amd64.rpm
@@ -54,7 +54,7 @@ brew install k8sgpt
   ```
   <!---x-release-please-end-->
   **64 bit:**
- 
+
   <!---x-release-please-start-version-->
   ```
   curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.2/k8sgpt_amd64.deb
@@ -88,7 +88,7 @@ brew install k8sgpt
   When installing Homebrew on WSL or Linux, you may encounter the following error:
 
   ```
-  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from a bottle and must be 
+  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from a bottle and must be
   built from the source. k8sgpt Install Clang or run brew install gcc.
   ```
 
@@ -102,7 +102,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 ## Windows
 
-* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases) 
+* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
   tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
@@ -117,7 +117,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
-* Run `k8sgpt auth` to set it in k8sgpt. 
+* Run `k8sgpt auth` to set it in k8sgpt.
   * You can provide the password directly using the `--password` flag.
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
@@ -127,7 +127,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 ## Analyzers
 
-K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but 
+K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but
 you will be able to write your own analyzers.
 
 ### Built in analyzers
@@ -275,17 +275,25 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 ## What about kubectl-ai?
 
-The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the 
+The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the
 cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
 
-K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers 
-to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find 
+K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers
+to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find
 the root cause of an issue.
 
 
 ## Configuration
 
-`k8sgpt` stores config data in `~/.k8sgpt.yaml` the data is stored in plain text, including your OpenAI key.
+`k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
+
+Config file locations:
+| OS      | Path                                             |
+|---------|--------------------------------------------------|
+| MacOS   | ~/Library/Application Support/k8sgpt/k8sgpt.yaml |
+| Linux   | ~/.config/k8sgpt/k8sgpt.yaml                     |
+| Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
+
 
 ## Contributing
 
