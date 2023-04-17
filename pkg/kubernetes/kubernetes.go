@@ -28,26 +28,29 @@ func (c *Client) GetRestClient() rest.Interface {
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
-
-	config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
-		&clientcmd.ConfigOverrides{
-			CurrentContext: kubecontext,
-		})
-	// create the clientset
-	c, err := config.ClientConfig()
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
+			&clientcmd.ConfigOverrides{
+				CurrentContext: kubecontext,
+			})
+		// create the clientset
+		config, err = clientConfig.ClientConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
+	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
-	clientSet, err := kubernetes.NewForConfig(c)
-	if err != nil {
-		return nil, err
-	}
-	c.APIPath = "/api"
-	c.GroupVersion = &scheme.Scheme.PrioritizedVersionsForGroup("")[0]
-	c.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
+	config.APIPath = "/api"
+	config.GroupVersion = &scheme.Scheme.PrioritizedVersionsForGroup("")[0]
+	config.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 
-	restClient, err := rest.RESTClientFor(c)
+	restClient, err := rest.RESTClientFor(config)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +58,6 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	return &Client{
 		Client:     clientSet,
 		RestClient: restClient,
-		Config:     c,
+		Config:     config,
 	}, nil
 }

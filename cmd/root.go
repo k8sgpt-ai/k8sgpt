@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
-
+	"github.com/adrg/xdg"
+	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
-
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
@@ -44,6 +46,8 @@ func Execute(v string) {
 }
 
 func init() {
+	performConfigMigrationIfNeeded()
+
 	cobra.OnInitialize(initConfig)
 
 	var kubeconfigPath string
@@ -67,14 +71,12 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
+		// the config will belocated under `~/.config/k8sgpt/k8sgpt.yaml` on linux
+		configDir := filepath.Join(xdg.ConfigHome, "k8sgpt")
 
-		// Search config in home directory with name ".k8sgpt.git" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath(configDir)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".k8sgpt")
+		viper.SetConfigName("k8sgpt")
 
 		viper.SafeWriteConfig()
 	}
@@ -89,4 +91,45 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		//	fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func performConfigMigrationIfNeeded() {
+	oldConfig, err := getLegacyConfigFilePath()
+	cobra.CheckErr(err)
+	oldConfigExists, err := util.FileExists(oldConfig)
+	cobra.CheckErr(err)
+
+	newConfig := getConfigFilePath()
+	newConfigExists, err := util.FileExists(newConfig)
+	cobra.CheckErr(err)
+
+	configDir := filepath.Dir(newConfig)
+	err = util.EnsureDirExists(configDir)
+	cobra.CheckErr(err)
+
+	if oldConfigExists && newConfigExists {
+		fmt.Fprintln(os.Stderr, color.RedString("Warning: Legacy config file at `%s` detected! This file will be ignored!", oldConfig))
+		return
+	}
+
+	if oldConfigExists && !newConfigExists {
+		fmt.Fprintln(os.Stderr, color.RedString("Performing config file migration from `%s` to `%s`", oldConfig, newConfig))
+
+		err = os.Rename(oldConfig, newConfig)
+		cobra.CheckErr(err)
+	}
+}
+
+func getConfigFilePath() string {
+	return filepath.Join(xdg.ConfigHome, "k8sgpt", "k8sgpt.yaml")
+}
+
+func getLegacyConfigFilePath() (string, error) {
+	home, err := os.UserHomeDir()
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(home, ".k8sgpt.yaml"), nil
 }

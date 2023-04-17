@@ -3,11 +3,13 @@ package server
 import (
 	json "encoding/json"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Config struct {
@@ -40,44 +42,54 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	anonymize := getBoolParam(r.URL.Query().Get("anonymize"))
 	nocache := getBoolParam(r.URL.Query().Get("nocache"))
 	language := r.URL.Query().Get("language")
+	s.Output = r.URL.Query().Get("output")
+
+	if s.Output == "" {
+		s.Output = "json"
+	}
 
 	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain)
 	if err != nil {
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	err = config.RunAnalysis()
 	if err != nil {
 		color.Red("Error: %v", err)
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if explain {
 		err := config.GetAIResults(s.Output, anonymize)
 		if err != nil {
-			color.Red("Error: %v", err)
 			health.Failure++
-			fmt.Fprintf(w, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
-	output, err := config.JsonOutput()
+	out, err := config.PrintOutput(s.Output)
 	if err != nil {
-		color.Red("Error: %v", err)
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
 	health.Success++
-	fmt.Fprintf(w, string(output))
+	fmt.Fprintf(w, string(out))
 }
 
 func (s *Config) Serve() error {
+	handler := loggingMiddleware(http.DefaultServeMux)
+	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/analyze", s.analyzeHandler)
 	http.HandleFunc("/healthz", s.healthzHandler)
 	color.Green("Starting server on port %s", s.Port)
-	err := http.ListenAndServe(":"+s.Port, nil)
+	err := http.ListenAndServe(":"+s.Port, handler)
 	if err != nil {
 		fmt.Printf("error starting server: %s\n", err)
 		return err

@@ -12,6 +12,12 @@ type PdbAnalyzer struct{}
 
 func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "PodDisruptionBudget"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	list, err := a.Client.GetClient().PolicyV1().PodDisruptionBudgets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -63,12 +69,13 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				PodDisruptionBudget: pdb,
 				FailureDetails:      failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, pdb.Name, pdb.Namespace).Set(float64(len(failures)))
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "PodDisruptionBudget",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

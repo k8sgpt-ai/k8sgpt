@@ -42,6 +42,14 @@ var ServeCmd = &cobra.Command{
 					Password: password,
 					Model:    model,
 				}
+
+				configAI.Providers = append(configAI.Providers, *aiProvider)
+
+				viper.Set("ai", configAI)
+				if err := viper.WriteConfig(); err != nil {
+					color.Red("Error writing config file: %s", err.Error())
+					os.Exit(1)
+				}
 			} else {
 				color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
 				os.Exit(1)

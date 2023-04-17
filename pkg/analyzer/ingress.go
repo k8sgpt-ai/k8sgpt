@@ -12,6 +12,12 @@ type IngressAnalyzer struct{}
 
 func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "Ingress"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -107,13 +113,15 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Ingress:        ing,
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, ing.Name, ing.Namespace).Set(float64(len(failures)))
+
 		}
 
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "Ingress",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

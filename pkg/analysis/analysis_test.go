@@ -22,7 +22,7 @@ func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
 		Results:  []common.Result{},
 	}
 
-	gotJson, err := analysis.JsonOutput()
+	gotJson, err := analysis.PrintOutput("json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -75,7 +75,7 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 		},
 	}
 
-	gotJson, err := analysis.JsonOutput()
+	gotJson, err := analysis.PrintOutput("json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -136,7 +136,7 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 		},
 	}
 
-	gotJson, err := analysis.JsonOutput()
+	gotJson, err := analysis.PrintOutput("json")
 	if err != nil {
 		t.Error(err)
 	}

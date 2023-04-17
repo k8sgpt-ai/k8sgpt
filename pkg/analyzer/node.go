@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -12,6 +13,12 @@ import (
 type NodeAnalyzer struct{}
 
 func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	kind := "Node"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
 
 	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, metav1.ListOptions{})
 	if err != nil {
@@ -42,12 +49,14 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Node:           node,
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, node.Name, "").Set(float64(len(failures)))
+
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "Node",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

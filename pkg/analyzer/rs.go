@@ -12,6 +12,12 @@ type ReplicaSetAnalyzer struct{}
 
 func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "ReplicaSet"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	// search all namespaces for pods that are not running
 	list, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
@@ -42,12 +48,13 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				ReplicaSet:     rs,
 				FailureDetails: failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, rs.Name, rs.Namespace).Set(float64(len(failures)))
 		}
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "ReplicaSet",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

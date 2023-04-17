@@ -12,6 +12,12 @@ type HpaAnalyzer struct{}
 
 func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
+	kind := "HorizontalPodAutoscaler"
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
 	list, err := a.Client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -84,13 +90,14 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				HorizontalPodAutoscalers: hpa,
 				FailureDetails:           failures,
 			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, hpa.Name, hpa.Namespace).Set(float64(len(failures)))
 		}
 
 	}
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "HorizontalPodAutoscaler",
+			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
 		}

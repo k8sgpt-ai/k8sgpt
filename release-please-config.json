@@ -11,7 +11,8 @@
         "README.md",
         "deploy/manifest.yaml",
         "chart/Chart.yaml",
-        "chart/values.yaml"
+        "chart/values.yaml",
+        "container/manifests/deployment.yaml"
       ],
       "changelog-sections": [
         {
