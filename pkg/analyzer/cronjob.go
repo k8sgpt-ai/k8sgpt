@@ -22,7 +22,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 
 	var results []common.Result
 
-	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs("").List(a.Context, v1.ListOptions{})
+	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{})
 	if err != nil {
 		return results, err
 	}

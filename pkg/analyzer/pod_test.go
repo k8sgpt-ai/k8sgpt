@@ -47,3 +47,57 @@ func TestPodAnalyzer(t *testing.T) {
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
+
+func TestPodAnalyzerNamespaceFiltering(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Status: v1.PodStatus{
+				Phase: v1.PodPending,
+				Conditions: []v1.PodCondition{
+					{
+						Type:    v1.PodScheduled,
+						Reason:  "Unschedulable",
+						Message: "0/1 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate.",
+					},
+				},
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "other-namespace",
+				Annotations: map[string]string{},
+			},
+			Status: v1.PodStatus{
+				Phase: v1.PodPending,
+				Conditions: []v1.PodCondition{
+					{
+						Type:    v1.PodScheduled,
+						Reason:  "Unschedulable",
+						Message: "0/1 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate.",
+					},
+				},
+			},
+		})
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	podAnalyzer := PodAnalyzer{}
+	var analysisResults []common.Result
+	analysisResults, err := podAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}

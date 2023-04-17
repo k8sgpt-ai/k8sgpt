@@ -48,3 +48,62 @@ func TestServiceAnalyzer(t *testing.T) {
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
+
+func TestServiceAnalyzerNamespaceFiltering(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&v1.Endpoints{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+		},
+		&v1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: v1.ServiceSpec{
+				Selector: map[string]string{
+					"app": "example",
+				},
+			},
+		},
+		&v1.Endpoints{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "other-namespace",
+				Annotations: map[string]string{},
+			},
+		},
+		&v1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "other-namespace",
+				Annotations: map[string]string{},
+			},
+			Spec: v1.ServiceSpec{
+				Selector: map[string]string{
+					"app": "example",
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	serviceAnalyzer := ServiceAnalyzer{}
+	analysisResults, err := serviceAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}
