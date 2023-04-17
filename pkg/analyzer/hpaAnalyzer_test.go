@@ -165,7 +165,7 @@ func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 	}
 }
 
-func TestHPAAnalyzerWithExistingScaleTargetRef(t *testing.T) {
+func TestHPAAnalyzerWithExistingScaleTargetRefAsDeployment(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv1.HorizontalPodAutoscaler{
@@ -188,6 +188,198 @@ func TestHPAAnalyzerWithExistingScaleTargetRef(t *testing.T) {
 				Annotations: map[string]string{},
 			},
 			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu": resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu": resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		assert.Equal(t, len(analysis.Error), 0)
+	}
+}
+
+func TestHPAAnalyzerWithExistingScaleTargetRefAsReplicationController(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
+					Kind: "ReplicationController",
+					Name: "example",
+				},
+			},
+		},
+		&corev1.ReplicationController{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: corev1.ReplicationControllerSpec{
+				Template: &corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu": resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu": resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		assert.Equal(t, len(analysis.Error), 0)
+	}
+}
+
+func TestHPAAnalyzerWithExistingScaleTargetRefAsReplicaSet(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
+					Kind: "ReplicaSet",
+					Name: "example",
+				},
+			},
+		},
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.ReplicaSetSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu": resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu": resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		assert.Equal(t, len(analysis.Error), 0)
+	}
+}
+
+func TestHPAAnalyzerWithExistingScaleTargetRefAsStatefulSet(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
+					Kind: "StatefulSet",
+					Name: "example",
+				},
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.StatefulSetSpec{
 				Template: corev1.PodTemplateSpec{
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
