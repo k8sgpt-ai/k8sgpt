@@ -51,30 +51,32 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain)
 	if err != nil {
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	err = config.RunAnalysis()
 	if err != nil {
 		color.Red("Error: %v", err)
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if explain {
 		err := config.GetAIResults(s.Output, anonymize)
 		if err != nil {
-			color.Red("Error: %v", err)
 			health.Failure++
-			fmt.Fprintf(w, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
 	out, err := config.PrintOutput(s.Output)
 	if err != nil {
-		color.Red("Error: %v", err)
 		health.Failure++
-		fmt.Fprintf(w, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	health.Success++
@@ -82,11 +84,12 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Config) Serve() error {
+	handler := loggingMiddleware(http.DefaultServeMux)
 	http.Handle("/metrics", promhttp.Handler())
 	http.HandleFunc("/analyze", s.analyzeHandler)
 	http.HandleFunc("/healthz", s.healthzHandler)
 	color.Green("Starting server on port %s", s.Port)
-	err := http.ListenAndServe(":"+s.Port, nil)
+	err := http.ListenAndServe(":"+s.Port, handler)
 	if err != nil {
 		fmt.Printf("error starting server: %s\n", err)
 		return err
