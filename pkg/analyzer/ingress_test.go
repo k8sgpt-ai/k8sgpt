@@ -113,3 +113,35 @@ func TestIngressAnalyzerWithoutIngressClassAnnotation(t *testing.T) {
 		t.Error("expected error 'does not specify an Ingress class' not found in analysis results")
 	}
 }
+
+func TestIngressAnalyzerNamespaceFiltering(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "other-namespace",
+				Annotations: map[string]string{},
+			},
+		})
+	ingressAnalyzer := IngressAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := ingressAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}

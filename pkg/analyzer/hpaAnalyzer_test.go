@@ -420,3 +420,34 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsStatefulSet(t *testing.T) {
 		assert.Equal(t, len(analysis.Error), 0)
 	}
 }
+
+func TestHPAAnalyzerNamespaceFiltering(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+		},
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "other-namespace",
+				Annotations: map[string]string{},
+			},
+		})
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}

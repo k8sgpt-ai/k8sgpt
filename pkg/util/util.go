@@ -164,7 +164,7 @@ func FileExists(path string) (bool, error) {
 }
 
 func EnsureDirExists(dir string) error {
-	err := os.Mkdir(dir, 0755)
+	err := os.MkdirAll(dir, 0755)
 
 	if errors.Is(err, os.ErrExist) {
 		return nil
