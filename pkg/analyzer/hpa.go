@@ -34,37 +34,76 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-            deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-            if err != nil {
-                scaleTargetRefNotFound = true
-            } else {
-                // check if the deployment has resource configured
-                if (deployment.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (deployment.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
-                    failures = append(failures, common.Failure{
-                        Text: fmt.Sprintf("Deployment %s/%s does not have resource configured.", deployment.Namespace, deployment.Name),
-                        Sensitive: []common.Sensitive{
-                            {
-                                Unmasked: deployment.Name,
-                                Masked: util.MaskString(deployment.Name),
-                            },
-                        },
-                    })
-                }
-            }
-		case "ReplicationController":
-			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
+			} else {
+				// check if the deployment has resource configured
+				if (deployment.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (deployment.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
+					failures = append(failures, common.Failure{
+						Text: fmt.Sprintf("Deployment %s/%s does not have resource configured.", deployment.Namespace, deployment.Name),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: deployment.Name,
+								Masked:   util.MaskString(deployment.Name),
+							},
+						},
+					})
+				}
+			}
+		case "ReplicationController":
+			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			if err != nil {
+				scaleTargetRefNotFound = true
+			} else {
+				// check if the replication controller has resource configured
+				if (rc.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (rc.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
+					failures = append(failures, common.Failure{
+						Text: fmt.Sprintf("ReplicationController %s/%s does not have resource configured.", rc.Namespace, rc.Name),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: rc.Name,
+								Masked:   util.MaskString(rc.Name),
+							},
+						},
+					})
+				}
 			}
 		case "ReplicaSet":
-			_, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
+			} else {
+				// check if the replica set has resource configured
+				if (rs.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (rs.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
+					failures = append(failures, common.Failure{
+						Text: fmt.Sprintf("ReplicaSet %s/%s does not have resource configured.", rs.Namespace, rs.Name),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: rs.Name,
+								Masked:   util.MaskString(rs.Name),
+							},
+						},
+					})
+				}
 			}
 		case "StatefulSet":
-			_, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			ss, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err != nil {
 				scaleTargetRefNotFound = true
+			} else {
+				// check if the stateful set has resource configured
+				if (ss.Spec.Template.Spec.Containers[0].Resources.Requests == nil) || (ss.Spec.Template.Spec.Containers[0].Resources.Limits == nil) {
+					failures = append(failures, common.Failure{
+						Text: fmt.Sprintf("StatefulSet %s/%s does not have resource configured.", ss.Namespace, ss.Name),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: ss.Name,
+								Masked:   util.MaskString(ss.Name),
+							},
+						},
+					})
+				}
 			}
 		default:
 			failures = append(failures, common.Failure{
