@@ -5,6 +5,8 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,28 +32,28 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
-		scaleTargetRefNotFound := false
+		var podInfo PodInfo
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-			_, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-			if err != nil {
-				scaleTargetRefNotFound = true
+			deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			if err == nil {
+				podInfo = DeploymentInfo{deployment}
 			}
 		case "ReplicationController":
-			_, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-			if err != nil {
-				scaleTargetRefNotFound = true
+			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			if err == nil {
+				podInfo = ReplicationControllerInfo{rc}
 			}
 		case "ReplicaSet":
-			_, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-			if err != nil {
-				scaleTargetRefNotFound = true
+			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			if err == nil {
+				podInfo = ReplicaSetInfo{rs}
 			}
 		case "StatefulSet":
-			_, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
-			if err != nil {
-				scaleTargetRefNotFound = true
+			ss, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			if err == nil {
+				podInfo = StatefulSetInfo{ss}
 			}
 		default:
 			failures = append(failures, common.Failure{
@@ -60,7 +62,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			})
 		}
 
-		if scaleTargetRefNotFound {
+		if podInfo == nil {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
 				Sensitive: []common.Sensitive{
@@ -70,6 +72,26 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					},
 				},
 			})
+		} else {
+			containers := len(podInfo.GetPodSpec().Containers)
+			for _, container := range podInfo.GetPodSpec().Containers {
+				if container.Resources.Requests == nil || container.Resources.Limits == nil {
+					containers--
+				}
+			}
+
+			if containers <= 0 {
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: scaleTargetRef.Name,
+							Masked:   util.MaskString(scaleTargetRef.Name),
+						},
+					},
+				})
+			}
+
 		}
 
 		if len(failures) > 0 {
@@ -95,4 +117,44 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+type PodInfo interface {
+	GetPodSpec() corev1.PodSpec
+}
+
+type DeploymentInfo struct {
+	*appsv1.Deployment
+}
+
+func (d DeploymentInfo) GetPodSpec() corev1.PodSpec {
+	return d.Spec.Template.Spec
+}
+
+// define a structure for ReplicationController
+type ReplicationControllerInfo struct {
+	*corev1.ReplicationController
+}
+
+func (rc ReplicationControllerInfo) GetPodSpec() corev1.PodSpec {
+	return rc.Spec.Template.Spec
+}
+
+// define a structure for ReplicaSet
+type ReplicaSetInfo struct {
+	*appsv1.ReplicaSet
+}
+
+func (rs ReplicaSetInfo) GetPodSpec() corev1.PodSpec {
+	return rs.Spec.Template.Spec
+}
+
+// define a structure for StatefulSet
+type StatefulSetInfo struct {
+	*appsv1.StatefulSet
+}
+
+// implement PodInfo for StatefulSetInfo
+func (ss StatefulSetInfo) GetPodSpec() corev1.PodSpec {
+	return ss.Spec.Template.Spec
 }
