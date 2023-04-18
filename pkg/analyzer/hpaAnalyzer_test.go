@@ -421,6 +421,73 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsStatefulSet(t *testing.T) {
 	}
 }
 
+func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *testing.T) {
+
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv1.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv1.CrossVersionObjectReference{
+					Kind: "Deployment",
+					Name: "example",
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name: "example",
+								Image: "nginx",
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	var errorFound bool
+	for _, analysis := range analysisResults {
+		for _, err := range analysis.Error {
+			if strings.Contains(err.Text, "does not have resource configured."){
+				errorFound = true
+				break
+			}
+			if errorFound {
+				break
+			}
+		}
+		if !errorFound {
+			t.Error("expected error 'does not have resource configured.' not found in analysis results")
+		}
+	}
+}
+
 func TestHPAAnalyzerNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv1.HorizontalPodAutoscaler{
