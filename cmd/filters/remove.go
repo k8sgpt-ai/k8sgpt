@@ -19,9 +19,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var removeCmd = &cobra.Command{
@@ -33,7 +33,7 @@ var removeCmd = &cobra.Command{
 		inputFilters := strings.Split(args[0], ",")
 
 		// Get defined active_filters
-		activeFilters := viper.GetStringSlice("active_filters")
+		activeFilters := config.ListActiveFilters()
 		coreFilters, _, _ := analyzer.ListFilters()
 
 		if len(activeFilters) == 0 {
@@ -75,13 +75,8 @@ var removeCmd = &cobra.Command{
 			color.Red("Filter(s) %s does not exist in configuration file. Please use k8sgpt filters add.", strings.Join(filterNotFound, ", "))
 			os.Exit(1)
 		}
-
-		viper.Set("active_filters", activeFilters)
-
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("Error writing config file: %s", err.Error())
-			os.Exit(1)
-		}
+		config.SetActiveFilters(activeFilters)
+		config.PersistOrFail()
 		color.Green("Filter(s) %s removed", strings.Join(inputFilters, ", "))
 	},
 }

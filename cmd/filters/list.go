@@ -18,9 +18,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var listCmd = &cobra.Command{
@@ -28,7 +28,7 @@ var listCmd = &cobra.Command{
 	Short: "List available filters",
 	Long:  `The list command displays a list of available filters that can be used to analyze Kubernetes resources.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		activeFilters := viper.GetStringSlice("active_filters")
+		activeFilters := config.ListActiveFilters()
 		coreFilters, additionalFilters, integrationFilters := analyzer.ListFilters()
 
 		availableFilters := append(append(coreFilters, additionalFilters...), integrationFilters...)

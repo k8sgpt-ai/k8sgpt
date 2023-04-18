@@ -27,10 +27,10 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
-	"github.com/spf13/viper"
 )
 
 type Analysis struct {
@@ -59,8 +59,8 @@ type JsonOutput struct {
 }
 
 func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int) (*Analysis, error) {
-	var configAI ai.AIConfiguration
-	err := viper.UnmarshalKey("ai", &configAI)
+	var configAI config.AIConfiguration
+	configAI, err := config.LoadAIConfiguration()
 	if err != nil {
 		color.Red("Error: %v", err)
 		os.Exit(1)
@@ -71,7 +71,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 		os.Exit(1)
 	}
 
-	var aiProvider ai.AIProvider
+	var aiProvider config.AIProvider
 	for _, provider := range configAI.Providers {
 		if backend == provider.Name {
 			aiProvider = provider
@@ -91,11 +91,9 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	ctx := context.Background()
-	// Get kubernetes client from viper
 
-	kubecontext := viper.GetString("kubecontext")
-	kubeconfig := viper.GetString("kubeconfig")
-	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	kubernetesSettings := config.LoadKubernetesSettings()
+	client, err := kubernetes.NewClient(kubernetesSettings.Context, kubernetesSettings.Config)
 	if err != nil {
 		color.Red("Error initialising kubernetes client: %v", err)
 		return nil, err
@@ -114,7 +112,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 }
 
 func (a *Analysis) RunAnalysis() []error {
-	activeFilters := viper.GetStringSlice("active_filters")
+	activeFilters := config.ListActiveFilters()
 
 	analyzerMap := analyzer.GetAnalyzerMap()
 

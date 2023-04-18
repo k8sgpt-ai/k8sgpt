@@ -17,10 +17,9 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -35,13 +34,12 @@ var ServeCmd = &cobra.Command{
 	Long:  `Runs k8sgpt as a server to allow for easy integration with other applications.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		var configAI ai.AIConfiguration
-		err := viper.UnmarshalKey("ai", &configAI)
+		configAI, err := config.LoadAIConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		var aiProvider *ai.AIProvider
+		var aiProvider *config.AIProvider
 		if len(configAI.Providers) == 0 {
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
@@ -54,20 +52,19 @@ var ServeCmd = &cobra.Command{
 			envIsSet := backend != "" || password != "" || model != "" || baseURL != ""
 
 			if envIsSet {
-				aiProvider = &ai.AIProvider{
-					Name:     backend,
-					Password: password,
-					Model:    model,
-					BaseURL:  baseURL,
+				aiProvider = &config.AIProvider{
+					Name: backend,
+					Password: config.SimpleTextPasswordProvider{
+						Password: password,
+					},
+					Model:   model,
+					BaseURL: baseURL,
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
 
-				viper.Set("ai", configAI)
-				if err := viper.WriteConfig(); err != nil {
-					color.Red("Error writing config file: %s", err.Error())
-					os.Exit(1)
-				}
+				config.SetAIConfig(configAI)
+				config.PersistOrFail()
 			} else {
 				color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
 				os.Exit(1)
@@ -91,10 +88,17 @@ var ServeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		password, err := aiProvider.Password.GetPassword()
+
+		if err != nil {
+			color.Red("Error:", err)
+			os.Exit(1)
+		}
+
 		server := k8sgptserver.Config{
 			Backend: aiProvider.Name,
 			Port:    port,
-			Token:   aiProvider.Password,
+			Token:   password,
 		}
 
 		err = server.Serve()
