@@ -5,8 +5,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"strings"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
@@ -59,7 +60,7 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), sEnc)
+	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
 	// find in viper cache
 	if viper.IsSet(cacheKey) && !nocache {
 		// retrieve data from cache

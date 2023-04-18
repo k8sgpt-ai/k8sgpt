@@ -134,8 +134,8 @@ func ReplaceIfMatch(text string, pattern string, replacement string) string {
 	return text
 }
 
-func GetCacheKey(provider string, sEnc string) string {
-	return fmt.Sprintf("%s-%s", provider, sEnc)
+func GetCacheKey(provider string, language string, sEnc string) string {
+	return fmt.Sprintf("%s-%s-%s", provider, language, sEnc)
 }
 
 func GetPodListByLabels(client k.Interface,
