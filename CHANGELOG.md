@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.3...v0.2.4) (2023-04-18)
+
+
+### Features
+
+* improve HPA analyzer to check ScaleTargetRef resources  ([#283](https://github.com/k8sgpt-ai/k8sgpt/issues/283)) ([7173203](https://github.com/k8sgpt-ai/k8sgpt/commit/71732037fa40071cef0c2bc143736019d75eac86))
+* init logging middleware on server mode ([6742410](https://github.com/k8sgpt-ai/k8sgpt/commit/6742410025d5e99c60045bb314730799f0e1e5ce))
+
+
+### Bug Fixes
+
+* deployment/cronjob namespace filtering ([#290](https://github.com/k8sgpt-ai/k8sgpt/issues/290)) ([3d684a2](https://github.com/k8sgpt-ai/k8sgpt/commit/3d684a2af7a9e1821bdb8b1bd6e85867b800d3ee))
+* ensure parent directories are created in EnsureDirExists function ([#293](https://github.com/k8sgpt-ai/k8sgpt/issues/293)) ([af8b350](https://github.com/k8sgpt-ai/k8sgpt/commit/af8b350520d1a187a199482dd338db0086118db8))
+* resolve language toggle bug (issue [#294](https://github.com/k8sgpt-ai/k8sgpt/issues/294)) ([0313627](https://github.com/k8sgpt-ai/k8sgpt/commit/03136278486ba12e3352580b317b9e63fa3a80f0))
+
 ## [0.2.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.2...v0.2.3) (2023-04-16)
 
 
