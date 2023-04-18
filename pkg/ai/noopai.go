@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 type NoOpAIClient struct {
@@ -34,7 +35,7 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), sEnc)
+	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
 
 	response, err := a.GetCompletion(ctx, inputKey)
 	if err != nil {
