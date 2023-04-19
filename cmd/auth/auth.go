@@ -17,6 +17,8 @@ var (
 	backend  string
 	password string
 	model    string
+	baseURL  string
+	azEngine string
 )
 
 // authCmd represents the auth command
@@ -57,7 +59,7 @@ var AuthCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if password == "" {
+		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
 			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 			if err != nil {
@@ -73,6 +75,8 @@ var AuthCmd = &cobra.Command{
 			Name:     backend,
 			Model:    model,
 			Password: password,
+			BaseURL:  baseURL,
+			Engine:   azEngine,
 		}
 
 		if providerIndex == -1 {
@@ -100,4 +104,8 @@ func init() {
 	AuthCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
 	// add flag for password
 	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
+	// add flag for url
+	AuthCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for azure open ai engine/deployment name
+	AuthCmd.Flags().StringVarP(&azEngine, "engine", "e", "", "Azure AI deployment name")
 }

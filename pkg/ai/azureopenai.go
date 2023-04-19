@@ -15,30 +15,28 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type OpenAIClient struct {
+type AzureAIClient struct {
 	client   *openai.Client
 	language string
 	model    string
 }
 
-func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
+func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
 	token := config.GetToken()
 	baseURL := config.GetBaseURL()
-	defaultConfig := openai.DefaultConfig(token)
-	if baseURL != "" {
-		defaultConfig.BaseURL = baseURL
-	}
+	engine := config.GetEngine()
+	defaultConfig := openai.DefaultAzureConfig(token, baseURL, engine)
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
-		return errors.New("error creating OpenAI client")
+		return errors.New("error creating Azure OpenAI client")
 	}
-	c.language = language
+	c.language = lang
 	c.client = client
 	c.model = config.GetModel()
 	return nil
 }
 
-func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: c.model,
@@ -55,7 +53,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
@@ -91,6 +89,6 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 	return response, nil
 }
 
-func (a *OpenAIClient) GetName() string {
-	return "openai"
+func (a *AzureAIClient) GetName() string {
+	return "azureopenai"
 }

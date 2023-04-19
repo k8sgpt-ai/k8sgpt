@@ -68,7 +68,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
-	if err := aiClient.Configure(aiProvider.Password, aiProvider.Model, language); err != nil {
+	if err := aiClient.Configure(&aiProvider, language); err != nil {
 		color.Red("Error: %v", err)
 		return nil, err
 	}
