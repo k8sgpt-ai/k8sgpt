@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/fatih/color"
@@ -95,7 +96,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}, nil
 }
 
-func (a *Analysis) RunAnalysis() error {
+func (a *Analysis) RunAnalysis() []error {
 	activeFilters := viper.GetStringSlice("active_filters")
 
 	analyzerMap := analyzer.GetAnalyzerMap()
@@ -107,16 +108,18 @@ func (a *Analysis) RunAnalysis() error {
 		AIClient:  a.AIClient,
 	}
 
+	var errorList []error
+
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
 		for _, analyzer := range analyzerMap {
 			results, err := analyzer.Analyze(analyzerConfig)
 			if err != nil {
-				return err
+				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
 			}
 			a.Results = append(a.Results, results...)
 		}
-		return nil
+		return errorList
 	}
 
 	// if the filters flag is specified
@@ -125,14 +128,14 @@ func (a *Analysis) RunAnalysis() error {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
-					return err
+					errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
 				}
 				a.Results = append(a.Results, results...)
 			} else {
-				return errors.New(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
+				errorList = append(errorList, errors.New(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
 		}
-		return nil
+		return errorList
 	}
 
 	// use active_filters
@@ -140,12 +143,12 @@ func (a *Analysis) RunAnalysis() error {
 		if analyzer, ok := analyzerMap[filter]; ok {
 			results, err := analyzer.Analyze(analyzerConfig)
 			if err != nil {
-				return err
+				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
 			}
 			a.Results = append(a.Results, results...)
 		}
 	}
-	return nil
+	return errorList
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
