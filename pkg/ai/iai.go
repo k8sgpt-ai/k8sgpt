@@ -5,10 +5,15 @@ import (
 )
 
 type IAI interface {
-	Configure(token string, model string, language string) error
+	Configure(config IAIConfig, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
 	Parse(ctx context.Context, prompt []string, nocache bool) (string, error)
 	GetName() string
+}
+
+type IAIConfig interface {
+	GetPassword() string
+	GetModel() string
 }
 
 func NewClient(provider string) IAI {
@@ -30,4 +35,12 @@ type AIProvider struct {
 	Name     string `mapstructure:"name"`
 	Model    string `mapstructure:"model"`
 	Password string `mapstructure:"password"`
+}
+
+func (p *AIProvider) GetPassword() string {
+	return p.Password
+}
+
+func (p *AIProvider) GetModel() string {
+	return p.Model
 }
