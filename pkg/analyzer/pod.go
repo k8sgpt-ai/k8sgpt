@@ -44,7 +44,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 
-		// Check through container status to check for crashes
+		// Check through container status to check for crashes or unready
 		for _, containerStatus := range pod.Status.ContainerStatuses {
 			if containerStatus.State.Waiting != nil {
 				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
@@ -69,6 +69,23 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							Sensitive: []common.Sensitive{},
 						})
 					}
+				}
+			} else {
+				// when pod is Running but its ReadinessProbe fails
+				if containerStatus.Ready == false && pod.Status.Phase == "Running" {
+					// parse the event log and append details
+					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
+					if err != nil || evt == nil {
+						continue
+					}
+					if evt.Reason == "Unhealthy" && evt.Message != "" {
+						failures = append(failures, common.Failure{
+							Text:      evt.Message,
+							Sensitive: []common.Sensitive{},
+						})
+
+					}
+
 				}
 			}
 		}
