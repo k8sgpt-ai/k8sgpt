@@ -16,6 +16,7 @@ import (
 var (
 	backend  string
 	password string
+	baseURL  string
 	model    string
 )
 
@@ -73,6 +74,7 @@ var AuthCmd = &cobra.Command{
 			Name:     backend,
 			Model:    model,
 			Password: password,
+			BaseURL:  baseURL,
 		}
 
 		if providerIndex == -1 {
@@ -100,4 +102,6 @@ func init() {
 	AuthCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
 	// add flag for password
 	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
+	// add flag for url
+	AuthCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
 }

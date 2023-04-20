@@ -34,13 +34,18 @@ var ServeCmd = &cobra.Command{
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
 			model := os.Getenv("K8SGPT_MODEL")
-			// If the envs are set, alocate in place to the aiProvider
+			baseURL := os.Getenv("K8SGPT_BASEURL")
+
+			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
-			if backend != "" || password != "" || model != "" {
+			envIsSet := backend != "" || password != "" || model != "" || baseURL != ""
+
+			if envIsSet {
 				aiProvider = &ai.AIProvider{
 					Name:     backend,
 					Password: password,
 					Model:    model,
+					BaseURL:  baseURL,
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
