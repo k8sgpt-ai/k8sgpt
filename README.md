@@ -313,6 +313,56 @@ _Analysis with serve mode_
 ```
 curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 ```
+
+## Running local models
+
+To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
+
+<details>
+
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml).
+
+### Start the API server
+
+To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#usage):
+
+```
+git clone https://github.com/go-skynet/LocalAI
+
+cd LocalAI
+
+# copy your models to models/
+cp your-model models/
+
+# (optional) Edit the .env file to set the number of concurrent threads used for inference
+# echo "THREADS=14" > .env
+
+# start with docker-compose
+docker compose up -d --build
+
+# Check that the API is accessible at localhost:8080
+curl http://localhost:8080/v1/models
+# {"object":"list","data":[{"id":"your-model","object":"model"}]}
+```
+
+In order to use a local model, you might probably need to set a prompt template. This depends on the model being used. Create a file next your model ending by `.tmpl`, see some of the [templates examples in LocalAI](https://github.com/go-skynet/LocalAI/tree/master/prompt-templates).
+
+### Run k8sgpt
+
+To run k8sgpt, run `k8sgpt auth` with the `localai` backend:
+
+```
+k8sgpt auth --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+```
+
+When being asked for an API key, just press enter.
+
+Now you can analyze with the `localai` backend:
+
+```
+k8sgpt analyze --explain --backend localai
+```
+
 </details>
 
 ## Configuration
