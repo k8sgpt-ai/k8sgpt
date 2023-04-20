@@ -297,6 +297,14 @@ Config file locations:
 | Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
 
 
+Below is a sample config file content, in case the situation when no browser available:
+```
+backend_type: openai  # so far only openAI
+kubernetesclient: {}  # use default local kube-config when blank
+openai_key: $(yourKey)
+```
+
+
 ## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
