@@ -24,6 +24,12 @@ type OpenAIClient struct {
 func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
+
+	baseURL := config.GetBaseURL()
+	if baseURL != "" {
+		defaultConfig.BaseURL = baseURL
+	}
+
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating OpenAI client")
