@@ -17,10 +17,11 @@ type NoOpAIClient struct {
 	model    string
 }
 
-func (c *NoOpAIClient) Configure(token string, model string, language string) error {
+func (c *NoOpAIClient) Configure(config IAIConfig, language string) error {
+	token := config.GetPassword()
 	c.language = language
 	c.client = fmt.Sprintf("I am a noop client with the token %s ", token)
-	c.model = model
+	c.model = config.GetModel()
 	return nil
 }
 

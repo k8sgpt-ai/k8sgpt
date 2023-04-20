@@ -55,12 +55,14 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = config.RunAnalysis()
-	if err != nil {
-		color.Red("Error: %v", err)
+	analysisErrors := config.RunAnalysis()
+	if analysisErrors != nil {
+		var errorMessage string
+		for _, err := range analysisErrors {
+			errorMessage += err.Error() + "\n"
+		}
+		http.Error(w, errorMessage, http.StatusInternalServerError)
 		health.Failure++
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 
 	if explain {
