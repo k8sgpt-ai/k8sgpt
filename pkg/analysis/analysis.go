@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -112,42 +113,78 @@ func (a *Analysis) RunAnalysis() []error {
 
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
 		for _, analyzer := range analyzerMap {
-			results, err := analyzer.Analyze(analyzerConfig)
-			if err != nil {
-				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
-			}
-			a.Results = append(a.Results, results...)
+			wg.Add(1)
+			go func(analyzer common.IAnalyzer) {
+
+				results, err := analyzer.Analyze(analyzerConfig)
+				if err != nil {
+					mutex.Lock()
+					errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
+					mutex.Unlock()
+				}
+				mutex.Lock()
+				a.Results = append(a.Results, results...)
+				mutex.Unlock()
+				wg.Done()
+			}(analyzer)
+
 		}
+		wg.Wait()
 		return errorList
 	}
 
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
 		for _, filter := range a.Filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
-				results, err := analyzer.Analyze(analyzerConfig)
-				if err != nil {
-					errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
-				}
-				a.Results = append(a.Results, results...)
+				wg.Add(1)
+				go func(analyzer common.IAnalyzer) {
+
+					results, err := analyzer.Analyze(analyzerConfig)
+					if err != nil {
+						mutex.Lock()
+						errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", filter, err)))
+						mutex.Unlock()
+					}
+					mutex.Lock()
+					a.Results = append(a.Results, results...)
+					mutex.Unlock()
+					wg.Done()
+				}(analyzer)
 			} else {
-				errorList = append(errorList, errors.New(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
+				errorList = append(errorList, fmt.Errorf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
 		}
+		wg.Wait()
 		return errorList
 	}
 
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
-			results, err := analyzer.Analyze(analyzerConfig)
-			if err != nil {
-				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
-			}
-			a.Results = append(a.Results, results...)
+			wg.Add(1)
+			go func(analyzer common.IAnalyzer) {
+				results, err := analyzer.Analyze(analyzerConfig)
+				if err != nil {
+					mutex.Lock()
+					errorList = append(errorList, fmt.Errorf("[%s] %s", filter, err))
+					mutex.Unlock()
+				}
+				mutex.Lock()
+				a.Results = append(a.Results, results...)
+				mutex.Unlock()
+				wg.Done()
+			}(analyzer)
 		}
 	}
+	wg.Wait()
 	return errorList
 }
 
