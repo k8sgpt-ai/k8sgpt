@@ -22,6 +22,8 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
+	"github.com/sashabaranov/go-openai"
+
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 )
