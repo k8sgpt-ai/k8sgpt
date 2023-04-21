@@ -1,0 +1,25 @@
+deployment:
+  image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.4
+  imagePullPolicy: Always
+  env:
+    model: ""
+    backend: "openai" # one of: [ openai | llama ]
+    baseUrl: ""
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "0.2"
+      memory: "156Mi"
+
+secret:
+  enabled: false
+  secretKey: "" # base64 encoded OpenAI token
+
+service:
+  type: ClusterIP
+  annotations: {}
+
+serviceMonitor:
+  enabled: false

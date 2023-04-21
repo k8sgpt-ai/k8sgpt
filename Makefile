@@ -10,6 +10,8 @@ ROOT_PACKAGE=github.com/k8sgpt-ai/k8sgpt
 SHELL := /bin/bash
 DIRS=$(shell ls)
 GO=go
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
 
 .DEFAULT_GOAL := help
 
@@ -61,24 +63,27 @@ tidy:
 
 ## deploy: Deploy k8sgpt
 .PHONY: deploy
-deploy:
+deploy: helm
 	@echo "===========> Deploying k8sgpt"
-	@$(call funcsecret)
+	$(HELM) install k8sgpt charts/k8sgpt -n k8sgpt --create-namespace
+
+## update: Update k8sgpt
+.PHONY: update
+update: helm
+	@echo "===========> Updating k8sgpt"
+	$(HELM) upgrade k8sgpt charts/k8sgpt -n k8sgpt
 
 ## undeploy: Undeploy k8sgpt
 .PHONY: undeploy
-undeploy:
+undeploy: helm
 	@echo "===========> Undeploying k8sgpt"
-	kubectl delete secret ai-backend-secret --namespace=k8sgpt
-	kubectl delete -f container/manifests
-	kubectl delete ns k8sgpt
+	$(HELM) uninstall k8sgpt -n k8sgpt
 
 ## docker-build: Build docker image
 .PHONY: docker-build
 docker-build:
 	@echo "===========> Building docker image"
-	docker buildx build --build-arg=VERSION="$$(git describe --tags --abbrev=0)" --build-arg=COMMIT="$$(git rev-parse --short HEAD)" --build-arg DATE="$$(date +%FT%TZ)" --platform="linux/amd64,linux/arm64" -t ${IMG} -f container/Dockerfile . --push
-
+	docker buildx build --build-arg=VERSION="$$(git describe --tags --abbrev=0)" --build-arg=COMMIT="$$(git rev-parse --short HEAD)" --build-arg DATE="$$(date +%FT%TZ)" --platform="linux/amd64,linux/arm64" -t ${IMG} -f ./Dockerfile . --push
 
 ## fmt: Run go fmt against code.
 .PHONY: fmt
@@ -137,11 +142,16 @@ copyright.add: tools.verify.addlicense
 #	@addlicense -y $(shell date +"%Y") -v -c "K8sgpt AI." -f $(LICENSE_TEMPLATE) $(CODE_DIRS)
 	@echo "===========> End the copyright is added..."
 
-define funcsecret
-ifndef SECRET
-	$(error SECRET environment variable is not set)
-endif
-	kubectl create ns k8sgpt || true
-	kubectl create secret generic ai-backend-secret --from-literal=secret-key=$(SECRET) --namespace=k8sgpt || true
-	kubectl apply -f container/manifests
-endef
+# =====
+# Tools
+
+HELM_VERSION ?= v3.11.3
+
+helm:
+	if ! test -f  $(OUTPUT_DIR)/helm-$(GOOS)-$(GOARCH); then \
+		curl -L https://get.helm.sh/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH).tar.gz | tar xz; \
+		mv $(GOOS)-$(GOARCH)/helm $(OUTPUT_DIR)/helm-$(GOOS)-$(GOARCH); \
+		chmod +x $(OUTPUT_DIR)/helm-$(GOOS)-$(GOARCH); \
+		rm -rf ./$(GOOS)-$(GOARCH)/; \
+	fi
+HELM=$(OUTPUT_DIR)/helm-$(GOOS)-$(GOARCH)

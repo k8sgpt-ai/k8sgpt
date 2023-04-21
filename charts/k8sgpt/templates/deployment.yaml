@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "k8sgpt.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "k8sgpt.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      serviceAccountName: k8sgpt
+      containers:
+      - name: k8sgpt-container
+        imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
+        image: {{ .Values.deployment.image }}
+        ports:
+        - containerPort: 8080
+        args: ["serve"]
+        {{- if .Values.deployment.resources }}
+        resources:
+        {{- toYaml .Values.deployment.resources | nindent 10 }}
+        {{- end }}
+        env:
+        - name: K8SGPT_MODEL
+          value: {{ .Values.deployment.env.model }}
+        - name: K8SGPT_BACKEND
+          value: {{ .Values.deployment.env.backend }}
+        - name: K8SGPT_BASEURL
+          value: {{ .Values.deployment.env.baseUrl }}
+        {{- if .Values.secret.enabled }}
+        - name: K8SGPT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ai-backend-secret
+              key: secret-key
+        {{- end }}
