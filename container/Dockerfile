@@ -27,7 +27,7 @@ FROM gcr.io/distroless/static AS production
 LABEL org.opencontainers.image.source="https://github.com/k8sgpt-ai/k8sgpt" \
     org.opencontainers.image.url="https://k8sgpt.ai" \
     org.opencontainers.image.title="k8sgpt" \
-    org.opencontainers.image.vendor='The K8sGPT Authors'
+    org.opencontainers.image.vendor='The K8sGPT Authors' \
     org.opencontainers.image.licenses='Apache-2.0'
 
 WORKDIR /
