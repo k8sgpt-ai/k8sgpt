@@ -269,22 +269,6 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 </details>
 
-## Upcoming major milestones
-
-- [ ] Multiple AI backend support
-- [ ] Custom AI/ML model backend support
-- [ ] Custom analyzers
-
-## What about kubectl-ai?
-
-The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the
-cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
-
-K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers
-to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find
-the root cause of an issue.
-
-
 ## Configuration
 
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
