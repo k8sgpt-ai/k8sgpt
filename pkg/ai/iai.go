@@ -27,6 +27,7 @@ type IAI interface {
 type IAIConfig interface {
 	GetPassword() string
 	GetModel() string
+	GetBaseURL() string
 }
 
 func NewClient(provider string) IAI {
@@ -48,6 +49,11 @@ type AIProvider struct {
 	Name     string `mapstructure:"name"`
 	Model    string `mapstructure:"model"`
 	Password string `mapstructure:"password"`
+	BaseURL  string `mapstructure:"base_url"`
+}
+
+func (p *AIProvider) GetBaseURL() string {
+	return p.BaseURL
 }
 
 func (p *AIProvider) GetPassword() string {
