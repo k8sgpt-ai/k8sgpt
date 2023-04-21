@@ -28,8 +28,8 @@ spec:
             cpu: "1"
             memory: "512Mi"
           requests:
-            cpu: "0.5"
-            memory: "256Mi"
+            cpu: "0.2"
+            memory: "156Mi"
         env:
         - name: K8SGPT_MODEL
           value: "gpt-3.5-turbo"
