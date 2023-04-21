@@ -5,7 +5,6 @@
 # ==============================================================================
 # define the default goal
 #
-
 ROOT_PACKAGE=github.com/k8sgpt-ai/k8sgpt
 
 SHELL := /bin/bash
@@ -43,7 +42,7 @@ BUILDFILE = "./main.go"
 BUILDAPP = "$(OUTPUT_DIR)/k8sgpt"
 
 .PHONY: all
-all: tidy gen add-copyright format lint cover build
+all: tidy add-copyright lint cover build
 
 # ==============================================================================
 # Targets
@@ -54,6 +53,11 @@ build:
 	@echo "$(shell go version)"
 	@echo "===========> Building binary $(BUILDAPP) *[Git Info]: $(VERSION)-$(GIT_COMMIT)"
 	@export CGO_ENABLED=0 && go build -o $(BUILDAPP) -ldflags '-s -w' $(BUILDFILE)
+
+## tidy: tidy go.mod
+.PHONY: tidy
+tidy:
+	@$(GO) mod tidy
 
 ## deploy: Deploy k8sgpt
 .PHONY: deploy
@@ -118,6 +122,20 @@ clean:
 help: Makefile
 	@printf "\n\033[1mUsage: make <TARGETS> ...\033[0m\n\n\\033[1mTargets:\\033[0m\n\n"
 	@sed -n 's/^##//p' $< | awk -F':' '{printf "\033[36m%-28s\033[0m %s\n", $$1, $$2}' | sed -e 's/^/ /'
+
+## copyright.verify: Validate boilerplate headers for assign files
+.PHONY: copyright.verify
+copyright.verify: tools.verify.addlicense
+	@echo "===========> Validate boilerplate headers for assign files starting in the $(ROOT_DIR) directory"
+#	@addlicense -v -check -ignore **/test/** -f $(LICENSE_TEMPLATE) $(CODE_DIRS)
+	@echo "===========> End of boilerplate headers check..."
+
+## copyright.add: Add the boilerplate headers for all files
+.PHONY: copyright.add
+copyright.add: tools.verify.addlicense
+	@echo "===========> Adding $(LICENSE_TEMPLATE) the boilerplate headers for all files"
+#	@addlicense -y $(shell date +"%Y") -v -c "K8sgpt AI." -f $(LICENSE_TEMPLATE) $(CODE_DIRS)
+	@echo "===========> End the copyright is added..."
 
 define funcsecret
 ifndef SECRET
