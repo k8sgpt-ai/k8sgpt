@@ -33,7 +33,6 @@ var ServeCmd = &cobra.Command{
 	Short: "Runs k8sgpt as a server",
 	Long:  `Runs k8sgpt as a server to allow for easy integration with other applications.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		var configAI ai.AIConfiguration
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {

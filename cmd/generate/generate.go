@@ -15,24 +15,22 @@ package generate
 
 import (
 	"fmt"
+	"os/exec"
+	"runtime"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os/exec"
-	"runtime"
 )
 
-var (
-	backend string
-)
+var backend string
 
-// generateCmd represents the auth command
+// generateCmd represents the auth command.
 var GenerateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate Key for your chosen backend (opens browser)",
 	Long:  `Opens your browser to generate a key for your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		backendType := viper.GetString("backend_type")
 		if backendType == "" {
 			// Set the default backend

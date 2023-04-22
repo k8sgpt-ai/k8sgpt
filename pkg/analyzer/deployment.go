@@ -23,13 +23,11 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
-// DeploymentAnalyzer is an analyzer that checks for misconfigured Deployments
-type DeploymentAnalyzer struct {
-}
+// DeploymentAnalyzer is an analyzer that checks for misconfigured Deployments.
+type DeploymentAnalyzer struct{}
 
-// Analyze scans all namespaces for Deployments with misconfigurations
+// Analyze scans all namespaces for Deployments with misconfigurations.
 func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "Deployment"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -40,7 +38,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
@@ -56,7 +54,8 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 						Unmasked: deployment.Name,
 						Masked:   util.MaskString(deployment.Name),
 					},
-				}})
+				},
+			})
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{
@@ -65,11 +64,10 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 			}
 			AnalyzerErrorsMetric.WithLabelValues(kind, deployment.Name, deployment.Namespace).Set(float64(len(failures)))
 		}
-
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

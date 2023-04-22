@@ -100,7 +100,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	kubeconfig := viper.GetString("kubeconfig")
 	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
 	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
+		color.Red("Error initializing kubernetes client: %v", err)
 		return nil, err
 	}
 

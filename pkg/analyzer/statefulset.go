@@ -24,7 +24,6 @@ import (
 type StatefulSetAnalyzer struct{}
 
 func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "StatefulSet"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -35,7 +34,7 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, sts := range list.Items {
 		var failures []common.Failure
@@ -86,7 +85,7 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

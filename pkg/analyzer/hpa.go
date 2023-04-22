@@ -26,7 +26,6 @@ import (
 type HpaAnalyzer struct{}
 
 func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "HorizontalPodAutoscaler"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -38,7 +37,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, hpa := range list.Items {
 		var failures []common.Failure
@@ -104,7 +103,6 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					},
 				})
 			}
-
 		}
 
 		if len(failures) > 0 {
@@ -114,11 +112,10 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 			AnalyzerErrorsMetric.WithLabelValues(kind, hpa.Name, hpa.Namespace).Set(float64(len(failures)))
 		}
-
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
@@ -144,7 +141,7 @@ func (d DeploymentInfo) GetPodSpec() corev1.PodSpec {
 	return d.Spec.Template.Spec
 }
 
-// define a structure for ReplicationController
+// define a structure for ReplicationController.
 type ReplicationControllerInfo struct {
 	*corev1.ReplicationController
 }
@@ -153,7 +150,7 @@ func (rc ReplicationControllerInfo) GetPodSpec() corev1.PodSpec {
 	return rc.Spec.Template.Spec
 }
 
-// define a structure for ReplicaSet
+// define a structure for ReplicaSet.
 type ReplicaSetInfo struct {
 	*appsv1.ReplicaSet
 }
@@ -162,12 +159,12 @@ func (rs ReplicaSetInfo) GetPodSpec() corev1.PodSpec {
 	return rs.Spec.Template.Spec
 }
 
-// define a structure for StatefulSet
+// define a structure for StatefulSet.
 type StatefulSetInfo struct {
 	*appsv1.StatefulSet
 }
 
-// implement PodInfo for StatefulSetInfo
+// implement PodInfo for StatefulSetInfo.
 func (ss StatefulSetInfo) GetPodSpec() corev1.PodSpec {
 	return ss.Spec.Template.Spec
 }

@@ -22,11 +22,9 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type TrivyAnalyzer struct {
-}
+type TrivyAnalyzer struct{}
 
 func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
@@ -46,10 +44,9 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	// Find criticals and get CVE
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, report := range result.Items {
-
 		// For each pod there may be multiple vulnerabilities
 		var failures []common.Failure
 		for _, vuln := range report.Report.Vulnerabilities {
@@ -72,7 +69,7 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  "VulnerabilityReport",
 			Name:  key,
 			Error: value.FailureDetails,

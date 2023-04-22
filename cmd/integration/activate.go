@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// activateCmd represents the activate command
+// activateCmd represents the activate command.
 var activateCmd = &cobra.Command{
 	Use:   "activate [integration]",
 	Short: "Activate an integration",
@@ -42,5 +42,4 @@ var activateCmd = &cobra.Command{
 
 func init() {
 	IntegrationCmd.AddCommand(activateCmd)
-
 }

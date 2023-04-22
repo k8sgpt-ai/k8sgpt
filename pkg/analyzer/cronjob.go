@@ -26,7 +26,6 @@ import (
 type CronJobAnalyzer struct{}
 
 func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "CronJob"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -38,7 +37,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, cronJob := range cronJobList.Items {
 		var failures []common.Failure
@@ -78,7 +77,6 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			if cronJob.Spec.StartingDeadlineSeconds != nil {
 				deadline := time.Duration(*cronJob.Spec.StartingDeadlineSeconds) * time.Second
 				if deadline < 0 {
-
 					failures = append(failures, common.Failure{
 						Text: fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
 						Sensitive: []common.Sensitive{
@@ -92,10 +90,8 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 							},
 						},
 					})
-
 				}
 			}
-
 		}
 
 		if len(failures) > 0 {
@@ -103,7 +99,6 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 				FailureDetails: failures,
 			}
 			AnalyzerErrorsMetric.WithLabelValues(kind, cronJob.Name, cronJob.Namespace).Set(float64(len(failures)))
-
 		}
 
 		for key, value := range preAnalysis {
@@ -119,7 +114,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 	return a.Results, nil
 }
 
-// Check CRON schedule format
+// Check CRON schedule format.
 func CheckCronScheduleIsValid(schedule string) (bool, error) {
 	_, err := cron.ParseStandard(schedule)
 	if err != nil {

@@ -24,7 +24,6 @@ import (
 type IngressAnalyzer struct{}
 
 func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "Ingress"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -36,7 +35,7 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, ing := range list.Items {
 		var failures []common.Failure
@@ -127,13 +126,11 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				FailureDetails: failures,
 			}
 			AnalyzerErrorsMetric.WithLabelValues(kind, ing.Name, ing.Namespace).Set(float64(len(failures)))
-
 		}
-
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

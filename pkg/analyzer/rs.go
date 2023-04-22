@@ -24,7 +24,6 @@ import (
 type ReplicaSetAnalyzer struct{}
 
 func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "ReplicaSet"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -37,14 +36,13 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, rs := range list.Items {
 		var failures []common.Failure
 
 		// Check for empty rs
 		if rs.Status.Replicas == 0 {
-
 			// Check through container status to check for crashes
 			for _, rsStatus := range rs.Status.Conditions {
 				if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
@@ -52,7 +50,6 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Text:      rsStatus.Message,
 						Sensitive: []common.Sensitive{},
 					})
-
 				}
 			}
 		}
@@ -66,7 +63,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

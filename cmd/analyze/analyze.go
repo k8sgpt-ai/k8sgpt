@@ -34,15 +34,14 @@ var (
 	maxConcurrency int
 )
 
-// AnalyzeCmd represents the problems command
+// AnalyzeCmd represents the problems command.
 var AnalyzeCmd = &cobra.Command{
 	Use:     "analyze",
-	Aliases: []string{"analyse"},
+	Aliases: []string{"analyze"},
 	Short:   "This command will find problems within your Kubernetes cluster",
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// AnalysisResult configuration
 		config, err := analysis.NewAnalysis(backend,
 			language, filters, namespace, nocache, explain, maxConcurrency)
@@ -72,7 +71,6 @@ var AnalyzeCmd = &cobra.Command{
 }
 
 func init() {
-
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag
