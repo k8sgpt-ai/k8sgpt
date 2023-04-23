@@ -20,14 +20,15 @@ import (
 )
 
 type Analysis struct {
-	Context   context.Context
-	Filters   []string
-	Client    *kubernetes.Client
-	AIClient  ai.IAI
-	Results   []common.Result
-	Namespace string
-	NoCache   bool
-	Explain   bool
+	Context        context.Context
+	Filters        []string
+	Client         *kubernetes.Client
+	AIClient       ai.IAI
+	Results        []common.Result
+	Namespace      string
+	NoCache        bool
+	Explain        bool
+	MaxConcurrency int
 }
 
 type AnalysisStatus string
@@ -35,7 +36,6 @@ type AnalysisStatus string
 const (
 	StateOK              AnalysisStatus = "OK"
 	StateProblemDetected AnalysisStatus = "ProblemDetected"
-	MaxConcurrent        int            = 10
 )
 
 type JsonOutput struct {
@@ -44,7 +44,7 @@ type JsonOutput struct {
 	Results  []common.Result `json:"results"`
 }
 
-func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool) (*Analysis, error) {
+func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int) (*Analysis, error) {
 	var configAI ai.AIConfiguration
 	err := viper.UnmarshalKey("ai", &configAI)
 	if err != nil {
@@ -88,13 +88,14 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	return &Analysis{
-		Context:   ctx,
-		Filters:   filters,
-		Client:    client,
-		AIClient:  aiClient,
-		Namespace: namespace,
-		NoCache:   noCache,
-		Explain:   explain,
+		Context:        ctx,
+		Filters:        filters,
+		Client:         client,
+		AIClient:       aiClient,
+		Namespace:      namespace,
+		NoCache:        noCache,
+		Explain:        explain,
+		MaxConcurrency: maxConcurrency,
 	}, nil
 }
 
@@ -111,7 +112,7 @@ func (a *Analysis) RunAnalysis() []error {
 	}
 
 	var errorList []error
-	semaphore := make(chan struct{}, MaxConcurrent)
+	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
 		var wg sync.WaitGroup
@@ -137,7 +138,7 @@ func (a *Analysis) RunAnalysis() []error {
 		wg.Wait()
 		return errorList
 	}
-	semaphore = make(chan struct{}, MaxConcurrent)
+	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
 		var wg sync.WaitGroup
@@ -169,7 +170,7 @@ func (a *Analysis) RunAnalysis() []error {
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
-	semaphore = make(chan struct{}, MaxConcurrent)
+	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
