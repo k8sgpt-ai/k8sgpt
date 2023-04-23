@@ -1,3 +1,16 @@
+/*
+Copyright 2023 The K8sGPT Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package serve
 
 import (
@@ -34,13 +47,18 @@ var ServeCmd = &cobra.Command{
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
 			model := os.Getenv("K8SGPT_MODEL")
-			// If the envs are set, alocate in place to the aiProvider
+			baseURL := os.Getenv("K8SGPT_BASEURL")
+
+			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
-			if backend != "" || password != "" || model != "" {
+			envIsSet := backend != "" || password != "" || model != "" || baseURL != ""
+
+			if envIsSet {
 				aiProvider = &ai.AIProvider{
 					Name:     backend,
 					Password: password,
 					Model:    model,
+					BaseURL:  baseURL,
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
