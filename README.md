@@ -156,6 +156,8 @@ you will be able to write your own analyzers.
 ## Usage
 
 ```
+Kubernetes debugging powered by AI
+
 Usage:
   k8sgpt [command]
 
@@ -166,14 +168,15 @@ Available Commands:
   filters     Manage filters for analyzing Kubernetes resources
   generate    Generate Key for your chosen backend (opens browser)
   help        Help about any command
+  integration Intergrate another tool into K8sGPT
+  serve       Runs k8sgpt as a server
   version     Print the version number of k8sgpt
 
 Flags:
-      --config string       config file (default is $HOME/.k8sgpt.git.yaml)
-  -h, --help                help for k8sgpt
-      --kubeconfig string   Path to a kubeconfig. Only required if out-of-cluster.
-      --master string       The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.
-  -t, --toggle              Help message for toggle
+      --config string        config file (default is $HOME/.k8sgpt.yaml)
+  -h, --help                 help for k8sgpt
+      --kubeconfig string    Path to a kubeconfig. Only required if out-of-cluster. (default "$HOME/.kube/config")
+      --kubecontext string   Kubernetes context to use. Only required if out-of-cluster.
 
 Use "k8sgpt [command] --help" for more information about a command.
 ```
@@ -267,6 +270,49 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 **Anonymization does not currently apply to events.**
 
+</details>
+
+### Additional commands
+
+<details>
+
+_Manage integrations_
+
+_List integrations_
+
+```
+k8sgpt integrations list
+```
+
+_Activate integrations_
+
+```
+k8sgpt integrations activate [integration(s)]
+```
+
+_Use integration_
+
+```
+k8sgpt analyze --filter=[integration(s)]
+```
+
+_Deactivate integrations_
+
+```
+k8sgpt integrations deactivate [integration(s)]
+```
+
+_Serve mode_
+
+```
+k8sgpt serve
+```
+
+_Analysis with serve mode_
+
+```
+curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
+```
 </details>
 
 ## Configuration
