@@ -320,32 +320,11 @@ To run local models, it is possible to use OpenAI compatible APIs, for instance 
 
 <details>
 
-To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml).
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
 
 ### Start the API server
 
-To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#usage):
-
-```
-git clone https://github.com/go-skynet/LocalAI
-
-cd LocalAI
-
-# copy your models to models/
-cp your-model models/
-
-# (optional) Edit the .env file to set the number of concurrent threads used for inference
-# echo "THREADS=14" > .env
-
-# start with docker-compose
-docker compose up -d --build
-
-# Check that the API is accessible at localhost:8080
-curl http://localhost:8080/v1/models
-# {"object":"list","data":[{"id":"your-model","object":"model"}]}
-```
-
-In order to use a local model, you might probably need to set a prompt template. This depends on the model being used. Create a file next your model ending by `.tmpl`, see some of the [templates examples in LocalAI](https://github.com/go-skynet/LocalAI/tree/master/prompt-templates).
+To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
 
 ### Run k8sgpt
 
