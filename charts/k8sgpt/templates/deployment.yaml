@@ -3,6 +3,10 @@ kind: Deployment
 metadata:
   name: {{ template "k8sgpt.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
+  {{- if .Values.deployment.annotations }}
+  annotations:
+  {{- toYaml .Values.deployment.annotations | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "k8sgpt.labels" . | nindent 4 }}
 spec:
@@ -34,9 +38,7 @@ spec:
           value: {{ .Values.deployment.env.model }}
         - name: K8SGPT_BACKEND
           value: {{ .Values.deployment.env.backend }}
-        - name: K8SGPT_BASEURL
-          value: {{ .Values.deployment.env.baseUrl }}
-        {{- if .Values.secret.enabled }}
+        {{- if .Values.secret.secretKey }}
         - name: K8SGPT_PASSWORD
           valueFrom:
             secretKeyRef:
