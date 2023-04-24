@@ -25,7 +25,7 @@ spec:
       containers:
       - name: k8sgpt-container
         imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
-        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
+        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}
         ports:
         - containerPort: 8080
         args: ["serve"]

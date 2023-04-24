@@ -1,7 +1,7 @@
 deployment:
   image:
     repository: ghcr.io/k8sgpt-ai/k8sgpt
-    tag: v0.2.4
+    tag: "" # defaults to Chart.appVersion if unspecified
   imagePullPolicy: Always
   annotations: {}
   env:
