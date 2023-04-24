@@ -23,14 +23,15 @@ import (
 )
 
 var (
-	explain   bool
-	backend   string
-	output    string
-	filters   []string
-	language  string
-	nocache   bool
-	namespace string
-	anonymize bool
+	explain        bool
+	backend        string
+	output         string
+	filters        []string
+	language       string
+	nocache        bool
+	namespace      string
+	anonymize      bool
+	maxConcurrency int
 )
 
 // AnalyzeCmd represents the problems command
@@ -43,7 +44,8 @@ var AnalyzeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// AnalysisResult configuration
-		config, err := analysis.NewAnalysis(backend, language, filters, namespace, nocache, explain)
+		config, err := analysis.NewAnalysis(backend,
+			language, filters, namespace, nocache, explain, maxConcurrency)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -92,4 +94,6 @@ func init() {
 	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 	// add language options for output
 	AnalyzeCmd.Flags().StringVarP(&language, "language", "l", "english", "Languages to use for AI (e.g. 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese', 'Korean')")
+	// add max concurrency
+	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
 }

@@ -26,11 +26,12 @@ import (
 )
 
 type Config struct {
-	Port    string
-	Backend string
-	Key     string
-	Token   string
-	Output  string
+	Port           string
+	Backend        string
+	Key            string
+	Token          string
+	Output         string
+	maxConcurrency int
 }
 
 type Health struct {
@@ -55,13 +56,19 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	anonymize := getBoolParam(r.URL.Query().Get("anonymize"))
 	nocache := getBoolParam(r.URL.Query().Get("nocache"))
 	language := r.URL.Query().Get("language")
+
+	var err error
+	s.maxConcurrency, err = strconv.Atoi(r.URL.Query().Get("maxConcurrency"))
+	if err != nil {
+		s.maxConcurrency = 10
+	}
 	s.Output = r.URL.Query().Get("output")
 
 	if s.Output == "" {
 		s.Output = "json"
 	}
 
-	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain)
+	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain, s.maxConcurrency)
 	if err != nil {
 		health.Failure++
 		http.Error(w, err.Error(), http.StatusInternalServerError)
