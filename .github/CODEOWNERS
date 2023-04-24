@@ -9,4 +9,4 @@
 # Unless a later match takes precedence, these owners will be requested for
 # review when someone opens a pull request.
 
-* @k8sgpt-ai/maintainers @k8sgpt-ai/k8sgpt-approvers
+* @k8sgpt-ai/maintainers @k8sgpt-ai/k8sgpt-maintainers @k8sgpt-ai/k8sgpt-approvers
