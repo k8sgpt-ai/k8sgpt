@@ -36,9 +36,10 @@ Common labels
 {{- define "k8sgpt.labels" -}}
 helm.sh/chart: {{ include "k8sgpt.chart" . }}
 app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
-app.kubernetes.io/instance: "{{ .Release.Name }}"
+app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
+app.k8sgpt.image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
 {{- end }}

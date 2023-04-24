@@ -1,5 +1,7 @@
 deployment:
-  image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.4
+  image:
+    repository: ghcr.io/k8sgpt-ai/k8sgpt
+    tag: v0.2.4
   imagePullPolicy: Always
   annotations: {}
   env:
