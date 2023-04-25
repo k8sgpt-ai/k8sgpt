@@ -1,3 +1,43 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://web.resource.org/cc/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" height="512px" style="zoom: 1;" cursor="default" id="svg_document" width="1024px" baseProfile="full" version="1.1" preserveAspectRatio="xMidYMid meet" viewBox="0 0 512 512"><!-- Created with macSVG - https://macsvg.org/ - https://github.com/dsward2/macsvg/ --><title id="svg_document_title">Untitled.svg</title><defs id="svg_document_defs"></defs><g id="main_group"><text id="sample_text_element" style="outline-style:none;" xml:space="preserve" x="262px" text-rendering="geometricPrecision" font-family="Antonio" y="145px" fill="black" font-size="150px" transform="" text-anchor="middle">K8SGPT</text><text id="text1" style="outline-style:none;" xml:space="preserve" x="80px" text-rendering="geometricPrecision" font-family="Antonio" y="249px" fill="black" font-size="100px" transform="" text-anchor="start">KUBERNETES</text><text id="text2" style="outline-style:none;" xml:space="preserve" x="79px" text-rendering="geometricPrecision" font-family="Antonio" y="344px" fill="black" font-size="100px" transform="" text-anchor="start">SUPERPOWERS</text></g><circle stroke="#000000" id="circle1" stroke-width="20px" cy="178px" fill="none" r="136px" transform="" cx="-82px"></circle><circle stroke="#000000" id="circle2" stroke-width="20px" cy="231px" fill="none" r="30px" cx="-81px" transform=""></circle><circle stroke="#000000" id="circle3" stroke-width="20px" cy="211px" fill="none" r="65px" transform="" cx="-81px"></circle><circle stroke="#000000" id="circle4" stroke-width="20px" cy="187px" fill="none" r="108px" cx="-82px" transform=""></circle><circle stroke="#000000" id="circle5" stroke-width="20px" cy="233px" fill="#ff0000" r="25px" cx="-81px" transform=""></circle></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg_document" data-name="svg document" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 355">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2 {
+        stroke: #000;
+        stroke-width: 20px;
+      }
+
+      .cls-3 {
+        font-size: 100px;
+      }
+
+      .cls-3, .cls-4 {
+        font-family: Antonio-Regular, Antonio;
+        font-variation-settings: 'wght' 400;
+        isolation: isolate;
+      }
+
+      .cls-4 {
+        font-size: 150px;
+      }
+
+      .cls-2 {
+        fill: red;
+      }
+    </style>
+  </defs>
+  <g id="main_group" data-name="main group">
+    <text id="sample_text_element" data-name="sample text element" class="cls-4" text-rendering="geometricPrecision" transform="translate(332.95361 145)"><tspan x="0" y="0">K8SGPT</tspan></text>
+    <text id="text1" class="cls-3" text-rendering="geometricPrecision" transform="translate(336 249)"><tspan x="0" y="0">KUBERNETES</tspan></text>
+    <text id="text2" class="cls-3" text-rendering="geometricPrecision" transform="translate(335 344)"><tspan x="0" y="0">SUPERPOWERS</tspan></text>
+  </g>
+  <circle id="circle1" class="cls-1" cx="174" cy="178" r="136"/>
+  <circle id="circle2" class="cls-1" cx="175" cy="231" r="30"/>
+  <circle id="circle3" class="cls-1" cx="175" cy="211" r="65"/>
+  <circle id="circle4" class="cls-1" cx="174" cy="187" r="108"/>
+  <circle id="circle5" class="cls-2" cx="175" cy="233" r="25"/>
+</svg>
