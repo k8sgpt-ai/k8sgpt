@@ -39,6 +39,13 @@ var AuthCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticate with your chosen backend",
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		backend, _ := cmd.Flags().GetString("backend")
+		if backend == "azureopenai" {
+			cmd.MarkFlagRequired("engine")
+			cmd.MarkFlagRequired("baseurl")
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// get ai configuration
@@ -58,9 +65,18 @@ var AuthCmd = &cobra.Command{
 			}
 		}
 
-		// check if backend is not empty
-		if backend == "" {
-			color.Red("Error: Backend AI cannot be empty.")
+		validBackend := func(validBackends []string, backend string) bool {
+			for _, b := range validBackends {
+				if b == backend {
+					return true
+				}
+			}
+			return false
+		}
+
+		// check if backend is not empty and a valid value
+		if backend == "" || !validBackend(ai.Backends, backend) {
+			color.Red("Error: Backend AI cannot be empty and accepted values are '%v'", strings.Join(ai.Backends, ", "))
 			os.Exit(1)
 		}
 

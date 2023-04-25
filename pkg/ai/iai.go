@@ -19,6 +19,21 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 )
 
+var (
+	clients = []IAI{
+		&OpenAIClient{},
+		&AzureAIClient{},
+		&LocalAIClient{},
+		&NoOpAIClient{},
+	}
+	Backends = []string{
+		"openai",
+		"localai",
+		"azureopenai",
+		"noopai",
+	}
+)
+
 type IAI interface {
 	Configure(config IAIConfig, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
@@ -34,18 +49,13 @@ type IAIConfig interface {
 }
 
 func NewClient(provider string) IAI {
-	switch provider {
-	case "openai":
-		return &OpenAIClient{}
-	case "azureopenai":
-		return &AzureAIClient{}
-	case "localai":
-		return &LocalAIClient{}
-	case "noopai":
-		return &NoOpAIClient{}
-	default:
-		return &OpenAIClient{}
+	for _, c := range clients {
+		if provider == c.GetName() {
+			return c
+		}
 	}
+	// default client
+	return &OpenAIClient{}
 }
 
 type AIConfiguration struct {
