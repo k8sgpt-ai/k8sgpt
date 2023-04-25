@@ -36,6 +36,8 @@ func NewClient(provider string) IAI {
 	switch provider {
 	case "openai":
 		return &OpenAIClient{}
+	case "localai":
+		return &LocalAIClient{}
 	case "noopai":
 		return &NoOpAIClient{}
 	default:
@@ -51,7 +53,7 @@ type AIProvider struct {
 	Name     string `mapstructure:"name"`
 	Model    string `mapstructure:"model"`
 	Password string `mapstructure:"password"`
-	BaseURL  string `mapstructure:"base_url"`
+	BaseURL  string `mapstructure:"baseurl"`
 }
 
 func (p *AIProvider) GetBaseURL() string {

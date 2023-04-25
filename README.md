@@ -313,6 +313,35 @@ _Analysis with serve mode_
 ```
 curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 ```
+
+## Running local models
+
+To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
+
+<details>
+
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
+
+### Start the API server
+
+To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
+
+### Run k8sgpt
+
+To run k8sgpt, run `k8sgpt auth` with the `localai` backend:
+
+```
+k8sgpt auth --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+```
+
+When being asked for an API key, just press enter.
+
+Now you can analyze with the `localai` backend:
+
+```
+k8sgpt analyze --explain --backend localai
+```
+
 </details>
 
 ## Configuration
