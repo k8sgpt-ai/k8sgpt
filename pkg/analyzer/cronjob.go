@@ -33,11 +33,9 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		"analyzer_name": kind,
 	})
 
-	var results []common.Result
-
 	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{})
 	if err != nil {
-		return results, err
+		return nil, err
 	}
 
 	var preAnalysis = map[string]common.PreAnalysis{}
@@ -114,7 +112,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 				Name:  key,
 				Error: value.FailureDetails,
 			}
-			a.Results = append(results, currentAnalysis)
+			a.Results = append(a.Results, currentAnalysis)
 		}
 	}
 
