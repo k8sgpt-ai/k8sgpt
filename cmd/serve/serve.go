@@ -76,7 +76,11 @@ var ServeCmd = &cobra.Command{
 		if aiProvider == nil {
 			for _, provider := range configAI.Providers {
 				if backend == provider.Name {
-					aiProvider = &provider
+          // he pointer to the range variable is not really an issue here, as there
+          // is a break right after, but to prevent potential future issues, a temp
+          // variable is assigned
+          p := provider
+					aiProvider = &p
 					break
 				}
 			}
