@@ -25,6 +25,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -33,14 +34,14 @@ import (
 )
 
 type Analysis struct {
-	Context        context.Context
-	Filters        []string
-	Client         *kubernetes.Client
-	AIClient       ai.IAI
-	Results        []common.Result
-	Namespace      string
-	NoCache        bool
-	Explain        bool
+	Context   context.Context
+	Filters   []string
+	Client    *kubernetes.Client
+	AIClient  ai.IAI
+	Results   []common.Result
+	Namespace string
+	Cache     cache.ICache
+	Explain   bool
 	MaxConcurrency int
 }
 
@@ -101,13 +102,13 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	return &Analysis{
-		Context:        ctx,
-		Filters:        filters,
-		Client:         client,
-		AIClient:       aiClient,
-		Namespace:      namespace,
-		NoCache:        noCache,
-		Explain:        explain,
+		Context:   ctx,
+		Filters:   filters,
+		Client:    client,
+		AIClient:  aiClient,
+		Namespace: namespace,
+		Cache:     cache.New(noCache),
+		Explain:   explain,
 		MaxConcurrency: maxConcurrency,
 	}, nil
 }
@@ -229,7 +230,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			}
 			texts = append(texts, failure.Text)
 		}
-		parsedText, err := a.AIClient.Parse(a.Context, texts, a.NoCache)
+		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache)
 		if err != nil {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?
