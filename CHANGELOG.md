@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.2.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.4...v0.2.5) (2023-04-25)
+
+
+### Features
+
+* add configuration interface to support customer providers ([84a3cc0](https://github.com/k8sgpt-ai/k8sgpt/commit/84a3cc05fb6e21b732ef777351b42db8045e1093))
+* add k8sgpt grafana dashboard ([#316](https://github.com/k8sgpt-ai/k8sgpt/issues/316)) ([ff79982](https://github.com/k8sgpt-ai/k8sgpt/commit/ff799825cfe5856bb97c8f38d939ec36b19fa30a))
+* add serve & integration to README ([a65ee7f](https://github.com/k8sgpt-ai/k8sgpt/commit/a65ee7fc0957c7ba9369bdbe12e648818ca3f841))
+* add subproject group to CODEOWNERS ([#322](https://github.com/k8sgpt-ai/k8sgpt/issues/322)) ([2391603](https://github.com/k8sgpt-ai/k8sgpt/commit/2391603075e73b91d9988d40eecddfc3e0593405))
+* allow to set a baseurl ([#310](https://github.com/k8sgpt-ai/k8sgpt/issues/310)) ([cf797a6](https://github.com/k8sgpt-ai/k8sgpt/commit/cf797a6eb67efba957704077b4b04ed3ee166c24))
+* async calls ([#311](https://github.com/k8sgpt-ai/k8sgpt/issues/311)) ([c3cc413](https://github.com/k8sgpt-ai/k8sgpt/commit/c3cc413e7fc3b06b310779dfa3cb4863ea9f3ed2))
+* modify error handling to return a list of errors to display to the user at the end of analysis without blocking it if an error is detected (e.g., version of an object is not available on user's cluster) ([fa087ff](https://github.com/k8sgpt-ai/k8sgpt/commit/fa087ff5593871d2a07d68f203dd91e66c57e40b))
+* the overall optimization and architecture design of the makefile are made ([#317](https://github.com/k8sgpt-ai/k8sgpt/issues/317)) ([754bf91](https://github.com/k8sgpt-ai/k8sgpt/commit/754bf917e1ac524699d38fb2dc59bc5d858f6d80))
+* update readme ([#314](https://github.com/k8sgpt-ai/k8sgpt/issues/314)) ([ddd830c](https://github.com/k8sgpt-ai/k8sgpt/commit/ddd830cc569278c157480c44a671c9be20c95b24))
+* use OS conform path for storing cached results ([7eddb8f](https://github.com/k8sgpt-ai/k8sgpt/commit/7eddb8f4a6dc61d5f66fc1bf56c0e8cbf9370229)), closes [#323](https://github.com/k8sgpt-ai/k8sgpt/issues/323)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.13.1 ([#321](https://github.com/k8sgpt-ai/k8sgpt/issues/321)) ([e7f74db](https://github.com/k8sgpt-ai/k8sgpt/commit/e7f74db6e556146b898437bb777c2b803d1bec4f))
+* **deps:** update module github.com/prometheus/client_golang to v1.15.0 ([#303](https://github.com/k8sgpt-ai/k8sgpt/issues/303)) ([df2ed41](https://github.com/k8sgpt-ai/k8sgpt/commit/df2ed4185b5a33a18e6b144c85bec3902c14d209))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.9.0 ([#298](https://github.com/k8sgpt-ai/k8sgpt/issues/298)) ([0472c36](https://github.com/k8sgpt-ai/k8sgpt/commit/0472c363a4d8a90556bc744fbf513ad63281e38b))
+
+
+### Other
+
+* add serviceMonitor in sample yaml ([#304](https://github.com/k8sgpt-ai/k8sgpt/issues/304)) ([0a4ed0d](https://github.com/k8sgpt-ai/k8sgpt/commit/0a4ed0d907c22a924dd79e8945eb9d6d10cd9ce7))
+* analyze Pod ReadinessProbe faliure ([3c7e0bb](https://github.com/k8sgpt-ai/k8sgpt/commit/3c7e0bba1d4cc8247d248756dcfef884bc406992))
+* change license to Apache-2 ([#313](https://github.com/k8sgpt-ai/k8sgpt/issues/313)) ([d0f7a11](https://github.com/k8sgpt-ai/k8sgpt/commit/d0f7a1105fe7ed317785782d3af45c83766b7d80))
+
 ## [0.2.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.3...v0.2.4) (2023-04-18)
 
 
