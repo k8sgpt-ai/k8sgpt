@@ -19,7 +19,7 @@ spec:
       containers:
       - name: k8sgpt-container
         imagePullPolicy: Always
-        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.6 #x-release-please-version
+        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.7 #x-release-please-version
         ports:
         - containerPort: 8080
         args: ["serve"]

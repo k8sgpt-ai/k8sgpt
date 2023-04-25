@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.6...v0.2.7) (2023-04-25)
+
+
+### Bug Fixes
+
+* remove pointer to loop variable when searching the latest event to analyze ([#328](https://github.com/k8sgpt-ai/k8sgpt/issues/328)) ([2616220](https://github.com/k8sgpt-ai/k8sgpt/commit/2616220935d450030c8a9f2f2741c3607aa4b663))
+
 ## [0.2.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.5...v0.2.6) (2023-04-25)
 
 
