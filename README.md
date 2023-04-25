@@ -1,4 +1,4 @@
-  <img src="./images/banner-white.png" width="600px;" />
+  <img src="./images/banner-white.svg" width="600px;" />
 
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/k8sgpt-ai/k8sgpt)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/k8sgpt-ai/k8sgpt/release.yaml)
