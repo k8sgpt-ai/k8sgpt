@@ -161,7 +161,7 @@ func (a *Analysis) RunAnalysis() []error {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
 				wg.Add(1)
-				go func(analyzer common.IAnalyzer, filter string) {
+				go func(analyzer common.IAnalyzer) {
 					defer wg.Done()
 					results, err := analyzer.Analyze(analyzerConfig)
 					if err != nil {
@@ -173,7 +173,7 @@ func (a *Analysis) RunAnalysis() []error {
 					a.Results = append(a.Results, results...)
 					mutex.Unlock()
 					<-semaphore
-				}(analyzer, filter)
+				}(analyzer)
 			} else {
 				errorList = append(errorList, fmt.Errorf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
