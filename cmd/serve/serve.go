@@ -25,7 +25,6 @@ import (
 var (
 	port    string
 	backend string
-	token   string
 )
 
 var ServeCmd = &cobra.Command{
