@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.5...v0.2.6) (2023-04-25)
+
+
+### Bug Fixes
+
+* explicitly pass in filter to async analysis go routine ([#326](https://github.com/k8sgpt-ai/k8sgpt/issues/326)) ([692cd06](https://github.com/k8sgpt-ai/k8sgpt/commit/692cd06c385c1c6f458994f6e975a9fce2bc1c57))
+
 ## [0.2.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.4...v0.2.5) (2023-04-25)
 
 
