@@ -19,7 +19,7 @@ spec:
       containers:
       - name: k8sgpt-container
         imagePullPolicy: Always
-        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.4 #x-release-please-version
+        image: ghcr.io/k8sgpt-ai/k8sgpt:v0.2.7 #x-release-please-version
         ports:
         - containerPort: 8080
         args: ["serve"]
@@ -28,8 +28,8 @@ spec:
             cpu: "1"
             memory: "512Mi"
           requests:
-            cpu: "0.5"
-            memory: "256Mi"
+            cpu: "0.2"
+            memory: "156Mi"
         env:
         - name: K8SGPT_MODEL
           value: "gpt-3.5-turbo"

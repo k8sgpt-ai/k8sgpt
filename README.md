@@ -30,7 +30,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -39,7 +39,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -51,7 +51,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -59,7 +59,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -72,14 +72,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.4/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.2.7/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -156,6 +156,8 @@ you will be able to write your own analyzers.
 ## Usage
 
 ```
+Kubernetes debugging powered by AI
+
 Usage:
   k8sgpt [command]
 
@@ -166,14 +168,15 @@ Available Commands:
   filters     Manage filters for analyzing Kubernetes resources
   generate    Generate Key for your chosen backend (opens browser)
   help        Help about any command
+  integration Intergrate another tool into K8sGPT
+  serve       Runs k8sgpt as a server
   version     Print the version number of k8sgpt
 
 Flags:
-      --config string       config file (default is $HOME/.k8sgpt.git.yaml)
-  -h, --help                help for k8sgpt
-      --kubeconfig string   Path to a kubeconfig. Only required if out-of-cluster.
-      --master string       The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.
-  -t, --toggle              Help message for toggle
+      --config string        config file (default is $HOME/.k8sgpt.yaml)
+  -h, --help                 help for k8sgpt
+      --kubeconfig string    Path to a kubeconfig. Only required if out-of-cluster. (default "$HOME/.kube/config")
+      --kubecontext string   Kubernetes context to use. Only required if out-of-cluster.
 
 Use "k8sgpt [command] --help" for more information about a command.
 ```
@@ -269,21 +272,77 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 </details>
 
-## Upcoming major milestones
+### Additional commands
 
-- [ ] Multiple AI backend support
-- [ ] Custom AI/ML model backend support
-- [ ] Custom analyzers
+<details>
 
-## What about kubectl-ai?
+_Manage integrations_
 
-The kubectl-ai [project](https://github.com/sozercan/kubectl-ai) uses AI to create manifests and apply them to the
-cluster. It is not what we are trying to do here, it is focusing on writing YAML manifests.
+_List integrations_
 
-K8sgpt is focused on triaging and diagnosing issues in your cluster. It is a tool for SRE, Platform & DevOps engineers
-to help them understand what is going on in their cluster. Cutting through the noise of logs and multiple tools to find
-the root cause of an issue.
+```
+k8sgpt integrations list
+```
 
+_Activate integrations_
+
+```
+k8sgpt integrations activate [integration(s)]
+```
+
+_Use integration_
+
+```
+k8sgpt analyze --filter=[integration(s)]
+```
+
+_Deactivate integrations_
+
+```
+k8sgpt integrations deactivate [integration(s)]
+```
+
+_Serve mode_
+
+```
+k8sgpt serve
+```
+
+_Analysis with serve mode_
+
+```
+curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
+```
+
+## Running local models
+
+To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
+
+<details>
+
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
+
+### Start the API server
+
+To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
+
+### Run k8sgpt
+
+To run k8sgpt, run `k8sgpt auth` with the `localai` backend:
+
+```
+k8sgpt auth --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+```
+
+When being asked for an API key, just press enter.
+
+Now you can analyze with the `localai` backend:
+
+```
+k8sgpt analyze --explain --backend localai
+```
+
+</details>
 
 ## Configuration
 

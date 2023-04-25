@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
 	"github.com/fatih/color"
-	"github.com/spf13/viper"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -53,15 +53,20 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
 	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
 	// find in viper cache
-	if viper.IsSet(cacheKey) && !nocache {
+	if cache.Exists(cacheKey) {
 		// retrieve data from cache
-		response := viper.GetString(cacheKey)
+		response, err := cache.Load(cacheKey)
+
+		if err != nil {
+			return "", err
+		}
+
 		if response == "" {
 			color.Red("error retrieving cached data")
 			return "", nil
@@ -79,12 +84,11 @@ func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, nocache bool
 		return "", err
 	}
 
-	if !viper.IsSet(cacheKey) || nocache {
-		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
-		}
+	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
+
+	if err != nil {
+		color.Red("error storing value to cache: %v", err)
+		return "", nil
 	}
 	return response, nil
 }

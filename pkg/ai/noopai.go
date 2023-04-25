@@ -1,3 +1,16 @@
+/*
+Copyright 2023 The K8sGPT Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package ai
 
 import (
@@ -7,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	"github.com/spf13/viper"
 )
 
 type NoOpAIClient struct {
@@ -31,7 +44,7 @@ func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	return response, nil
 }
 
-func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
@@ -44,13 +57,13 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		return "", err
 	}
 
-	if !viper.IsSet(cacheKey) {
-		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
-		}
+  err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
+
+	if err != nil {
+		color.Red("error storing value to cache: %v", err)
+		return "", nil
 	}
+
 	return response, nil
 }
 

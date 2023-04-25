@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: k8sgpt-service
   namespace: k8sgpt
+  labels:
+     app: k8sgpt
 spec:
   selector:
     app: k8sgpt

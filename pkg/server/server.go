@@ -1,3 +1,16 @@
+/*
+Copyright 2023 The K8sGPT Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package server
 
 import (
@@ -13,11 +26,12 @@ import (
 )
 
 type Config struct {
-	Port    string
-	Backend string
-	Key     string
-	Token   string
-	Output  string
+	Port           string
+	Backend        string
+	Key            string
+	Token          string
+	Output         string
+	maxConcurrency int
 }
 
 type Health struct {
@@ -42,13 +56,19 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 	anonymize := getBoolParam(r.URL.Query().Get("anonymize"))
 	nocache := getBoolParam(r.URL.Query().Get("nocache"))
 	language := r.URL.Query().Get("language")
+
+	var err error
+	s.maxConcurrency, err = strconv.Atoi(r.URL.Query().Get("maxConcurrency"))
+	if err != nil {
+		s.maxConcurrency = 10
+	}
 	s.Output = r.URL.Query().Get("output")
 
 	if s.Output == "" {
 		s.Output = "json"
 	}
 
-	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain)
+	config, err := analysis.NewAnalysis(s.Backend, language, []string{}, namespace, nocache, explain, s.maxConcurrency)
 	if err != nil {
 		health.Failure++
 		http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -3,7 +3,7 @@ module github.com/k8sgpt-ai/k8sgpt
 go 1.20
 
 require (
-	github.com/aquasecurity/trivy-operator v0.13.0
+	github.com/aquasecurity/trivy-operator v0.13.1
 	github.com/fatih/color v1.15.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.1
@@ -32,13 +32,13 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
-	github.com/aquasecurity/defsec v0.85.0 // indirect
-	github.com/aquasecurity/go-dep-parser v0.0.0-20230324043952-2172dc218241 // indirect
+	github.com/aquasecurity/defsec v0.86.0 // indirect
+	github.com/aquasecurity/go-dep-parser v0.0.0-20230413091456-df0396537e15 // indirect
 	github.com/aquasecurity/table v1.8.0 // indirect
 	github.com/aquasecurity/tml v0.6.1 // indirect
-	github.com/aquasecurity/trivy v0.39.0 // indirect
-	github.com/aquasecurity/trivy-db v0.0.0-20230116084806-4bcdf1c414d0 // indirect
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
+	github.com/aquasecurity/trivy v0.40.0 // indirect
+	github.com/aquasecurity/trivy-db v0.0.0-20230411140759-3c2ee2168575 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
@@ -140,11 +140,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.starlark.net v0.0.0-20221020143700-22309ac47eac // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/exp v0.0.0-20221109205753-fc8884afc316 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874 // indirect
+	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
@@ -153,7 +153,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/grpc v1.53.0 // indirect
+	google.golang.org/grpc v1.54.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
