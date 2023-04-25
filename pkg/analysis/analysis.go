@@ -209,6 +209,14 @@ func (a *Analysis) RunAnalysis() []error {
 	return errorList
 }
 
+func dummyMethod() {
+  for _, v := range []string{"a", "b"} {
+    go func() {
+      fmt.Println(v)
+    }()
+  }
+}
+
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
