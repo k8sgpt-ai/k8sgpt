@@ -71,7 +71,7 @@ var AuthCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if password == "" {
+		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
 			bytePassword, err := term.ReadPassword(int(syscall.Stdin))
 			if err != nil {
