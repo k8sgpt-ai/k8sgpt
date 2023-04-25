@@ -36,10 +36,14 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 	var latestEvent *v1.Event
 	for _, event := range events.Items {
 		if latestEvent == nil {
-			latestEvent = &event
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
 		}
 		if event.LastTimestamp.After(latestEvent.LastTimestamp.Time) {
-			latestEvent = &event
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
 		}
 	}
 	return latestEvent, nil
