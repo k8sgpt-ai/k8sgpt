@@ -20,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	"github.com/spf13/viper"
 )
 
 type NoOpAIClient struct {
@@ -44,7 +44,7 @@ func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	return response, nil
 }
 
-func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
@@ -57,13 +57,13 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		return "", err
 	}
 
-	if !viper.IsSet(cacheKey) {
-		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
-		}
+  err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
+
+	if err != nil {
+		color.Red("error storing value to cache: %v", err)
+		return "", nil
 	}
+
 	return response, nil
 }
 
