@@ -44,8 +44,14 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()
 	if err != nil {
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+
+		if kubeconfig != "" {
+			loadingRules.ExplicitPath = kubeconfig
+		}
+
 		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
+			loadingRules,
 			&clientcmd.ConfigOverrides{
 				CurrentContext: kubecontext,
 			})
