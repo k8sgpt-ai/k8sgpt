@@ -11,7 +11,13 @@ import (
 
 var _ (ICache) = (*FileBasedCache)(nil)
 
-type FileBasedCache struct{}
+type FileBasedCache struct {
+	noCache bool
+}
+
+func (f *FileBasedCache) IsCacheDisabled() bool {
+	return f.noCache
+}
 
 func (*FileBasedCache) Exists(key string) bool {
 	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
