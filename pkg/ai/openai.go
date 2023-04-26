@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
 	"github.com/sashabaranov/go-openai"
@@ -34,7 +35,7 @@ type OpenAIClient struct {
 	model    string
 }
 
-func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
+func (c *OpenAIClient) Configure(config config.IAIConfig, language string) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
 

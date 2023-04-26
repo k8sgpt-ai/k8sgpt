@@ -21,8 +21,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"golang.org/x/term"
 )
 
@@ -41,8 +41,7 @@ var AuthCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// get ai configuration
-		var configAI ai.AIConfiguration
-		err := viper.UnmarshalKey("ai", &configAI)
+		configAI, err := config.LoadAIConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -83,11 +82,11 @@ var AuthCmd = &cobra.Command{
 		}
 
 		// create new provider object
-		newProvider := ai.AIProvider{
-			Name:     backend,
-			Model:    model,
+		newProvider := config.AIProvider{
+			Name:    backend,
+			Model:   model,
+			BaseURL: baseURL,
 			Password: password,
-			BaseURL:  baseURL,
 		}
 
 		if providerIndex == -1 {
@@ -99,11 +98,8 @@ var AuthCmd = &cobra.Command{
 			configAI.Providers[providerIndex] = newProvider
 			color.Green("Provider updated")
 		}
-		viper.Set("ai", configAI)
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("Error writing config file: %s", err.Error())
-			os.Exit(1)
-		}
+		config.SetAIConfig(configAI)
+		config.PersistOrFail()
 		color.Green("key added")
 	},
 }

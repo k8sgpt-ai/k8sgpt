@@ -15,11 +15,12 @@ package generate
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os/exec"
 	"runtime"
+
+	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -33,7 +34,7 @@ var GenerateCmd = &cobra.Command{
 	Long:  `Opens your browser to generate a key for your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		backendType := viper.GetString("backend_type")
+		backendType := config.GetBackendType()
 		if backendType == "" {
 			// Set the default backend
 			backend = "openai"

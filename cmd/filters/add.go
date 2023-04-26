@@ -19,9 +19,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var addCmd = &cobra.Command{
@@ -59,7 +59,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// Get defined active_filters
-		activeFilters := viper.GetStringSlice("active_filters")
+		activeFilters := config.ListActiveFilters()
 		if len(activeFilters) == 0 {
 			activeFilters = coreFilters
 		}
@@ -73,13 +73,8 @@ var addCmd = &cobra.Command{
 			color.Red("Duplicate filters found: %s", strings.Join(dupplicatedFilters, ", "))
 			os.Exit(1)
 		}
-
-		viper.Set("active_filters", uniqueFilters)
-
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("Error writing config file: %s", err.Error())
-			os.Exit(1)
-		}
+		config.SetActiveFilters(uniqueFilters)
+		config.PersistOrFail()
 		color.Green("Filter %s added", strings.Join(inputFilters, ", "))
 	},
 }

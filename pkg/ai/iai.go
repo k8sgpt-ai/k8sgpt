@@ -17,19 +17,14 @@ import (
 	"context"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 )
 
 type IAI interface {
-	Configure(config IAIConfig, language string) error
+	Configure(config config.IAIConfig, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
 	Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error)
 	GetName() string
-}
-
-type IAIConfig interface {
-	GetPassword() string
-	GetModel() string
-	GetBaseURL() string
 }
 
 func NewClient(provider string) IAI {
@@ -43,29 +38,6 @@ func NewClient(provider string) IAI {
 	default:
 		return &OpenAIClient{}
 	}
-}
-
-type AIConfiguration struct {
-	Providers []AIProvider `mapstructure:"providers"`
-}
-
-type AIProvider struct {
-	Name     string `mapstructure:"name"`
-	Model    string `mapstructure:"model"`
-	Password string `mapstructure:"password"`
-	BaseURL  string `mapstructure:"baseurl"`
-}
-
-func (p *AIProvider) GetBaseURL() string {
-	return p.BaseURL
-}
-
-func (p *AIProvider) GetPassword() string {
-	return p.Password
-}
-
-func (p *AIProvider) GetModel() string {
-	return p.Model
 }
 
 func NeedPassword(backend string) bool {

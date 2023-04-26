@@ -21,6 +21,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
@@ -30,7 +31,7 @@ type NoOpAIClient struct {
 	model    string
 }
 
-func (c *NoOpAIClient) Configure(config IAIConfig, language string) error {
+func (c *NoOpAIClient) Configure(config config.IAIConfig, language string) error {
 	token := config.GetPassword()
 	c.language = language
 	c.client = fmt.Sprintf("I am a noop client with the token %s ", token)

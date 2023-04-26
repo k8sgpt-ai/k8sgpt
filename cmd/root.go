@@ -26,9 +26,9 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -76,30 +76,12 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// the config will belocated under `~/.config/k8sgpt/k8sgpt.yaml` on linux
-		configDir := filepath.Join(xdg.ConfigHome, "k8sgpt")
+	config.Initialize(cfgFile)
 
-		viper.AddConfigPath(configDir)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName("k8sgpt")
-
-		viper.SafeWriteConfig()
-	}
-
-	viper.Set("kubecontext", kubecontext)
-	viper.Set("kubeconfig", kubeconfig)
-
-	viper.SetEnvPrefix("K8SGPT")
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		//	fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
+	config.SetKubernetesSettings(config.KubernetesSettings{
+		Context: kubecontext,
+		Config:  kubeconfig,
+	})
 }
 
 func performConfigMigrationIfNeeded() {

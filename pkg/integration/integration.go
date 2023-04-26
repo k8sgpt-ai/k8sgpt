@@ -20,9 +20,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/config"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	"github.com/spf13/viper"
 )
 
 type IIntegration interface {
@@ -72,7 +72,7 @@ func (*Integration) Activate(name string, namespace string) error {
 	}
 
 	// Update filters
-	activeFilters := viper.GetStringSlice("active_filters")
+	activeFilters := config.ListActiveFilters()
 
 	mergedFilters := append(activeFilters, integrations[name].GetAnalyzerName())
 
@@ -84,16 +84,12 @@ func (*Integration) Activate(name string, namespace string) error {
 		os.Exit(1)
 	}
 
-	viper.Set("active_filters", uniqueFilters)
-
 	if err := integrations[name].Deploy(namespace); err != nil {
 		return err
 	}
 
-	if err := viper.WriteConfig(); err != nil {
-		color.Red("Error writing config file: %s", err.Error())
-		os.Exit(1)
-	}
+	config.SetActiveFilters(uniqueFilters)
+	config.PersistOrFail()
 
 	return nil
 }
@@ -103,7 +99,7 @@ func (*Integration) Deactivate(name string, namespace string) error {
 		return errors.New("integration not found")
 	}
 
-	activeFilters := viper.GetStringSlice("active_filters")
+	activeFilters := config.ListActiveFilters()
 
 	// Update filters
 	// This might be a bad idea, but we cannot reference analyzer here
@@ -120,16 +116,13 @@ func (*Integration) Deactivate(name string, namespace string) error {
 		os.Exit(1)
 	}
 
+	config.SetActiveFilters(activeFilters)
+
 	if err := integrations[name].UnDeploy(namespace); err != nil {
 		return err
 	}
 
-	viper.Set("active_filters", activeFilters)
-
-	if err := viper.WriteConfig(); err != nil {
-		color.Red("Error writing config file: %s", err.Error())
-		os.Exit(1)
-	}
+	config.PersistOrFail()
 
 	return nil
 }
