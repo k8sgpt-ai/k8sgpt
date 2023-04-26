@@ -310,6 +310,8 @@ _Analysis with serve mode_
 curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 ```
 
+</details>
+
 ## Running local models
 
 To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
