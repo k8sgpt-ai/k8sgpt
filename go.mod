@@ -3,7 +3,7 @@ module github.com/k8sgpt-ai/k8sgpt
 go 1.20
 
 require (
-	github.com/aquasecurity/trivy-operator v0.13.1
+	github.com/aquasecurity/trivy-operator v0.13.2
 	github.com/fatih/color v1.15.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.1
