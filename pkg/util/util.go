@@ -15,7 +15,9 @@ package util
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -148,7 +150,11 @@ func ReplaceIfMatch(text string, pattern string, replacement string) string {
 }
 
 func GetCacheKey(provider string, language string, sEnc string) string {
-	return fmt.Sprintf("%s-%s-%s", provider, language, sEnc)
+	data := fmt.Sprintf("%s-%s-%s", provider, language, sEnc)
+
+	hash := sha256.Sum256([]byte(data))
+
+	return hex.EncodeToString(hash[:])
 }
 
 func GetPodListByLabels(client k.Interface,
