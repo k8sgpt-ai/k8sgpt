@@ -1,0 +1,47 @@
+repository:
+  name: "k8sgpt"
+  description: "Giving Kubernetes SRE superpowers to everyone"
+  homepage_url: "https://k8sgpt.ai"
+  topics: kubernetes, devops, tooling, openai, sre
+
+  default_branch: main
+  allow_squash_merge: true
+  allow_merge_commit: true
+  allow_rebase_merge: true
+
+  has_wiki: false
+
+  teams:
+    - name: "maintainers"
+      permission: "admin"
+    - name: "k8sgpt-maintainers"
+      permission: "maintain"
+    - name: "k8sgpt-approvers"
+      permission: "push"
+    - name: "contributors"
+      permission: "push"
+
+branches:
+  - name: main
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+        dismissal_restrictions: {}
+        code_owner_approval: true
+        required_conversation_resolution: true
+
+      required_status_checks:
+        strict: true
+        contexts:
+          - "DCO"
+
+      enforce_admins: true
+
+      required_linear_history: true
+
+      restrictions:
+        users: []
+        apps: []
+        teams: []
