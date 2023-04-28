@@ -320,7 +320,7 @@ To run local models, it is possible to use OpenAI compatible APIs, for instance 
 
 <details>
 
-To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.co](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
 
 ### Start the API server
 
