@@ -1,7 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: k8sgpt-cluster-role-all
+  name: {{ template "k8sgpt.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "k8sgpt.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - '*'
