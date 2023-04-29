@@ -12,10 +12,10 @@ It has SRE experience codified into its analyzers and helps to pull out the most
 
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
-# Installation
+# CLI Installation
 
 
-## Linux/Mac via brew
+### Linux/Mac via brew
 
 ```
 brew tap k8sgpt-ai/k8sgpt
@@ -100,18 +100,18 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 </details>
 
 
-## Windows
+### Windows
 
 * Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
   tab based on your system architecture.
 * Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
 
+## Operator Installation
 
-## Verify installation
+To install within a Kubernetes cluster please use our `k8sgpt-operator` with installation instructions available [here](https://github.com/k8sgpt-ai/k8sgpt-operator)
 
-* Run `k8sgpt version`
+_This mode of operation is ideal for continuous monitoring of your cluster and can integrate with your existing monitoring such as Prometheus and Alertmanager._
 
-<hr>
 
 ## Quick Start
 
@@ -151,63 +151,7 @@ you will be able to write your own analyzers.
 - [x] pdbAnalyzer
 - [x] networkPolicyAnalyzer
 
-## Usage
-
-```
-Kubernetes debugging powered by AI
-
-Usage:
-  k8sgpt [command]
-
-Available Commands:
-  analyze     This command will find problems within your Kubernetes cluster
-  auth        Authenticate with your chosen backend
-  completion  Generate the autocompletion script for the specified shell
-  filters     Manage filters for analyzing Kubernetes resources
-  generate    Generate Key for your chosen backend (opens browser)
-  help        Help about any command
-  integration Intergrate another tool into K8sGPT
-  serve       Runs k8sgpt as a server
-  version     Print the version number of k8sgpt
-
-Flags:
-      --config string        config file (default is $HOME/.k8sgpt.yaml)
-  -h, --help                 help for k8sgpt
-      --kubeconfig string    Path to a kubeconfig. Only required if out-of-cluster. (default "$HOME/.kube/config")
-      --kubecontext string   Kubernetes context to use. Only required if out-of-cluster.
-
-Use "k8sgpt [command] --help" for more information about a command.
-```
-
-_Manage filters_
-
-_List filters_
-
-```
-k8sgpt filters list
-```
-
-_Add default filters_
-
-```
-k8sgpt filters add [filter(s)]
-```
-
-### Examples :
-
-- Simple filter : `k8sgpt filters add Service`
-- Multiple filters : `k8sgpt filters add Ingress,Pod`
-
-_Add default filters_
-
-```
-k8sgpt filters remove [filter(s)]
-```
-
-### Examples :
-
-- Simple filter : `k8sgpt filters remove Service`
-- Multiple filters : `k8sgpt filters remove Ingress,Pod`
+## Examples
 
 _Run a scan with the default analyzers_
 
@@ -240,41 +184,44 @@ _Anonymize during explain_
 k8sgpt analyze --explain --filter=Service --output=json --anonymize
 ```
 
-### How does anonymization work?
-
-With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
-
+### Using filters
 <details>
 
-1. Error reported during analysis:
-```bash
-Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
+_List filters_
+
+```
+k8sgpt filters list
 ```
 
-2. Payload sent to the AI backend:
-```bash
-Error: HorizontalPodAutoscaler uses StatefulSet/tGLcCRcHa1Ce5Rs as ScaleTargetRef which does not exist.
+_Add default filters_
+
+```
+k8sgpt filters add [filter(s)]
 ```
 
-3. Payload returned by the AI:
-```bash
-The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
+### Examples :
+
+- Simple filter : `k8sgpt filters add Service`
+- Multiple filters : `k8sgpt filters add Ingress,Pod`
+
+_Add default filters_
+
+```
+k8sgpt filters remove [filter(s)]
 ```
 
-4. Payload returned to the user:
-```bash
-The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
-```
+### Examples :
 
-**Anonymization does not currently apply to events.**
+- Simple filter : `k8sgpt filters remove Service`
+- Multiple filters : `k8sgpt filters remove Ingress,Pod`
 
 </details>
+
 
 ### Additional commands
 
 <details>
 
-_Manage integrations_
 
 _List integrations_
 
@@ -314,6 +261,37 @@ curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 
 </details>
 
+## How does anonymization work?
+
+With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
+
+<details>
+
+1. Error reported during analysis:
+```bash
+Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
+```
+
+2. Payload sent to the AI backend:
+```bash
+Error: HorizontalPodAutoscaler uses StatefulSet/tGLcCRcHa1Ce5Rs as ScaleTargetRef which does not exist.
+```
+
+3. Payload returned by the AI:
+```bash
+The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
+```
+
+4. Payload returned to the user:
+```bash
+The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
+```
+
+**Anonymization does not currently apply to events.**
+
+</details>
+
+
 ## Running local models
 
 To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
@@ -346,6 +324,7 @@ k8sgpt analyze --explain --backend localai
 
 ## Configuration
 
+<details>
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
 
 Config file locations:
@@ -354,7 +333,7 @@ Config file locations:
 | MacOS   | ~/Library/Application Support/k8sgpt/k8sgpt.yaml |
 | Linux   | ~/.config/k8sgpt/k8sgpt.yaml                     |
 | Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
-
+</details>
 
 ## Contributing
 
