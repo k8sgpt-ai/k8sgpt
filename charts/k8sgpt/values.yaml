@@ -24,3 +24,5 @@ service:
 
 serviceMonitor:
   enabled: false
+  # additionalLabels: # Uncomment if you want to add additional labels to Service Monitor
+  #   release: kube-prometheus-stack
