@@ -34,14 +34,14 @@ import (
 )
 
 type Analysis struct {
-	Context   context.Context
-	Filters   []string
-	Client    *kubernetes.Client
-	AIClient  ai.IAI
-	Results   []common.Result
-	Namespace string
-	Cache     cache.ICache
-	Explain   bool
+	Context        context.Context
+	Filters        []string
+	Client         *kubernetes.Client
+	AIClient       ai.IAI
+	Results        []common.Result
+	Namespace      string
+	Cache          cache.ICache
+	Explain        bool
 	MaxConcurrency int
 }
 
@@ -102,13 +102,13 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	return &Analysis{
-		Context:   ctx,
-		Filters:   filters,
-		Client:    client,
-		AIClient:  aiClient,
-		Namespace: namespace,
-		Cache:     cache.New(noCache),
-		Explain:   explain,
+		Context:        ctx,
+		Filters:        filters,
+		Client:         client,
+		AIClient:       aiClient,
+		Namespace:      namespace,
+		Cache:          cache.New(noCache),
+		Explain:        explain,
 		MaxConcurrency: maxConcurrency,
 	}, nil
 }

@@ -17,18 +17,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	"github.com/adrg/xdg"
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/serve"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/client-go/util/homedir"
 )
 
 var (
@@ -63,10 +63,6 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	var kubeconfigPath string
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfigPath = filepath.Join(home, ".kube", "config")
-	}
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(analyze.AnalyzeCmd)
 	rootCmd.AddCommand(filters.FiltersCmd)
@@ -75,7 +71,7 @@ func init() {
 	rootCmd.AddCommand(serve.ServeCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.yaml)")
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
-	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", kubeconfigPath, "Path to a kubeconfig. Only required if out-of-cluster.")
+	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
 }
 
 // initConfig reads in config file and ENV variables if set.

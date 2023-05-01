@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="svg_document" data-name="svg document" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 788 355">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 125.36269px;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        isolation: isolate;
+      }
+
+      .cls-1, .cls-3 {
+        font-family: Antonio-Regular, Antonio;
+        font-variation-settings: 'wght' 400;
+      }
+
+      .cls-4 {
+        fill: #3dc7f4;
+        stroke-width: 7px;
+      }
+
+      .cls-4, .cls-5, .cls-6, .cls-7, .cls-8 {
+        stroke: #000;
+      }
+
+      .cls-5 {
+        fill: #bd3026;
+        stroke-width: 15px;
+      }
+
+      .cls-6 {
+        fill: #70ccda;
+      }
+
+      .cls-6, .cls-7 {
+        stroke-width: 6px;
+      }
+
+      .cls-7 {
+        fill: #4db748;
+      }
+
+      .cls-3 {
+        font-size: 83.57513px;
+      }
+
+      .cls-8 {
+        fill: #fff;
+        stroke-width: 9px;
+      }
+    </style>
+  </defs>
+  <circle id="circle1" class="cls-5" cx="174" cy="178" r="136"/>
+  <ellipse id="circle4" class="cls-7" cx="162.26111" cy="182.3952" rx="116" ry="114.90282"/>
+  <ellipse id="circle4-2" data-name="circle4" class="cls-6" cx="142.12273" cy="185.51733" rx="90.62273" ry="94.37787"/>
+  <g id="main_group" data-name="main group">
+    <g id="sample_text_element" data-name="sample text element" class="cls-2" text-rendering="geometricPrecision">
+      <text class="cls-1" transform="translate(322.37061 148.54785) scale(1.04842 1)"><tspan x="0" y="0">K8SGPT</tspan></text>
+    </g>
+    <g id="text1" class="cls-2" text-rendering="geometricPrecision">
+      <text class="cls-3" transform="translate(325.03955 235.46582) scale(1.04842 1)"><tspan x="0" y="0">KUBERNETES</tspan></text>
+    </g>
+    <g id="text2" class="cls-2" text-rendering="geometricPrecision">
+      <text class="cls-3" transform="translate(324.16309 314.8623) scale(1.04842 1)"><tspan x="0" y="0">SUPERPOWERS</tspan></text>
+    </g>
+  </g>
+  <circle id="circle3" class="cls-4" cx="116.5" cy="182.3952" r="65"/>
+  <ellipse id="circle5" class="cls-8" cx="84" cy="182.3952" rx="32.5" ry="33.25"/>
+</svg>
