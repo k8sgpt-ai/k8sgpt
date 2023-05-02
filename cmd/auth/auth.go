@@ -41,7 +41,7 @@ var AuthCmd = &cobra.Command{
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		backend, _ := cmd.Flags().GetString("backend")
-		if backend == "azureopenai" {
+		if strings.ToLower(backend) == "azureopenai" {
 			cmd.MarkFlagRequired("engine")
 			cmd.MarkFlagRequired("baseurl")
 		}

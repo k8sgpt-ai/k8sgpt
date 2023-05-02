@@ -56,27 +56,22 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
-	// find in viper cache
-	if cache.Exists(cacheKey) {
-		// retrieve data from cache
-		response, err := cache.Load(cacheKey)
+	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
 
+	if !cache.IsCacheDisabled() && cache.Exists(cacheKey) {
+		response, err := cache.Load(cacheKey)
 		if err != nil {
 			return "", err
 		}
 
-		if response == "" {
-			color.Red("error retrieving cached data")
-			return "", nil
+		if response != "" {
+			output, err := base64.StdEncoding.DecodeString(response)
+			if err != nil {
+				color.Red("error decoding cached data: %v", err)
+				return "", nil
+			}
+			return string(output), nil
 		}
-		output, err := base64.StdEncoding.DecodeString(response)
-		if err != nil {
-			color.Red("error decoding cached data: %v", err)
-			return "", nil
-		}
-		return string(output), nil
 	}
 
 	response, err := a.GetCompletion(ctx, inputKey)
@@ -90,6 +85,7 @@ func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.
 		color.Red("error storing value to cache: %v", err)
 		return "", nil
 	}
+
 	return response, nil
 }
 
