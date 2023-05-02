@@ -19,6 +19,21 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 )
 
+var (
+	clients = []IAI{
+		&OpenAIClient{},
+		&AzureAIClient{},
+		&LocalAIClient{},
+		&NoOpAIClient{},
+	}
+	Backends = []string{
+		"openai",
+		"localai",
+		"azureopenai",
+		"noopai",
+	}
+)
+
 type IAI interface {
 	Configure(config IAIConfig, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
@@ -30,19 +45,17 @@ type IAIConfig interface {
 	GetPassword() string
 	GetModel() string
 	GetBaseURL() string
+	GetEngine() string
 }
 
 func NewClient(provider string) IAI {
-	switch provider {
-	case "openai":
-		return &OpenAIClient{}
-	case "localai":
-		return &LocalAIClient{}
-	case "noopai":
-		return &NoOpAIClient{}
-	default:
-		return &OpenAIClient{}
+	for _, c := range clients {
+		if provider == c.GetName() {
+			return c
+		}
 	}
+	// default client
+	return &OpenAIClient{}
 }
 
 type AIConfiguration struct {
@@ -52,8 +65,9 @@ type AIConfiguration struct {
 type AIProvider struct {
 	Name     string `mapstructure:"name"`
 	Model    string `mapstructure:"model"`
-	Password string `mapstructure:"password"`
-	BaseURL  string `mapstructure:"baseurl"`
+	Password string `mapstructure:"password" yaml:"password,omitempty"`
+	BaseURL  string `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	Engine   string `mapstructure:"engine" yaml:"engine,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -66,6 +80,10 @@ func (p *AIProvider) GetPassword() string {
 
 func (p *AIProvider) GetModel() string {
 	return p.Model
+}
+
+func (p *AIProvider) GetEngine() string {
+	return p.Engine
 }
 
 func NeedPassword(backend string) bool {

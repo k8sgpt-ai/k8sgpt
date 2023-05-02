@@ -31,6 +31,7 @@ var (
 	password string
 	baseURL  string
 	model    string
+	engine   string
 )
 
 // authCmd represents the auth command
@@ -38,6 +39,13 @@ var AuthCmd = &cobra.Command{
 	Use:   "auth",
 	Short: "Authenticate with your chosen backend",
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		backend, _ := cmd.Flags().GetString("backend")
+		if strings.ToLower(backend) == "azureopenai" {
+			cmd.MarkFlagRequired("engine")
+			cmd.MarkFlagRequired("baseurl")
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// get ai configuration
@@ -57,9 +65,18 @@ var AuthCmd = &cobra.Command{
 			}
 		}
 
-		// check if backend is not empty
-		if backend == "" {
-			color.Red("Error: Backend AI cannot be empty.")
+		validBackend := func(validBackends []string, backend string) bool {
+			for _, b := range validBackends {
+				if b == backend {
+					return true
+				}
+			}
+			return false
+		}
+
+		// check if backend is not empty and a valid value
+		if backend == "" || !validBackend(ai.Backends, backend) {
+			color.Red("Error: Backend AI cannot be empty and accepted values are '%v'", strings.Join(ai.Backends, ", "))
 			os.Exit(1)
 		}
 
@@ -88,6 +105,7 @@ var AuthCmd = &cobra.Command{
 			Model:    model,
 			Password: password,
 			BaseURL:  baseURL,
+			Engine:   engine,
 		}
 
 		if providerIndex == -1 {
@@ -117,4 +135,6 @@ func init() {
 	AuthCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	AuthCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for azure open ai engine/deployment name
+	AuthCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
 }
