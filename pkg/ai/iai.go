@@ -15,12 +15,14 @@ package ai
 
 import (
 	"context"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 )
 
 type IAI interface {
 	Configure(config IAIConfig, language string) error
 	GetCompletion(ctx context.Context, prompt string) (string, error)
-	Parse(ctx context.Context, prompt []string, nocache bool) (string, error)
+	Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error)
 	GetName() string
 }
 
@@ -34,6 +36,8 @@ func NewClient(provider string) IAI {
 	switch provider {
 	case "openai":
 		return &OpenAIClient{}
+	case "localai":
+		return &LocalAIClient{}
 	case "noopai":
 		return &NoOpAIClient{}
 	default:

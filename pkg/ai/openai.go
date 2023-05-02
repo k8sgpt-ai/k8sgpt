@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
 	"github.com/sashabaranov/go-openai"
 
 	"github.com/fatih/color"
-	"github.com/spf13/viper"
 )
 
 type OpenAIClient struct {
@@ -70,25 +70,25 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool) (string, error) {
+func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
-	// find in viper cache
-	if viper.IsSet(cacheKey) && !nocache {
-		// retrieve data from cache
-		response := viper.GetString(cacheKey)
-		if response == "" {
-			color.Red("error retrieving cached data")
-			return "", nil
-		}
-		output, err := base64.StdEncoding.DecodeString(response)
+	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
+
+	if !cache.IsCacheDisabled() && cache.Exists(cacheKey) {
+		response, err := cache.Load(cacheKey)
 		if err != nil {
-			color.Red("error decoding cached data: %v", err)
-			return "", nil
+			return "", err
 		}
-		return string(output), nil
+
+		if response != "" {
+			output, err := base64.StdEncoding.DecodeString(response)
+			if err != nil {
+				color.Red("error decoding cached data: %v", err)
+				return "", nil
+			}
+			return string(output), nil
+		}
 	}
 
 	response, err := a.GetCompletion(ctx, inputKey)
@@ -96,13 +96,13 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, nocache bool)
 		return "", err
 	}
 
-	if !viper.IsSet(cacheKey) || nocache {
-		viper.Set(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("error writing config: %v", err)
-			return "", nil
-		}
+	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
+
+	if err != nil {
+		color.Red("error storing value to cache: %v", err)
+		return "", nil
 	}
+
 	return response, nil
 }
 

@@ -20,10 +20,12 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -32,14 +34,15 @@ import (
 )
 
 type Analysis struct {
-	Context   context.Context
-	Filters   []string
-	Client    *kubernetes.Client
-	AIClient  ai.IAI
-	Results   []common.Result
-	Namespace string
-	NoCache   bool
-	Explain   bool
+	Context        context.Context
+	Filters        []string
+	Client         *kubernetes.Client
+	AIClient       ai.IAI
+	Results        []common.Result
+	Namespace      string
+	Cache          cache.ICache
+	Explain        bool
+	MaxConcurrency int
 }
 
 type AnalysisStatus string
@@ -55,7 +58,7 @@ type JsonOutput struct {
 	Results  []common.Result `json:"results"`
 }
 
-func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool) (*Analysis, error) {
+func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int) (*Analysis, error) {
 	var configAI ai.AIConfiguration
 	err := viper.UnmarshalKey("ai", &configAI)
 	if err != nil {
@@ -99,13 +102,14 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	return &Analysis{
-		Context:   ctx,
-		Filters:   filters,
-		Client:    client,
-		AIClient:  aiClient,
-		Namespace: namespace,
-		NoCache:   noCache,
-		Explain:   explain,
+		Context:        ctx,
+		Filters:        filters,
+		Client:         client,
+		AIClient:       aiClient,
+		Namespace:      namespace,
+		Cache:          cache.New(noCache),
+		Explain:        explain,
+		MaxConcurrency: maxConcurrency,
 	}, nil
 }
 
@@ -122,45 +126,86 @@ func (a *Analysis) RunAnalysis() []error {
 	}
 
 	var errorList []error
-
+	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
 		for _, analyzer := range analyzerMap {
-			results, err := analyzer.Analyze(analyzerConfig)
-			if err != nil {
-				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
-			}
-			a.Results = append(a.Results, results...)
-		}
-		return errorList
-	}
-
-	// if the filters flag is specified
-	if len(a.Filters) != 0 {
-		for _, filter := range a.Filters {
-			if analyzer, ok := analyzerMap[filter]; ok {
+			wg.Add(1)
+			semaphore <- struct{}{}
+			go func(analyzer common.IAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
+				defer wg.Done()
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
-					errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
+					mutex.Lock()
+					errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
+					mutex.Unlock()
 				}
+				mutex.Lock()
 				a.Results = append(a.Results, results...)
+				mutex.Unlock()
+				<-semaphore
+			}(analyzer, &wg, semaphore)
+
+		}
+		wg.Wait()
+		return errorList
+	}
+	semaphore = make(chan struct{}, a.MaxConcurrency)
+	// if the filters flag is specified
+	if len(a.Filters) != 0 {
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
+		for _, filter := range a.Filters {
+			if analyzer, ok := analyzerMap[filter]; ok {
+				semaphore <- struct{}{}
+				wg.Add(1)
+				go func(analyzer common.IAnalyzer, filter string) {
+					defer wg.Done()
+					results, err := analyzer.Analyze(analyzerConfig)
+					if err != nil {
+						mutex.Lock()
+						errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", filter, err)))
+						mutex.Unlock()
+					}
+					mutex.Lock()
+					a.Results = append(a.Results, results...)
+					mutex.Unlock()
+					<-semaphore
+				}(analyzer, filter)
 			} else {
-				errorList = append(errorList, errors.New(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
+				errorList = append(errorList, fmt.Errorf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
 		}
+		wg.Wait()
 		return errorList
 	}
 
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
-			results, err := analyzer.Analyze(analyzerConfig)
-			if err != nil {
-				errorList = append(errorList, errors.New(fmt.Sprintf("[%s] %s", filter, err)))
-			}
-			a.Results = append(a.Results, results...)
+			semaphore <- struct{}{}
+			wg.Add(1)
+			go func(analyzer common.IAnalyzer, filter string) {
+				defer wg.Done()
+				results, err := analyzer.Analyze(analyzerConfig)
+				if err != nil {
+					mutex.Lock()
+					errorList = append(errorList, fmt.Errorf("[%s] %s", filter, err))
+					mutex.Unlock()
+				}
+				mutex.Lock()
+				a.Results = append(a.Results, results...)
+				mutex.Unlock()
+				<-semaphore
+			}(analyzer, filter)
 		}
 	}
+	wg.Wait()
 	return errorList
 }
 
@@ -185,7 +230,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			}
 			texts = append(texts, failure.Text)
 		}
-		parsedText, err := a.AIClient.Parse(a.Context, texts, a.NoCache)
+		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache)
 		if err != nil {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?

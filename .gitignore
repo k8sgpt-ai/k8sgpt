@@ -1,4 +1,6 @@
+.DS_Store
 k8sgpt*
+!charts/k8sgpt
 *.vscode
 dist/
 

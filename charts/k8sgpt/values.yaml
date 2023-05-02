@@ -1,0 +1,27 @@
+deployment:
+  image:
+    repository: ghcr.io/k8sgpt-ai/k8sgpt
+    tag: "" # defaults to Chart.appVersion if unspecified
+  imagePullPolicy: Always
+  annotations: {}
+  env:
+    model: "gpt-3.5-turbo"
+    backend: "openai" # one of: [ openai | llama ]
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "0.2"
+      memory: "156Mi"
+
+secret:
+  secretKey: "" # base64 encoded OpenAI token
+
+service:
+  type: ClusterIP
+  annotations: {}
+
+serviceMonitor:
+  enabled: false
+  additionalLabels: {}

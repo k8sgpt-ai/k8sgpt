@@ -1,5 +1,81 @@
 # Changelog
 
+## [0.2.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.7...v0.2.8) (2023-04-27)
+
+
+### Features
+
+* don't ask for password if backend is localai ([74d9a75](https://github.com/k8sgpt-ai/k8sgpt/commit/74d9a750ca01361eb81fdcc91eb5886ecff1d17c))
+* introduce linter to run on PR builds ([#333](https://github.com/k8sgpt-ai/k8sgpt/issues/333)) ([252c734](https://github.com/k8sgpt-ai/k8sgpt/commit/252c7343106bf64c86861a9452e8618efc72881c)), closes [#330](https://github.com/k8sgpt-ai/k8sgpt/issues/330)
+
+
+### Bug Fixes
+
+* remove dead code ([c29860d](https://github.com/k8sgpt-ai/k8sgpt/commit/c29860d418faa316bc167721e443f7b64eafd970))
+* report failure if network policy doesn't match any pods ([8adde6b](https://github.com/k8sgpt-ai/k8sgpt/commit/8adde6bf873b46f365146bc14fc4c8f46d82f8dc))
+* take `KUBECONFIG` env variable into consideration ([#340](https://github.com/k8sgpt-ai/k8sgpt/issues/340)) ([ee85d13](https://github.com/k8sgpt-ai/k8sgpt/commit/ee85d13d59e045519b087adaf55520acc2c205db)), closes [#331](https://github.com/k8sgpt-ai/k8sgpt/issues/331)
+* use a cache file name with a fixed size. ([#350](https://github.com/k8sgpt-ai/k8sgpt/issues/350)) ([dee4235](https://github.com/k8sgpt-ai/k8sgpt/commit/dee423519eb35f11c3e3a6dd64981e781899fe22))
+* use correct result slice for cronjob analyzer ([947e94f](https://github.com/k8sgpt-ai/k8sgpt/commit/947e94f35379712a2fb1e2a2c90636606e0e44b6))
+
+
+### Docs
+
+* fix README ([#345](https://github.com/k8sgpt-ai/k8sgpt/issues/345)) ([f8fa35c](https://github.com/k8sgpt-ai/k8sgpt/commit/f8fa35cf9d591691679d6881fcc203e3411d99aa))
+
+
+### Other
+
+* add settings ([#351](https://github.com/k8sgpt-ai/k8sgpt/issues/351)) ([3af3667](https://github.com/k8sgpt-ai/k8sgpt/commit/3af366788fb47ff87be0142446c027f5a90491e7))
+* **deps:** pin dependencies ([#336](https://github.com/k8sgpt-ai/k8sgpt/issues/336)) ([125341b](https://github.com/k8sgpt-ai/k8sgpt/commit/125341bdaacbc8bedbb333e498dabfb5c72a24c0))
+* logo update ([#339](https://github.com/k8sgpt-ai/k8sgpt/issues/339)) ([d4dcc7a](https://github.com/k8sgpt-ai/k8sgpt/commit/d4dcc7a3991a861923c8115c0c82759b9e83bcfa))
+* update Apache2 license ([#342](https://github.com/k8sgpt-ai/k8sgpt/issues/342)) ([aca5806](https://github.com/k8sgpt-ai/k8sgpt/commit/aca58064c36b3bc13699e055a7cca8a493320078))
+* update README.md ([#346](https://github.com/k8sgpt-ai/k8sgpt/issues/346)) ([14a3537](https://github.com/k8sgpt-ai/k8sgpt/commit/14a3537ce9bc9d581b78329be899a66bc14db648))
+* updated banner ([#343](https://github.com/k8sgpt-ai/k8sgpt/issues/343)) ([0995e00](https://github.com/k8sgpt-ai/k8sgpt/commit/0995e008fe64f5978c3a0cc9fb4c525470f00dfa))
+
+## [0.2.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.6...v0.2.7) (2023-04-25)
+
+
+### Bug Fixes
+
+* remove pointer to loop variable when searching the latest event to analyze ([#328](https://github.com/k8sgpt-ai/k8sgpt/issues/328)) ([2616220](https://github.com/k8sgpt-ai/k8sgpt/commit/2616220935d450030c8a9f2f2741c3607aa4b663))
+
+## [0.2.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.5...v0.2.6) (2023-04-25)
+
+
+### Bug Fixes
+
+* explicitly pass in filter to async analysis go routine ([#326](https://github.com/k8sgpt-ai/k8sgpt/issues/326)) ([692cd06](https://github.com/k8sgpt-ai/k8sgpt/commit/692cd06c385c1c6f458994f6e975a9fce2bc1c57))
+
+## [0.2.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.4...v0.2.5) (2023-04-25)
+
+
+### Features
+
+* add configuration interface to support customer providers ([84a3cc0](https://github.com/k8sgpt-ai/k8sgpt/commit/84a3cc05fb6e21b732ef777351b42db8045e1093))
+* add k8sgpt grafana dashboard ([#316](https://github.com/k8sgpt-ai/k8sgpt/issues/316)) ([ff79982](https://github.com/k8sgpt-ai/k8sgpt/commit/ff799825cfe5856bb97c8f38d939ec36b19fa30a))
+* add serve & integration to README ([a65ee7f](https://github.com/k8sgpt-ai/k8sgpt/commit/a65ee7fc0957c7ba9369bdbe12e648818ca3f841))
+* add subproject group to CODEOWNERS ([#322](https://github.com/k8sgpt-ai/k8sgpt/issues/322)) ([2391603](https://github.com/k8sgpt-ai/k8sgpt/commit/2391603075e73b91d9988d40eecddfc3e0593405))
+* allow to set a baseurl ([#310](https://github.com/k8sgpt-ai/k8sgpt/issues/310)) ([cf797a6](https://github.com/k8sgpt-ai/k8sgpt/commit/cf797a6eb67efba957704077b4b04ed3ee166c24))
+* async calls ([#311](https://github.com/k8sgpt-ai/k8sgpt/issues/311)) ([c3cc413](https://github.com/k8sgpt-ai/k8sgpt/commit/c3cc413e7fc3b06b310779dfa3cb4863ea9f3ed2))
+* modify error handling to return a list of errors to display to the user at the end of analysis without blocking it if an error is detected (e.g., version of an object is not available on user's cluster) ([fa087ff](https://github.com/k8sgpt-ai/k8sgpt/commit/fa087ff5593871d2a07d68f203dd91e66c57e40b))
+* the overall optimization and architecture design of the makefile are made ([#317](https://github.com/k8sgpt-ai/k8sgpt/issues/317)) ([754bf91](https://github.com/k8sgpt-ai/k8sgpt/commit/754bf917e1ac524699d38fb2dc59bc5d858f6d80))
+* update readme ([#314](https://github.com/k8sgpt-ai/k8sgpt/issues/314)) ([ddd830c](https://github.com/k8sgpt-ai/k8sgpt/commit/ddd830cc569278c157480c44a671c9be20c95b24))
+* use OS conform path for storing cached results ([7eddb8f](https://github.com/k8sgpt-ai/k8sgpt/commit/7eddb8f4a6dc61d5f66fc1bf56c0e8cbf9370229)), closes [#323](https://github.com/k8sgpt-ai/k8sgpt/issues/323)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.13.1 ([#321](https://github.com/k8sgpt-ai/k8sgpt/issues/321)) ([e7f74db](https://github.com/k8sgpt-ai/k8sgpt/commit/e7f74db6e556146b898437bb777c2b803d1bec4f))
+* **deps:** update module github.com/prometheus/client_golang to v1.15.0 ([#303](https://github.com/k8sgpt-ai/k8sgpt/issues/303)) ([df2ed41](https://github.com/k8sgpt-ai/k8sgpt/commit/df2ed4185b5a33a18e6b144c85bec3902c14d209))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.9.0 ([#298](https://github.com/k8sgpt-ai/k8sgpt/issues/298)) ([0472c36](https://github.com/k8sgpt-ai/k8sgpt/commit/0472c363a4d8a90556bc744fbf513ad63281e38b))
+
+
+### Other
+
+* add serviceMonitor in sample yaml ([#304](https://github.com/k8sgpt-ai/k8sgpt/issues/304)) ([0a4ed0d](https://github.com/k8sgpt-ai/k8sgpt/commit/0a4ed0d907c22a924dd79e8945eb9d6d10cd9ce7))
+* analyze Pod ReadinessProbe faliure ([3c7e0bb](https://github.com/k8sgpt-ai/k8sgpt/commit/3c7e0bba1d4cc8247d248756dcfef884bc406992))
+* change license to Apache-2 ([#313](https://github.com/k8sgpt-ai/k8sgpt/issues/313)) ([d0f7a11](https://github.com/k8sgpt-ai/k8sgpt/commit/d0f7a1105fe7ed317785782d3af45c83766b7d80))
+
 ## [0.2.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.3...v0.2.4) (2023-04-18)
 
 
