@@ -63,3 +63,7 @@ func (p *AIProvider) GetPassword() string {
 func (p *AIProvider) GetModel() string {
 	return p.Model
 }
+
+func NeedPassword(backend string) bool {
+	return backend != "localai"
+}
