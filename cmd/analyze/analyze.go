@@ -51,7 +51,7 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config.RunAnalysis()
+		errorsList := config.RunAnalysis()
 
 		if explain {
 			err := config.GetAIResults(output, anonymize)
@@ -62,7 +62,7 @@ var AnalyzeCmd = &cobra.Command{
 		}
 
 		// print results
-		output, err := config.PrintOutput(output)
+		output, err := config.PrintOutput(output, errorsList)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

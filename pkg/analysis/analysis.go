@@ -39,7 +39,7 @@ type Analysis struct {
 	Client         *kubernetes.Client
 	AIClient       ai.IAI
 	Results        []common.Result
-	Errors         []string
+	Errors         []error
 	Namespace      string
 	Cache          cache.ICache
 	Explain        bool
@@ -116,7 +116,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}, nil
 }
 
-func (a *Analysis) RunAnalysis() {
+func (a *Analysis) RunAnalysis() []error {
 	activeFilters := viper.GetStringSlice("active_filters")
 
 	analyzerMap := analyzer.GetAnalyzerMap()
@@ -128,6 +128,7 @@ func (a *Analysis) RunAnalysis() {
 		AIClient:  a.AIClient,
 	}
 
+	var errorsList []error
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
@@ -141,7 +142,7 @@ func (a *Analysis) RunAnalysis() {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
 					mutex.Lock()
-					a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
+					errorsList = append(errorsList, fmt.Errorf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
 					mutex.Unlock()
 				}
 				mutex.Lock()
@@ -152,7 +153,9 @@ func (a *Analysis) RunAnalysis() {
 
 		}
 		wg.Wait()
+		return errorsList
 	}
+
 	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
@@ -167,7 +170,7 @@ func (a *Analysis) RunAnalysis() {
 					results, err := analyzer.Analyze(analyzerConfig)
 					if err != nil {
 						mutex.Lock()
-						a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", filter, err)))
+						errorsList = append(errorsList, fmt.Errorf(fmt.Sprintf("[%s] %s", filter, err)))
 						mutex.Unlock()
 					}
 					mutex.Lock()
@@ -176,10 +179,11 @@ func (a *Analysis) RunAnalysis() {
 					<-semaphore
 				}(analyzer, filter)
 			} else {
-				a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
+				errorsList = append(errorsList, fmt.Errorf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
 		}
 		wg.Wait()
+		return errorsList
 	}
 
 	var wg sync.WaitGroup
@@ -195,7 +199,7 @@ func (a *Analysis) RunAnalysis() {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
 					mutex.Lock()
-					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
+					errorsList = append(errorsList, fmt.Errorf("[%s] %s", filter, err))
 					mutex.Unlock()
 				}
 				mutex.Lock()
@@ -206,6 +210,7 @@ func (a *Analysis) RunAnalysis() {
 		}
 	}
 	wg.Wait()
+	return errorsList
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {

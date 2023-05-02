@@ -21,7 +21,8 @@ func getOutputFormats() []string {
 	return formats
 }
 
-func (a *Analysis) PrintOutput(format string) ([]byte, error) {
+func (a *Analysis) PrintOutput(format string, errorsList []error) ([]byte, error) {
+	a.Errors = errorsList
 	outputFunc, ok := outputFormats[format]
 	if !ok {
 		return nil, fmt.Errorf("unsupported output format: %s. Available format %s", format, strings.Join(getOutputFormats(), ","))
@@ -41,10 +42,15 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 		status = StateOK
 	}
 
+	errorMessages := make([]string, len(a.Errors))
+	for i, err := range a.Errors {
+		errorMessages[i] = err.Error()
+	}
+
 	result := JsonOutput{
 		Problems: problems,
 		Results:  a.Results,
-		Errors:   a.Errors,
+		Errors:   errorMessages,
 		Status:   status,
 	}
 	output, err := json.MarshalIndent(result, "", "  ")
@@ -60,7 +66,7 @@ func (a *Analysis) textOutput() ([]byte, error) {
 		output.WriteString("\n")
 		output.WriteString(color.YellowString("Warnings : \n"))
 		for _, aerror := range a.Errors {
-			output.WriteString(fmt.Sprintf("- %s\n", color.YellowString(aerror)))
+			output.WriteString(fmt.Sprintf("- %s\n", color.YellowString(aerror.Error())))
 		}
 	}
 	output.WriteString("\n")
