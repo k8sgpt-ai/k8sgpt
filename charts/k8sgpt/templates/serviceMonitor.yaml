@@ -6,6 +6,9 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "k8sgpt.labels" . | nindent 4 }}
+  {{- if .Values.serviceMonitor.additionalLabels }}
+    {{- toYaml .Values.serviceMonitor.additionalLabels | nindent 4 }}
+  {{- end }}
 spec:
   endpoints:
   - honorLabels: true
