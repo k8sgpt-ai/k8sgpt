@@ -17,7 +17,7 @@ We're happy that you want to contribute to this project. Please read the section
 - We are also happy to help you find something to work on. Just reach out to us.
 
 **Getting in touch with the community**
-* Join our [#k8sgpt slack channel](https://slack.cloud-native.io/channels/k8sgpt)
+* Join our [#k8sgpt slack channel](https://join.slack.com/t/k8sgpt/shared_invite/zt-1rwe5fpzq-VNtJK8DmYbbm~iWL1H34nw)
 * Introduce yourself on the slack channel or open an issue to let us know that you are interested in contributing
 
 **Discuss issues**
