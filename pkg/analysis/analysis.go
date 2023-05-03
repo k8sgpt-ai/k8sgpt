@@ -39,6 +39,7 @@ type Analysis struct {
 	Client         *kubernetes.Client
 	AIClient       ai.IAI
 	Results        []common.Result
+	Errors         []string
 	Namespace      string
 	Cache          cache.ICache
 	Explain        bool
@@ -46,6 +47,7 @@ type Analysis struct {
 }
 
 type AnalysisStatus string
+type AnalysisErrors []string
 
 const (
 	StateOK              AnalysisStatus = "OK"
@@ -53,6 +55,7 @@ const (
 )
 
 type JsonOutput struct {
+	Errors   AnalysisErrors  `json:"errors"`
 	Status   AnalysisStatus  `json:"status"`
 	Problems int             `json:"problems"`
 	Results  []common.Result `json:"results"`
@@ -113,7 +116,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}, nil
 }
 
-func (a *Analysis) RunAnalysis() []error {
+func (a *Analysis) RunAnalysis() {
 	activeFilters := viper.GetStringSlice("active_filters")
 
 	analyzerMap := analyzer.GetAnalyzerMap()
@@ -125,7 +128,6 @@ func (a *Analysis) RunAnalysis() []error {
 		AIClient:  a.AIClient,
 	}
 
-	var errorList []error
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run all of them
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
@@ -139,7 +141,7 @@ func (a *Analysis) RunAnalysis() []error {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
 					mutex.Lock()
-					errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
+					a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
 					mutex.Unlock()
 				}
 				mutex.Lock()
@@ -150,7 +152,6 @@ func (a *Analysis) RunAnalysis() []error {
 
 		}
 		wg.Wait()
-		return errorList
 	}
 	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
@@ -166,7 +167,7 @@ func (a *Analysis) RunAnalysis() []error {
 					results, err := analyzer.Analyze(analyzerConfig)
 					if err != nil {
 						mutex.Lock()
-						errorList = append(errorList, fmt.Errorf(fmt.Sprintf("[%s] %s", filter, err)))
+						a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", filter, err)))
 						mutex.Unlock()
 					}
 					mutex.Lock()
@@ -175,11 +176,10 @@ func (a *Analysis) RunAnalysis() []error {
 					<-semaphore
 				}(analyzer, filter)
 			} else {
-				errorList = append(errorList, fmt.Errorf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
+				a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
 			}
 		}
 		wg.Wait()
-		return errorList
 	}
 
 	var wg sync.WaitGroup
@@ -195,7 +195,7 @@ func (a *Analysis) RunAnalysis() []error {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
 					mutex.Lock()
-					errorList = append(errorList, fmt.Errorf("[%s] %s", filter, err))
+					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
 					mutex.Unlock()
 				}
 				mutex.Lock()
@@ -206,7 +206,6 @@ func (a *Analysis) RunAnalysis() []error {
 		}
 	}
 	wg.Wait()
-	return errorList
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {

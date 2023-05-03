@@ -44,6 +44,7 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 	result := JsonOutput{
 		Problems: problems,
 		Results:  a.Results,
+		Errors:   a.Errors,
 		Status:   status,
 	}
 	output, err := json.MarshalIndent(result, "", "  ")
@@ -55,6 +56,13 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 
 func (a *Analysis) textOutput() ([]byte, error) {
 	var output strings.Builder
+	if len(a.Errors) != 0 {
+		output.WriteString("\n")
+		output.WriteString(color.YellowString("Warnings : \n"))
+		for _, aerror := range a.Errors {
+			output.WriteString(fmt.Sprintf("- %s\n", color.YellowString(aerror)))
+		}
+	}
 	output.WriteString("\n")
 	if len(a.Results) == 0 {
 		output.WriteString(color.GreenString("No problems detected\n"))

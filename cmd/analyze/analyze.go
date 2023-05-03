@@ -51,12 +51,7 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		analysisErrors := config.RunAnalysis()
-		if len(analysisErrors) != 0 {
-			for _, err := range analysisErrors {
-				color.Red("Error: %s", err)
-			}
-		}
+		config.RunAnalysis()
 
 		if explain {
 			err := config.GetAIResults(output, anonymize)
