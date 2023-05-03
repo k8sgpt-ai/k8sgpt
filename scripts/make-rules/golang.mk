@@ -12,6 +12,7 @@
 GO := go
 # !I have only tested gvm since 1.20. You are advised to use the gvm switchover version of the tools toolkit
 GO_SUPPORTED_VERSIONS ?= |1.20|1.21|
+HELM=$(TOOLS_DIR)/helm-$(GOOS)-$(GOARCH)
 
 ifeq ($(ROOT_PACKAGE),)
 	$(error the variable ROOT_PACKAGE must be set prior to including golang.mk, -> /Makefile)
@@ -22,14 +23,14 @@ ifeq ($(origin GOBIN), undefined)
 	GOBIN := $(GOPATH)/bin
 endif
 
-define funcsecret
-ifndef SECRET
-	$(error SECRET environment variable is not set)
-endif
-	kubectl create ns k8sgpt || true
-	kubectl create secret generic ai-backend-secret --from-literal=secret-key=$(SECRET) --namespace=k8sgpt || true
-	kubectl apply -f container/manifests
-endef
+# define funcsecret
+# ifndef SECRET
+# 	$(error SECRET environment variable is not set)
+# endif
+# 	kubectl create ns k8sgpt || true
+# 	kubectl create secret generic ai-backend-secret --from-literal=secret-key=$(SECRET) --namespace=k8sgpt || true
+# 	kubectl apply -f container/manifests
+# endef
 
 ## go.build: Build binaries by default
 .PHONY: go.build
@@ -40,17 +41,30 @@ go.build:
 
 ## go.deploy: Deploy k8sgpt
 .PHONY: go.deploy
-go.deploy:
+go.deploy: tools.verify.helm
+#	@$(call funcsecret)
 	@echo "===========> Deploying k8sgpt"
-	@$(call funcsecret)
+	$(HELM) install k8sgpt charts/k8sgpt -n k8sgpt --create-namespace
 
-## go.undeploy: Undeploy k8sgpt
+## update: Update k8sgpt
+.PHONY: go.update
+go.update: tools.verify.helm
+	@echo "===========> Updating k8sgpt"
+	$(HELM) upgrade k8sgpt charts/k8sgpt -n k8sgpt
+
+## undeploy: Undeploy k8sgpt
 .PHONY: go.undeploy
-go.undeploy:
-	@echo "===========> Undeploying k8sgpt"
-	kubectl delete secret ai-backend-secret --namespace=k8sgpt
-	kubectl delete -f container/manifests
-	kubectl delete ns k8sgpt
+go.undeploy: tools.verify.helm
+	@echo "===========> Undeploying- k8sgpt"
+	$(HELM) uninstall k8sgpt -n k8sgpt
+
+# ## go.undeploy: Undeploy k8sgpt
+# .PHONY: go.undeploy
+# go.undeploy:
+# 	@echo "===========> Undeploying k8sgpt"
+# 	kubectl delete secret ai-backend-secret --namespace=k8sgpt
+# 	kubectl delete -f container/manifests
+# 	kubectl delete ns k8sgpt
 
 ## go.docker-build: Build docker image
 .PHONY: go.docker-build

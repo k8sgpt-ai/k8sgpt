@@ -15,7 +15,9 @@
 #
 
 # K8sGPT build use BUILD_TOOLS
-BUILD_TOOLS ?= golangci-lint goimports addlicense
+BUILD_TOOLS ?= golangci-lint goimports addlicense helm
+
+HELM_VERSION ?= v3.11.3
 
 ## tools.install: Install a must tools
 .PHONY: tools.install
@@ -50,6 +52,20 @@ install.goimports:
 .PHONY: install.addlicense
 install.addlicense:
 	@$(GO) install github.com/google/addlicense@latest
+
+## install.helm: Install helm, used to deploy k8sgpt
+HELM_VERSION ?= v3.11.3
+
+## install.helm: Install helm, used to deploy k8sgpt
+.PHONY: install.helm
+install.helm:
+	@echo "===========> Installing helm,The default installation path is $(TOOLS_DIR)/helm-$(GOOS)-$(GOARCH)"
+	if ! test -f  $(TOOLS_DIR)/helm-$(GOOS)-$(GOARCH); then \
+		curl -L https://get.helm.sh/helm-$(HELM_VERSION)-$(GOOS)-$(GOARCH).tar.gz | tar xz; \
+		mv $(GOOS)-$(GOARCH)/helm $(TOOLS_DIR)/helm-$(GOOS)-$(GOARCH); \
+		chmod +x $(TOOLS_DIR)/helm-$(GOOS)-$(GOARCH); \
+		rm -rf ./$(GOOS)-$(GOARCH)/; \
+	fi
 
 # ==============================================================================
 # Tools that might be used include go gvm

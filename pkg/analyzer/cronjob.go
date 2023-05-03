@@ -114,7 +114,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 	return a.Results, nil
 }
 
-// Check CRON schedule format.
+// CheckCronScheduleIsValid checks if the cron schedule is valid
 func CheckCronScheduleIsValid(schedule string) (bool, error) {
 	_, err := cron.ParseStandard(schedule)
 	if err != nil {

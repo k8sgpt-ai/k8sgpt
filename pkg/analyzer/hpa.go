@@ -141,7 +141,7 @@ func (d DeploymentInfo) GetPodSpec() corev1.PodSpec {
 	return d.Spec.Template.Spec
 }
 
-// define a structure for ReplicationController.
+// ReplicationControllerInfo is a structure for ReplicationController.
 type ReplicationControllerInfo struct {
 	*corev1.ReplicationController
 }
@@ -150,7 +150,7 @@ func (rc ReplicationControllerInfo) GetPodSpec() corev1.PodSpec {
 	return rc.Spec.Template.Spec
 }
 
-// define a structure for ReplicaSet.
+// ReplicaSetInfo is a structure for ReplicaSet.
 type ReplicaSetInfo struct {
 	*appsv1.ReplicaSet
 }
@@ -159,12 +159,12 @@ func (rs ReplicaSetInfo) GetPodSpec() corev1.PodSpec {
 	return rs.Spec.Template.Spec
 }
 
-// define a structure for StatefulSet.
+// StatefulSetInfo is a structure for StatefulSet.
 type StatefulSetInfo struct {
 	*appsv1.StatefulSet
 }
 
-// implement PodInfo for StatefulSetInfo.
+// GetPodSpec implement PodInfo for StatefulSetInfo.
 func (ss StatefulSetInfo) GetPodSpec() corev1.PodSpec {
 	return ss.Spec.Template.Spec
 }
