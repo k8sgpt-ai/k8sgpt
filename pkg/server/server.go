@@ -75,15 +75,7 @@ func (s *Config) analyzeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	analysisErrors := config.RunAnalysis()
-	if analysisErrors != nil {
-		var errorMessage string
-		for _, err := range analysisErrors {
-			errorMessage += err.Error() + "\n"
-		}
-		http.Error(w, errorMessage, http.StatusInternalServerError)
-		health.Failure++
-	}
+	config.RunAnalysis()
 
 	if explain {
 		err := config.GetAIResults(s.Output, anonymize)
