@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.2.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.8...v0.2.9) (2023-05-03)
+
+
+### Features
+
+* add additionalLabels to Service Monitor ([#366](https://github.com/k8sgpt-ai/k8sgpt/issues/366)) ([a89a5cf](https://github.com/k8sgpt-ai/k8sgpt/commit/a89a5cfa2efd365cfc1c501c7055a315949c5f97))
+* add azure openai provider ([#309](https://github.com/k8sgpt-ai/k8sgpt/issues/309)) ([d8357ce](https://github.com/k8sgpt-ai/k8sgpt/commit/d8357ceb949e04d9dd21276a1d1dfcb60010c37a))
+* add helm chart ([#318](https://github.com/k8sgpt-ai/k8sgpt/issues/318)) ([5af8178](https://github.com/k8sgpt-ai/k8sgpt/commit/5af817880278771cf0b25d0936b90a45c089218c))
+* improving readme ([7471b76](https://github.com/k8sgpt-ai/k8sgpt/commit/7471b7679469bc7416ee35061a13e8442bfc532c))
+* rework output format ([#368](https://github.com/k8sgpt-ai/k8sgpt/issues/368)) ([8b49f70](https://github.com/k8sgpt-ai/k8sgpt/commit/8b49f708f364569994801757cf72982291c0de82))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.13.2 ([#353](https://github.com/k8sgpt-ai/k8sgpt/issues/353)) ([363294c](https://github.com/k8sgpt-ai/k8sgpt/commit/363294c310ca1a6666d4d2dcba7e232387f0d41f))
+* **deps:** update module github.com/prometheus/client_golang to v1.15.1 ([#374](https://github.com/k8sgpt-ai/k8sgpt/issues/374)) ([799869b](https://github.com/k8sgpt-ai/k8sgpt/commit/799869bcef76be0d5b2169646de106bd3b441c50))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.9.1 ([#363](https://github.com/k8sgpt-ai/k8sgpt/issues/363)) ([766a15b](https://github.com/k8sgpt-ai/k8sgpt/commit/766a15b25a2669b101c717013dae0ea4f5d0daa3))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.9.2 ([#375](https://github.com/k8sgpt-ai/k8sgpt/issues/375)) ([8b82d59](https://github.com/k8sgpt-ai/k8sgpt/commit/8b82d59bd7a6837a543467f9d76c66e70f267b85))
+* update CONTRIBUTING.md Slack URL ([#373](https://github.com/k8sgpt-ai/k8sgpt/issues/373)) ([e0200e7](https://github.com/k8sgpt-ai/k8sgpt/commit/e0200e7fa05597b52c9f25fc2e9b744aea764b9a))
+
+
+### Docs
+
+* remove issue templates to use org wide ones ([#352](https://github.com/k8sgpt-ai/k8sgpt/issues/352)) ([3051b1c](https://github.com/k8sgpt-ai/k8sgpt/commit/3051b1ca343d739e48ff05c96468040adefc929a))
+* update README.md ([#356](https://github.com/k8sgpt-ai/k8sgpt/issues/356)) ([4e146fb](https://github.com/k8sgpt-ai/k8sgpt/commit/4e146fb152b79a43f3163a94389022b4325126d4))
+
+
+### Other
+
+* added changing banners ([#367](https://github.com/k8sgpt-ai/k8sgpt/issues/367)) ([4f6e833](https://github.com/k8sgpt-ai/k8sgpt/commit/4f6e833d3427adf82438186f52eee40293c50cd0))
+* **deps:** update golang docker tag to v1.20.4 ([#370](https://github.com/k8sgpt-ai/k8sgpt/issues/370)) ([9faa694](https://github.com/k8sgpt-ai/k8sgpt/commit/9faa69422dab812ec062c10a8fffb73160a3cd21))
+* **deps:** update reviewdog/action-golangci-lint digest to f5d8591 ([#362](https://github.com/k8sgpt-ai/k8sgpt/issues/362)) ([b8a5f3b](https://github.com/k8sgpt-ai/k8sgpt/commit/b8a5f3bab85e28f83259739958fe22ca0ada211a))
+* updated logo ([#365](https://github.com/k8sgpt-ai/k8sgpt/issues/365)) ([6431be7](https://github.com/k8sgpt-ai/k8sgpt/commit/6431be7771bd7c34d6beac14470bc6918b1793c4))
+
 ## [0.2.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.7...v0.2.8) (2023-04-27)
 
 
