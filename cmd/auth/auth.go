@@ -23,6 +23,7 @@ var (
 	password string
 	baseURL  string
 	model    string
+	engine   string
 )
 
 var configAI ai.AIConfiguration

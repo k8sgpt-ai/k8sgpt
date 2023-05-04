@@ -121,7 +121,7 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
-* Run `k8sgpt auth` to set it in k8sgpt.
+* Run `k8sgpt auth new` to set it in k8sgpt.
   * You can provide the password directly using the `--password` flag.
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
@@ -161,7 +161,7 @@ _Run a scan with the default analyzers_
 
 ```
 k8sgpt generate
-k8sgpt auth
+k8sgpt auth new
 k8sgpt analyze --explain
 ```
 
@@ -226,6 +226,11 @@ k8sgpt filters remove [filter(s)]
 
 <details>
 
+_List configured backends_
+
+```
+k8sgpt auth list
+```
 
 _List integrations_
 
@@ -310,10 +315,10 @@ To start the API server, follow the instruction in [LocalAI](https://github.com/
 
 ### Run k8sgpt
 
-To run k8sgpt, run `k8sgpt auth` with the `localai` backend:
+To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
 
 ```
-k8sgpt auth --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
 ```
 
 When being asked for an API key, just press enter.
