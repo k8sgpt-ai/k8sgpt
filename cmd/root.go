@@ -14,12 +14,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/adrg/xdg"
-	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
@@ -116,14 +114,7 @@ func performConfigMigrationIfNeeded() {
 	err = util.EnsureDirExists(configDir)
 	cobra.CheckErr(err)
 
-	if oldConfigExists && newConfigExists {
-		fmt.Fprintln(os.Stderr, color.RedString("Warning: Legacy config file at `%s` detected! This file will be ignored!", oldConfig))
-		return
-	}
-
 	if oldConfigExists && !newConfigExists {
-		fmt.Fprintln(os.Stderr, color.RedString("Performing config file migration from `%s` to `%s`", oldConfig, newConfig))
-
 		err = os.Rename(oldConfig, newConfig)
 		cobra.CheckErr(err)
 	}

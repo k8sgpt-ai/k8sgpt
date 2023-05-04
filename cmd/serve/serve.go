@@ -47,17 +47,17 @@ var ServeCmd = &cobra.Command{
 			password := os.Getenv("K8SGPT_PASSWORD")
 			model := os.Getenv("K8SGPT_MODEL")
 			baseURL := os.Getenv("K8SGPT_BASEURL")
-
+			engine := os.Getenv("K8SGPT_ENGINE")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
-			envIsSet := backend != "" || password != "" || model != "" || baseURL != ""
-
+			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
 					Name:     backend,
 					Password: password,
 					Model:    model,
 					BaseURL:  baseURL,
+					Engine:   engine,
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
@@ -75,10 +75,10 @@ var ServeCmd = &cobra.Command{
 		if aiProvider == nil {
 			for _, provider := range configAI.Providers {
 				if backend == provider.Name {
-          // he pointer to the range variable is not really an issue here, as there
-          // is a break right after, but to prevent potential future issues, a temp
-          // variable is assigned
-          p := provider
+					// the pointer to the range variable is not really an issue here, as there
+					// is a break right after, but to prevent potential future issues, a temp
+					// variable is assigned
+					p := provider
 					aiProvider = &p
 					break
 				}
