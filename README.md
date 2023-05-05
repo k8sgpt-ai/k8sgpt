@@ -208,7 +208,7 @@ k8sgpt filters add [filter(s)]
 - Simple filter : `k8sgpt filters add Service`
 - Multiple filters : `k8sgpt filters add Ingress,Pod`
 
-_Add default filters_
+_Remove default filters_
 
 ```
 k8sgpt filters remove [filter(s)]
