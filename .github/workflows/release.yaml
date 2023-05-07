@@ -49,7 +49,7 @@ jobs:
         with:
           go-version: '1.20'
       - name: Download Syft
-        uses: anchore/sbom-action/download-syft@422cb34a0f8b599678c41b21163ea6088edb2624 # v0.14.1
+        uses: anchore/sbom-action/download-syft@4d571ad1038a9cc29d676154ef265ab8f9027042 # v0.14.2
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4
         with:
@@ -104,7 +104,7 @@ jobs:
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
 
       - name: Generate SBOM
-        uses: anchore/sbom-action@422cb34a0f8b599678c41b21163ea6088edb2624 # v0.14.1
+        uses: anchore/sbom-action@4d571ad1038a9cc29d676154ef265ab8f9027042 # v0.14.2
         with:
           image: ${{ env.IMAGE_TAG }}
           artifact-name: sbom-${{ env.IMAGE_NAME }}
