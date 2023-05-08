@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 )
 
 func logInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
@@ -29,13 +30,13 @@ func logInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		if err != nil {
-			fields = append(fields, zap.Int32("status_code", int32(grpc.Code(err))))
+			fields = append(fields, zap.Int32("status_code", int32(status.Code(err))))
 		}
 		message := "request completed"
 		if err != nil {
 			message = "request failed"
 		}
-		logRequest(logger, fields, int(grpc.Code(err)), message)
+		logRequest(logger, fields, int(status.Code(err)), message)
 
 		return response, err
 	}
