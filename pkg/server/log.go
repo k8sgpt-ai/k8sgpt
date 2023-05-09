@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -34,7 +35,7 @@ func logInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
 		}
 		message := "request completed"
 		if err != nil {
-			message = "request failed"
+			message = fmt.Sprintf("request failed. %s", err.Error())
 		}
 		logRequest(logger, fields, int(status.Code(err)), message)
 
