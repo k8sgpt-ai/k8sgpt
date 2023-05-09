@@ -21,11 +21,13 @@ import (
 	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 var (
-	port    string
-	backend string
+	port        string
+	metricsPort string
+	backend     string
 )
 
 var ServeCmd = &cobra.Command{
@@ -90,23 +92,42 @@ var ServeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		server := k8sgptserver.Config{
-			Backend: aiProvider.Name,
-			Port:    port,
-			Token:   aiProvider.Password,
-		}
-
-		err = server.Serve()
+		logger, err := zap.NewProduction()
 		if err != nil {
-			color.Red("Error: %v", err)
+			color.Red("failed to create logger: %v", err)
 			os.Exit(1)
 		}
-		// override the default backend if a flag is provided
+		defer logger.Sync()
+
+		server := k8sgptserver.Config{
+			Backend:     aiProvider.Name,
+			Port:        port,
+			MetricsPort: metricsPort,
+			Token:       aiProvider.Password,
+			Logger:      logger,
+		}
+		go func() {
+			if err := server.ServeMetrics(); err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
+			}
+		}()
+
+		go func() {
+			if err := server.Serve(); err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
+			}
+		}()
+
+		// Wait for both servers to exit
+		select {}
 	},
 }
 
 func init() {
 	// add flag for backend
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
+	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 }

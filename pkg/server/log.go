@@ -1,77 +1,51 @@
 package server
 
 import (
-	"bytes"
-	"net/http"
+	"context"
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 )
 
-type loggingResponseWriter struct {
-	http.ResponseWriter
-	statusCode int
-	buf        *bytes.Buffer
-}
+func logInterceptor(logger *zap.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		start := time.Now()
 
-func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
-	return &loggingResponseWriter{
-		w,
-		http.StatusOK,
-		&bytes.Buffer{},
+		// Call the handler to execute the gRPC request
+		response, err := handler(ctx, req)
+
+		duration := time.Since(start).Milliseconds()
+		fields := []zap.Field{
+			zap.Int64("duration_ms", duration),
+			zap.String("method", info.FullMethod),
+			zap.Any("request", req),
+		}
+		// Get the remote address from the context
+		peer, ok := peer.FromContext(ctx)
+		if ok {
+			fields = append(fields, zap.String("remote_addr", peer.Addr.String()))
+		}
+
+		if err != nil {
+			fields = append(fields, zap.Int32("status_code", int32(status.Code(err))))
+		}
+		message := "request completed"
+		if err != nil {
+			message = "request failed"
+		}
+		logRequest(logger, fields, int(status.Code(err)), message)
+
+		return response, err
 	}
-}
-
-func (lrw *loggingResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
-}
-
-func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
-	return lrw.buf.Write(b)
-}
-
-func (lrw *loggingResponseWriter) Flush() {
-	if f, ok := lrw.ResponseWriter.(http.Flusher); ok {
-		f.Flush()
-	}
-	lrw.ResponseWriter.Write(lrw.buf.Bytes())
 }
 
 func logRequest(logger *zap.Logger, fields []zap.Field, statusCode int, message string) {
 	if statusCode >= 400 {
 		logger.Error(message, fields...)
 	} else {
-		logger.Info("request completed", fields...)
+		logger.Info(message, fields...)
 	}
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	config := zap.NewProductionConfig()
-	config.DisableCaller = true
-	logger, err := config.Build()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		lrw := NewLoggingResponseWriter(w)
-		start := time.Now()
-		defer func() {
-			duration := time.Since(start).Milliseconds()
-			fields := []zap.Field{
-				zap.Int64("duration_ms", duration),
-				zap.String("method", r.Method),
-				zap.String("remote_addr", r.RemoteAddr),
-				zap.Int("status_code", lrw.statusCode),
-				zap.String("url", r.URL.Path),
-			}
-			logRequest(logger, fields, lrw.statusCode, lrw.buf.String())
-		}()
-
-		next.ServeHTTP(lrw, r)
-
-		lrw.Flush()
-	})
 }
