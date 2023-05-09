@@ -13,7 +13,7 @@ spec:
   endpoints:
   - honorLabels: true
     path: /metrics
-    port: http
+    port: metrics
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
