@@ -11,5 +11,5 @@ subjects:
   namespace: {{ .Release.Namespace | quote }}
 roleRef:
   kind: ClusterRole
-  name: k8sgpt-cluster-role-all
+  name: {{ template "k8sgpt.fullname" . }}
   apiGroup: rbac.authorization.k8s.io
