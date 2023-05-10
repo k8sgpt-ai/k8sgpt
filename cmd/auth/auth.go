@@ -46,4 +46,6 @@ func init() {
 	AuthCmd.AddCommand(listCmd)
 	// add subcommand to create new backend provider
 	AuthCmd.AddCommand(newCmd)
+	// add subcommand to remove new backend provider
+	AuthCmd.AddCommand(removeCmd)
 }

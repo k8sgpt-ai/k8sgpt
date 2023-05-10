@@ -232,6 +232,12 @@ _List configured backends_
 k8sgpt auth list
 ```
 
+_Remove configured backends_
+
+```
+k8sgpt auth remove --backend $MY_BACKEND
+```
+
 _List integrations_
 
 ```
