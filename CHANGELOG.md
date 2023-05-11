@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.3.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.9...v0.3.0) (2023-05-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate api to grpc ([#386](https://github.com/k8sgpt-ai/k8sgpt/issues/386))
+
+### Features
+
+* add auth commands ([#369](https://github.com/k8sgpt-ai/k8sgpt/issues/369)) ([00aaae8](https://github.com/k8sgpt-ai/k8sgpt/commit/00aaae86d88812bd6b6be290ba440ea583ccc01c))
+* migrate api to grpc ([#386](https://github.com/k8sgpt-ai/k8sgpt/issues/386)) ([9998e76](https://github.com/k8sgpt-ai/k8sgpt/commit/9998e7620d2803b82b241482649449507040add3))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/sashabaranov/go-openai to v1.9.3 ([#378](https://github.com/k8sgpt-ai/k8sgpt/issues/378)) ([045a063](https://github.com/k8sgpt-ai/k8sgpt/commit/045a06350bf41d4177e67316978af8fcf02ff19a))
+* **deps:** update module golang.org/x/term to v0.8.0 ([#382](https://github.com/k8sgpt-ai/k8sgpt/issues/382)) ([65fff11](https://github.com/k8sgpt-ai/k8sgpt/commit/65fff11e585f8074fb77124b25339a09da313970))
+
+
+### Docs
+
+* update README ([#383](https://github.com/k8sgpt-ai/k8sgpt/issues/383)) ([d6bcb96](https://github.com/k8sgpt-ai/k8sgpt/commit/d6bcb96105a549eb772b790704c7ec27e374eafd))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.14.2 ([#387](https://github.com/k8sgpt-ai/k8sgpt/issues/387)) ([9192b26](https://github.com/k8sgpt-ai/k8sgpt/commit/9192b26fab2ce09c8a480256a15723ae788612c3))
+* fix the logo URL ([#384](https://github.com/k8sgpt-ai/k8sgpt/issues/384)) ([b6b0612](https://github.com/k8sgpt-ai/k8sgpt/commit/b6b06123db8914cae09dfa96edd92aff83823bdf))
+
 ## [0.2.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.8...v0.2.9) (2023-05-03)
 
 
