@@ -24,7 +24,7 @@ import (
 var removeCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "Remove a provider",
-Long: The command to remove an AI backend provider
+	Long:  "The command to remove an AI backend provider",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
