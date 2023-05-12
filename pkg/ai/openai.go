@@ -107,5 +107,5 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, cache cache.I
 }
 
 func (a *OpenAIClient) GetName() string {
-	return "openai"
+	return Backends[0]
 }

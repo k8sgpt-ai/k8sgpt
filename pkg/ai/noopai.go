@@ -57,7 +57,7 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.I
 		return "", err
 	}
 
-  err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
+	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
 
 	if err != nil {
 		color.Red("error storing value to cache: %v", err)
@@ -68,5 +68,5 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.I
 }
 
 func (a *NoOpAIClient) GetName() string {
-	return "noopai"
+	return Backends[3]
 }

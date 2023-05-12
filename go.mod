@@ -21,7 +21,10 @@ require (
 
 )
 
-require github.com/adrg/xdg v0.4.0
+require (
+	github.com/adrg/xdg v0.4.0
+	github.com/golang/mock v1.6.0
+)
 
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230506120742-576a6b5d0a86.1
