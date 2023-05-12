@@ -141,7 +141,7 @@ func (a *Analysis) RunAnalysis() {
 				results, err := analyzer.Analyze(analyzerConfig)
 				if err != nil {
 					mutex.Lock()
-					a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err)))
+					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err))
 					mutex.Unlock()
 				}
 				mutex.Lock()
@@ -167,7 +167,7 @@ func (a *Analysis) RunAnalysis() {
 					results, err := analyzer.Analyze(analyzerConfig)
 					if err != nil {
 						mutex.Lock()
-						a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("[%s] %s", filter, err)))
+						a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
 						mutex.Unlock()
 					}
 					mutex.Lock()
@@ -176,7 +176,7 @@ func (a *Analysis) RunAnalysis() {
 					<-semaphore
 				}(analyzer, filter)
 			} else {
-				a.Errors = append(a.Errors, fmt.Sprintf(fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)))
+				a.Errors = append(a.Errors, fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
 			}
 		}
 		wg.Wait()
@@ -234,7 +234,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?
 			if output != "json" {
-				bar.Exit()
+				_ = bar.Exit()
 			}
 
 			// Check for exhaustion
@@ -255,7 +255,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 
 		analysis.Details = parsedText
 		if output != "json" {
-			bar.Add(1)
+			_ = bar.Add(1)
 		}
 		a.Results[index] = analysis
 	}

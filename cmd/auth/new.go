@@ -33,8 +33,8 @@ var newCmd = &cobra.Command{
 	PreRun: func(cmd *cobra.Command, args []string) {
 		backend, _ := cmd.Flags().GetString("backend")
 		if strings.ToLower(backend) == "azureopenai" {
-			cmd.MarkFlagRequired("engine")
-			cmd.MarkFlagRequired("baseurl")
+			_ = cmd.MarkFlagRequired("engine")
+			_ = cmd.MarkFlagRequired("baseurl")
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
