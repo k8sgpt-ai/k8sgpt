@@ -35,7 +35,7 @@ var AuthCmd = &cobra.Command{
 	Long:  `Provide the necessary credentials to authenticate with your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			cmd.Help()
+			_ = cmd.Help()
 			return
 		}
 	},

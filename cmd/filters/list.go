@@ -37,7 +37,7 @@ var listCmd = &cobra.Command{
 			activeFilters = coreFilters
 		}
 		inactiveFilters := util.SliceDiff(availableFilters, activeFilters)
-		fmt.Printf(color.YellowString("Active: \n"))
+		fmt.Print(color.YellowString("Active: \n"))
 		for _, filter := range activeFilters {
 
 			// if the filter is an integration, mark this differently
@@ -50,7 +50,7 @@ var listCmd = &cobra.Command{
 
 		// display inactive filters
 		if len(inactiveFilters) != 0 {
-			fmt.Printf(color.YellowString("Unused: \n"))
+			fmt.Print(color.YellowString("Unused: \n"))
 			for _, filter := range inactiveFilters {
 				// if the filter is an integration, mark this differently
 				if util.SliceContainsString(integrationFilters, filter) {

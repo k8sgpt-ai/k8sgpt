@@ -85,7 +85,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("k8sgpt")
 
-		viper.SafeWriteConfig()
+		_ = viper.SafeWriteConfig()
 	}
 
 	viper.Set("kubecontext", kubecontext)
@@ -96,6 +96,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
+		_ = 1
 		//	fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }
