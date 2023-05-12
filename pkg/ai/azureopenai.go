@@ -36,7 +36,7 @@ func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
 	return nil
 }
 
-func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
 	// Create a completion request
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: c.model,
@@ -53,7 +53,7 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
+func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
@@ -74,7 +74,7 @@ func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.
 		}
 	}
 
-	response, err := a.GetCompletion(ctx, inputKey)
+	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
 	if err != nil {
 		return "", err
 	}
