@@ -32,7 +32,7 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	config, err := analysis.NewAnalysis(
 		i.Backend,
 		i.Language,
-		[]string{},
+		i.Filters,
 		i.Namespace,
 		i.Nocache,
 		i.Explain,
