@@ -208,7 +208,7 @@
 * initial impl of integration ([b0e5170](https://github.com/k8sgpt-ai/k8sgpt/commit/b0e517006e65ac2b4e2d4e2696531d4bbf62c34b))
 * initial impl of integration ([61d6e52](https://github.com/k8sgpt-ai/k8sgpt/commit/61d6e524657272cf3a967c724f212677fcfe7d2b))
 * integration ready for first review ([3682f5c](https://github.com/k8sgpt-ai/k8sgpt/commit/3682f5c7ebb9590e92162eed214a8127f71bcd81))
-* introduce StatefulSet analyser. ([c041ce2](https://github.com/k8sgpt-ai/k8sgpt/commit/c041ce2bbb4ecbc6f5637207c9f3071eee022744))
+* introduce StatefulSet analyzer. ([c041ce2](https://github.com/k8sgpt-ai/k8sgpt/commit/c041ce2bbb4ecbc6f5637207c9f3071eee022744))
 * refactor integration to use Failure object ([c0afc0f](https://github.com/k8sgpt-ai/k8sgpt/commit/c0afc0f5c91cfa50b1f7af901800ff0a2b492d18))
 * return errors if filter specified by flag does not exist. ([dd5824f](https://github.com/k8sgpt-ai/k8sgpt/commit/dd5824f4365b01e3c501d8b5cda914dff138e03d))
 
@@ -420,7 +420,7 @@
 
 * add Ingress in GetParent switch case ([14ba8d5](https://github.com/k8sgpt-ai/k8sgpt/commit/14ba8d555005f31fc2201cb8b61653093c19b8a7))
 * bugfix for output ([#148](https://github.com/k8sgpt-ai/k8sgpt/issues/148)) ([172c2df](https://github.com/k8sgpt-ai/k8sgpt/commit/172c2df6c55f5fddbfec7f8526be5f2323d1b900))
-* Change ObjectMeta value in Ingress analyser. ([bf49a51](https://github.com/k8sgpt-ai/k8sgpt/commit/bf49a51c62af450cff51a590547ef30989bd2e93))
+* Change ObjectMeta value in Ingress analyzer. ([bf49a51](https://github.com/k8sgpt-ai/k8sgpt/commit/bf49a51c62af450cff51a590547ef30989bd2e93))
 * typo in description of the filter flag in analyze command ([#147](https://github.com/k8sgpt-ai/k8sgpt/issues/147)) ([f4765be](https://github.com/k8sgpt-ai/k8sgpt/commit/f4765bed1b1ad121a81b35878fdb866354b5e34a))
 
 

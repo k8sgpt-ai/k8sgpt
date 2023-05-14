@@ -37,7 +37,7 @@ var (
 // AnalyzeCmd represents the problems command
 var AnalyzeCmd = &cobra.Command{
 	Use:     "analyze",
-	Aliases: []string{"analyse"},
+	Aliases: []string{"analyze"},
 	Short:   "This command will find problems within your Kubernetes cluster",
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
