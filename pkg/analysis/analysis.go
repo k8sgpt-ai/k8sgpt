@@ -129,8 +129,8 @@ func (a *Analysis) RunAnalysis() {
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
-	// if there are no filters selected and no active_filters then run all of them
-	if len(a.Filters) == 0 && len(activeFilters) == 0 {
+	// if there are no filters selected then run all of them
+	if len(a.Filters) == 0 {
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
 		for _, analyzer := range analyzerMap {
