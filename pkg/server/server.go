@@ -107,7 +107,7 @@ func (s *Config) healthzHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, string(js))
+	fmt.Fprint(w, string(js))
 }
 
 func getBoolParam(param string) bool {

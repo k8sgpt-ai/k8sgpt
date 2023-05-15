@@ -25,7 +25,7 @@ var FiltersCmd = &cobra.Command{
 	You can list available filters to analyze resources.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			cmd.Help()
+			_ = cmd.Help()
 			return
 		}
 	},
