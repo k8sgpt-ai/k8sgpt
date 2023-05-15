@@ -163,41 +163,25 @@ func (a *Analysis) RunAnalysis() {
 		wg.Wait()
 		return
 	}
-	semaphore = make(chan struct{}, a.MaxConcurrency)
+	var filtersCandidate []string
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		for _, filter := range a.Filters {
-			if analyzer, ok := analyzerMap[filter]; ok {
-				semaphore <- struct{}{}
-				wg.Add(1)
-				go func(analyzer common.IAnalyzer, filter string) {
-					defer wg.Done()
-					results, err := analyzer.Analyze(analyzerConfig)
-					if err != nil {
-						mutex.Lock()
-						a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
-						mutex.Unlock()
-					}
-					mutex.Lock()
-					a.Results = append(a.Results, results...)
-					mutex.Unlock()
-					<-semaphore
-				}(analyzer, filter)
+			if _, ok := analyzerMap[filter]; ok {
+				filtersCandidate = append(filtersCandidate, filter)
 			} else {
 				a.Errors = append(a.Errors, fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
 			}
 		}
-		wg.Wait()
-		return
+	} else {
+		filtersCandidate = activeFilters
 	}
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	semaphore = make(chan struct{}, a.MaxConcurrency)
-	// use active_filters
-	for _, filter := range activeFilters {
+	// filtersCandidate = active_filters (if any) + filters flag (if any)
+	for _, filter := range filtersCandidate {
 		if analyzer, ok := analyzerMap[filter]; ok {
 			semaphore <- struct{}{}
 			wg.Add(1)
