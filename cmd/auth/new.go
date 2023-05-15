@@ -122,5 +122,5 @@ func init() {
 	// add flag for url
 	newCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
 	// add flag for azure open ai engine/deployment name
-	AuthCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
+	newCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
 }
