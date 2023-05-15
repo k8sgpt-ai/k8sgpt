@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.0...v0.3.1) (2023-05-15)
+
+
+### Features
+
+* add error message if analyze request fail ([#393](https://github.com/k8sgpt-ai/k8sgpt/issues/393)) ([639aa12](https://github.com/k8sgpt-ai/k8sgpt/commit/639aa12931b3fc9f99a4b34f33f583b9f427f40c))
+* add remove command to remove a backend AI provider ([#395](https://github.com/k8sgpt-ai/k8sgpt/issues/395)) ([c5b72ee](https://github.com/k8sgpt-ai/k8sgpt/commit/c5b72eee165a29d4ed59b0ec2f19e9f58267840d))
+* filters api ([#407](https://github.com/k8sgpt-ai/k8sgpt/issues/407)) ([e5e613a](https://github.com/k8sgpt-ai/k8sgpt/commit/e5e613acee0a99f108dd90affc55a18dee42ad9c))
+* use correct port to metrics ([#390](https://github.com/k8sgpt-ai/k8sgpt/issues/390)) ([5d4e591](https://github.com/k8sgpt-ai/k8sgpt/commit/5d4e591f11e555cac851205fff158ef22f702c33))
+
+
+### Bug Fixes
+
+* clusterole name ([#392](https://github.com/k8sgpt-ai/k8sgpt/issues/392)) ([123b8a6](https://github.com/k8sgpt-ai/k8sgpt/commit/123b8a66eed1af41b7bd4e558ba4f0f8ef947e98))
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go to v1.3.0-20230515081240-6b5b845c638e.1 ([#397](https://github.com/k8sgpt-ai/k8sgpt/issues/397)) ([a1f98ad](https://github.com/k8sgpt-ai/k8sgpt/commit/a1f98ad78ecd9a84d26e7a59c340e5410524e561))
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go to v1.28.1-20230510140658-54288a50e81c.4 ([#398](https://github.com/k8sgpt-ai/k8sgpt/issues/398)) ([50916f2](https://github.com/k8sgpt-ai/k8sgpt/commit/50916f2c93fb19b935f835eda1ba78b7c0465fe6))
+* **deps:** update module google.golang.org/grpc to v1.55.0 ([#389](https://github.com/k8sgpt-ai/k8sgpt/issues/389)) ([8cfb717](https://github.com/k8sgpt-ai/k8sgpt/commit/8cfb717dc15a6af489a16282d38d3495518bc919))
+* **deps:** update module helm.sh/helm/v3 to v3.12.0 ([#396](https://github.com/k8sgpt-ai/k8sgpt/issues/396)) ([c1410d1](https://github.com/k8sgpt-ai/k8sgpt/commit/c1410d169945341e9a635e12c2adcc87a08f8a09))
+* update engine's cmd flag to match the new cli layout ([#400](https://github.com/k8sgpt-ai/k8sgpt/issues/400)) ([aafe669](https://github.com/k8sgpt-ai/k8sgpt/commit/aafe669739aa8c38611d13deb08706096c7893e0))
+
+
+### Other
+
+* gofmt fix and enable in CI ([#414](https://github.com/k8sgpt-ai/k8sgpt/issues/414)) ([e66de8c](https://github.com/k8sgpt-ai/k8sgpt/commit/e66de8c4cea1213cda1db609f07cbb0c8f6591c3))
+* make go-lint happy ([#405](https://github.com/k8sgpt-ai/k8sgpt/issues/405)) ([ed73485](https://github.com/k8sgpt-ai/k8sgpt/commit/ed73485d92af0329915633d51c7eccdbce9b37cc))
+
 ## [0.3.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.2.9...v0.3.0) (2023-05-09)
 
 
