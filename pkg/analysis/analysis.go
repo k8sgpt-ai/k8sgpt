@@ -152,6 +152,7 @@ func (a *Analysis) RunAnalysis() {
 
 		}
 		wg.Wait()
+		return
 	}
 	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
@@ -180,6 +181,7 @@ func (a *Analysis) RunAnalysis() {
 			}
 		}
 		wg.Wait()
+		return
 	}
 
 	var wg sync.WaitGroup
