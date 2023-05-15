@@ -205,15 +205,15 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsDeployment(t *testing.T) {
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name: "example",
+								Name:  "example",
 								Image: "nginx",
 								Resources: corev1.ResourceRequirements{
 									Requests: corev1.ResourceList{
-										"cpu": resource.MustParse("100m"),
+										"cpu":    resource.MustParse("100m"),
 										"memory": resource.MustParse("128Mi"),
 									},
 									Limits: corev1.ResourceList{
-										"cpu": resource.MustParse("200m"),
+										"cpu":    resource.MustParse("200m"),
 										"memory": resource.MustParse("256Mi"),
 									},
 								},
@@ -269,15 +269,15 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsReplicationController(t *testing
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name: "example",
+								Name:  "example",
 								Image: "nginx",
 								Resources: corev1.ResourceRequirements{
 									Requests: corev1.ResourceList{
-										"cpu": resource.MustParse("100m"),
+										"cpu":    resource.MustParse("100m"),
 										"memory": resource.MustParse("128Mi"),
 									},
 									Limits: corev1.ResourceList{
-										"cpu": resource.MustParse("200m"),
+										"cpu":    resource.MustParse("200m"),
 										"memory": resource.MustParse("256Mi"),
 									},
 								},
@@ -333,15 +333,15 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsReplicaSet(t *testing.T) {
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name: "example",
+								Name:  "example",
 								Image: "nginx",
 								Resources: corev1.ResourceRequirements{
 									Requests: corev1.ResourceList{
-										"cpu": resource.MustParse("100m"),
+										"cpu":    resource.MustParse("100m"),
 										"memory": resource.MustParse("128Mi"),
 									},
 									Limits: corev1.ResourceList{
-										"cpu": resource.MustParse("200m"),
+										"cpu":    resource.MustParse("200m"),
 										"memory": resource.MustParse("256Mi"),
 									},
 								},
@@ -397,15 +397,15 @@ func TestHPAAnalyzerWithExistingScaleTargetRefAsStatefulSet(t *testing.T) {
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name: "example",
+								Name:  "example",
 								Image: "nginx",
 								Resources: corev1.ResourceRequirements{
 									Requests: corev1.ResourceList{
-										"cpu": resource.MustParse("100m"),
+										"cpu":    resource.MustParse("100m"),
 										"memory": resource.MustParse("128Mi"),
 									},
 									Limits: corev1.ResourceList{
-										"cpu": resource.MustParse("200m"),
+										"cpu":    resource.MustParse("200m"),
 										"memory": resource.MustParse("256Mi"),
 									},
 								},
@@ -461,7 +461,7 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name: "example",
+								Name:  "example",
 								Image: "nginx",
 							},
 						},
@@ -487,7 +487,7 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 	var errorFound bool
 	for _, analysis := range analysisResults {
 		for _, err := range analysis.Error {
-			if strings.Contains(err.Text, "does not have resource configured."){
+			if strings.Contains(err.Text, "does not have resource configured.") {
 				errorFound = true
 				break
 			}
