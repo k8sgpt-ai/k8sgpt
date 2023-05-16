@@ -48,4 +48,6 @@ func init() {
 	AuthCmd.AddCommand(newCmd)
 	// add subcommand to remove new backend provider
 	AuthCmd.AddCommand(removeCmd)
+	// add subcommand to set default backend provider
+	AuthCmd.AddCommand(defaultCmd)
 }

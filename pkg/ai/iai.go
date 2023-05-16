@@ -59,7 +59,8 @@ func NewClient(provider string) IAI {
 }
 
 type AIConfiguration struct {
-	Providers []AIProvider `mapstructure:"providers"`
+	Providers       []AIProvider `mapstructure:"providers"`
+	DefaultProvider string       `mapstructure:"defaultprovider"`
 }
 
 type AIProvider struct {

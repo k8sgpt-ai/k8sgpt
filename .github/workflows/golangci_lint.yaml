@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3
 
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@f5d85915708b6e687c44764987a6912d390b17f6 # v2
+        uses: reviewdog/action-golangci-lint@79d32f10b2ea0d4cebb755d849b048c4b40c3d50 # v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
