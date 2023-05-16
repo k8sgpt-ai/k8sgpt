@@ -277,6 +277,38 @@ curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 
 ## Additional AI providers  
 
+### Setting a new default AI provider
+
+<details>
+
+There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
+
+_To view available providers_
+
+```
+k8sgpt auth list
+Default:
+> openai
+Active:
+> openai
+> azureopenai
+Unused:
+> localai
+> noopai
+
+```
+
+_To set a new default provider_
+
+```
+k8sgpt auth default -p azureopenai
+Default provider set to azureopenai
+```
+
+
+</details>
+
+
 ### Azure OpenAI  
 <em>Prerequisites:</em> an Azure OpenAI deployment is needed, please visit MS official [documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource) to create your own.
 
@@ -286,7 +318,7 @@ To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your ten
 ### Run k8sgpt  
 To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:  
 ```
-k8sgpt auth --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
+k8sgpt auth new --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
 ```
 Lastly, enter your Azure API key, after the prompt.
 
