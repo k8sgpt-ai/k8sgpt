@@ -56,6 +56,10 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 
 func (a *Analysis) textOutput() ([]byte, error) {
 	var output strings.Builder
+
+	// Print the AI provider used for this analysis
+	output.WriteString(fmt.Sprintf("AI Provider: %s\n", color.YellowString(a.AnalysisAIProvider)))
+
 	if len(a.Errors) != 0 {
 		output.WriteString("\n")
 		output.WriteString(color.YellowString("Warnings : \n"))

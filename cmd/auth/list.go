@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,12 +36,37 @@ var listCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		// iterate over the provider list and prints each provider name
-		for _, provider := range configAI.Providers {
-			if len(configAI.Providers) == 0 {
-				color.Red("Provider list is currently empty.")
-			} else {
-				fmt.Printf("> %s\n", provider.Name)
+		// Print the default if it is set
+		fmt.Print(color.YellowString("Default: \n"))
+		if configAI.DefaultProvider != "" {
+			fmt.Printf("> %s\n", color.BlueString(configAI.DefaultProvider))
+		} else {
+			fmt.Printf("> %s\n", color.BlueString("openai"))
+		}
+
+		// Get list of all AI Backends and only print htem if they are not in the provider list
+		fmt.Print(color.YellowString("Active: \n"))
+		for _, aiBackend := range ai.Backends {
+			providerExists := false
+			for _, provider := range configAI.Providers {
+				if provider.Name == aiBackend {
+					providerExists = true
+				}
+			}
+			if providerExists {
+				fmt.Printf("> %s\n", color.GreenString(aiBackend))
+			}
+		}
+		fmt.Print(color.YellowString("Unused: \n"))
+		for _, aiBackend := range ai.Backends {
+			providerExists := false
+			for _, provider := range configAI.Providers {
+				if provider.Name == aiBackend {
+					providerExists = true
+				}
+			}
+			if !providerExists {
+				fmt.Printf("> %s\n", color.RedString(aiBackend))
 			}
 		}
 	},

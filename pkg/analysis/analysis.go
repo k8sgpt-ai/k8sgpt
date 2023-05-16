@@ -34,16 +34,17 @@ import (
 )
 
 type Analysis struct {
-	Context        context.Context
-	Filters        []string
-	Client         *kubernetes.Client
-	AIClient       ai.IAI
-	Results        []common.Result
-	Errors         []string
-	Namespace      string
-	Cache          cache.ICache
-	Explain        bool
-	MaxConcurrency int
+	Context            context.Context
+	Filters            []string
+	Client             *kubernetes.Client
+	AIClient           ai.IAI
+	Results            []common.Result
+	Errors             []string
+	Namespace          string
+	Cache              cache.ICache
+	Explain            bool
+	MaxConcurrency     int
+	AnalysisAIProvider string // The name of the AI Provider used for this analysis
 }
 
 type AnalysisStatus string
@@ -72,6 +73,12 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	if len(configAI.Providers) == 0 && explain {
 		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
 		os.Exit(1)
+	}
+
+	// Backend string will have high priority than a default provider
+	// Backend as "openai" represents the default CLI argument passed through
+	if configAI.DefaultProvider != "" && backend == "openai" {
+		backend = configAI.DefaultProvider
 	}
 
 	var aiProvider ai.AIProvider
@@ -105,14 +112,15 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	return &Analysis{
-		Context:        ctx,
-		Filters:        filters,
-		Client:         client,
-		AIClient:       aiClient,
-		Namespace:      namespace,
-		Cache:          cache.New(noCache),
-		Explain:        explain,
-		MaxConcurrency: maxConcurrency,
+		Context:            ctx,
+		Filters:            filters,
+		Client:             client,
+		AIClient:           aiClient,
+		Namespace:          namespace,
+		Cache:              cache.New(noCache),
+		Explain:            explain,
+		MaxConcurrency:     maxConcurrency,
+		AnalysisAIProvider: backend,
 	}, nil
 }
 
