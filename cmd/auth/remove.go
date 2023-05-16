@@ -32,6 +32,11 @@ var removeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if backend == "" {
+			color.Red("Error: --backend option must be set.")
+			os.Exit(1)
+		}
+
 		foundBackend := false
 		for i, provider := range configAI.Providers {
 			if backend == provider.Name {
@@ -55,5 +60,5 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	// add flag for backend
-	removeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	removeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 }
