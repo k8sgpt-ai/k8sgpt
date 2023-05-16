@@ -56,6 +56,7 @@ const (
 )
 
 type JsonOutput struct {
+	Provider string          `json:"provider"`
 	Errors   AnalysisErrors  `json:"errors"`
 	Status   AnalysisStatus  `json:"status"`
 	Problems int             `json:"problems"`
