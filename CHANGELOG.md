@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.1...v0.3.2) (2023-05-16)
+
+
+### Features
+
+* added the ability to set a user default AI provider ([#427](https://github.com/k8sgpt-ai/k8sgpt/issues/427)) ([cbe2fb4](https://github.com/k8sgpt-ai/k8sgpt/commit/cbe2fb4a4c160a0a24b3fb4602cae8e5eebd6aa0))
+
+
+### Bug Fixes
+
+* improve default_prompt ([#406](https://github.com/k8sgpt-ai/k8sgpt/issues/406)) ([06542b4](https://github.com/k8sgpt-ai/k8sgpt/commit/06542b4bf1aec193f11a40526a1b60be01972e66))
+* missing validation for backend option in remove command ([#429](https://github.com/k8sgpt-ai/k8sgpt/issues/429)) ([af826d5](https://github.com/k8sgpt-ai/k8sgpt/commit/af826d500fef0469b958250161b0827aa4ab2933))
+
+
+### Other
+
+* **deps:** bump github.com/docker/distribution ([#428](https://github.com/k8sgpt-ai/k8sgpt/issues/428)) ([3099909](https://github.com/k8sgpt-ai/k8sgpt/commit/30999091136c64173e5c15b789036c85f8b855f3))
+* **deps:** update actions/setup-go digest to fac708d ([#422](https://github.com/k8sgpt-ai/k8sgpt/issues/422)) ([097c791](https://github.com/k8sgpt-ai/k8sgpt/commit/097c7912b0572d0461f08af12e9f21c6618c13e4))
+* **deps:** update reviewdog/action-golangci-lint digest to 79d32f1 ([#425](https://github.com/k8sgpt-ai/k8sgpt/issues/425)) ([032576c](https://github.com/k8sgpt-ai/k8sgpt/commit/032576c728751522fe6cd8f255366cc3d5c0f23c))
+
 ## [0.3.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.0...v0.3.1) (2023-05-15)
 
 
