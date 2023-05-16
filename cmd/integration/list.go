@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
+// listCmd represents the list command.
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists built-in integrations",
@@ -59,5 +59,4 @@ var listCmd = &cobra.Command{
 
 func init() {
 	IntegrationCmd.AddCommand(listCmd)
-
 }

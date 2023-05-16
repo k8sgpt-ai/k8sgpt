@@ -21,11 +21,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type PodAnalyzer struct {
-}
+type PodAnalyzer struct{}
 
 func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "Pod"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -37,13 +35,12 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, pod := range list.Items {
 		var failures []common.Failure
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
-
 			// Check through container status to check for crashes
 			for _, containerStatus := range pod.Status.Conditions {
 				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
@@ -70,7 +67,6 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				}
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
-
 					// parse the event log and append details
 					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
 					if err != nil || evt == nil {
@@ -96,9 +92,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							Text:      evt.Message,
 							Sensitive: []common.Sensitive{},
 						})
-
 					}
-
 				}
 			}
 		}
@@ -112,7 +106,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

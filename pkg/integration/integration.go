@@ -40,8 +40,7 @@ type IIntegration interface {
 	IsActivate() bool
 }
 
-type Integration struct {
-}
+type Integration struct{}
 
 var integrations = map[string]IIntegration{
 	"trivy": trivy.NewTrivy(),

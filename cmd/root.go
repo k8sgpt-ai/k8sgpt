@@ -36,7 +36,7 @@ var (
 	version     string
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "k8sgpt",
 	Short: "Kubernetes debugging powered by AI",
@@ -127,7 +127,6 @@ func getConfigFilePath() string {
 
 func getLegacyConfigFilePath() (string, error) {
 	home, err := os.UserHomeDir()
-
 	if err != nil {
 		return "", err
 	}

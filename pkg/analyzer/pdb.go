@@ -24,7 +24,6 @@ import (
 type PdbAnalyzer struct{}
 
 func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "PodDisruptionBudget"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -36,7 +35,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, pdb := range list.Items {
 		var failures []common.Failure
@@ -87,7 +86,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,

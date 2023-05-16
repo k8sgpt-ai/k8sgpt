@@ -49,7 +49,6 @@ func (t *Trivy) GetAnalyzerName() string {
 }
 
 func (t *Trivy) Deploy(namespace string) error {
-
 	// Add the repository
 	chartRepo := repo.Entry{
 		Name: RepoShortName,
@@ -97,7 +96,6 @@ func (t *Trivy) UnDeploy(namespace string) error {
 }
 
 func (t *Trivy) IsActivate() bool {
-
 	if _, err := t.helm.GetRelease(ReleaseName); err != nil {
 		return false
 	}
@@ -106,9 +104,7 @@ func (t *Trivy) IsActivate() bool {
 }
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
-
 	(*mergedMap)["VulnerabilityReport"] = &TrivyAnalyzer{}
-
 }
 
 func (t *Trivy) RemoveAnalyzer() error {

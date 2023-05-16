@@ -24,7 +24,6 @@ import (
 type NetworkPolicyAnalyzer struct{}
 
 func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "NetworkPolicy"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -38,7 +37,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, policy := range policies.Items {
 		var failures []common.Failure
@@ -79,7 +78,6 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 				NetworkPolicy:  policy,
 			}
 			AnalyzerErrorsMetric.WithLabelValues(kind, policy.Name, policy.Namespace).Set(float64(len(failures)))
-
 		}
 	}
 

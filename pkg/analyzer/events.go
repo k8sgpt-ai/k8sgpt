@@ -22,13 +22,11 @@ import (
 )
 
 func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
-
 	// get the list of events
 	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
 		metav1.ListOptions{
 			FieldSelector: "involvedObject.name=" + name,
 		})
-
 	if err != nil {
 		return nil, err
 	}

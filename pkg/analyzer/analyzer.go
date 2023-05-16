@@ -24,12 +24,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-var (
-	AnalyzerErrorsMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "analyzer_errors",
-		Help: "Number of errors detected by analyzer",
-	}, []string{"analyzer_name", "object_name", "namespace"})
-)
+var AnalyzerErrorsMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "analyzer_errors",
+	Help: "Number of errors detected by analyzer",
+}, []string{"analyzer_name", "object_name", "namespace"})
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Pod":                   PodAnalyzer{},
@@ -79,7 +77,6 @@ func ListFilters() ([]string, []string, []string) {
 }
 
 func GetAnalyzerMap() map[string]common.IAnalyzer {
-
 	mergedMap := make(map[string]common.IAnalyzer)
 
 	// add core analyzer

@@ -5,3 +5,5 @@ k8sgpt*
 dist/
 
 bin/
+tools/
+tmp/

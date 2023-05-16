@@ -17,11 +17,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	namespace string
-)
+var namespace string
 
-// IntegrationCmd represents the integrate command
+// IntegrationCmd represents the integrate command.
 var IntegrationCmd = &cobra.Command{
 	Use:     "integration",
 	Aliases: []string{"integrations"},

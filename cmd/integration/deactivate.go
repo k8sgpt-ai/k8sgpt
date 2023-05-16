@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deactivateCmd represents the deactivate command
+// deactivateCmd represents the deactivate command.
 var deactivateCmd = &cobra.Command{
 	Use:   "deactivate [integration]",
 	Short: "Deactivate an integration",
@@ -36,7 +36,6 @@ var deactivateCmd = &cobra.Command{
 		}
 
 		color.Green("Deactivated integration %s", integrationName)
-
 	},
 }
 

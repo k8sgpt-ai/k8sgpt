@@ -25,7 +25,6 @@ import (
 type ServiceAnalyzer struct{}
 
 func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
 	kind := "Service"
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -38,7 +37,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 
-	var preAnalysis = map[string]common.PreAnalysis{}
+	preAnalysis := map[string]common.PreAnalysis{}
 
 	for _, ep := range list.Items {
 		var failures []common.Failure
@@ -95,7 +94,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	for key, value := range preAnalysis {
-		var currentAnalysis = common.Result{
+		currentAnalysis := common.Result{
 			Kind:  kind,
 			Name:  key,
 			Error: value.FailureDetails,
