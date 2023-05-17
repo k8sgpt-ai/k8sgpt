@@ -78,18 +78,20 @@ func ListFilters() ([]string, []string, []string) {
 	return coreKeys, additionalKeys, integrationAnalyzers
 }
 
-func GetAnalyzerMap() map[string]common.IAnalyzer {
+func GetAnalyzerMap() (map[string]common.IAnalyzer, map[string]common.IAnalyzer) {
 
-	mergedMap := make(map[string]common.IAnalyzer)
+	coreAnalyzer := make(map[string]common.IAnalyzer)
+	mergedAnalyzerMap := make(map[string]common.IAnalyzer)
 
 	// add core analyzer
 	for key, value := range coreAnalyzerMap {
-		mergedMap[key] = value
+		coreAnalyzer[key] = value
+		mergedAnalyzerMap[key] = value
 	}
 
 	// add additional analyzer
 	for key, value := range additionalAnalyzerMap {
-		mergedMap[key] = value
+		mergedAnalyzerMap[key] = value
 	}
 
 	integrationProvider := integration.NewIntegration()
@@ -106,9 +108,9 @@ func GetAnalyzerMap() map[string]common.IAnalyzer {
 				fmt.Println(color.RedString(err.Error()))
 				os.Exit(1)
 			}
-			in.AddAnalyzer(&mergedMap)
+			in.AddAnalyzer(&mergedAnalyzerMap)
 		}
 	}
 
-	return mergedMap
+	return coreAnalyzer, mergedAnalyzerMap
 }
