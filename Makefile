@@ -51,7 +51,10 @@ all: tidy add-copyright lint cover build
 
 ## build: Build binaries by default
 .PHONY: build
-build: 
+versionfile:
+	@echo $(VERSION) > version.md
+
+build: versionfile 
 	@echo "$(shell go version)"
 	@echo "===========> Building binary $(BUILDAPP) *[Git Info]: $(VERSION)-$(GIT_COMMIT)"
 	@export CGO_ENABLED=0 && go build -o $(BUILDAPP) -ldflags '-s -w' $(BUILDFILE)
@@ -81,7 +84,7 @@ undeploy: helm
 
 ## docker-build: Build docker image
 .PHONY: docker-build
-docker-build:
+docker-build: versionfile
 	@echo "===========> Building docker image"
 	docker buildx build --build-arg=VERSION="$$(git describe --tags --abbrev=0)" --build-arg=COMMIT="$$(git rev-parse --short HEAD)" --build-arg DATE="$$(date +%FT%TZ)" --platform="linux/amd64,linux/arm64" -t ${IMG} -f container/Dockerfile . --push
 
@@ -106,7 +109,7 @@ style: fmt vet lint
 
 ## test: Run unit test
 .PHONY: test
-test: 
+test: versionfile 
 	@echo "===========> Run unit test"
 	@$(GO) test ./... 
 
@@ -120,6 +123,7 @@ cover: test
 clean:
 	@echo "===========> Cleaning all builds OUTPUT_DIR($(OUTPUT_DIR))"
 	@-rm -vrf $(OUTPUT_DIR)
+	@-rm -f version.md
 	@echo "===========> End clean..."
 
 ## help: Show this help info.

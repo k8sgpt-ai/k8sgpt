@@ -3,5 +3,6 @@ k8sgpt*
 !charts/k8sgpt
 *.vscode
 dist/
+version.md
 
 bin/

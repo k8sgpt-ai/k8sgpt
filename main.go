@@ -13,9 +13,13 @@ limitations under the License.
 
 package main
 
-import "github.com/k8sgpt-ai/k8sgpt/cmd"
+import (
+	_ "embed"
+	"github.com/k8sgpt-ai/k8sgpt/cmd"
+)
 
-var version = "dev"
+//go:embed version.md
+var version string
 
 func main() {
 	cmd.Execute(version)
