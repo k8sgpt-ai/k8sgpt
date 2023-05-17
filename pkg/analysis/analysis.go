@@ -128,7 +128,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 func (a *Analysis) RunAnalysis() {
 	activeFilters := viper.GetStringSlice("active_filters")
 
-	analyzerMap := analyzer.GetAnalyzerMap()
+	coreAnalyzerMap, analyzerMap := analyzer.GetAnalyzerMap()
 
 	analyzerConfig := common.Analyzer{
 		Client:    a.Client,
@@ -138,11 +138,11 @@ func (a *Analysis) RunAnalysis() {
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
-	// if there are no filters selected and no active_filters then run all of them
+	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
-		for _, analyzer := range analyzerMap {
+		for _, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
 			semaphore <- struct{}{}
 			go func(analyzer common.IAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
