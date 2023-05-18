@@ -67,5 +67,6 @@ func init() {
 	addCmd.Flags().StringVarP(&region, "region", "r", "", "The region to use for the cache")
 	addCmd.Flags().StringVarP(&bucketname, "bucket", "b", "", "The name of the bucket to use for the cache")
 	addCmd.MarkFlagRequired("bucket")
+	addCmd.MarkFlagRequired("region")
 
 }
