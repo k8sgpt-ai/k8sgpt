@@ -16,6 +16,8 @@ It has SRE experience codified into its analyzers and helps to pull out the most
 
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
+<img src="images/demo4.gif" width=650px; />
+
 # CLI Installation
 
 
@@ -126,8 +128,6 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
-
-<img src="images/demo4.gif" width=650px; />
 
 ## Analyzers
 
