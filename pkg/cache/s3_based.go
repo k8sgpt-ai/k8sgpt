@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/spf13/viper"
 )
 
 // Generate ICache implementation
@@ -75,15 +76,43 @@ func (s *S3Cache) IsCacheDisabled() bool {
 
 func NewS3Cache(nocache bool) ICache {
 
-	sess := session.Must(session.NewSession())
-	// Create a new instance of the service's client with a Session.
-	// Optional aws.Config values can also be provided as variadic arguments
-	// to the New function. This option allows you to provide service
-	// specific configuration.
+	var cache CacheProvider
+	err := viper.UnmarshalKey("cache", &cache)
+	if err != nil {
+		panic(err)
+	}
+	if cache.BucketName == "" {
+		panic("Bucket name not configured")
+	}
+	if cache.Region == "" {
+		panic("Region not configured")
+	}
+
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+		Config: aws.Config{
+			Region: aws.String(cache.Region),
+		},
+	}))
+
 	s := s3.New(sess)
 
+	// Check if the bucket exists, if not create it
+	_, err = s.HeadBucket(&s3.HeadBucketInput{
+		Bucket: aws.String(cache.BucketName),
+	})
+	if err != nil {
+		_, err = s.CreateBucket(&s3.CreateBucketInput{
+			Bucket: aws.String(cache.BucketName),
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	return &S3Cache{
-		noCache: nocache,
-		session: s,
+		noCache:    nocache,
+		session:    s,
+		bucketName: cache.BucketName,
 	}
 }

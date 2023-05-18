@@ -15,7 +15,6 @@ limitations under the License.
 package cache
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -43,16 +42,13 @@ var removeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		// Warn user this will delete the S3 bucket and prompt them to continue
-		color.Yellow("Warning: this will delete the S3 bucket %s", cacheInfo.BucketName)
-		color.Yellow("Are you sure you want to continue? (y/n)")
-		var response string
-		_, err = fmt.Scanln(&response)
+		color.Yellow("Warning: this will not delete the S3 bucket %s", cacheInfo.BucketName)
+		cacheInfo = cache.CacheProvider{}
+		viper.Set("cache", cacheInfo)
+		err = viper.WriteConfig()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
-		}
-		if response != "y" {
-			os.Exit(0)
 		}
 
 	},

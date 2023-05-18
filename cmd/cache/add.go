@@ -24,6 +24,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	region string
+)
+
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -46,6 +50,7 @@ var addCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		cacheInfo.BucketName = bucketname
+		cacheInfo.Region = region
 
 		// Save the cache information
 		viper.Set("cache", cacheInfo)
@@ -59,6 +64,7 @@ var addCmd = &cobra.Command{
 
 func init() {
 	CacheCmd.AddCommand(addCmd)
+	addCmd.Flags().StringVarP(&region, "region", "r", "", "The region to use for the cache")
 	addCmd.Flags().StringVarP(&bucketname, "bucket", "b", "", "The name of the bucket to use for the cache")
 	addCmd.MarkFlagRequired("bucket")
 

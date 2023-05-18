@@ -188,8 +188,8 @@ _Anonymize during explain_
 k8sgpt analyze --explain --filter=Service --output=json --anonymize
 ```
 
-### Using filters
 <details>
+<summary> Using filters </summary>
 
 _List filters_
 
@@ -221,11 +221,9 @@ k8sgpt filters remove [filter(s)]
 
 </details>
 
-
-### Additional commands
-
 <details>
 
+<summary> Additional commands </summary>
 _List configured backends_
 
 ```
@@ -275,11 +273,62 @@ curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 ```
 </details>
 
-## Additional AI providers  
 
-### Setting a new default AI provider
+## Key Features
 
 <details>
+<summary> LocalAI provider </summary>
+
+To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
+
+
+To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
+
+### Start the API server
+
+To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
+
+### Run k8sgpt
+
+To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
+
+```
+k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+```
+
+Now you can analyze with the `localai` backend:
+
+```
+k8sgpt analyze --explain --backend localai
+```
+
+</details>
+
+<details>
+<summary> AzureOpenAI provider </summary>
+
+<em>Prerequisites:</em> an Azure OpenAI deployment is needed, please visit MS official [documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource) to create your own.
+
+To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your tenant `"https://your Azure OpenAI Endpoint"`, the api key to access your deployment, the deployment name of your model and the model name itself.  
+
+
+To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:  
+```
+k8sgpt auth new --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
+```
+Lastly, enter your Azure API key, after the prompt.
+
+Now you are ready to analyze with the azure openai backend:  
+```
+k8sgpt analyze --explain --backend azureopenai
+```
+
+
+
+</details>
+
+<details>
+<summary>Setting a new default AI provider</summary>
 
 There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
 
@@ -309,60 +358,12 @@ Default provider set to azureopenai
 </details>
 
 
-### Azure OpenAI  
-<em>Prerequisites:</em> an Azure OpenAI deployment is needed, please visit MS official [documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource) to create your own.
-
-To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your tenant `"https://your Azure OpenAI Endpoint"`, the api key to access your deployment, the deployment name of your model and the model name itself.  
 <details>
-
-### Run k8sgpt  
-To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:  
-```
-k8sgpt auth new --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
-```
-Lastly, enter your Azure API key, after the prompt.
-
-Now you are ready to analyze with the azure openai backend:  
-```
-k8sgpt analyze --explain --backend azureopenai
-```
-
-</details>
-
-### Running local models
-
-To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
-
-<details>
-
-To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
-
-### Start the API server
-
-To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
-
-### Run k8sgpt
-
-To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
-
-```
-k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
-```
-
-Now you can analyze with the `localai` backend:
-
-```
-k8sgpt analyze --explain --backend localai
-```
-
-</details>  
-
-## How does anonymization work?
 
 With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
 
-<details>
 
+<summary> Anonymization </summary>
 1. Error reported during analysis:
 ```bash
 Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
@@ -387,9 +388,8 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 </details>
 
-## Configuration
-
 <details>
+<summary> Configuration management</summary>
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
 
 Config file locations:
@@ -399,6 +399,20 @@ Config file locations:
 | Linux   | ~/.config/k8sgpt/k8sgpt.yaml                     |
 | Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
 </details>
+
+<details>
+There may be scenarios where caching remotely is prefered. 
+In these scenarios K8sGPT supports AWS S3 Integration.
+
+<summary> Remote caching </summary>
+
+</details>
+
+
+## Documentation
+
+Find our official documentation available [here](https://docs.k8sgpt.ai)
+
 
 ## Contributing
 
