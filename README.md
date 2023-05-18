@@ -406,6 +406,24 @@ In these scenarios K8sGPT supports AWS S3 Integration.
 
 <summary> Remote caching </summary>
 
+ _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+  
+_Adding a remote cache_
+Note: this will create the bucket if it does not exist
+```
+k8sgpt cache add --region <aws region> --bucket <name>
+```
+  
+_Listing cache items
+```
+k8sgpt cache list
+```
+  
+_Removing the remote cache_
+Note: this will not delete the bucket
+```
+k8sgpt cache remove --bucket <name>
+```
 </details>
 
 
