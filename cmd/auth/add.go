@@ -26,8 +26,8 @@ import (
 	"golang.org/x/term"
 )
 
-var newCmd = &cobra.Command{
-	Use:   "new",
+var addCmd = &cobra.Command{
+	Use:   "add",
 	Short: "Configure new provider",
 	Long:  "The new command allows to configure a new backend AI provider",
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -107,20 +107,20 @@ var newCmd = &cobra.Command{
 			color.Green("%s added to the AI backend provider list", backend)
 		} else {
 			// provider with same name exists, update provider info
-			color.Yellow("Provider with same name already exists, use update command to modify an existing provider configuration")
+			color.Yellow("Provider with same name already exists.")
 		}
 	},
 }
 
 func init() {
 	// add flag for backend
-	newCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	addCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	// add flag for model
-	newCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
 	// add flag for password
-	newCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
+	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
-	newCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
 	// add flag for azure open ai engine/deployment name
-	newCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
+	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
 }

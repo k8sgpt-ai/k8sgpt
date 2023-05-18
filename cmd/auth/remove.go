@@ -15,6 +15,7 @@ package auth
 
 import (
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -22,32 +23,38 @@ import (
 )
 
 var removeCmd = &cobra.Command{
-	Use:   "remove",
+	Use:   "remove [backend(s)]",
 	Short: "Remove a provider",
 	Long:  "The command to remove an AI backend provider",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		inputBackends := strings.Split(args[0], ",")
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		if backend == "" {
-			color.Red("Error: --backend option must be set.")
+		if len(inputBackends) == 0 {
+			color.Red("Error: backend must be set.")
 			os.Exit(1)
 		}
 
-		foundBackend := false
-		for i, provider := range configAI.Providers {
-			if backend == provider.Name {
-				foundBackend = true
-				configAI.Providers = append(configAI.Providers[:i], configAI.Providers[i+1:]...)
-				break
+		for _, b := range inputBackends {
+			foundBackend := false
+			for i, provider := range configAI.Providers {
+				if b == provider.Name {
+					foundBackend = true
+					configAI.Providers = append(configAI.Providers[:i], configAI.Providers[i+1:]...)
+					color.Green("%s deleted to the AI backend provider list", b)
+					break
+				}
 			}
-		}
-		if !foundBackend {
-			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", backend)
-			os.Exit(1)
+			if !foundBackend {
+				color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", backend)
+				os.Exit(1)
+			}
+
 		}
 		viper.Set("ai", configAI)
 		if err := viper.WriteConfig(); err != nil {
@@ -58,7 +65,4 @@ var removeCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	// add flag for backend
-	removeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
-}
+func init() {}
