@@ -414,7 +414,7 @@ Note: this will create the bucket if it does not exist
 k8sgpt cache add --region <aws region> --bucket <name>
 ```
   
-_Listing cache items
+_Listing cache items_
 ```
 k8sgpt cache list
 ```
