@@ -19,6 +19,25 @@ func (f *FileBasedCache) IsCacheDisabled() bool {
 	return f.noCache
 }
 
+func (*FileBasedCache) List() ([]string, error) {
+	path, err := xdg.CacheFile("k8sgpt")
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, file := range files {
+		result = append(result, file.Name())
+	}
+
+	return result, nil
+}
+
 func (*FileBasedCache) Exists(key string) bool {
 	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
 
