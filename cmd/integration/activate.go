@@ -15,8 +15,10 @@ package integration
 
 import (
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // activateCmd represents the activate command
@@ -27,10 +29,17 @@ var activateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		integrationName := args[0]
+		coreFilters, _, _ := analyzer.ListFilters()
+
+		// Update filters
+		activeFilters := viper.GetStringSlice("active_filters")
+		if len(activeFilters) == 0 {
+			activeFilters = coreFilters
+		}
 
 		integration := integration.NewIntegration()
 		// Check if the integation exists
-		err := integration.Activate(integrationName, namespace)
+		err := integration.Activate(integrationName, namespace, activeFilters)
 		if err != nil {
 			color.Red("Error: %v", err)
 			return
