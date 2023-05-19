@@ -66,13 +66,10 @@ func (*Integration) Get(name string) (IIntegration, error) {
 	return integrations[name], nil
 }
 
-func (*Integration) Activate(name string, namespace string) error {
+func (*Integration) Activate(name string, namespace string, activeFilters []string) error {
 	if _, ok := integrations[name]; !ok {
 		return errors.New("integration not found")
 	}
-
-	// Update filters
-	activeFilters := viper.GetStringSlice("active_filters")
 
 	mergedFilters := append(activeFilters, integrations[name].GetAnalyzerName())
 
