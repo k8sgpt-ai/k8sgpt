@@ -14,6 +14,9 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
+	"runtime/debug"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +26,21 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of k8sgpt",
 	Long:  `All software has versions. This is k8sgpt's`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Printf("k8sgpt version %s\n", version)
+		if Version == "dev" {
+			details, ok := debug.ReadBuildInfo()
+			if ok && details.Main.Version != "" && details.Main.Version != "(devel)" {
+				Version = details.Main.Version
+				for _, i := range details.Settings {
+					if i.Key == "vcs.time" {
+						Date = i.Value
+					}
+					if i.Key == "vcs.revision" {
+						Commit = i.Value
+					}
+				}
+			}
+		}
+		fmt.Printf("ks8gpt: %s (%s), built at: %s\n", Version, Commit, Date)
 	},
 }
 

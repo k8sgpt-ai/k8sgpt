@@ -26,12 +26,10 @@ require github.com/adrg/xdg v0.4.0
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230515081240-6b5b845c638e.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230514071713-3d78cb8bbc06.1
+	github.com/aws/aws-sdk-go v1.44.264
 )
 
-require (
-	github.com/aws/aws-sdk-go v1.44.264 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
-)
+require github.com/jmespath/go-jmespath v0.4.0 // indirect
 
 require (
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230106234847-43070de90fa1 // indirect
