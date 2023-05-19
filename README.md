@@ -123,7 +123,7 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 
 * Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
-* Run `k8sgpt auth new` to set it in k8sgpt.
+* Run `k8sgpt auth add` to set it in k8sgpt.
   * You can provide the password directly using the `--password` flag.
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
@@ -161,7 +161,7 @@ _Run a scan with the default analyzers_
 
 ```
 k8sgpt generate
-k8sgpt auth new
+k8sgpt auth add
 k8sgpt analyze --explain
 ```
 
@@ -233,7 +233,7 @@ k8sgpt auth list
 _Remove configured backends_
 
 ```
-k8sgpt auth remove --backend $MY_BACKEND
+k8sgpt auth remove $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _List integrations_
@@ -314,7 +314,7 @@ To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your ten
 
 To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:  
 ```
-k8sgpt auth new --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
+k8sgpt auth add --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
 ```
 Lastly, enter your Azure API key, after the prompt.
 
@@ -346,6 +346,7 @@ Unused:
 > noopai
 
 ```
+
 
 _To set a new default provider_
 
