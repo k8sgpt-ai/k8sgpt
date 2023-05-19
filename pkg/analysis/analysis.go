@@ -112,13 +112,19 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 		return nil, err
 	}
 
+	// load remote cache if it is configured
+	remoteCacheEnabled, err := cache.RemoteCacheEnabled()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Analysis{
 		Context:            ctx,
 		Filters:            filters,
 		Client:             client,
 		AIClient:           aiClient,
 		Namespace:          namespace,
-		Cache:              cache.New(noCache),
+		Cache:              cache.New(noCache, remoteCacheEnabled),
 		Explain:            explain,
 		MaxConcurrency:     maxConcurrency,
 		AnalysisAIProvider: backend,
