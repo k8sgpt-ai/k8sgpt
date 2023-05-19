@@ -24,6 +24,7 @@ func New(noCache bool, remoteCache bool) ICache {
 // CacheProvider is the configuration for the cache provider when using a remote cache
 type CacheProvider struct {
 	BucketName string `mapstructure:"bucketname"`
+	Region     string `mapstructure:"region"`
 }
 
 func RemoteCacheEnabled() (bool, error) {
@@ -33,7 +34,7 @@ func RemoteCacheEnabled() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if cache.BucketName != "" {
+	if cache.BucketName != "" && cache.Region != "" {
 		return true, nil
 	}
 	return false, nil
