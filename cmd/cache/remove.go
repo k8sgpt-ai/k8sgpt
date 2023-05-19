@@ -26,8 +26,8 @@ import (
 // removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "Remove a remote cache",
-	Long:  `This command allows you to remove a remote cache and use the default filecache.`,
+	Short: "Remove the remote cache",
+	Long:  `This command allows you to remove the remote cache and use the default filecache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Remove the remote cache
@@ -51,10 +51,10 @@ var removeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		color.Green("Successfully removed the remote cache")
 	},
 }
 
 func init() {
 	CacheCmd.AddCommand(removeCmd)
-	removeCmd.Flags().StringVarP(&bucketname, "bucket", "b", "", "The name of the bucket to use for the cache")
 }

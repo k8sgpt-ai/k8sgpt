@@ -59,6 +59,6 @@ var removeCmd = &cobra.Command{
 }
 
 func init() {
-	// add flag for backend
+	// remove flag for backend
 	removeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 }
