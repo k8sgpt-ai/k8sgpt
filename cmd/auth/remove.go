@@ -65,5 +65,7 @@ var removeCmd = &cobra.Command{
 	},
 }
 
-func init() {}
+func init() {
+
+}
 
