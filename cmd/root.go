@@ -34,7 +34,9 @@ var (
 	cfgFile     string
 	kubecontext string
 	kubeconfig  string
-	version     string
+	Version     string
+	Commit      string
+	Date        string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -49,8 +51,10 @@ var rootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(v string) {
-	version = v
+func Execute(v string, c string, d string) {
+	Version = v
+	Commit = c
+	Date = d
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
