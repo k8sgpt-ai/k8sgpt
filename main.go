@@ -15,8 +15,12 @@ package main
 
 import "github.com/k8sgpt-ai/k8sgpt/cmd"
 
-var version = "dev"
+var (
+	version = "dev"
+	commit  = "HEAD"
+	date    = "unknown"
+)
 
 func main() {
-	cmd.Execute(version)
+	cmd.Execute(version, commit, date)
 }
