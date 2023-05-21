@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.2...v0.3.3) (2023-05-20)
+
+
+### Features
+
+* caching ([#439](https://github.com/k8sgpt-ai/k8sgpt/issues/439)) ([948dae5](https://github.com/k8sgpt-ai/k8sgpt/commit/948dae5e288ec3bb0165eb3ce32171b12003f9c7))
+* rework auth commands ([#438](https://github.com/k8sgpt-ai/k8sgpt/issues/438)) ([c659a87](https://github.com/k8sgpt-ai/k8sgpt/commit/c659a875fc296849a3703bfd7f0c4796f44bdf5a))
+
+
+### Bug Fixes
+
+* append coreAnalyzer if active_filter is empty and integration is added ([#441](https://github.com/k8sgpt-ai/k8sgpt/issues/441)) ([b7dc384](https://github.com/k8sgpt-ai/k8sgpt/commit/b7dc3845476759bedb3a55f77c8779e4a9f460dd))
+* **deps:** update kubernetes packages to v0.27.2 ([#436](https://github.com/k8sgpt-ai/k8sgpt/issues/436)) ([d13b913](https://github.com/k8sgpt-ai/k8sgpt/commit/d13b91301cab5e05349b68716cd506fa1705f36f))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.265 ([#445](https://github.com/k8sgpt-ai/k8sgpt/issues/445)) ([c588e96](https://github.com/k8sgpt-ai/k8sgpt/commit/c588e963de3f238f07200d6cf09fe6f9781484f5))
+* docker version ([#444](https://github.com/k8sgpt-ai/k8sgpt/issues/444)) ([1f767eb](https://github.com/k8sgpt-ai/k8sgpt/commit/1f767ebd2e31e61decab36218b1b85f2b3b6207d))
+* use coreAnalyzer if there are no filters selected and no active_filters ([#432](https://github.com/k8sgpt-ai/k8sgpt/issues/432)) ([f0d3f36](https://github.com/k8sgpt-ai/k8sgpt/commit/f0d3f36f6d56bd76248590c0b841dffb7769a2ee))
+
 ## [0.3.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.1...v0.3.2) (2023-05-16)
 
 

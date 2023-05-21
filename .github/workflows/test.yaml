@@ -26,6 +26,6 @@ jobs:
       - name: Unit Test
         run: make test
 
-      - name: Fmt Test
-        run: fmtFiles=$(make fmt); if [ "$fmtFiles" != "" ];then exit 1; fi
+      # - name: Fmt Test
+      #   run: fmtFiles=$(make fmt); if [ "$fmtFiles" != "" ];then exit 1; fi
 

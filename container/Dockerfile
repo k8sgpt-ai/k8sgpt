@@ -12,7 +12,9 @@
 FROM golang:1.20.4-alpine3.16 AS builder
 
 ENV CGO_ENABLED=0
-
+ARG VERSION
+ARG COMMIT
+ARG DATE
 WORKDIR /workspace
 
 COPY go.mod go.sum ./
@@ -20,7 +22,7 @@ RUN go mod download
 
 COPY ./ ./
 
-RUN go build -o /workspace/k8sgpt ./
+RUN go build -o /workspace/k8sgpt -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" ./ 
 
 FROM gcr.io/distroless/static AS production
 
