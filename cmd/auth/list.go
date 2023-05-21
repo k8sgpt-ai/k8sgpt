@@ -44,7 +44,7 @@ var listCmd = &cobra.Command{
 			fmt.Printf("> %s\n", color.BlueString("openai"))
 		}
 
-		// Get list of all AI Backends and only print htem if they are not in the provider list
+		// Get list of all AI Backends and only print them if they are not in the provider list
 		fmt.Print(color.YellowString("Active: \n"))
 		for _, aiBackend := range ai.Backends {
 			providerExists := false
