@@ -224,10 +224,17 @@ k8sgpt filters remove [filter(s)]
 <details>
 
 <summary> Additional commands </summary>
+
 _List configured backends_
 
 ```
 k8sgpt auth list
+```
+
+_Update configured backends_
+
+```
+k8sgpt auth update $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _Remove configured backends_
