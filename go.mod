@@ -11,7 +11,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.13.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	golang.org/x/term v0.8.0
 	helm.sh/helm/v3 v3.12.0
 	k8s.io/api v0.27.2
@@ -26,7 +26,7 @@ require github.com/adrg/xdg v0.4.0
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230515081240-6b5b845c638e.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230514071713-3d78cb8bbc06.1
-	github.com/aws/aws-sdk-go v1.44.265
+	github.com/aws/aws-sdk-go v1.44.266
 )
 
 require github.com/jmespath/go-jmespath v0.4.0 // indirect
