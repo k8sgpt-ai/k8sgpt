@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.3...v0.3.4) (2023-05-22)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.266 ([#446](https://github.com/k8sgpt-ai/k8sgpt/issues/446)) ([edda743](https://github.com/k8sgpt-ai/k8sgpt/commit/edda743fa2bf4b5ae2551c981447a5912a459bb4))
+* **deps:** update module github.com/stretchr/testify to v1.8.3 ([#442](https://github.com/k8sgpt-ai/k8sgpt/issues/442)) ([fe450eb](https://github.com/k8sgpt-ai/k8sgpt/commit/fe450eb69da0645328e60e2d7b0852ffdb996dee))
+
+
+### Other
+
+* add more filter releavent UT in analysis_test.go ([#435](https://github.com/k8sgpt-ai/k8sgpt/issues/435)) ([36995fd](https://github.com/k8sgpt-ai/k8sgpt/commit/36995fd4ed41c8c83ebc308f8ec2a4bfe530f7dc))
+
 ## [0.3.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.2...v0.3.3) (2023-05-20)
 
 
