@@ -32,7 +32,7 @@ var IntegrationCmd = &cobra.Command{
 	
 	This would allow you to deploy trivy into your cluster and use a K8sGPT analyzer to parse trivy results.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		_ = cmd.Help()
 	},
 }
 

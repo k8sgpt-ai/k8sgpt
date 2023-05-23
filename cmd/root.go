@@ -20,6 +20,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/cache"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
@@ -33,7 +34,9 @@ var (
 	cfgFile     string
 	kubecontext string
 	kubeconfig  string
-	version     string
+	Version     string
+	Commit      string
+	Date        string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,8 +51,10 @@ var rootCmd = &cobra.Command{
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(v string) {
-	version = v
+func Execute(v string, c string, d string) {
+	Version = v
+	Commit = c
+	Date = d
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -67,6 +72,7 @@ func init() {
 	rootCmd.AddCommand(generate.GenerateCmd)
 	rootCmd.AddCommand(integration.IntegrationCmd)
 	rootCmd.AddCommand(serve.ServeCmd)
+	rootCmd.AddCommand(cache.CacheCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.k8sgpt.yaml)")
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
@@ -85,7 +91,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("k8sgpt")
 
-		viper.SafeWriteConfig()
+		_ = viper.SafeWriteConfig()
 	}
 
 	viper.Set("kubecontext", kubecontext)
@@ -96,6 +102,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
+		_ = 1
 		//	fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 }

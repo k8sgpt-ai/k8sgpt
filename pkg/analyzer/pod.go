@@ -85,7 +85,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				}
 			} else {
 				// when pod is Running but its ReadinessProbe fails
-				if containerStatus.Ready == false && pod.Status.Phase == "Running" {
+				if !containerStatus.Ready && pod.Status.Phase == "Running" {
 					// parse the event log and append details
 					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
 					if err != nil || evt == nil {

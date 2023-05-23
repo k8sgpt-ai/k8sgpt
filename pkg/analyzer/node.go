@@ -58,7 +58,7 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s", node.Name)] = common.PreAnalysis{
+			preAnalysis[node.Name] = common.PreAnalysis{
 				Node:           node,
 				FailureDetails: failures,
 			}
