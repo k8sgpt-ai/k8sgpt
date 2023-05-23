@@ -42,6 +42,7 @@ var listCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		
 		for _, name := range names {
 			println(name)
 		}
