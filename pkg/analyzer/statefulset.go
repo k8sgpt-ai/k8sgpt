@@ -26,6 +26,11 @@ type StatefulSetAnalyzer struct{}
 func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "StatefulSet"
+	apiDoc := util.K8sApiReference{
+		Kind:          kind,
+		ApiVersion:    "apps/v1",
+		ServerVersion: a.Client.ServerVersion,
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -44,8 +49,14 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		serviceName := sts.Spec.ServiceName
 		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
 		if err != nil {
+			doc, _ := apiDoc.GetApiDoc("serviceName")
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName),
+				Text: fmt.Sprintf(
+					"StatefulSet uses the service %s/%s which does not exist.\n  Official Doc: %s",
+					sts.Namespace,
+					serviceName,
+					doc,
+				),
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: sts.Namespace,

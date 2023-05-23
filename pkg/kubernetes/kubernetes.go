@@ -15,6 +15,7 @@ package kubernetes
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
@@ -23,9 +24,10 @@ import (
 )
 
 type Client struct {
-	Client     kubernetes.Interface
-	RestClient rest.Interface
-	Config     *rest.Config
+	Client        kubernetes.Interface
+	RestClient    rest.Interface
+	Config        *rest.Config
+	ServerVersion *version.Info
 }
 
 func (c *Client) GetConfig() *rest.Config {
@@ -74,9 +76,15 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	serverVersion, err := clientSet.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
-		Client:     clientSet,
-		RestClient: restClient,
-		Config:     config,
+		Client:        clientSet,
+		RestClient:    restClient,
+		Config:        config,
+		ServerVersion: serverVersion,
 	}, nil
 }

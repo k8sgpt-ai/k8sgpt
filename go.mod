@@ -27,6 +27,7 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230515081240-6b5b845c638e.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230514071713-3d78cb8bbc06.1
 	github.com/aws/aws-sdk-go v1.44.267
+	github.com/go-resty/resty/v2 v2.7.0
 )
 
 require github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -152,7 +153,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.9.0
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
