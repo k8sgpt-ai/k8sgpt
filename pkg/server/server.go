@@ -69,7 +69,7 @@ func (s *Config) Serve() error {
 	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(logInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)
 	reflection.Register(grpcServer)
-	rpc.RegisterServerServer(grpcServer, s.Handler)
+	rpc.RegisterServerServiceServer(grpcServer, s.Handler)
 	if err := grpcServer.Serve(
 		lis,
 	); err != nil && !errors.Is(err, http.ErrServerClosed) {

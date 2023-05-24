@@ -21,7 +21,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -37,24 +36,7 @@ var addCmd = &cobra.Command{
 	- S3`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(color.YellowString("Adding remote S3 based cache"))
-
-		// Check to see whether there is cache information already
-		var cacheInfo cache.CacheProvider
-		err := viper.UnmarshalKey("cache", &cacheInfo)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-		if cacheInfo.BucketName != "" {
-			color.Yellow("Error: a cache is already configured, please remove it first")
-			os.Exit(1)
-		}
-		cacheInfo.BucketName = bucketname
-		cacheInfo.Region = region
-
-		// Save the cache information
-		viper.Set("cache", cacheInfo)
-		err = viper.WriteConfig()
+		err := cache.AddCache(bucketname, region)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
