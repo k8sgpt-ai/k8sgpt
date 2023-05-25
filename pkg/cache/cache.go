@@ -42,7 +42,7 @@ func RemoteCacheEnabled() (bool, error) {
 	return false, nil
 }
 
-func AddCache(bucketName string, region string) error {
+func AddRemoteCache(bucketName string, region string) error {
 	var cacheInfo CacheProvider
 	err := viper.UnmarshalKey("cache", &cacheInfo)
 	if err != nil {
@@ -61,7 +61,7 @@ func AddCache(bucketName string, region string) error {
 	return nil
 }
 
-func RemoveCache(bucketName string) error {
+func RemoveRemoteCache(bucketName string) error {
 	var cacheInfo CacheProvider
 	err := viper.UnmarshalKey("cache", &cacheInfo)
 	if err != nil {

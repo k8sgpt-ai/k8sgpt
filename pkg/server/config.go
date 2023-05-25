@@ -14,7 +14,7 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 		return nil, errors.New("BucketName & Region are required")
 	}
 
-	err := cache.AddCache(i.Cache.BucketName, i.Cache.Region)
+	err := cache.AddRemoteCache(i.Cache.BucketName, i.Cache.Region)
 	if err != nil {
 		return &schemav1.AddConfigResponse{}, err
 	}
@@ -26,7 +26,7 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 func (h *handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequest) (*schemav1.RemoveConfigResponse, error,
 ) {
-	err := cache.RemoveCache(i.Cache.BucketName)
+	err := cache.RemoveRemoteCache(i.Cache.BucketName)
 	if err != nil {
 		return &schemav1.RemoveConfigResponse{}, err
 	}

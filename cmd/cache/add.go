@@ -36,7 +36,7 @@ var addCmd = &cobra.Command{
 	- S3`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(color.YellowString("Adding remote S3 based cache"))
-		err := cache.AddCache(bucketname, region)
+		err := cache.AddRemoteCache(bucketname, region)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

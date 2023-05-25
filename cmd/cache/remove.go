@@ -29,7 +29,7 @@ var removeCmd = &cobra.Command{
 	Long:  `This command allows you to remove the remote cache and use the default filecache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		err := cache.RemoveCache(bucketname)
+		err := cache.RemoveRemoteCache(bucketname)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
