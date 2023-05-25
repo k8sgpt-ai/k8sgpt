@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.4...v0.3.5) (2023-05-25)
+
+
+### Features
+
+* add configuration api route ([#459](https://github.com/k8sgpt-ai/k8sgpt/issues/459)) ([fa4a075](https://github.com/k8sgpt-ai/k8sgpt/commit/fa4a0757b83f8ec00df951d49316f10961daa0e0))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.267 ([#451](https://github.com/k8sgpt-ai/k8sgpt/issues/451)) ([49e120c](https://github.com/k8sgpt-ai/k8sgpt/commit/49e120c28e8b5ce5a8f7255ebc0f1b1b5c423f95))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.269 ([#458](https://github.com/k8sgpt-ai/k8sgpt/issues/458)) ([2994c1c](https://github.com/k8sgpt-ai/k8sgpt/commit/2994c1c5a77ce6ebe6e59d6edc9647c02f06f261))
+* updated list.go to handle k8sgpt cache list crashing issue ([#455](https://github.com/k8sgpt-ai/k8sgpt/issues/455)) ([6eac58d](https://github.com/k8sgpt-ai/k8sgpt/commit/6eac58d4b03169356d3f06674ef206472e149fde))
+
 ## [0.3.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.3...v0.3.4) (2023-05-22)
 
 
