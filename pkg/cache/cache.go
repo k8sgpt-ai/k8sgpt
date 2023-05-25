@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"errors"
+
 	"github.com/spf13/viper"
 )
 
@@ -38,4 +40,44 @@ func RemoteCacheEnabled() (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func AddRemoteCache(bucketName string, region string) error {
+	var cacheInfo CacheProvider
+	err := viper.UnmarshalKey("cache", &cacheInfo)
+	if err != nil {
+		return err
+	}
+	if cacheInfo.BucketName != "" {
+		return errors.New("Error: a cache is already configured, please remove it first")
+	}
+	cacheInfo.BucketName = bucketName
+	cacheInfo.Region = region
+	viper.Set("cache", cacheInfo)
+	err = viper.WriteConfig()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func RemoveRemoteCache(bucketName string) error {
+	var cacheInfo CacheProvider
+	err := viper.UnmarshalKey("cache", &cacheInfo)
+	if err != nil {
+		return err
+	}
+	if cacheInfo.BucketName == "" {
+		return errors.New("Error: no cache is configured")
+	}
+
+	cacheInfo = CacheProvider{}
+	viper.Set("cache", cacheInfo)
+	err = viper.WriteConfig()
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
