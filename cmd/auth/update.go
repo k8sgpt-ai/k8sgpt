@@ -94,13 +94,13 @@ var updateCmd = &cobra.Command{
 
 func init() {
 	// update flag for backend
-	updateCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
+	updateCmd.Flags().StringVarP(&backend, "backend", "b", "", "Update backend AI provider")
 	// update flag for model
-	updateCmd.Flags().StringVarP(&model, "model", "m", "", "Backend AI model")
+	updateCmd.Flags().StringVarP(&model, "model", "m", "", "Update backend AI model")
 	// update flag for password
-	updateCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
+	updateCmd.Flags().StringVarP(&password, "password", "p", "", "Update backend AI password")
 	// update flag for url
-	updateCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	updateCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "Update URL AI provider, (e.g `http://localhost:8080/v1`)")
 	// update flag for azure open ai engine/deployment name
-	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
+	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
 }
