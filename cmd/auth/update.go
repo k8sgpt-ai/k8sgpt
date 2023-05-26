@@ -55,13 +55,26 @@ var updateCmd = &cobra.Command{
 			for i, provider := range configAI.Providers {
 				if b == provider.Name {
 					foundBackend = true
-					configAI.Providers[i].Name = backend
-					configAI.Providers[i].Model = model
-					configAI.Providers[i].Password = password
-					configAI.Providers[i].BaseURL = baseURL
-					configAI.Providers[i].Engine = engine
+					if backend != "" {
+						configAI.Providers[i].Name = backend
+						color.Blue("Backend name updated successfully")
+					}
+					if model != "" {
+						configAI.Providers[i].Model = model
+						color.Blue("Model updated successfully")
+					}
+					if password != "" {
+						configAI.Providers[i].Password = password
+						color.Blue("Password updated successfully")
+					}
+					if baseURL != "" {
+						configAI.Providers[i].BaseURL = baseURL
+						color.Blue("Base URL updated successfully")
+					}
+					if engine != "" {
+						configAI.Providers[i].Engine = engine
+					}
 					color.Green("%s updated in the AI backend provider list", b)
-					break
 				}
 			}
 			if !foundBackend {
@@ -81,9 +94,9 @@ var updateCmd = &cobra.Command{
 
 func init() {
 	// update flag for backend
-	updateCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	updateCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 	// update flag for model
-	updateCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
+	updateCmd.Flags().StringVarP(&model, "model", "m", "", "Backend AI model")
 	// update flag for password
 	updateCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// update flag for url
