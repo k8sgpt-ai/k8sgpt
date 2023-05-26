@@ -15,20 +15,12 @@ package kubernetes
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
 )
-
-type Client struct {
-	Client        kubernetes.Interface
-	RestClient    rest.Interface
-	Config        *rest.Config
-	ServerVersion *version.Info
-}
 
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config

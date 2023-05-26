@@ -18,8 +18,10 @@ import (
 	"fmt"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
@@ -31,6 +33,14 @@ type DeploymentAnalyzer struct {
 func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "Deployment"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "apps",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -45,8 +55,11 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
 		if *deployment.Spec.Replicas != deployment.Status.Replicas {
+			doc := apiDoc.GetApiDocV2("spec.replicas")
+
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas),
+				Text:          fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: deployment.Namespace,

@@ -18,8 +18,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type ServiceAnalyzer struct{}
@@ -27,6 +29,14 @@ type ServiceAnalyzer struct{}
 func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "Service"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -52,8 +62,11 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 
 			for k, v := range svc.Spec.Selector {
+				doc := apiDoc.GetApiDocV2("spec.selector")
+
 				failures = append(failures, common.Failure{
-					Text: fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
+					Text:          fmt.Sprintf("Service has no endpoints, expected label %s=%s", k, v),
+					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: k,
@@ -72,14 +85,20 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 			// Check through container status to check for crashes
 			for _, epSubset := range ep.Subsets {
+				apiDoc.Kind = "Endpoints"
+
 				if len(epSubset.NotReadyAddresses) > 0 {
 					for _, addresses := range epSubset.NotReadyAddresses {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
+
+					doc := apiDoc.GetApiDocV2("subsets.notReadyAddresses")
+
 					failures = append(failures, common.Failure{
-						Text:      fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
-						Sensitive: []common.Sensitive{},
+						Text:          fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
+						KubernetesDoc: doc,
+						Sensitive:     []common.Sensitive{},
 					})
 				}
 			}

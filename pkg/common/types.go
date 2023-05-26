@@ -65,8 +65,9 @@ type Result struct {
 }
 
 type Failure struct {
-	Text      string
-	Sensitive []Sensitive
+	Text          string
+	KubernetesDoc string
+	Sensitive     []Sensitive
 }
 
 type Sensitive struct {

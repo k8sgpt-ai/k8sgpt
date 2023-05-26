@@ -17,8 +17,10 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type NetworkPolicyAnalyzer struct{}
@@ -26,6 +28,14 @@ type NetworkPolicyAnalyzer struct{}
 func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "NetworkPolicy"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "networking",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -45,8 +55,11 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 		// Check if policy allows traffic to all pods in the namespace
 		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
+			doc := apiDoc.GetApiDocV2("spec.podSelector.matchLabels")
+
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Network policy allows traffic to all pods: %s", policy.Name),
+				Text:          fmt.Sprintf("Network policy allows traffic to all pods: %s", policy.Name),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: policy.Name,

@@ -17,8 +17,10 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type StatefulSetAnalyzer struct{}
@@ -26,10 +28,13 @@ type StatefulSetAnalyzer struct{}
 func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "StatefulSet"
-	apiDoc := util.K8sApiReference{
-		Kind:          kind,
-		ApiVersion:    "apps/v1",
-		ServerVersion: a.Client.ServerVersion,
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "apps",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
 	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
@@ -49,14 +54,15 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		serviceName := sts.Spec.ServiceName
 		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
 		if err != nil {
-			doc, _ := apiDoc.GetApiDoc("serviceName")
+			doc := apiDoc.GetApiDocV2("spec.serviceName")
+
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
-					"StatefulSet uses the service %s/%s which does not exist.\n  Official Doc: %s",
+					"StatefulSet uses the service %s/%s which does not exist.",
 					sts.Namespace,
 					serviceName,
-					doc,
 				),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: sts.Namespace,

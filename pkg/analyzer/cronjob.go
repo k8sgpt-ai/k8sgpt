@@ -18,9 +18,11 @@ import (
 	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	cron "github.com/robfig/cron/v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type CronJobAnalyzer struct{}
@@ -28,6 +30,14 @@ type CronJobAnalyzer struct{}
 func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "CronJob"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "batch",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -43,8 +53,11 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 	for _, cronJob := range cronJobList.Items {
 		var failures []common.Failure
 		if cronJob.Spec.Suspend != nil && *cronJob.Spec.Suspend {
+			doc := apiDoc.GetApiDocV2("spec.suspend")
+
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("CronJob %s is suspended", cronJob.Name),
+				Text:          fmt.Sprintf("CronJob %s is suspended", cronJob.Name),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: cronJob.Namespace,
@@ -59,8 +72,11 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		} else {
 			// check the schedule format
 			if _, err := CheckCronScheduleIsValid(cronJob.Spec.Schedule); err != nil {
+				doc := apiDoc.GetApiDocV2("spec.schedule")
+
 				failures = append(failures, common.Failure{
-					Text: fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, err.Error()),
+					Text:          fmt.Sprintf("CronJob %s has an invalid schedule: %s", cronJob.Name, err.Error()),
+					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: cronJob.Namespace,
@@ -78,9 +94,11 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			if cronJob.Spec.StartingDeadlineSeconds != nil {
 				deadline := time.Duration(*cronJob.Spec.StartingDeadlineSeconds) * time.Second
 				if deadline < 0 {
+					doc := apiDoc.GetApiDocV2("spec.startingDeadlineSeconds")
 
 					failures = append(failures, common.Failure{
-						Text: fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
+						Text:          fmt.Sprintf("CronJob %s has a negative starting deadline", cronJob.Name),
+						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: cronJob.Namespace,

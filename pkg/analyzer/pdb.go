@@ -17,8 +17,10 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type PdbAnalyzer struct{}
@@ -26,6 +28,14 @@ type PdbAnalyzer struct{}
 func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "PodDisruptionBudget"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "policy",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -49,8 +59,11 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		if evt.Reason == "NoPods" && evt.Message != "" {
 			if pdb.Spec.Selector != nil {
 				for k, v := range pdb.Spec.Selector.MatchLabels {
+					doc := apiDoc.GetApiDocV2("spec.selector.matchLabels")
+
 					failures = append(failures, common.Failure{
-						Text: fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
+						Text:          fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
+						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: k,
@@ -64,15 +77,21 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					})
 				}
 				for _, v := range pdb.Spec.Selector.MatchExpressions {
+					doc := apiDoc.GetApiDocV2("spec.selector.matchExpressions")
+
 					failures = append(failures, common.Failure{
-						Text:      fmt.Sprintf("%s, expected expression %s", evt.Message, v),
-						Sensitive: []common.Sensitive{},
+						Text:          fmt.Sprintf("%s, expected expression %s", evt.Message, v),
+						KubernetesDoc: doc,
+						Sensitive:     []common.Sensitive{},
 					})
 				}
 			} else {
+				doc := apiDoc.GetApiDocV2("spec.selector")
+
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("%s, selector is nil", evt.Message),
-					Sensitive: []common.Sensitive{},
+					Text:          fmt.Sprintf("%s, selector is nil", evt.Message),
+					KubernetesDoc: doc,
+					Sensitive:     []common.Sensitive{},
 				})
 			}
 		}

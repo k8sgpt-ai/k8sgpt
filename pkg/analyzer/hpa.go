@@ -17,10 +17,12 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type HpaAnalyzer struct{}
@@ -28,6 +30,14 @@ type HpaAnalyzer struct{}
 func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "HorizontalPodAutoscaler"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "autoscaling",
+			Version: "v1",
+		},
+		Discovery: a.Client.Client.Discovery(),
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -76,8 +86,11 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		if podInfo == nil {
+			doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
+
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+				Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: scaleTargetRef.Name,
@@ -94,8 +107,11 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 
 			if containers <= 0 {
+				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef.kind")
+
 				failures = append(failures, common.Failure{
-					Text: fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
+					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
+					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: scaleTargetRef.Name,
