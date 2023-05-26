@@ -39,8 +39,10 @@ var listCmd = &cobra.Command{
 		// list the contents of the cache
 		names, err := c.List()
 		if err != nil {
-			panic(err)
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
+		
 		for _, name := range names {
 			println(name)
 		}
