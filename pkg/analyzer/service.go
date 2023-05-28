@@ -35,7 +35,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Group:   "",
 			Version: "v1",
 		},
-		Discovery: a.Client.Client.Discovery(),
+		OpenapiSchema: a.OpenapiSchema,
 	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{

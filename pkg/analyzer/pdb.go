@@ -34,7 +34,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Group:   "policy",
 			Version: "v1",
 		},
-		Discovery: a.Client.Client.Discovery(),
+		OpenapiSchema: a.OpenapiSchema,
 	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{

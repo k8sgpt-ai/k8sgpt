@@ -36,7 +36,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			Group:   "batch",
 			Version: "v1",
 		},
-		Discovery: a.Client.Client.Discovery(),
+		OpenapiSchema: a.OpenapiSchema,
 	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{

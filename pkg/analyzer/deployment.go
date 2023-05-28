@@ -39,7 +39,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 			Group:   "apps",
 			Version: "v1",
 		},
-		Discovery: a.Client.Client.Discovery(),
+		OpenapiSchema: a.OpenapiSchema,
 	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{

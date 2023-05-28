@@ -12,12 +12,14 @@ func (k *K8sApiReference) GetApiDocV2(field string) string {
 	paths := strings.Split(field, ".")
 	group := strings.Split(k.ApiVersion.Group, ".")
 
-	openapiSchema, err := k.Discovery.OpenAPISchema()
-	if err != nil {
-		return ""
-	}
+	// openapiSchema := openapi_v2.Document{}
 
-	definitions := openapiSchema.GetDefinitions().GetAdditionalProperties()
+	// openapiSchema, err := k.Discovery.OpenAPISchema()
+	// if err != nil {
+	// 	return ""
+	// }
+
+	definitions := k.OpenapiSchema.GetDefinitions().GetAdditionalProperties()
 
 	// extract the startpoint by searching the highest leaf corresponding to the requested group qnd kind
 	for _, prop := range definitions {
