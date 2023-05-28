@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"strings"
 
 	openapi_v2 "github.com/google/gnostic/openapiv2"
@@ -11,19 +12,11 @@ func (k *K8sApiReference) GetApiDocV2(field string) string {
 	// the path must be formated like "path1.path2.path3"
 	paths := strings.Split(field, ".")
 	group := strings.Split(k.ApiVersion.Group, ".")
-
-	// openapiSchema := openapi_v2.Document{}
-
-	// openapiSchema, err := k.Discovery.OpenAPISchema()
-	// if err != nil {
-	// 	return ""
-	// }
-
 	definitions := k.OpenapiSchema.GetDefinitions().GetAdditionalProperties()
 
 	// extract the startpoint by searching the highest leaf corresponding to the requested group qnd kind
 	for _, prop := range definitions {
-		if strings.HasSuffix(prop.GetName(), group[0]+"."+k.ApiVersion.Version+"."+k.Kind) {
+		if strings.HasSuffix(prop.GetName(), fmt.Sprintf("%s.%s.%s", group[0], k.ApiVersion.Version, k.Kind)) {
 			startPoint = prop.GetName()
 
 			break
