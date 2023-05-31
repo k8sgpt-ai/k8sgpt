@@ -32,6 +32,7 @@ var (
 	namespace      string
 	anonymize      bool
 	maxConcurrency int
+	withDoc        bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -45,7 +46,7 @@ var AnalyzeCmd = &cobra.Command{
 
 		// AnalysisResult configuration
 		config, err := analysis.NewAnalysis(backend,
-			language, filters, namespace, nocache, explain, maxConcurrency)
+			language, filters, namespace, nocache, explain, maxConcurrency, withDoc)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -91,4 +92,6 @@ func init() {
 	AnalyzeCmd.Flags().StringVarP(&language, "language", "l", "english", "Languages to use for AI (e.g. 'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese', 'Korean')")
 	// add max concurrency
 	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
+	// kubernetes doc flag
+	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
 }
