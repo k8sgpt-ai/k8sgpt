@@ -22,12 +22,6 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-type Client struct {
-	Client     kubernetes.Interface
-	RestClient rest.Interface
-	Config     *rest.Config
-}
-
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config
 }
@@ -74,9 +68,15 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	serverVersion, err := clientSet.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
-		Client:     clientSet,
-		RestClient: restClient,
-		Config:     config,
+		Client:        clientSet,
+		RestClient:    restClient,
+		Config:        config,
+		ServerVersion: serverVersion,
 	}, nil
 }
