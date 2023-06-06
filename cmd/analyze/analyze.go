@@ -17,6 +17,9 @@ import (
 	"fmt"
 	"os"
 
+	"k8s.io/kubectl/pkg/util/i18n"
+	"k8s.io/kubectl/pkg/util/templates"
+
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/spf13/cobra"
@@ -33,25 +36,55 @@ var (
 	anonymize      bool
 	maxConcurrency int
 	withDoc        bool
+
+	example = templates.Examples(i18n.T(`
+
+	# analyze all supported resources across all namespaces
+	k8sgpt analyze
+
+	# explain with AI power
+	k8sgpt analyze --explain
+
+	# filter by namespaces
+	k8sgpt analyze --namespace=default
+
+	# filter by resource type
+	k8sgpt analyze --explain --filter=Service -n default
+
+	# filter by multiple resource types
+	k8sgpt analyze --explain --filter=Service,Pod
+
+	# analyze specific resources(different kinds)
+	k8sgpt analyze pod/nginx-7b6fc59cd6-shz7h service/nginx   -n default --explain
+
+	# analyze specific resources with filter(resource kind can be implicit when single filter)
+	k8sgpt analyze nginx-7b6fc59cd6-shz7h nginx-7db4cf8964-b26wf -n default --filter=Pod
+
+	# output to json
+	k8sgpt analyze --explain --filter=Service --output=json
+
+	# anonymize during explai
+	k8sgpt analyze --explain --filter=Service --output=json --anonymize`))
 )
 
 // AnalyzeCmd represents the problems command
 var AnalyzeCmd = &cobra.Command{
-	Use:     "analyze",
+	Use:     "analyze <specific-resources>",
 	Aliases: []string{"analyse"},
+	Example: example,
 	Short:   "This command will find problems within your Kubernetes cluster",
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// AnalysisResult configuration
+		specificResource := args
 		config, err := analysis.NewAnalysis(backend,
-			language, filters, namespace, nocache, explain, maxConcurrency, withDoc)
+			language, filters, namespace, nocache, explain, maxConcurrency, withDoc, specificResource)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-
 		config.RunAnalysis()
 
 		if explain {

@@ -178,6 +178,16 @@ _Filter by namespace_
 k8sgpt analyze --explain --filter=Pod --namespace=default
 ```
 
+_Analyze specific resources_
+```
+k8sgpt analyze pod/nginx-7b6fc59cd6-shz7h service/nginx  -n default --explain
+```
+
+_Analyze specific resources with filter_
+```
+k8sgpt analyze nginx-7b6fc59cd6-shz7h nginx-7db4cf8964-b26wf -n default --filter=Pod
+```
+
 _Output to JSON_
 
 ```
