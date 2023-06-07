@@ -17,6 +17,7 @@ import (
 	"context"
 
 	trivy "github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
+	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	appsv1 "k8s.io/api/apps/v1"
@@ -31,12 +32,13 @@ type IAnalyzer interface {
 }
 
 type Analyzer struct {
-	Client      *kubernetes.Client
-	Context     context.Context
-	Namespace   string
-	AIClient    ai.IAI
-	PreAnalysis map[string]PreAnalysis
-	Results     []Result
+	Client        *kubernetes.Client
+	Context       context.Context
+	Namespace     string
+	AIClient      ai.IAI
+	PreAnalysis   map[string]PreAnalysis
+	Results       []Result
+	OpenapiSchema *openapi_v2.Document
 }
 
 type PreAnalysis struct {
@@ -65,8 +67,9 @@ type Result struct {
 }
 
 type Failure struct {
-	Text      string
-	Sensitive []Sensitive
+	Text          string
+	KubernetesDoc string
+	Sensitive     []Sensitive
 }
 
 type Sensitive struct {
