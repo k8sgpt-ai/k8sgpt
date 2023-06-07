@@ -21,7 +21,7 @@ spec:
         app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: k8sgpt
+      serviceAccountName: {{ template "k8sgpt.fullname" . }}
       containers:
       - name: k8sgpt-container
         imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
@@ -45,3 +45,13 @@ spec:
               name: ai-backend-secret
               key: secret-key
         {{- end }}
+        - name: XDG_CONFIG_HOME
+          value: /k8sgpt-config/
+        - name: XDG_CACHE_HOME
+          value: /k8sgpt-config/
+        volumeMounts:
+        - mountPath: /k8sgpt-config
+          name: config
+      volumes:
+      - emptyDir: {}
+        name: config

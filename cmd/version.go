@@ -40,7 +40,7 @@ var versionCmd = &cobra.Command{
 				}
 			}
 		}
-		fmt.Printf("ks8gpt: %s (%s), built at: %s\n", Version, Commit, Date)
+		fmt.Printf("k8sgpt: %s (%s), built at: %s\n", Version, Commit, Date)
 	},
 }
 

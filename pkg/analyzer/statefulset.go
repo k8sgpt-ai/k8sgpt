@@ -17,8 +17,10 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type StatefulSetAnalyzer struct{}
@@ -26,6 +28,14 @@ type StatefulSetAnalyzer struct{}
 func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "StatefulSet"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "apps",
+			Version: "v1",
+		},
+		OpenapiSchema: a.OpenapiSchema,
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -44,8 +54,15 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		serviceName := sts.Spec.ServiceName
 		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
 		if err != nil {
+			doc := apiDoc.GetApiDocV2("spec.serviceName")
+
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("StatefulSet uses the service %s/%s which does not exist.", sts.Namespace, serviceName),
+				Text: fmt.Sprintf(
+					"StatefulSet uses the service %s/%s which does not exist.",
+					sts.Namespace,
+					serviceName,
+				),
+				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: sts.Namespace,

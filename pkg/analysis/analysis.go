@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/fatih/color"
+	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -45,6 +46,7 @@ type Analysis struct {
 	Explain            bool
 	MaxConcurrency     int
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
+	WithDoc            bool
 }
 
 type AnalysisStatus string
@@ -63,7 +65,7 @@ type JsonOutput struct {
 	Results  []common.Result `json:"results"`
 }
 
-func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int) (*Analysis, error) {
+func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int, withDoc bool) (*Analysis, error) {
 	var configAI ai.AIConfiguration
 	err := viper.UnmarshalKey("ai", &configAI)
 	if err != nil {
@@ -128,6 +130,7 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 		Explain:            explain,
 		MaxConcurrency:     maxConcurrency,
 		AnalysisAIProvider: backend,
+		WithDoc:            withDoc,
 	}, nil
 }
 
@@ -136,11 +139,23 @@ func (a *Analysis) RunAnalysis() {
 
 	coreAnalyzerMap, analyzerMap := analyzer.GetAnalyzerMap()
 
+	// we get the openapi schema from the server only if required by the flag "with-doc"
+	openapiSchema := &openapi_v2.Document{}
+	if a.WithDoc {
+		var openApiErr error
+
+		openapiSchema, openApiErr = a.Client.Client.Discovery().OpenAPISchema()
+		if openApiErr != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("[KubernetesDoc] %s", openApiErr))
+		}
+	}
+
 	analyzerConfig := common.Analyzer{
-		Client:    a.Client,
-		Context:   a.Context,
-		Namespace: a.Namespace,
-		AIClient:  a.AIClient,
+		Client:        a.Client,
+		Context:       a.Context,
+		Namespace:     a.Namespace,
+		AIClient:      a.AIClient,
+		OpenapiSchema: openapiSchema,
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
