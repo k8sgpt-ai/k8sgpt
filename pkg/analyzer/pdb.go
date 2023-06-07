@@ -50,48 +50,28 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, pdb := range list.Items {
 		var failures []common.Failure
-
-		evt, err := FetchLatestEvent(a.Context, a.Client, pdb.Namespace, pdb.Name)
-		if err != nil || evt == nil {
-			continue
-		}
-
-		if evt.Reason == "NoPods" && evt.Message != "" {
-			if pdb.Spec.Selector != nil {
-				for k, v := range pdb.Spec.Selector.MatchLabels {
-					doc := apiDoc.GetApiDocV2("spec.selector.matchLabels")
-
-					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
-						KubernetesDoc: doc,
-						Sensitive: []common.Sensitive{
-							{
-								Unmasked: k,
-								Masked:   util.MaskString(k),
-							},
-							{
-								Unmasked: v,
-								Masked:   util.MaskString(v),
-							},
-						},
-					})
-				}
-				for _, v := range pdb.Spec.Selector.MatchExpressions {
-					doc := apiDoc.GetApiDocV2("spec.selector.matchExpressions")
-
-					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("%s, expected expression %s", evt.Message, v),
-						KubernetesDoc: doc,
-						Sensitive:     []common.Sensitive{},
-					})
-				}
-			} else {
-				doc := apiDoc.GetApiDocV2("spec.selector")
-
+		if pdb.Status.Conditions[0].Type == "DisruptionAllowed" && pdb.Status.Conditions[0].Status == "False" {
+			var doc string
+			if pdb.Spec.MaxUnavailable != nil {
+				doc = apiDoc.GetApiDocV2("spec.maxUnavailable")
+			}
+			if pdb.Spec.MinAvailable != nil {
+				doc = apiDoc.GetApiDocV2("spec.minAvailable")
+			}
+			for k, v := range pdb.Spec.Selector.MatchLabels {
 				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("%s, selector is nil", evt.Message),
+					Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", pdb.Status.Conditions[0].Reason, k, v),
 					KubernetesDoc: doc,
-					Sensitive:     []common.Sensitive{},
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: k,
+							Masked:   util.MaskString(k),
+						},
+						{
+							Unmasked: v,
+							Masked:   util.MaskString(v),
+						},
+					},
 				})
 			}
 		}
