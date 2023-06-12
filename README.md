@@ -292,10 +292,10 @@ To start the API server, follow the instruction in [LocalAI](https://github.com/
 
 ### Run k8sgpt
 
-To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
+To run k8sgpt, run `k8sgpt auth add` with the `localai` backend:
 
 ```
-k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+k8sgpt auth add --backend localai --model <model_name> --baseurl http://localhost:8080/v1
 ```
 
 Now you can analyze with the `localai` backend:
