@@ -20,6 +20,7 @@ import (
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	flowslatest "github.com/netobserv/network-observability-operator/api/v1beta1"
 	appsv1 "k8s.io/api/apps/v1"
 	autov1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -56,6 +57,7 @@ type PreAnalysis struct {
 	Node                     v1.Node
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
+	NetobservReport          flowslatest.FlowCollector
 }
 
 type Result struct {

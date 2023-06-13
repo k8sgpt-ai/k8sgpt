@@ -20,6 +20,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/netobserv"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
@@ -44,7 +45,8 @@ type Integration struct {
 }
 
 var integrations = map[string]IIntegration{
-	"trivy": trivy.NewTrivy(),
+	"trivy":     trivy.NewTrivy(),
+	"netobserv": netobserv.NewNetObserv(),
 }
 
 func NewIntegration() *Integration {
