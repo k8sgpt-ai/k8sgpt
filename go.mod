@@ -26,7 +26,7 @@ require github.com/adrg/xdg v0.4.0
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230524215339-41d88e13ab7e.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230524215339-41d88e13ab7e.1
-	github.com/aws/aws-sdk-go v1.44.280
+	github.com/aws/aws-sdk-go v1.44.281
 )
 
 require github.com/jmespath/go-jmespath v0.4.0 // indirect
