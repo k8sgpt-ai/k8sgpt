@@ -336,7 +336,14 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			}
 			texts = append(texts, failure.Text)
 		}
-		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache)
+		// If the resource `Kind` comes from a "integration plugin", maybe a customized prompt template will be involved.
+		var promptTemplate string
+		if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
+			promptTemplate = prompt
+		} else {
+			promptTemplate = ai.PromptMap["default"]
+		}
+		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache, promptTemplate)
 		if err != nil {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?

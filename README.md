@@ -34,7 +34,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -43,7 +43,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -55,7 +55,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -63,7 +63,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -76,14 +76,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.6/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.7/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -236,10 +236,17 @@ k8sgpt filters remove [filter(s)]
 <details>
 
 <summary> Additional commands </summary>
+
 _List configured backends_
 
 ```
 k8sgpt auth list
+```
+
+_Update configured backends_
+
+```
+k8sgpt auth update $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _Remove configured backends_
@@ -302,10 +309,10 @@ To start the API server, follow the instruction in [LocalAI](https://github.com/
 
 ### Run k8sgpt
 
-To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
+To run k8sgpt, run `k8sgpt auth add` with the `localai` backend:
 
 ```
-k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+k8sgpt auth add --backend localai --model <model_name> --baseurl http://localhost:8080/v1
 ```
 
 Now you can analyze with the `localai` backend:
