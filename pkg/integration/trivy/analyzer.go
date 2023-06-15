@@ -53,7 +53,7 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// For each pod there may be multiple vulnerabilities
 		var failures []common.Failure
 		for _, vuln := range report.Report.Vulnerabilities {
-			if vuln.Severity == "CRITICAL" {
+			if vuln.Severity == "CRITICAL" || vuln.Severity == "HIGH" {
 				// get the vulnerability ID
 				// get the vulnerability description
 				failures = append(failures, common.Failure{

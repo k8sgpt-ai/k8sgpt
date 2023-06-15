@@ -20,6 +20,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/alex"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
@@ -45,6 +46,7 @@ type Integration struct {
 
 var integrations = map[string]IIntegration{
 	"trivy": trivy.NewTrivy(),
+	"alex":  alex.NewAlex(),
 }
 
 func NewIntegration() *Integration {

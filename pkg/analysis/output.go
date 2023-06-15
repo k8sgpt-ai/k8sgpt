@@ -77,6 +77,11 @@ func (a *Analysis) textOutput() ([]byte, error) {
 		output.WriteString(fmt.Sprintf("%s %s(%s)\n", color.CyanString("%d", n),
 			color.YellowString(result.Name), color.CyanString(result.ParentObject)))
 		for _, err := range result.Error {
+
+			if hasAIFailure(err.Text) {
+				err.Text = "Unable to remediate issue. Please refer to the documentation for more information."
+			}
+
 			output.WriteString(fmt.Sprintf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text)))
 			if err.KubernetesDoc != "" {
 				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Kubernetes Doc:"), color.RedString(err.KubernetesDoc)))
@@ -85,4 +90,8 @@ func (a *Analysis) textOutput() ([]byte, error) {
 		output.WriteString(color.GreenString(result.Details + "\n"))
 	}
 	return []byte(output.String()), nil
+}
+
+func hasAIFailure(text string) bool {
+	return strings.Contains(text, "As an AI language model")
 }
