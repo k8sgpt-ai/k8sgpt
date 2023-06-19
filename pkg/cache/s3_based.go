@@ -102,12 +102,9 @@ func NewS3Cache(nocache bool) ICache {
 		Bucket: aws.String(cache.BucketName),
 	})
 	if err != nil {
-		_, err = s.CreateBucket(&s3.CreateBucketInput{
+		_, _ = s.CreateBucket(&s3.CreateBucketInput{
 			Bucket: aws.String(cache.BucketName),
 		})
-		if err != nil {
-			panic(err)
-		}
 	}
 
 	return &S3Cache{

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.7...v0.3.8) (2023-06-15)
+
+
+### Features
+
+* fix for s3 cache from operator ([f6db6ce](https://github.com/k8sgpt-ai/k8sgpt/commit/f6db6ce86163dcb4b5ec4bd99b8a3842dd0c60bb))
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.27.3 ([#504](https://github.com/k8sgpt-ai/k8sgpt/issues/504)) ([b1c6ec3](https://github.com/k8sgpt-ai/k8sgpt/commit/b1c6ec3c0919649bc551ec0047a1d9c2420f4264))
+
 ## [0.3.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.6...v0.3.7) (2023-06-13)
 
 

@@ -11,5 +11,5 @@ const (
 
 var PromptMap = map[string]string{
 	"default":             default_prompt,
-	"VulnerabilityReport": trivy_prompt, // for Trivy intergration, the key should match `Result.Kind` in pkg/common/types.go
+	"VulnerabilityReport": trivy_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
 }
