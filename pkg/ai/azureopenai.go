@@ -25,7 +25,15 @@ func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
 	token := config.GetPassword()
 	baseURL := config.GetBaseURL()
 	engine := config.GetEngine()
-	defaultConfig := openai.DefaultAzureConfig(token, baseURL, engine)
+	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
+	defaultConfig.AzureModelMapperFunc = func(model string) string {
+		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
+		azureModelMapping := map[string]string{
+			engine: model,
+		}
+		return azureModelMapping[model]
+
+	}
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating Azure OpenAI client")
