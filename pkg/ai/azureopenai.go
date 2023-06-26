@@ -90,5 +90,5 @@ func (a *AzureAIClient) Parse(ctx context.Context, prompt []string, cache cache.
 }
 
 func (a *AzureAIClient) GetName() string {
-	return "azureopenai"
+	return Backends[2]
 }

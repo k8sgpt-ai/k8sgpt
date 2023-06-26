@@ -68,5 +68,5 @@ func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.I
 }
 
 func (a *NoOpAIClient) GetName() string {
-	return "noopai"
+	return Backends[3]
 }

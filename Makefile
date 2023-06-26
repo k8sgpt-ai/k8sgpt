@@ -155,3 +155,25 @@ helm:
 		rm -rf ./$(GOOS)-$(GOARCH)/; \
 	fi
 HELM=$(OUTPUT_DIR)/helm-$(GOOS)-$(GOARCH)
+
+
+## mock : Install mockgen
+.PHONY: mock
+mock:
+	@echo "===========> Installing mockgen"
+	@go install
+	@echo "===========> End of mockgen install..."
+
+## mock iai: Generate mock iai
+.PHONY: mock_iai
+mock_iai: mock_iai
+	@echo "===========> Generating mock"
+	@mockgen -source=pkg/ai/iai.go -destination=pkg/ai/mock_iai.go -package=ai
+	@echo "===========> End of mock generate..."
+
+## mock cache: Generate mock cache
+.PHONY: mock_cache
+mock_cache: mock_cache
+	@echo "===========> Generating mock"
+	@mockgen -source=pkg/cache/cache.go -destination=pkg/cache/mock_cache.go -package=cache
+	@echo "===========> End of mock generate..."
