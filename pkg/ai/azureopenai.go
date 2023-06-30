@@ -25,7 +25,16 @@ func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
 	token := config.GetPassword()
 	baseURL := config.GetBaseURL()
 	engine := config.GetEngine()
-	defaultConfig := openai.DefaultAzureConfig(token, baseURL, engine)
+	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
+
+	defaultConfig.AzureModelMapperFunc = func(model string) string {
+		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
+		azureModelMapping := map[string]string{
+			model: engine,
+		}
+		return azureModelMapping[model]
+
+	}
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating Azure OpenAI client")
@@ -42,7 +51,7 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string, prompt
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
-				Role:    "user",
+				Role:    openai.ChatMessageRoleUser,
 				Content: fmt.Sprintf(default_prompt, c.language, prompt),
 			},
 		},
