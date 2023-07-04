@@ -35,6 +35,7 @@ type Analyzer struct {
 	Client        *kubernetes.Client
 	Context       context.Context
 	Namespace     string
+	Resources     map[string][]string // when specific resources to be analyzed, e.g.: map["Pod"]={"mysql","nginx"}
 	AIClient      ai.IAI
 	PreAnalysis   map[string]PreAnalysis
 	Results       []Result

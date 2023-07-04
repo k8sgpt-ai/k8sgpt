@@ -33,6 +33,7 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Explain,
 		int(i.MaxConcurrency),
 		false, // Kubernetes Doc disabled in server mode
+		[]string{},
 	)
 	if err != nil {
 		return &schemav1.AnalyzeResponse{}, err

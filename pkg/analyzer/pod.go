@@ -18,6 +18,7 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -31,11 +32,23 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
 	})
+	var list *corev1.PodList = &corev1.PodList{}
+	if len(a.Resources["Pod"]) > 0 {
+		for _, podName := range a.Resources["Pod"] {
+			pod, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).Get(a.Context, podName, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+			list.Items = append(list.Items, *pod)
+		}
+	} else {
 
-	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
-	if err != nil {
-		return nil, err
+		// search all namespaces for pods that are not running
+		var err error
+		list, err = a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
 
