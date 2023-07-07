@@ -59,13 +59,14 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				return nil, err
 			}
 			for _, pod := range pods.Items {
-				if pod.Name != svc.Name && pod.Namespace != svc.Namespace && pod.Status.Phase != "Running" {
+				if pod.Name != svc.Name || pod.Namespace != svc.Namespace || pod.Status.Phase != "Running" {
 					doc := apiDoc.GetApiDocV2("spec.webhook")
 
 					failures = append(failures, common.Failure{
 						Text: fmt.Sprintf(
-							"Mutating Webhook %s is pointing to an inactive receiver pod",
+							"Mutating Webhook (%s) is pointing to an inactive receiver pod (%s)",
 							webhook.Name,
+							pod.Name,
 						),
 						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
