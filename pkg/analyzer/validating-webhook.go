@@ -53,7 +53,7 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 			var failures []common.Failure
 
 			svc := webhook.ClientConfig.Service
-			pods, err := a.Client.Client.CoreV1().Pods(a.Namespace).List(context.Background(), v1.ListOptions{})
+			pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(context.Background(), v1.ListOptions{})
 			if err != nil {
 				return nil, err
 			}
@@ -76,6 +76,10 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 							{
 								Unmasked: webhook.Name,
 								Masked:   util.MaskString(webhook.Name),
+							},
+							{
+								Unmasked: pod.Name,
+								Masked:   util.MaskString(pod.Name),
 							},
 						},
 					})
