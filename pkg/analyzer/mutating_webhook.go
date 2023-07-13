@@ -66,6 +66,10 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 							Unmasked: webhookConfig.Namespace,
 							Masked:   util.MaskString(webhookConfig.Namespace),
 						},
+						{
+							Unmasked: svc.Name,
+							Masked:   util.MaskString(svc.Name),
+						},
 					},
 				})
 				continue

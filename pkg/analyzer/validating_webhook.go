@@ -65,6 +65,10 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 							Unmasked: webhookConfig.Namespace,
 							Masked:   util.MaskString(webhookConfig.Namespace),
 						},
+						{
+							Unmasked: svc.Name,
+							Masked:   util.MaskString(svc.Name),
+						},
 					},
 				})
 				continue
