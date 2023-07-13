@@ -68,7 +68,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 						},
 					},
 				})
-				return nil, err
+				continue
 			}
 
 			// Get pods within service

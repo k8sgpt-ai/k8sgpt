@@ -56,7 +56,18 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 			// Get the service
 			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(context.Background(), svc.Name, v1.GetOptions{})
 			if err != nil {
-				return nil, err
+				// If the service is not found, we can't check the pods
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Service %s not found as mapped to by Validating Webhook %s", svc.Name, webhook.Name),
+					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: webhookConfig.Namespace,
+							Masked:   util.MaskString(webhookConfig.Namespace),
+						},
+					},
+				})
+				continue
 			}
 
 			// Get pods within service
