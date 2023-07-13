@@ -32,17 +32,17 @@ var (
 )
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
-	"Pod":                   PodAnalyzer{},
-	"Deployment":            DeploymentAnalyzer{},
-	"ReplicaSet":            ReplicaSetAnalyzer{},
-	"PersistentVolumeClaim": PvcAnalyzer{},
-	"Service":               ServiceAnalyzer{},
-	"Ingress":               IngressAnalyzer{},
-	"StatefulSet":           StatefulSetAnalyzer{},
-	"CronJob":               CronJobAnalyzer{},
-	"Node":                  NodeAnalyzer{},
-	"ValidatingWebhook":     ValidatingWebhookAnalyzer{},
-	"MutatingWebhook":       MutatingWebhookAnalyzer{},
+	"Pod":                            PodAnalyzer{},
+	"Deployment":                     DeploymentAnalyzer{},
+	"ReplicaSet":                     ReplicaSetAnalyzer{},
+	"PersistentVolumeClaim":          PvcAnalyzer{},
+	"Service":                        ServiceAnalyzer{},
+	"Ingress":                        IngressAnalyzer{},
+	"StatefulSet":                    StatefulSetAnalyzer{},
+	"CronJob":                        CronJobAnalyzer{},
+	"Node":                           NodeAnalyzer{},
+	"ValidatingWebhookConfiguration": ValidatingWebhookAnalyzer{},
+	"MutatingWebhookConfiguration":   MutatingWebhookAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{

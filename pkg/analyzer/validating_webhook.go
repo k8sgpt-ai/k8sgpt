@@ -24,11 +24,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type MutatingWebhookAnalyzer struct{}
+type ValidatingWebhookAnalyzer struct{}
 
-func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
-	kind := "MutatingWebhookConfiguration"
+	kind := "ValidatingWebhookConfgiguration"
 	apiDoc := kubernetes.K8sApiReference{
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
@@ -42,29 +42,50 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		"analyzer_name": kind,
 	})
 
-	mutatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().List(context.Background(), v1.ListOptions{})
+	validatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().List(context.Background(), v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-
 	var preAnalysis = map[string]common.PreAnalysis{}
 
-	for _, webhookConfig := range mutatingWebhooks.Items {
+	for _, webhookConfig := range validatingWebhooks.Items {
 		for _, webhook := range webhookConfig.Webhooks {
 			var failures []common.Failure
 
 			svc := webhook.ClientConfig.Service
-			pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(context.Background(), v1.ListOptions{})
+			// Get the service
+			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(context.Background(), svc.Name, v1.GetOptions{})
 			if err != nil {
 				return nil, err
 			}
-			for _, pod := range pods.Items {
-				if pod.Name != svc.Name || pod.Namespace != svc.Namespace || pod.Status.Phase != "Running" {
-					doc := apiDoc.GetApiDocV2("spec.webhook")
 
+			// Get pods within service
+			pods, err := a.Client.GetClient().CoreV1().Pods(svc.Namespace).List(context.Background(), v1.ListOptions{
+				LabelSelector: util.MapToString(service.Spec.Selector),
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			if len(pods.Items) == 0 {
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("No active pods found within service %s as mapped to by Validating Webhook %s", svc.Name, webhook.Name),
+					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: webhookConfig.Namespace,
+							Masked:   util.MaskString(webhookConfig.Namespace),
+						},
+					},
+				})
+
+			}
+			for _, pod := range pods.Items {
+				if pod.Status.Phase != "Running" {
+					doc := apiDoc.GetApiDocV2("spec.webhook")
 					failures = append(failures, common.Failure{
 						Text: fmt.Sprintf(
-							"Mutating Webhook (%s) is pointing to an inactive receiver pod (%s)",
+							"Validating Webhook (%s) is pointing to an inactive receiver pod (%s)",
 							webhook.Name,
 							pod.Name,
 						),
@@ -85,13 +106,13 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 						},
 					})
 				}
-				if len(failures) > 0 {
-					preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
-						MutatingWebhook: webhookConfig,
-						FailureDetails:  failures,
-					}
-					AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
+			}
+			if len(failures) > 0 {
+				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+					ValidatingWebhook: webhookConfig,
+					FailureDetails:    failures,
 				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
 			}
 		}
 	}
@@ -102,7 +123,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.MutatingWebhook.ObjectMeta)
+		parent, _ := util.GetParent(a.Client, value.ValidatingWebhook.ObjectMeta)
 		currentAnalysis.ParentObject = parent
 		a.Results = append(a.Results, currentAnalysis)
 	}

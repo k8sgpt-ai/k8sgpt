@@ -211,3 +211,11 @@ func EnsureDirExists(dir string) error {
 
 	return err
 }
+
+func MapToString(m map[string]string) string {
+	var result string
+	for k, v := range m {
+		result += fmt.Sprintf("%s=%s,", k, v)
+	}
+	return result[:len(result)-1]
+}
