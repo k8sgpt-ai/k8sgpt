@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.9...v0.3.10) (2023-07-12)
+
+
+### Features
+
+* add Validating/Mutating webhook analyzer ([#548](https://github.com/k8sgpt-ai/k8sgpt/issues/548)) ([750a10d](https://github.com/k8sgpt-ai/k8sgpt/commit/750a10d44c59bc90de5241d1128ee74fa38bf350))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.298 ([#545](https://github.com/k8sgpt-ai/k8sgpt/issues/545)) ([d1096dc](https://github.com/k8sgpt-ai/k8sgpt/commit/d1096dc31a692013f40980649e5cc2d402869ceb))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.299 ([#549](https://github.com/k8sgpt-ai/k8sgpt/issues/549)) ([ecd7790](https://github.com/k8sgpt-ai/k8sgpt/commit/ecd7790efe2ca88259451761202c90cb842ff04b))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.13.0 ([#399](https://github.com/k8sgpt-ai/k8sgpt/issues/399)) ([21df094](https://github.com/k8sgpt-ai/k8sgpt/commit/21df094bda31a14235fb2244e8cef74d3c92d919))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.14.0 ([#550](https://github.com/k8sgpt-ai/k8sgpt/issues/550)) ([9dcab94](https://github.com/k8sgpt-ai/k8sgpt/commit/9dcab945460e5972f895fa5302e3425750d635c7))
+* **deps:** update module golang.org/x/term to v0.10.0 ([#542](https://github.com/k8sgpt-ai/k8sgpt/issues/542)) ([1276b3e](https://github.com/k8sgpt-ai/k8sgpt/commit/1276b3e89715b1cfb553e60d4f25592acef80a6f))
+
 ## [0.3.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.8...v0.3.9) (2023-07-04)
 
 
