@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.10...v0.3.11) (2023-07-14)
+
+
+### Features
+
+* admission webhooks ([#553](https://github.com/k8sgpt-ai/k8sgpt/issues/553)) ([06e8532](https://github.com/k8sgpt-ai/k8sgpt/commit/06e8532f88616a988a4e41ed8cdac62cf0f243a5))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to 4c0219f ([#547](https://github.com/k8sgpt-ai/k8sgpt/issues/547)) ([1a3f299](https://github.com/k8sgpt-ai/k8sgpt/commit/1a3f2992108e857f8c8c07eff16599d00b50110e))
+
 ## [0.3.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.9...v0.3.10) (2023-07-12)
 
 
