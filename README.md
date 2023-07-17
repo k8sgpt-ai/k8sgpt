@@ -337,6 +337,27 @@ k8sgpt analyze --explain --backend azureopenai
 </details>
 
 <details>
+<summary>Cohere provider</summary>
+
+<em>Prerequisites:</em> a Cohere API key is needed, please visit the [Cohere dashboard](https://dashboard.cohere.ai/api-keys) to create one.
+
+To run k8sgpt, run `k8sgpt auth` with the `cohere` backend:
+
+```
+k8sgpt auth add --backend cohere --model command-nightly
+```
+
+Lastly, enter your Cohere API key, after the prompt.
+
+Now you are ready to analyze with the Cohere backend:
+
+```
+k8sgpt analyze --explain --backend cohere
+```
+
+</details>
+
+<details>
 <summary>Setting a new default AI provider</summary>
 
 There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
