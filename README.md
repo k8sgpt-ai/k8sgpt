@@ -422,7 +422,7 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 ***Note**:
   - k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
-  - Masking for **Events** analyser is scheduled for 2023 Q4, k8gpt V2 version. _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
+  - Masking for **Events** analyzer is scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560). _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
 
 - The following are the list of fields which are not **being masked**:-
 
@@ -435,7 +435,7 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
   - Count (Pod)
 
 ***Note**:
-  - It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(Scheduled for 2023 Q4 V2 release)_.
+  - It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560))_.
 
 ### Proceed with care
 
