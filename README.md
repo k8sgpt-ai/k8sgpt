@@ -374,6 +374,7 @@ With this option, the data is anonymized before being sent to the AI Backend. Du
 
 
 <summary> Anonymization </summary>
+
 1. Error reported during analysis:
 ```bash
 Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
