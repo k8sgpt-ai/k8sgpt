@@ -394,7 +394,6 @@ The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs usi
 ```bash
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
-
 ### Further Details
 
 **Anonymization does not currently apply to events.**
@@ -447,6 +446,7 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 <details>
 <summary> Configuration management</summary>
+
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
 
 Config file locations:
@@ -466,6 +466,7 @@ In these scenarios K8sGPT supports AWS S3 Integration.
  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
 
 _Adding a remote cache_
+
 Note: this will create the bucket if it does not exist
 ```
 k8sgpt cache add --region <aws region> --bucket <name>
