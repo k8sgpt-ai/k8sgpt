@@ -397,6 +397,52 @@ The Kubernetes system is trying to scale a StatefulSet named fake-deployment usi
 
 **Anonymization does not currently apply to events.**
 
+### More details on *Anonymization does not currently apply to events*.
+
+*In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**.*
+
+- The following are the list of analysers in which data is **being masked**:-
+
+  - Statefulset
+  - Service
+  - PodDisruptionBudget
+  - Node
+  - NetworkPolicy
+  - Ingress
+  - HPA
+  - Deployment
+  - Cronjob
+
+- The following are the list of analysers in which data is **not being masked**:-
+
+  - RepicaSet
+  - PersistentVolumeClaim
+  - Pod
+  - **_*Events_**
+
+***Note**:
+  - k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
+  - Masking for **Events** analyser is scheduled for 2023 Q4, k8gpt V2 version. _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
+
+- The following are the list of fields which are not **being masked**:-
+
+  - Describe
+  - ObjectStatus
+  - Replicas
+  - ContainerStatus
+  - **_*Event Message_**
+  - ReplicaStatus
+  - Count (Pod)
+
+***Note**:
+  - It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(Scheduled for 2023 Q4 V2 release)_.
+
+### Proceed with care
+
+  - The K8gpt team recommends using an entirely different backend **(a local model) in critical production environments**. By using a local model, you can rest assured that everything stays within your DMZ, and nothing is leaked.
+  - If there is any uncertainty about the possibility of sending data to a public LLM (open AI, Azure AI) and it poses a risk to business-critical operations, then, in such cases, the use of public LLM should be avoided based on personal assessment and the jurisdiction of risks involved.
+
+
 </details>
 
 <details>
