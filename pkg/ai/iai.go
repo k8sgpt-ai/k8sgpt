@@ -25,12 +25,14 @@ var (
 		&AzureAIClient{},
 		&LocalAIClient{},
 		&NoOpAIClient{},
+		&CohereClient{},
 	}
 	Backends = []string{
 		"openai",
 		"localai",
 		"azureopenai",
 		"noopai",
+		"cohere",
 	}
 )
 
