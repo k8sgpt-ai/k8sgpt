@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.12](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.11...v0.3.12) (2023-07-19)
+
+
+### Features
+
+* add Cohere backend ([#563](https://github.com/k8sgpt-ai/k8sgpt/issues/563)) ([781ecb7](https://github.com/k8sgpt-ai/k8sgpt/commit/781ecb7aad689e6709678c9690c112115e3cf6c7))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.44.300 ([#554](https://github.com/k8sgpt-ai/k8sgpt/issues/554)) ([dc46333](https://github.com/k8sgpt-ai/k8sgpt/commit/dc463334bccdf16106cff4e688a83bf0984d6e27))
+* **deps:** update module github.com/mittwald/go-helm-client to v0.12.2 ([#562](https://github.com/k8sgpt-ai/k8sgpt/issues/562)) ([2e0db55](https://github.com/k8sgpt-ai/k8sgpt/commit/2e0db553f92b5ca691b5957b180be35131ab4e2f))
+* **deps:** update module google.golang.org/grpc to v1.56.2 ([#546](https://github.com/k8sgpt-ai/k8sgpt/issues/546)) ([cc83fe1](https://github.com/k8sgpt-ai/k8sgpt/commit/cc83fe19bafc87647fa0293189f90c84d2dd8edb))
+* **deps:** update module helm.sh/helm/v3 to v3.12.2 ([#555](https://github.com/k8sgpt-ai/k8sgpt/issues/555)) ([9eb96c4](https://github.com/k8sgpt-ai/k8sgpt/commit/9eb96c495cdb1247b664de625a036902b5e156ff))
+
+
+### Other
+
+* fixing edge cases with missing wh service ([#561](https://github.com/k8sgpt-ai/k8sgpt/issues/561)) ([c422215](https://github.com/k8sgpt-ai/k8sgpt/commit/c42221512bfdab7ac792963d459bf9f8dac3954c))
+
+
+### Docs
+
+* fix readme for anonymization ([#559](https://github.com/k8sgpt-ai/k8sgpt/issues/559)) ([70bec05](https://github.com/k8sgpt-ai/k8sgpt/commit/70bec050d854be6f559065278d6a583d8e0e333b))
+
 ## [0.3.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.10...v0.3.11) (2023-07-14)
 
 
