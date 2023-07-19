@@ -394,6 +394,9 @@ The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs usi
 ```bash
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
+
+Note: **Anonymization does not currently apply to events.**
+
 ### Further Details
 
 **Anonymization does not currently apply to events.**
