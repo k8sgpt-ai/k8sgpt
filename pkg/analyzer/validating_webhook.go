@@ -55,9 +55,6 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 				continue
 			}
 			svc := webhook.ClientConfig.Service
-			if svc.Name == "" || svc.Namespace == "" {
-				continue
-			}
 			// Get the service
 			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(context.Background(), svc.Name, v1.GetOptions{})
 			if err != nil {
