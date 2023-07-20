@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.13](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.12...v0.3.13) (2023-07-20)
+
+
+### Other
+
+* continue on absent service ([#569](https://github.com/k8sgpt-ai/k8sgpt/issues/569)) ([153d38d](https://github.com/k8sgpt-ai/k8sgpt/commit/153d38deb060cb84d606f8391e5700025ce02a9b))
+
 ## [0.3.12](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.11...v0.3.12) (2023-07-19)
 
 
