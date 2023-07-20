@@ -53,6 +53,9 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		for _, webhook := range webhookConfig.Webhooks {
 			var failures []common.Failure
 
+			if webhook.ClientConfig.Service == nil {
+				continue
+			}
 			svc := webhook.ClientConfig.Service
 			// Get the service
 			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(context.Background(), svc.Name, v1.GetOptions{})
