@@ -149,6 +149,8 @@ you will be able to write your own analyzers.
 - [x] deploymentAnalyzer
 - [x] cronJobAnalyzer
 - [x] nodeAnalyzer
+- [x] mutatingWebhookAnalyzer
+- [x] validatingWebhookAnalyzer
 
 #### Optional
 
