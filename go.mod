@@ -27,13 +27,13 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230620082254-6f80f9533908.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230620082254-6f80f9533908.1
 	github.com/aws/aws-sdk-go v1.44.308
-	github.com/cohere-ai/cohere-go v0.2.0
+	github.com/cohere-ai/cohere-go v1.2.2
 )
 
 require (
 	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
-	github.com/cohere-ai/tokenizer v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/cohere-ai/tokenizer v1.1.2 // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
 
