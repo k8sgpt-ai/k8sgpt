@@ -63,9 +63,9 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt, promptTmpl str
 	resp, err := c.client.Generate(cohere.GenerateOptions{
 		Model:             c.model,
 		Prompt:            fmt.Sprintf(strings.TrimSpace(promptTmpl), c.language, prompt),
-		MaxTokens:         cohere.Uint(2048),
-		Temperature:       cohere.Float64(0.75),
-		K:                 cohere.Int(0),
+		MaxTokens:         uint(2048),
+		Temperature:       float64(0.75),
+		K:                 int(0),
 		StopSequences:     []string{},
 		ReturnLikelihoods: "NONE",
 	})
