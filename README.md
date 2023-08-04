@@ -125,6 +125,7 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
 * Run `k8sgpt auth add` to set it in k8sgpt.
   * You can provide the password directly using the `--password` flag.
+  * There are various backend AIs supported. please use `k8sgpt auth add --help`.
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
