@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/term v0.10.0
+	golang.org/x/term v0.11.0
 	helm.sh/helm/v3 v3.12.2
 	k8s.io/api v0.27.4
 	k8s.io/apimachinery v0.27.4
@@ -26,7 +26,7 @@ require github.com/adrg/xdg v0.4.0
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230620082254-6f80f9533908.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.30.0-20230620082254-6f80f9533908.1
-	github.com/aws/aws-sdk-go v1.44.315
+	github.com/aws/aws-sdk-go v1.44.317
 	github.com/cohere-ai/cohere-go v0.2.0
 )
 
@@ -154,15 +154,14 @@ require (
 	go.opentelemetry.io/otel v1.14.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	go.starlark.net v0.0.0-20221020143700-22309ac47eac // indirect
-	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.25.0
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.2.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
