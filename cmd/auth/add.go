@@ -114,9 +114,9 @@ var addCmd = &cobra.Command{
 
 func init() {
 	// add flag for backend
-	addCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	addCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 	// add flag for model
-	addCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", "", "Backend AI model")
 	// add flag for password
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
