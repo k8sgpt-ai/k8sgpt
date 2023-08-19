@@ -44,8 +44,11 @@ func NewTrivy() *Trivy {
 	}
 }
 
-func (t *Trivy) GetAnalyzerName() string {
-	return "VulnerabilityReport"
+func (t *Trivy) GetAnalyzerName() []string {
+	return []string{
+		"VulnerabilityReport",
+		"ConfigAuditReport",
+	}
 }
 
 func (t *Trivy) Deploy(namespace string) error {
@@ -107,7 +110,9 @@ func (t *Trivy) IsActivate() bool {
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
 
-	(*mergedMap)["VulnerabilityReport"] = &TrivyAnalyzer{}
+	ta := &TrivyAnalyzer{}
+	(*mergedMap)["VulnerabilityReport"] = ta
+	(*mergedMap)["ConfigAuditReport"] = ta
 
 }
 
