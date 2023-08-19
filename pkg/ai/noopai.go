@@ -38,20 +38,20 @@ func (c *NoOpAIClient) Configure(config IAIConfig, language string) error {
 	return nil
 }
 
-func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
 	// Create a completion request
 	response := "I am a noop response to the prompt " + prompt
 	return response, nil
 }
 
-func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error) {
+func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
 	// parse the text with the AI backend
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
 	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
 
-	response, err := a.GetCompletion(ctx, inputKey)
+	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
 	if err != nil {
 		color.Red("error getting completion: %v", err)
 		return "", err

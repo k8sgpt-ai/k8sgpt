@@ -25,19 +25,21 @@ var (
 		&AzureAIClient{},
 		&LocalAIClient{},
 		&NoOpAIClient{},
+		&CohereClient{},
 	}
 	Backends = []string{
 		"openai",
 		"localai",
 		"azureopenai",
 		"noopai",
+		"cohere",
 	}
 )
 
 type IAI interface {
 	Configure(config IAIConfig, language string) error
-	GetCompletion(ctx context.Context, prompt string) (string, error)
-	Parse(ctx context.Context, prompt []string, cache cache.ICache) (string, error)
+	GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error)
+	Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error)
 	GetName() string
 }
 

@@ -78,6 +78,9 @@ func (a *Analysis) textOutput() ([]byte, error) {
 			color.YellowString(result.Name), color.CyanString(result.ParentObject)))
 		for _, err := range result.Error {
 			output.WriteString(fmt.Sprintf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text)))
+			if err.KubernetesDoc != "" {
+				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Kubernetes Doc:"), color.RedString(err.KubernetesDoc)))
+			}
 		}
 		output.WriteString(color.GreenString(result.Details + "\n"))
 	}

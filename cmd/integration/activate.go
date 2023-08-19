@@ -21,6 +21,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	skipInstall bool
+)
+
 // activateCmd represents the activate command
 var activateCmd = &cobra.Command{
 	Use:   "activate [integration]",
@@ -39,7 +43,7 @@ var activateCmd = &cobra.Command{
 
 		integration := integration.NewIntegration()
 		// Check if the integation exists
-		err := integration.Activate(integrationName, namespace, activeFilters)
+		err := integration.Activate(integrationName, namespace, activeFilters, skipInstall)
 		if err != nil {
 			color.Red("Error: %v", err)
 			return
@@ -51,5 +55,6 @@ var activateCmd = &cobra.Command{
 
 func init() {
 	IntegrationCmd.AddCommand(activateCmd)
+	activateCmd.Flags().BoolVarP(&skipInstall, "no-install", "s", false, "Only activate the integration filter without installing the filter (for example, if that filter plugin is already deployed in cluster, we do not need to re-install it again)")
 
 }

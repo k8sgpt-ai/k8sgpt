@@ -6,4 +6,10 @@ const (
 	Error: {Explain error here}
 	Solution: {Step by step solution here}
 	`
+	trivy_prompt = "Explain the following trivy scan result and the detail risk or root cause of the CVE ID, then provide a solution. Response in %s: %s"
 )
+
+var PromptMap = map[string]string{
+	"default":             default_prompt,
+	"VulnerabilityReport": trivy_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
+}

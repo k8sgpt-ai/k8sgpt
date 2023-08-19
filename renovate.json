@@ -13,6 +13,11 @@
   ],
   "packageRules": [
     {
+      "description": "Exclude retracted cohere-go versions: https://github.com/renovatebot/renovate/issues/13012",
+      "matchPackageNames": ["github.com/cohere-ai/cohere-go"],
+      "allowedVersions": "<1"
+    },
+    {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "automerge": true

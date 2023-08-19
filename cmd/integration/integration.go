@@ -25,8 +25,8 @@ var (
 var IntegrationCmd = &cobra.Command{
 	Use:     "integration",
 	Aliases: []string{"integrations"},
-	Short:   "Intergrate another tool into K8sGPT",
-	Long: `Intergrate another tool into K8sGPT. For example:
+	Short:   "Integrate another tool into K8sGPT",
+	Long: `Integrate another tool into K8sGPT. For example:
 	
 	k8sgpt integration activate trivy
 	

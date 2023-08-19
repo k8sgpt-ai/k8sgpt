@@ -46,7 +46,10 @@ var removeCmd = &cobra.Command{
 				if b == provider.Name {
 					foundBackend = true
 					configAI.Providers = append(configAI.Providers[:i], configAI.Providers[i+1:]...)
-					color.Green("%s deleted to the AI backend provider list", b)
+					if configAI.DefaultProvider == b {
+						configAI.DefaultProvider = "openai"
+					}
+					color.Green("%s deleted from the AI backend provider list", b)
 					break
 				}
 			}
@@ -64,8 +67,3 @@ var removeCmd = &cobra.Command{
 
 	},
 }
-
-func init() {
-
-}
-

@@ -17,8 +17,10 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type PdbAnalyzer struct{}
@@ -26,6 +28,14 @@ type PdbAnalyzer struct{}
 func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	kind := "PodDisruptionBudget"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "policy",
+			Version: "v1",
+		},
+		OpenapiSchema: a.OpenapiSchema,
+	}
 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
@@ -40,39 +50,28 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, pdb := range list.Items {
 		var failures []common.Failure
-
-		evt, err := FetchLatestEvent(a.Context, a.Client, pdb.Namespace, pdb.Name)
-		if err != nil || evt == nil {
-			continue
-		}
-
-		if evt.Reason == "NoPods" && evt.Message != "" {
-			if pdb.Spec.Selector != nil {
-				for k, v := range pdb.Spec.Selector.MatchLabels {
-					failures = append(failures, common.Failure{
-						Text: fmt.Sprintf("%s, expected label %s=%s", evt.Message, k, v),
-						Sensitive: []common.Sensitive{
-							{
-								Unmasked: k,
-								Masked:   util.MaskString(k),
-							},
-							{
-								Unmasked: v,
-								Masked:   util.MaskString(v),
-							},
-						},
-					})
-				}
-				for _, v := range pdb.Spec.Selector.MatchExpressions {
-					failures = append(failures, common.Failure{
-						Text:      fmt.Sprintf("%s, expected expression %s", evt.Message, v),
-						Sensitive: []common.Sensitive{},
-					})
-				}
-			} else {
+		if pdb.Status.Conditions[0].Type == "DisruptionAllowed" && pdb.Status.Conditions[0].Status == "False" {
+			var doc string
+			if pdb.Spec.MaxUnavailable != nil {
+				doc = apiDoc.GetApiDocV2("spec.maxUnavailable")
+			}
+			if pdb.Spec.MinAvailable != nil {
+				doc = apiDoc.GetApiDocV2("spec.minAvailable")
+			}
+			for k, v := range pdb.Spec.Selector.MatchLabels {
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("%s, selector is nil", evt.Message),
-					Sensitive: []common.Sensitive{},
+					Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", pdb.Status.Conditions[0].Reason, k, v),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: k,
+							Masked:   util.MaskString(k),
+						},
+						{
+							Unmasked: v,
+							Masked:   util.MaskString(v),
+						},
+					},
 				})
 			}
 		}

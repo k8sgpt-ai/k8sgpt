@@ -66,7 +66,7 @@ func (*Integration) Get(name string) (IIntegration, error) {
 	return integrations[name], nil
 }
 
-func (*Integration) Activate(name string, namespace string, activeFilters []string) error {
+func (*Integration) Activate(name string, namespace string, activeFilters []string, skipInstall bool) error {
 	if _, ok := integrations[name]; !ok {
 		return errors.New("integration not found")
 	}
@@ -83,8 +83,10 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	viper.Set("active_filters", uniqueFilters)
 
-	if err := integrations[name].Deploy(namespace); err != nil {
-		return err
+	if !skipInstall {
+		if err := integrations[name].Deploy(namespace); err != nil {
+			return err
+		}
 	}
 
 	if err := viper.WriteConfig(); err != nil {

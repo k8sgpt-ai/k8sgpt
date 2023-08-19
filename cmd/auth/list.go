@@ -16,12 +16,17 @@ package auth
 import (
 	"fmt"
 	"os"
+	"strings"
+	"unicode/utf8"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var details bool
+var userInput string
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -36,6 +41,11 @@ var listCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if details {
+			fmt.Println("Show password ? (y/n)")
+			fmt.Scan(&userInput)
+		}
+
 		// Print the default if it is set
 		fmt.Print(color.YellowString("Default: \n"))
 		if configAI.DefaultProvider != "" {
@@ -44,7 +54,7 @@ var listCmd = &cobra.Command{
 			fmt.Printf("> %s\n", color.BlueString("openai"))
 		}
 
-		// Get list of all AI Backends and only print htem if they are not in the provider list
+		// Get list of all AI Backends and only print them if they are not in the provider list
 		fmt.Print(color.YellowString("Active: \n"))
 		for _, aiBackend := range ai.Backends {
 			providerExists := false
@@ -55,6 +65,13 @@ var listCmd = &cobra.Command{
 			}
 			if providerExists {
 				fmt.Printf("> %s\n", color.GreenString(aiBackend))
+				if details {
+					for _, provider := range configAI.Providers {
+						if provider.Name == aiBackend {
+							printDetails(provider, userInput)
+						}
+					}
+				}
 			}
 		}
 		fmt.Print(color.YellowString("Unused: \n"))
@@ -70,4 +87,34 @@ var listCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+func init() {
+	listCmd.Flags().BoolVar(&details, "details", false, "Print active provider configuration details")
+}
+
+func printDetails(provider ai.AIProvider, userInput string) {
+	if provider.Model != "" {
+		fmt.Printf("   - Model: %s\n", provider.Model)
+	}
+	switch userInput {
+	case "y":
+		if provider.Password != "" {
+			fmt.Printf("   - Password: %s\n", provider.Password)
+		}
+	case "n":
+		if provider.Password != "" {
+			nc := utf8.RuneCountInString(provider.Password)
+			newStr := strings.Repeat("*", nc)
+			fmt.Printf("   - Password: %s\n", newStr)
+		}
+	default:
+		break
+	}
+	if provider.Engine != "" {
+		fmt.Printf("   - Engine: %s\n", provider.Engine)
+	}
+	if provider.BaseURL != "" {
+		fmt.Printf("   - BaseURL: %s\n", provider.BaseURL)
+	}
 }

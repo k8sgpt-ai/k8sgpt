@@ -28,8 +28,8 @@ import (
 
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Configure new provider",
-	Long:  "The new command allows to configure a new backend AI provider",
+	Short: "Add new provider",
+	Long:  "The add command allows to configure a new backend AI provider",
 	PreRun: func(cmd *cobra.Command, args []string) {
 		backend, _ := cmd.Flags().GetString("backend")
 		if strings.ToLower(backend) == "azureopenai" {

@@ -48,9 +48,7 @@ func AddRemoteCache(bucketName string, region string) error {
 	if err != nil {
 		return err
 	}
-	if cacheInfo.BucketName != "" {
-		return errors.New("Error: a cache is already configured, please remove it first")
-	}
+
 	cacheInfo.BucketName = bucketName
 	cacheInfo.Region = region
 	viper.Set("cache", cacheInfo)

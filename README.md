@@ -34,7 +34,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -43,7 +43,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -55,7 +55,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -63,7 +63,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -76,14 +76,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.5/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.13/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -128,6 +128,7 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
+* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documention from kubernetes.
 
 ## Analyzers
 
@@ -163,6 +164,7 @@ _Run a scan with the default analyzers_
 k8sgpt generate
 k8sgpt auth add
 k8sgpt analyze --explain
+k8sgpt analyze --explain --with-doc
 ```
 
 _Filter on resource_
@@ -224,10 +226,17 @@ k8sgpt filters remove [filter(s)]
 <details>
 
 <summary> Additional commands </summary>
+
 _List configured backends_
 
 ```
 k8sgpt auth list
+```
+
+_Update configured backends_
+
+```
+k8sgpt auth update $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _Remove configured backends_
@@ -279,7 +288,7 @@ curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
 <details>
 <summary> LocalAI provider </summary>
 
-To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala. 
+To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala.
 
 
 To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
@@ -290,10 +299,10 @@ To start the API server, follow the instruction in [LocalAI](https://github.com/
 
 ### Run k8sgpt
 
-To run k8sgpt, run `k8sgpt auth new` with the `localai` backend:
+To run k8sgpt, run `k8sgpt auth add` with the `localai` backend:
 
 ```
-k8sgpt auth new --backend localai --model <model_name> --baseurl http://localhost:8080/v1
+k8sgpt auth add --backend localai --model <model_name> --baseurl http://localhost:8080/v1
 ```
 
 Now you can analyze with the `localai` backend:
@@ -309,21 +318,42 @@ k8sgpt analyze --explain --backend localai
 
 <em>Prerequisites:</em> an Azure OpenAI deployment is needed, please visit MS official [documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource) to create your own.
 
-To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your tenant `"https://your Azure OpenAI Endpoint"`, the api key to access your deployment, the deployment name of your model and the model name itself.  
+To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your tenant `"https://your Azure OpenAI Endpoint"`, the api key to access your deployment, the deployment name of your model and the model name itself.
 
 
-To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:  
+To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:
 ```
 k8sgpt auth add --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
 ```
 Lastly, enter your Azure API key, after the prompt.
 
-Now you are ready to analyze with the azure openai backend:  
+Now you are ready to analyze with the azure openai backend:
 ```
 k8sgpt analyze --explain --backend azureopenai
 ```
 
 
+
+</details>
+
+<details>
+<summary>Cohere provider</summary>
+
+<em>Prerequisites:</em> a Cohere API key is needed, please visit the [Cohere dashboard](https://dashboard.cohere.ai/api-keys) to create one.
+
+To run k8sgpt, run `k8sgpt auth` with the `cohere` backend:
+
+```
+k8sgpt auth add --backend cohere --model command-nightly
+```
+
+Lastly, enter your Cohere API key, after the prompt.
+
+Now you are ready to analyze with the Cohere backend:
+
+```
+k8sgpt analyze --explain --backend cohere
+```
 
 </details>
 
@@ -365,6 +395,7 @@ With this option, the data is anonymized before being sent to the AI Backend. Du
 
 
 <summary> Anonymization </summary>
+
 1. Error reported during analysis:
 ```bash
 Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
@@ -385,41 +416,91 @@ The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs usi
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
 
+Note: **Anonymization does not currently apply to events.**
+
+### Further Details
+
 **Anonymization does not currently apply to events.**
+
+*In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**.*
+
+- The following are the list of analysers in which data is **being masked**:-
+
+  - Statefulset
+  - Service
+  - PodDisruptionBudget
+  - Node
+  - NetworkPolicy
+  - Ingress
+  - HPA
+  - Deployment
+  - Cronjob
+
+- The following are the list of analysers in which data is **not being masked**:-
+
+  - RepicaSet
+  - PersistentVolumeClaim
+  - Pod
+  - **_*Events_**
+
+***Note**:
+  - k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
+  - Masking for **Events** analyzer is scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560). _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
+
+- The following are the list of fields which are not **being masked**:-
+
+  - Describe
+  - ObjectStatus
+  - Replicas
+  - ContainerStatus
+  - **_*Event Message_**
+  - ReplicaStatus
+  - Count (Pod)
+
+***Note**:
+  - It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560))_.
+
+### Proceed with care
+
+  - The K8gpt team recommends using an entirely different backend **(a local model) in critical production environments**. By using a local model, you can rest assured that everything stays within your DMZ, and nothing is leaked.
+  - If there is any uncertainty about the possibility of sending data to a public LLM (open AI, Azure AI) and it poses a risk to business-critical operations, then, in such cases, the use of public LLM should be avoided based on personal assessment and the jurisdiction of risks involved.
+
 
 </details>
 
 <details>
 <summary> Configuration management</summary>
+
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
 
 Config file locations:
 | OS      | Path                                             |
-|---------|--------------------------------------------------|
+| ------- | ------------------------------------------------ |
 | MacOS   | ~/Library/Application Support/k8sgpt/k8sgpt.yaml |
 | Linux   | ~/.config/k8sgpt/k8sgpt.yaml                     |
 | Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
 </details>
 
 <details>
-There may be scenarios where caching remotely is prefered. 
+There may be scenarios where caching remotely is prefered.
 In these scenarios K8sGPT supports AWS S3 Integration.
 
 <summary> Remote caching </summary>
 
  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
-  
+
 _Adding a remote cache_
+
 Note: this will create the bucket if it does not exist
 ```
 k8sgpt cache add --region <aws region> --bucket <name>
 ```
-  
+
 _Listing cache items_
 ```
 k8sgpt cache list
 ```
-  
+
 _Removing the remote cache_
 Note: this will not delete the bucket
 ```

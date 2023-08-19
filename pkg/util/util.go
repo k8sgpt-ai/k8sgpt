@@ -94,6 +94,26 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 					return GetParent(client, ds.ObjectMeta)
 				}
 				return "Ingress/" + ds.Name, false
+
+			case "MutatingWebhookConfiguration":
+				mw, err := client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if mw.OwnerReferences != nil {
+					return GetParent(client, mw.ObjectMeta)
+				}
+				return "MutatingWebhook/" + mw.Name, false
+
+			case "ValidatingWebhookConfiguration":
+				vw, err := client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
+				if err != nil {
+					return "", false
+				}
+				if vw.OwnerReferences != nil {
+					return GetParent(client, vw.ObjectMeta)
+				}
+				return "ValidatingWebhook/" + vw.Name, false
 			}
 		}
 	}
@@ -190,4 +210,12 @@ func EnsureDirExists(dir string) error {
 	}
 
 	return err
+}
+
+func MapToString(m map[string]string) string {
+	var result string
+	for k, v := range m {
+		result += fmt.Sprintf("%s=%s,", k, v)
+	}
+	return result[:len(result)-1]
 }

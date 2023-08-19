@@ -22,12 +22,6 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
-type Client struct {
-	Client     kubernetes.Interface
-	RestClient rest.Interface
-	Config     *rest.Config
-}
-
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config
 }
@@ -42,14 +36,11 @@ func (c *Client) GetRestClient() rest.Interface {
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	var config *rest.Config
-	config, err := rest.InClusterConfig()
-	if err != nil {
+	var err error
+
+	if kubeconfig != "" {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-
-		if kubeconfig != "" {
-			loadingRules.ExplicitPath = kubeconfig
-		}
-
+		loadingRules.ExplicitPath = kubeconfig
 		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 			loadingRules,
 			&clientcmd.ConfigOverrides{
@@ -60,7 +51,13 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
@@ -74,9 +71,15 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	serverVersion, err := clientSet.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
-		Client:     clientSet,
-		RestClient: restClient,
-		Config:     config,
+		Client:        clientSet,
+		RestClient:    restClient,
+		Config:        config,
+		ServerVersion: serverVersion,
 	}, nil
 }

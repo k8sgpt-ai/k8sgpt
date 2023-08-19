@@ -20,32 +20,34 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cohere-ai/cohere-go"
+	"github.com/fatih/color"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-
-	"github.com/sashabaranov/go-openai"
-
-	"github.com/fatih/color"
 )
 
-type OpenAIClient struct {
-	client   *openai.Client
+type CohereClient struct {
+	client   *cohere.Client
 	language string
 	model    string
 }
 
-func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
+func (c *CohereClient) Configure(config IAIConfig, language string) error {
 	token := config.GetPassword()
-	defaultConfig := openai.DefaultConfig(token)
+
+	client, err := cohere.CreateClient(token)
+	if err != nil {
+		return err
+	}
 
 	baseURL := config.GetBaseURL()
 	if baseURL != "" {
-		defaultConfig.BaseURL = baseURL
+		client.BaseURL = baseURL
 	}
 
-	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
-		return errors.New("error creating OpenAI client")
+		return errors.New("error creating Cohere client")
 	}
 	c.language = language
 	c.client = client
@@ -53,27 +55,27 @@ func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
 	return nil
 }
 
-func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
+func (c *CohereClient) GetCompletion(ctx context.Context, prompt, promptTmpl string) (string, error) {
 	// Create a completion request
 	if len(promptTmpl) == 0 {
 		promptTmpl = PromptMap["default"]
 	}
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: c.model,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    "user",
-				Content: fmt.Sprintf(promptTmpl, c.language, prompt),
-			},
-		},
+	resp, err := c.client.Generate(cohere.GenerateOptions{
+		Model:             c.model,
+		Prompt:            fmt.Sprintf(strings.TrimSpace(promptTmpl), c.language, prompt),
+		MaxTokens:         cohere.Uint(2048),
+		Temperature:       cohere.Float64(0.75),
+		K:                 cohere.Int(0),
+		StopSequences:     []string{},
+		ReturnLikelihoods: "NONE",
 	})
 	if err != nil {
 		return "", err
 	}
-	return resp.Choices[0].Message.Content, nil
+	return resp.Generations[0].Text, nil
 }
 
-func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
+func (a *CohereClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
 	inputKey := strings.Join(prompt, " ")
 	// Check for cached data
 	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
@@ -109,6 +111,6 @@ func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, cache cache.I
 	return response, nil
 }
 
-func (a *OpenAIClient) GetName() string {
-	return "openai"
+func (a *CohereClient) GetName() string {
+	return "cohere"
 }
