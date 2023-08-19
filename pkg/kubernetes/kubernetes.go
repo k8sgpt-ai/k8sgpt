@@ -36,11 +36,14 @@ func (c *Client) GetRestClient() rest.Interface {
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	var config *rest.Config
-	var err error
-
-	if kubeconfig != "" {
+	config, err := rest.InClusterConfig()
+	if err != nil {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
-		loadingRules.ExplicitPath = kubeconfig
+
+		if kubeconfig != "" {
+			loadingRules.ExplicitPath = kubeconfig
+		}
+
 		clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 			loadingRules,
 			&clientcmd.ConfigOverrides{
@@ -51,13 +54,7 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			return nil, err
-		}
 	}
-
 	clientSet, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
