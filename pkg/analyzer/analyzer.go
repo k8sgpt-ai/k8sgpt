@@ -61,7 +61,7 @@ func ListFilters() ([]string, []string, []string) {
 	for k := range additionalAnalyzerMap {
 		additionalKeys = append(additionalKeys, k)
 	}
-
+	// Current analyzer
 	integrationProvider := integration.NewIntegration()
 	var integrationAnalyzers []string
 
@@ -74,8 +74,6 @@ func ListFilters() ([]string, []string, []string) {
 				os.Exit(1)
 			}
 			for _, analyzers := range in.GetAnalyzerName() {
-
-				fmt.Println(color.GreenString("Found analyzer: %s", analyzers))
 
 				integrationAnalyzers = append(integrationAnalyzers, analyzers)
 			}

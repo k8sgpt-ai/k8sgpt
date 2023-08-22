@@ -71,10 +71,10 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 		return errors.New("integration not found")
 	}
 
-	var mergedFilters []string
+	mergedFilters := activeFilters
 
 	for _, intanal := range integrations[name].GetAnalyzerName() {
-		mergedFilters = append(activeFilters, intanal)
+		mergedFilters = append(mergedFilters, intanal)
 	}
 
 	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)

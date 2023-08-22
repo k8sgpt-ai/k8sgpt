@@ -23,6 +23,8 @@ import (
 )
 
 type TrivyAnalyzer struct {
+	vulernabilityReportAnalysis bool
+	configAuditReportAnalysis   bool
 }
 
 func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Result, error) {
@@ -145,17 +147,23 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 
 func (t TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
-	common := make([]common.Result, 0)
-	vresult, err := t.analyzeVulnerabilityReports(a)
-	if err != nil {
-		return nil, err
+	if t.vulernabilityReportAnalysis {
+		common := make([]common.Result, 0)
+		vresult, err := t.analyzeVulnerabilityReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, vresult...)
+		return common, nil
 	}
-
-	cresult, err := t.analyzeConfigAuditReports(a)
-	if err != nil {
-		return nil, err
+	if t.configAuditReportAnalysis {
+		common := make([]common.Result, 0)
+		cresult, err := t.analyzeConfigAuditReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, cresult...)
+		return common, nil
 	}
-	common = append(common, vresult...)
-	common = append(common, cresult...)
-	return common, nil
+	return make([]common.Result, 0), nil
 }
