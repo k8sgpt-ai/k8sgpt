@@ -110,14 +110,12 @@ func (t *Trivy) IsActivate() bool {
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
 
-	tava := &TrivyAnalyzer{
+	(*mergedMap)["VulnerabilityReport"] = &TrivyAnalyzer{
 		vulernabilityReportAnalysis: true,
 	}
-	tacar := &TrivyAnalyzer{
+	(*mergedMap)["ConfigAuditReport"] = &TrivyAnalyzer{
 		configAuditReportAnalysis: true,
 	}
-	(*mergedMap)["VulnerabilityReport"] = tava
-	(*mergedMap)["ConfigAuditReport"] = tacar
 
 }
 
