@@ -73,7 +73,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	mergedFilters := activeFilters
 
-	for _, intanal := range integrations[name].GetAnalyzerName() {
+	for _, integrationAnalyzer := range integrations[name].GetAnalyzerName() {
 		mergedFilters = append(mergedFilters, intanal)
 	}
 
