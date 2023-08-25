@@ -23,10 +23,11 @@ import (
 )
 
 type TrivyAnalyzer struct {
+	vulernabilityReportAnalysis bool
+	configAuditReportAnalysis   bool
 }
 
-func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
+func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Result, error) {
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
@@ -84,4 +85,85 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+
+}
+
+func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Result, error) {
+	// Get all trivy VulnerabilityReports
+	result := &v1alpha1.ConfigAuditReportList{}
+
+	config := a.Client.GetConfig()
+	// Add group version to sceheme
+	config.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	config.APIPath = "/apis"
+
+	restClient, err := rest.UnversionedRESTClientFor(config)
+	if err != nil {
+		return nil, err
+	}
+	err = restClient.Get().Resource("configauditreports").Do(a.Context).Into(result)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find criticals and get CVE
+	var preAnalysis = map[string]common.PreAnalysis{}
+
+	for _, report := range result.Items {
+
+		var failures []common.Failure
+		if report.Report.Summary.HighCount > 0 {
+
+			failures = append(failures, common.Failure{
+				Text:      fmt.Sprintf("Config audit report %s detected at least one high issue", report.Name),
+				Sensitive: []common.Sensitive{},
+			})
+
+		}
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
+				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{
+				TrivyConfigAuditReport: report,
+				FailureDetails:         failures,
+			}
+		}
+	}
+
+	for key, value := range preAnalysis {
+		var currentAnalysis = common.Result{
+			Kind:  "ConfigAuditReport",
+			Name:  key,
+			Error: value.FailureDetails,
+		}
+
+		parent, _ := util.GetParent(a.Client, value.TrivyConfigAuditReport.ObjectMeta)
+		currentAnalysis.ParentObject = parent
+		a.Results = append(a.Results, currentAnalysis)
+	}
+
+	return a.Results, nil
+}
+
+func (t TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	if t.vulernabilityReportAnalysis {
+		common := make([]common.Result, 0)
+		vresult, err := t.analyzeVulnerabilityReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, vresult...)
+		return common, nil
+	}
+	if t.configAuditReportAnalysis {
+		common := make([]common.Result, 0)
+		cresult, err := t.analyzeConfigAuditReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, cresult...)
+		return common, nil
+	}
+	return make([]common.Result, 0), nil
 }

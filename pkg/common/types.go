@@ -59,6 +59,7 @@ type PreAnalysis struct {
 	MutatingWebhook          regv1.MutatingWebhookConfiguration
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
+	TrivyConfigAuditReport   trivy.ConfigAuditReport
 }
 
 type Result struct {

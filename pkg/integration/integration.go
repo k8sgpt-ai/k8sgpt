@@ -35,7 +35,7 @@ type IIntegration interface {
 	// RemoveAnalyzer removes an analyzer from the cluster
 	RemoveAnalyzer() error
 
-	GetAnalyzerName() string
+	GetAnalyzerName() []string
 
 	IsActivate() bool
 }
@@ -71,7 +71,11 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 		return errors.New("integration not found")
 	}
 
-	mergedFilters := append(activeFilters, integrations[name].GetAnalyzerName())
+	mergedFilters := activeFilters
+
+	for _, integrationAnalyzer := range integrations[name].GetAnalyzerName() {
+		mergedFilters = append(mergedFilters, integrationAnalyzer)
+	}
 
 	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
@@ -108,11 +112,15 @@ func (*Integration) Deactivate(name string, namespace string) error {
 	// This might be a bad idea, but we cannot reference analyzer here
 	foundFilter := false
 	for i, v := range activeFilters {
-		if v == integrations[name].GetAnalyzerName() {
-			foundFilter = true
-			activeFilters = append(activeFilters[:i], activeFilters[i+1:]...)
-			break
+
+		for _, intanal := range integrations[name].GetAnalyzerName() {
+			if v == intanal {
+				foundFilter = true
+				activeFilters = append(activeFilters[:i], activeFilters[i+1:]...)
+				break
+			}
 		}
+
 	}
 	if !foundFilter {
 		color.Red("Ingregation %s does not exist in configuration file. Please use k8sgpt integration add.", name)
