@@ -23,7 +23,7 @@ jobs:
     # Release-please creates a PR that tracks all changes
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
 
       - uses: google-github-actions/release-please-action@ca6063f4ed81b55db15b8c42d1b6f7925866342d # v3
         id: release
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           fetch-depth: 0
       - name: Set up Go
@@ -74,7 +74,7 @@ jobs:
       IMAGE_NAME: k8sgpt
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           submodules: recursive
 
