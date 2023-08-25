@@ -74,7 +74,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 	mergedFilters := activeFilters
 
 	for _, integrationAnalyzer := range integrations[name].GetAnalyzerName() {
-		mergedFilters = append(mergedFilters, intanal)
+		mergedFilters = append(mergedFilters, integrationAnalyzer)
 	}
 
 	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
