@@ -61,7 +61,7 @@ func ListFilters() ([]string, []string, []string) {
 	for k := range additionalAnalyzerMap {
 		additionalKeys = append(additionalKeys, k)
 	}
-	// Current analyzer
+
 	integrationProvider := integration.NewIntegration()
 	var integrationAnalyzers []string
 
