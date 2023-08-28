@@ -15,10 +15,9 @@ package integration
 
 import (
 	"errors"
-	"os"
+	"fmt"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -81,8 +80,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	// Verify dupplicate
 	if len(dupplicatedFilters) != 0 {
-		color.Red("Integration already activated : %s", strings.Join(dupplicatedFilters, ", "))
-		os.Exit(1)
+		return fmt.Errorf("integration already activated : %s", strings.Join(dupplicatedFilters, ", "))
 	}
 
 	viper.Set("active_filters", uniqueFilters)
@@ -94,8 +92,8 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 	}
 
 	if err := viper.WriteConfig(); err != nil {
-		color.Red("Error writing config file: %s", err.Error())
-		os.Exit(1)
+		return fmt.Errorf("error writing config file: %s", err.Error())
+
 	}
 
 	return nil
@@ -123,8 +121,7 @@ func (*Integration) Deactivate(name string, namespace string) error {
 
 	}
 	if !foundFilter {
-		color.Red("Ingregation %s does not exist in configuration file. Please use k8sgpt integration add.", name)
-		os.Exit(1)
+		return fmt.Errorf("integration %s does not exist in configuration file. Please use k8sgpt integration add", name)
 	}
 
 	if err := integrations[name].UnDeploy(namespace); err != nil {
@@ -134,8 +131,8 @@ func (*Integration) Deactivate(name string, namespace string) error {
 	viper.Set("active_filters", activeFilters)
 
 	if err := viper.WriteConfig(); err != nil {
-		color.Red("Error writing config file: %s", err.Error())
-		os.Exit(1)
+		return fmt.Errorf("error writing config file: %s", err.Error())
+
 	}
 
 	return nil
