@@ -118,8 +118,3 @@ func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
 	}
 
 }
-
-func (t *Trivy) RemoveAnalyzer() error {
-
-	return nil
-}

@@ -32,8 +32,6 @@ type IIntegration interface {
 	UnDeploy(namespace string) error
 	//
 	AddAnalyzer(*map[string]common.IAnalyzer)
-	// RemoveAnalyzer removes an analyzer from the cluster
-	RemoveAnalyzer() error
 
 	GetAnalyzerName() []string
 
@@ -73,9 +71,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	mergedFilters := activeFilters
 
-	for _, integrationAnalyzer := range integrations[name].GetAnalyzerName() {
-		mergedFilters = append(mergedFilters, integrationAnalyzer)
-	}
+	mergedFilters = append(mergedFilters, integrations[name].GetAnalyzerName()...)
 
 	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
@@ -108,23 +104,13 @@ func (*Integration) Deactivate(name string, namespace string) error {
 
 	activeFilters := viper.GetStringSlice("active_filters")
 
-	// Update filters
-	// This might be a bad idea, but we cannot reference analyzer here
-	foundFilter := false
-	for i, v := range activeFilters {
-
-		for _, intanal := range integrations[name].GetAnalyzerName() {
-			if v == intanal {
-				foundFilter = true
-				activeFilters = append(activeFilters[:i], activeFilters[i+1:]...)
-				break
+	// Update filters and remove the specific filters for the integration
+	for _, filter := range integrations[name].GetAnalyzerName() {
+		for x, af := range activeFilters {
+			if af == filter {
+				activeFilters = append(activeFilters[:x], activeFilters[x+1:]...)
 			}
 		}
-
-	}
-	if !foundFilter {
-		color.Red("Ingregation %s does not exist in configuration file. Please use k8sgpt integration add.", name)
-		os.Exit(1)
 	}
 
 	if err := integrations[name].UnDeploy(namespace); err != nil {
