@@ -8,4 +8,4 @@ For example if there is a vulnerability in release `0.1.0` we will fix that rele
 
 ## Reporting a Vulnerability
 
-If you are aware of a vulnverability please feel free to disclose it responsibly to contact@k8sgpt.ai or to one of our maintainers in our Slack community.
+If you are aware of a vulnerability please feel free to disclose it responsibly to contact@k8sgpt.ai or to one of our maintainers in our Slack community.
