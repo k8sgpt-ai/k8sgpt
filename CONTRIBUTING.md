@@ -30,7 +30,7 @@ We're happy that you want to contribute to this project. Please read the section
 - Assign yourself to the issue, if you are working on it (if you are not a member of the organization, please leave a comment on the issue)
 - Make your changes
 - Keep pull requests small and focused, if you have multiple changes, please open multiple PRs
-- Create a pull request back to the upstream repository and follow follow the [pull request template](.github/pull_request_template.md) guidelines.
+- Create a pull request back to the upstream repository and follow the [pull request template](.github/pull_request_template.md) guidelines.
 - Wait for a review and address any comments
 
 **Opening PRs**
