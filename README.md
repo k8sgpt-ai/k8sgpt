@@ -128,7 +128,7 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
-* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documention from kubernetes.
+* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from kubernetes.
 
 ## Analyzers
 
@@ -424,7 +424,7 @@ Note: **Anonymization does not currently apply to events.**
 
 *In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**.*
 
-- The following are the list of analysers in which data is **being masked**:-
+- The following is the list of analysers in which data is **being masked**:-
 
   - Statefulset
   - Service
@@ -436,7 +436,7 @@ Note: **Anonymization does not currently apply to events.**
   - Deployment
   - Cronjob
 
-- The following are the list of analysers in which data is **not being masked**:-
+- The following is the list of analysers in which data is **not being masked**:-
 
   - RepicaSet
   - PersistentVolumeClaim
@@ -447,7 +447,7 @@ Note: **Anonymization does not currently apply to events.**
   - k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
   - Masking for **Events** analyzer is scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560). _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
 
-- The following are the list of fields which are not **being masked**:-
+- The following is the list of fields which are not **being masked**:-
 
   - Describe
   - ObjectStatus
@@ -482,7 +482,7 @@ Config file locations:
 </details>
 
 <details>
-There may be scenarios where caching remotely is prefered.
+There may be scenarios where caching remotely is preferred.
 In these scenarios K8sGPT supports AWS S3 Integration.
 
 <summary> Remote caching </summary>
