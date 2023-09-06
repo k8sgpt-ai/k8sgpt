@@ -25,31 +25,26 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 		if i.Integrations.Trivy != nil {
 			// Enable/Disable Trivy
-			var err error
-			var IntegrationResponse string = ""
-
-			err = integration.Activate("trivy", i.Integrations.Trivy.Namespace,
+			var err = integration.Activate("trivy", i.Integrations.Trivy.Namespace,
 				activeFilters, i.Integrations.Trivy.Enabled)
-			if err != nil {
-				IntegrationResponse = "Error enabling integration"
-			} else {
-				IntegrationResponse = "Integration enabled"
-			}
 			return &schemav1.AddConfigResponse{
-				Status: IntegrationResponse,
+				Status: err.Error(),
 			}, err
 		}
 	}
-	// Remote cache
-	if i.Cache.BucketName == "" || i.Cache.Region == "" {
-		return nil, errors.New("BucketName & Region are required")
-	}
+	if i.Cache != nil {
+		// Remote cache
+		if i.Cache.BucketName == "" || i.Cache.Region == "" {
+			return &schemav1.AddConfigResponse{}, errors.New("BucketName & Region are required")
+		}
 
-	err := cache.AddRemoteCache(i.Cache.BucketName, i.Cache.Region)
-	if err != nil {
-		return &schemav1.AddConfigResponse{}, err
+		err := cache.AddRemoteCache(i.Cache.BucketName, i.Cache.Region)
+		if err != nil {
+			return &schemav1.AddConfigResponse{
+				Status: err.Error(),
+			}, err
+		}
 	}
-
 	return &schemav1.AddConfigResponse{
 		Status: "Configuration updated.",
 	}, nil
@@ -59,7 +54,9 @@ func (h *handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequ
 ) {
 	err := cache.RemoveRemoteCache(i.Cache.BucketName)
 	if err != nil {
-		return &schemav1.RemoveConfigResponse{}, err
+		return &schemav1.RemoveConfigResponse{
+			Status: err.Error(),
+		}, err
 	}
 
 	return &schemav1.RemoveConfigResponse{
