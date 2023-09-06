@@ -68,10 +68,14 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 		return errors.New("integration not found")
 	}
 
+	if !skipInstall {
+		if err := integrations[name].Deploy(namespace); err != nil {
+			return err
+		}
+	}
+
 	mergedFilters := activeFilters
-
 	mergedFilters = append(mergedFilters, integrations[name].GetAnalyzerName()...)
-
 	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
 
 	// Verify dupplicate
@@ -80,12 +84,6 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 	}
 
 	viper.Set("active_filters", uniqueFilters)
-
-	if !skipInstall {
-		if err := integrations[name].Deploy(namespace); err != nil {
-			return err
-		}
-	}
 
 	if err := viper.WriteConfig(); err != nil {
 		return fmt.Errorf("error writing config file: %s", err.Error())

@@ -26,9 +26,9 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 		if i.Integrations.Trivy != nil {
 			// Enable/Disable Trivy
 			var err = integration.Activate("trivy", i.Integrations.Trivy.Namespace,
-				activeFilters, i.Integrations.Trivy.Enabled)
+				activeFilters, i.Integrations.Trivy.SkipInstall)
 			return &schemav1.AddConfigResponse{
-				Status: err.Error(),
+				Status: "",
 			}, err
 		}
 	}
