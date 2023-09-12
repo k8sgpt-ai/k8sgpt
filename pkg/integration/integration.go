@@ -16,7 +16,6 @@ package integration
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
@@ -33,6 +32,8 @@ type IIntegration interface {
 	AddAnalyzer(*map[string]common.IAnalyzer)
 
 	GetAnalyzerName() []string
+
+	OwnsAnalyzer(string) bool
 
 	IsActivate() bool
 }
@@ -63,6 +64,18 @@ func (*Integration) Get(name string) (IIntegration, error) {
 	return integrations[name], nil
 }
 
+func (i *Integration) AnalyzerByIntegration(input string) (string, error) {
+
+	for _, name := range i.List() {
+		if integ, err := i.Get(name); err == nil {
+			if integ.OwnsAnalyzer(input) {
+				return name, nil
+			}
+		}
+	}
+	return "", errors.New("analyzerbyintegration: no matches found")
+}
+
 func (*Integration) Activate(name string, namespace string, activeFilters []string, skipInstall bool) error {
 	if _, ok := integrations[name]; !ok {
 		return errors.New("integration not found")
@@ -76,12 +89,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	mergedFilters := activeFilters
 	mergedFilters = append(mergedFilters, integrations[name].GetAnalyzerName()...)
-	uniqueFilters, dupplicatedFilters := util.RemoveDuplicates(mergedFilters)
-
-	// Verify dupplicate
-	if len(dupplicatedFilters) != 0 {
-		return fmt.Errorf("integration already activated : %s", strings.Join(dupplicatedFilters, ", "))
-	}
+	uniqueFilters, _ := util.RemoveDuplicates(mergedFilters)
 
 	viper.Set("active_filters", uniqueFilters)
 
