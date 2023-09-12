@@ -118,8 +118,17 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 		for _, check := range report.Report.Checks {
 			if check.Severity == "MEDIUM" || check.Severity == "HIGH" || check.Severity == "CRITICAL" {
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("Config issue with severity \"%s\" found: %s", check.Severity, strings.Join(check.Messages, "")),
-					Sensitive: []common.Sensitive{},
+					Text: fmt.Sprintf("Config issue with severity \"%s\" found: %s", check.Severity, strings.Join(check.Messages, "")),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: report.Labels["trivy-operator.resource.name"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.name"]),
+						},
+						{
+							Unmasked: report.Labels["trivy-operator.resource.namespace"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.namespace"]),
+						},
+					},
 				})
 			}
 		}
