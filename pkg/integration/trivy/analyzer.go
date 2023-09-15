@@ -42,7 +42,7 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 	if err != nil {
 		return nil, err
 	}
-	err = restClient.Get().Resource("vulnerabilityreports").Do(a.Context).Into(result)
+	err = restClient.Get().Resource("vulnerabilityreports").Namespace(a.Namespace).Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 	if err != nil {
 		return nil, err
 	}
-	err = restClient.Get().Resource("configauditreports").Do(a.Context).Into(result)
+	err = restClient.Get().Resource("configauditreports").Namespace(a.Namespace).Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
