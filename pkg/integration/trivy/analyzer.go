@@ -15,6 +15,7 @@ package trivy
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -41,7 +42,7 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 	if err != nil {
 		return nil, err
 	}
-	err = restClient.Get().Resource("vulnerabilityreports").Do(a.Context).Into(result)
+	err = restClient.Get().Resource("vulnerabilityreports").Namespace(a.Namespace).Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 }
 
 func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Result, error) {
-	// Get all trivy VulnerabilityReports
+	// Get all trivy ConfigAuditReports
 	result := &v1alpha1.ConfigAuditReportList{}
 
 	config := a.Client.GetConfig()
@@ -102,7 +103,7 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 	if err != nil {
 		return nil, err
 	}
-	err = restClient.Get().Resource("configauditreports").Do(a.Context).Into(result)
+	err = restClient.Get().Resource("configauditreports").Namespace(a.Namespace).Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
@@ -112,15 +113,26 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 
 	for _, report := range result.Items {
 
+		// For each k8s resources there may be multiple checks
 		var failures []common.Failure
-		if report.Report.Summary.HighCount > 0 {
-
-			failures = append(failures, common.Failure{
-				Text:      fmt.Sprintf("Config audit report %s detected at least one high issue", report.Name),
-				Sensitive: []common.Sensitive{},
-			})
-
+		for _, check := range report.Report.Checks {
+			if check.Severity == "MEDIUM" || check.Severity == "HIGH" || check.Severity == "CRITICAL" {
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf("Config issue with severity \"%s\" found: %s", check.Severity, strings.Join(check.Messages, "")),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: report.Labels["trivy-operator.resource.name"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.name"]),
+						},
+						{
+							Unmasked: report.Labels["trivy-operator.resource.namespace"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.namespace"]),
+						},
+					},
+				})
+			}
 		}
+
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
 				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{

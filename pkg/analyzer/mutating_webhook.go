@@ -78,6 +78,10 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				continue
 			}
 
+			// When Service selectors are empty we defer to service analyser
+			if len(service.Spec.Selector) == 0 {
+				continue
+			}
 			// Get pods within service
 			pods, err := a.Client.GetClient().CoreV1().Pods(svc.Namespace).List(context.Background(), v1.ListOptions{
 				LabelSelector: util.MapToString(service.Spec.Selector),
