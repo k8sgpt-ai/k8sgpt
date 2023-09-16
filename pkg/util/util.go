@@ -15,12 +15,12 @@ package util
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/rand"
 	"os"
 	"regexp"
 

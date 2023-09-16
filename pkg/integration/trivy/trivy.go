@@ -51,6 +51,15 @@ func (t *Trivy) GetAnalyzerName() []string {
 	}
 }
 
+func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
+
+	for _, a := range t.GetAnalyzerName() {
+		if analyzer == a {
+			return true
+		}
+	}
+	return false
+}
 func (t *Trivy) Deploy(namespace string) error {
 
 	// Add the repository
