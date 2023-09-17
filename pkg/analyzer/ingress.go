@@ -98,26 +98,28 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// loop over rules
 		for _, rule := range ing.Spec.Rules {
-			// loop over paths
-			for _, path := range rule.HTTP.Paths {
-				_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
-				if err != nil {
-					doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
+			// loop over HTTP paths
+			if rule.HTTP != nil {
+				for _, path := range rule.HTTP.Paths {
+					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
+					if err != nil {
+						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
 
-					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("Ingress uses the service %s/%s which does not exist.", ing.Namespace, path.Backend.Service.Name),
-						KubernetesDoc: doc,
-						Sensitive: []common.Sensitive{
-							{
-								Unmasked: ing.Namespace,
-								Masked:   util.MaskString(ing.Namespace),
+						failures = append(failures, common.Failure{
+							Text:          fmt.Sprintf("Ingress uses the service %s/%s which does not exist.", ing.Namespace, path.Backend.Service.Name),
+							KubernetesDoc: doc,
+							Sensitive: []common.Sensitive{
+								{
+									Unmasked: ing.Namespace,
+									Masked:   util.MaskString(ing.Namespace),
+								},
+								{
+									Unmasked: path.Backend.Service.Name,
+									Masked:   util.MaskString(path.Backend.Service.Name),
+								},
 							},
-							{
-								Unmasked: path.Backend.Service.Name,
-								Masked:   util.MaskString(path.Backend.Service.Name),
-							},
-						},
-					})
+						})
+					}
 				}
 			}
 		}
