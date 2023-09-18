@@ -29,15 +29,15 @@ import (
 )
 
 type OpenAIClient struct {
-	client   *openai.Client
-	language string
-	model    string
+	client      *openai.Client
+	language    string
+	model       string
+	temperature float32
 }
 
 const (
 	// OpenAI completion parameters
 	maxToken         = 2048
-	temperature      = 0.7
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
 	topP             = 1.0
@@ -59,6 +59,7 @@ func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
 	c.language = language
 	c.client = client
 	c.model = config.GetModel()
+	c.temperature = config.GetTemperature()
 	return nil
 }
 
@@ -75,8 +76,8 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string, promptT
 				Content: fmt.Sprintf(promptTmpl, c.language, prompt),
 			},
 		},
+		Temperature:      c.temperature,
 		MaxTokens:        maxToken,
-		Temperature:      temperature,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             topP,
