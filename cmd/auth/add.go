@@ -75,6 +75,10 @@ var addCmd = &cobra.Command{
 			color.Red("Error: Model cannot be empty.")
 			os.Exit(1)
 		}
+		if temperature > 1.0 || temperature < 0.0 {
+			color.Red("Error: temperature ranges from 0 to 1.")
+			os.Exit(1)
+		}
 
 		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
@@ -89,11 +93,12 @@ var addCmd = &cobra.Command{
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:     backend,
-			Model:    model,
-			Password: password,
-			BaseURL:  baseURL,
-			Engine:   engine,
+			Name:        backend,
+			Model:       model,
+			Password:    password,
+			BaseURL:     baseURL,
+			Engine:      engine,
+			Temperature: temperature,
 		}
 
 		if providerIndex == -1 {
@@ -121,6 +126,8 @@ func init() {
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for temperature
+	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
 }
