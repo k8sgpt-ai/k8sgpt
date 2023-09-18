@@ -28,9 +28,10 @@ import (
 )
 
 type CohereClient struct {
-	client   *cohere.Client
-	language string
-	model    string
+	client      *cohere.Client
+	language    string
+	model       string
+	temperature float32
 }
 
 func (c *CohereClient) Configure(config IAIConfig, language string) error {
@@ -52,6 +53,7 @@ func (c *CohereClient) Configure(config IAIConfig, language string) error {
 	c.language = language
 	c.client = client
 	c.model = config.GetModel()
+	c.temperature = config.GetTemperature()
 	return nil
 }
 
@@ -64,7 +66,7 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt, promptTmpl str
 		Model:             c.model,
 		Prompt:            fmt.Sprintf(strings.TrimSpace(promptTmpl), c.language, prompt),
 		MaxTokens:         cohere.Uint(2048),
-		Temperature:       cohere.Float64(0.75),
+		Temperature:       cohere.Float64(float64(c.temperature)),
 		K:                 cohere.Int(0),
 		StopSequences:     []string{},
 		ReturnLikelihoods: "NONE",

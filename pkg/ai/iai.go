@@ -48,6 +48,7 @@ type IAIConfig interface {
 	GetModel() string
 	GetBaseURL() string
 	GetEngine() string
+	GetTemperature() float32
 }
 
 func NewClient(provider string) IAI {
@@ -66,11 +67,12 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
-	Name     string `mapstructure:"name"`
-	Model    string `mapstructure:"model"`
-	Password string `mapstructure:"password" yaml:"password,omitempty"`
-	BaseURL  string `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
-	Engine   string `mapstructure:"engine" yaml:"engine,omitempty"`
+	Name        string  `mapstructure:"name"`
+	Model       string  `mapstructure:"model"`
+	Password    string  `mapstructure:"password" yaml:"password,omitempty"`
+	BaseURL     string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	Engine      string  `mapstructure:"engine" yaml:"engine,omitempty"`
+	Temperature float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -87,6 +89,9 @@ func (p *AIProvider) GetModel() string {
 
 func (p *AIProvider) GetEngine() string {
 	return p.Engine
+}
+func (p *AIProvider) GetTemperature() float32 {
+	return p.Temperature
 }
 
 func NeedPassword(backend string) bool {
