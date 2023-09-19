@@ -15,6 +15,7 @@ package trivy
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -23,10 +24,11 @@ import (
 )
 
 type TrivyAnalyzer struct {
+	vulernabilityReportAnalysis bool
+	configAuditReportAnalysis   bool
 }
 
-func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
-
+func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Result, error) {
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
@@ -40,7 +42,7 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = restClient.Get().Resource("vulnerabilityreports").Do(a.Context).Into(result)
+	err = restClient.Get().Resource("vulnerabilityreports").Namespace(a.Namespace).Do(a.Context).Into(result)
 	if err != nil {
 		return nil, err
 	}
@@ -84,4 +86,96 @@ func (TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+
+}
+
+func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Result, error) {
+	// Get all trivy ConfigAuditReports
+	result := &v1alpha1.ConfigAuditReportList{}
+
+	config := a.Client.GetConfig()
+	// Add group version to sceheme
+	config.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+	config.APIPath = "/apis"
+
+	restClient, err := rest.UnversionedRESTClientFor(config)
+	if err != nil {
+		return nil, err
+	}
+	err = restClient.Get().Resource("configauditreports").Namespace(a.Namespace).Do(a.Context).Into(result)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find criticals and get CVE
+	var preAnalysis = map[string]common.PreAnalysis{}
+
+	for _, report := range result.Items {
+
+		// For each k8s resources there may be multiple checks
+		var failures []common.Failure
+		for _, check := range report.Report.Checks {
+			if check.Severity == "MEDIUM" || check.Severity == "HIGH" || check.Severity == "CRITICAL" {
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf("Config issue with severity \"%s\" found: %s", check.Severity, strings.Join(check.Messages, "")),
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: report.Labels["trivy-operator.resource.name"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.name"]),
+						},
+						{
+							Unmasked: report.Labels["trivy-operator.resource.namespace"],
+							Masked:   util.MaskString(report.Labels["trivy-operator.resource.namespace"]),
+						},
+					},
+				})
+			}
+		}
+
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
+				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{
+				TrivyConfigAuditReport: report,
+				FailureDetails:         failures,
+			}
+		}
+	}
+
+	for key, value := range preAnalysis {
+		var currentAnalysis = common.Result{
+			Kind:  "ConfigAuditReport",
+			Name:  key,
+			Error: value.FailureDetails,
+		}
+
+		parent, _ := util.GetParent(a.Client, value.TrivyConfigAuditReport.ObjectMeta)
+		currentAnalysis.ParentObject = parent
+		a.Results = append(a.Results, currentAnalysis)
+	}
+
+	return a.Results, nil
+}
+
+func (t TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	if t.vulernabilityReportAnalysis {
+		common := make([]common.Result, 0)
+		vresult, err := t.analyzeVulnerabilityReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, vresult...)
+		return common, nil
+	}
+	if t.configAuditReportAnalysis {
+		common := make([]common.Result, 0)
+		cresult, err := t.analyzeConfigAuditReports(a)
+		if err != nil {
+			return nil, err
+		}
+		common = append(common, cresult...)
+		return common, nil
+	}
+	return make([]common.Result, 0), nil
 }

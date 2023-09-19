@@ -37,7 +37,7 @@ func (c *Client) GetRestClient() rest.Interface {
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()
-	if err != nil {
+	if kubeconfig != "" || err != nil {
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
 
 		if kubeconfig != "" {

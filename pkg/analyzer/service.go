@@ -17,10 +17,12 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -55,6 +57,10 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// Check for empty service
 		if len(ep.Subsets) == 0 {
+			if _, ok := ep.Annotations[resourcelock.LeaderElectionRecordAnnotationKey]; ok {
+				continue
+			}
+
 			svc, err := a.Client.GetClient().CoreV1().Services(ep.Namespace).Get(a.Context, ep.Name, metav1.GetOptions{})
 			if err != nil {
 				color.Yellow("Service %s/%s does not exist", ep.Namespace, ep.Name)

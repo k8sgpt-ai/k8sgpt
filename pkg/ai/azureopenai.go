@@ -16,9 +16,10 @@ import (
 )
 
 type AzureAIClient struct {
-	client   *openai.Client
-	language string
-	model    string
+	client      *openai.Client
+	language    string
+	model       string
+	temperature float32
 }
 
 func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
@@ -42,6 +43,7 @@ func (c *AzureAIClient) Configure(config IAIConfig, lang string) error {
 	c.language = lang
 	c.client = client
 	c.model = config.GetModel()
+	c.temperature = config.GetTemperature()
 	return nil
 }
 
@@ -55,6 +57,7 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string, prompt
 				Content: fmt.Sprintf(default_prompt, c.language, prompt),
 			},
 		},
+		Temperature: c.temperature,
 	})
 	if err != nil {
 		return "", err
