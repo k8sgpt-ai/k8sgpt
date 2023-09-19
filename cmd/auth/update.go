@@ -49,6 +49,10 @@ var updateCmd = &cobra.Command{
 			color.Red("Error: backend must be set.")
 			os.Exit(1)
 		}
+		if temperature > 1.0 || temperature < 0.0 {
+			color.Red("Error: temperature ranges from 0 to 1.")
+			os.Exit(1)
+		}
 
 		for _, b := range inputBackends {
 			foundBackend := false
@@ -74,6 +78,7 @@ var updateCmd = &cobra.Command{
 					if engine != "" {
 						configAI.Providers[i].Engine = engine
 					}
+					configAI.Providers[i].Temperature = temperature
 					color.Green("%s updated in the AI backend provider list", b)
 				}
 			}
@@ -101,6 +106,8 @@ func init() {
 	updateCmd.Flags().StringVarP(&password, "password", "p", "", "Update backend AI password")
 	// update flag for url
 	updateCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "Update URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for temperature
+	updateCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// update flag for azure open ai engine/deployment name
 	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
 }

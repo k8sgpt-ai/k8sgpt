@@ -58,21 +58,23 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if pdb.Spec.MinAvailable != nil {
 				doc = apiDoc.GetApiDocV2("spec.minAvailable")
 			}
-			for k, v := range pdb.Spec.Selector.MatchLabels {
-				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", pdb.Status.Conditions[0].Reason, k, v),
-					KubernetesDoc: doc,
-					Sensitive: []common.Sensitive{
-						{
-							Unmasked: k,
-							Masked:   util.MaskString(k),
+			if pdb.Spec.Selector != nil && pdb.Spec.Selector.MatchLabels != nil {
+				for k, v := range pdb.Spec.Selector.MatchLabels {
+					failures = append(failures, common.Failure{
+						Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", pdb.Status.Conditions[0].Reason, k, v),
+						KubernetesDoc: doc,
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: k,
+								Masked:   util.MaskString(k),
+							},
+							{
+								Unmasked: v,
+								Masked:   util.MaskString(v),
+							},
 						},
-						{
-							Unmasked: v,
-							Masked:   util.MaskString(v),
-						},
-					},
-				})
+					})
+				}
 			}
 		}
 

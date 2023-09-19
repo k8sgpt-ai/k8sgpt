@@ -65,14 +65,22 @@ var addCmd = &cobra.Command{
 		}
 
 		// check if backend is not empty and a valid value
-		if backend == "" || !validBackend(ai.Backends, backend) {
-			color.Red("Error: Backend AI cannot be empty and accepted values are '%v'", strings.Join(ai.Backends, ", "))
-			os.Exit(1)
+		if backend == "" {
+			color.Yellow("Warning: backend input is empty, will use the default value: openai")
+			backend = "openai"
+		} else {
+			if !validBackend(ai.Backends, backend) {
+				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
+				os.Exit(1)
+			}
 		}
 
 		// check if model is not empty
 		if model == "" {
-			color.Red("Error: Model cannot be empty.")
+			color.Yellow("Warning: model input is empty, will use the default value: gpt-3.5-turbo")
+		}
+		if temperature > 1.0 || temperature < 0.0 {
+			color.Red("Error: temperature ranges from 0 to 1.")
 			os.Exit(1)
 		}
 
@@ -89,11 +97,12 @@ var addCmd = &cobra.Command{
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:     backend,
-			Model:    model,
-			Password: password,
-			BaseURL:  baseURL,
-			Engine:   engine,
+			Name:        backend,
+			Model:       model,
+			Password:    password,
+			BaseURL:     baseURL,
+			Engine:      engine,
+			Temperature: temperature,
 		}
 
 		if providerIndex == -1 {
@@ -121,6 +130,8 @@ func init() {
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for temperature
+	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
 }

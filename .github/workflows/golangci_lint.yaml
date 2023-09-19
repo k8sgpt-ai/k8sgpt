@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3
+        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
 
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@22adb9d08853436506154413f5683c2e749d3b85 # v2
+        uses: reviewdog/action-golangci-lint@24d4af2fc93f5b2b296229e8b0c0f658d25707af # v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
