@@ -15,3 +15,12 @@ e.g.
 grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:8080 schema.v1.ServerService/Analyze
 ```
 
+```
+grpcurl -plaintext  localhost:8080 schema.v1.ServerService/ListIntegrations
+{
+  "integrations": [
+    "trivy"
+  ]
+}
+
+```

@@ -24,13 +24,14 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230830164712-dc062a152c20.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230830164712-dc062a152c20.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230919114723-34e017906403.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230919114723-34e017906403.1
 	github.com/aws/aws-sdk-go v1.45.11
 	github.com/cohere-ai/cohere-go v0.2.0
 )
 
 require (
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/connectrpc/go v1.11.1-20230919114723-34e017906403.1 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
