@@ -65,15 +65,19 @@ var addCmd = &cobra.Command{
 		}
 
 		// check if backend is not empty and a valid value
-		if backend == "" || !validBackend(ai.Backends, backend) {
-			color.Red("Error: Backend AI cannot be empty and accepted values are '%v'", strings.Join(ai.Backends, ", "))
-			os.Exit(1)
+		if backend == "" {
+			color.Yellow("Warning: backend input is empty, will use the default value: openai")
+			backend = "openai"
+		} else {
+			if !validBackend(ai.Backends, backend) {
+				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
+				os.Exit(1)
+			}
 		}
 
 		// check if model is not empty
 		if model == "" {
-			color.Red("Error: Model cannot be empty.")
-			os.Exit(1)
+			color.Yellow("Warning: model input is empty, will use the default value: gpt-3.5-turbo")
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
