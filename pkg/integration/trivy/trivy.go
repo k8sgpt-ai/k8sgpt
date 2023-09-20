@@ -77,9 +77,12 @@ func (t *Trivy) Deploy(namespace string) error {
 		ReleaseName: ReleaseName,
 		ChartName:   fmt.Sprintf("%s/%s", RepoShortName, ChartName),
 		Namespace:   namespace,
-		UpgradeCRDs: true,
-		Wait:        false,
-		Timeout:     300,
+
+		//TODO: All of this should be configurable
+		UpgradeCRDs:     true,
+		Wait:            false,
+		Timeout:         300,
+		CreateNamespace: true,
 	}
 
 	// Install a chart release.
