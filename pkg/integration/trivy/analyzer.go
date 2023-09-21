@@ -75,7 +75,7 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "VulnerabilityReport",
+			Kind:  value.TrivyVulnerabilityReport.Labels["trivy-operator.resource.kind"],
 			Name:  key,
 			Error: value.FailureDetails,
 		}
@@ -144,7 +144,7 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 
 	for key, value := range preAnalysis {
 		var currentAnalysis = common.Result{
-			Kind:  "ConfigAuditReport",
+			Kind:  value.TrivyConfigAuditReport.Labels["trivy-operator.resource.kind"],
 			Name:  key,
 			Error: value.FailureDetails,
 		}
