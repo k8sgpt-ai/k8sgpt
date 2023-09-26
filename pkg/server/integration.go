@@ -1,13 +1,14 @@
 package server
 
 import (
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"context"
 	"fmt"
-
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -20,16 +21,13 @@ const (
 func (h *handler) syncIntegration(ctx context.Context,
 	i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
 ) {
-	response := &schemav1.AddConfigResponse{
-		Status: "",
-	}
+	response := &schemav1.AddConfigResponse{}
 	integrationProvider := integration.NewIntegration()
 	if i.Integrations == nil {
 		// If there are locally activate integrations, disable them
 		err := h.deactivateAllIntegrations(integrationProvider)
 		if err != nil {
-			response.Status = "Deactivated all integrations"
-			return response, err
+			return response, status.Error(codes.NotFound, "deactivation error")
 		}
 		return response, nil
 	}
@@ -39,25 +37,34 @@ func (h *handler) syncIntegration(ctx context.Context,
 	if len(activeFilters) == 0 {
 		activeFilters = coreFilters
 	}
-	var err error
+	var err error = status.Error(codes.OK, "")
 	deactivateFunc := func(integrationRef integration.IIntegration) error {
-		return integrationProvider.Deactivate(trivyName, integrationRef.GetNamespace())
+		err := integrationProvider.Deactivate(trivyName, integrationRef.GetNamespace())
+		if err != nil {
+			return status.Error(codes.NotFound, "integration already deactivated")
+		}
+		return nil
 	}
 	integrationRef, err := integrationProvider.Get(trivyName)
 	if err != nil {
-		return response, err
+		return response, status.Error(codes.NotFound, "provider get failure")
 	}
 	if i.Integrations.Trivy != nil {
 		switch i.Integrations.Trivy.Enabled {
 		case true:
-			err = integrationProvider.Activate(trivyName, i.Integrations.Trivy.Namespace,
-				activeFilters, i.Integrations.Trivy.SkipInstall)
+			if b, err := integrationProvider.IsActivate(trivyName); err != nil {
+				return response, status.Error(codes.Internal, "integration activation error")
+			} else {
+				if !b {
+					err = integrationProvider.Activate(trivyName, i.Integrations.Trivy.Namespace,
+						activeFilters, i.Integrations.Trivy.SkipInstall)
+				} else {
+					return response, status.Error(codes.AlreadyExists, "integration already active")
+				}
+			}
 		case false:
 			err = deactivateFunc(integrationRef)
 			// This break is included purely for static analysis to pass
-			if err != nil {
-				break
-			}
 		}
 	} else {
 		// If Trivy has been removed, disable it

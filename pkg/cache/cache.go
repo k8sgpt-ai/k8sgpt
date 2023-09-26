@@ -1,7 +1,8 @@
 package cache
 
 import (
-	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/spf13/viper"
 )
@@ -63,17 +64,17 @@ func RemoveRemoteCache(bucketName string) error {
 	var cacheInfo CacheProvider
 	err := viper.UnmarshalKey("cache", &cacheInfo)
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, "cache unmarshal")
 	}
 	if cacheInfo.BucketName == "" {
-		return errors.New("Error: no cache is configured")
+		return status.Error(codes.Internal, "no cache configured")
 	}
 
 	cacheInfo = CacheProvider{}
 	viper.Set("cache", cacheInfo)
 	err = viper.WriteConfig()
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, "unable to write config")
 	}
 
 	return nil
