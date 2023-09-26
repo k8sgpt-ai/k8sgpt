@@ -31,7 +31,8 @@ const (
 )
 
 type Trivy struct {
-	helm helmclient.Client
+	namespace string
+	helm      helmclient.Client
 }
 
 func NewTrivy() *Trivy {
@@ -51,6 +52,10 @@ func (t *Trivy) GetAnalyzerName() []string {
 	}
 }
 
+func (t *Trivy) GetNamespace() string {
+	return t.namespace
+}
+
 func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
 
 	for _, a := range t.GetAnalyzerName() {
@@ -62,6 +67,8 @@ func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
 }
 func (t *Trivy) Deploy(namespace string) error {
 
+	// Store the namespace
+	t.namespace = namespace
 	// Add the repository
 	chartRepo := repo.Entry{
 		Name: RepoShortName,

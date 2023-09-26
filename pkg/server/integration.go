@@ -2,10 +2,70 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
+	"github.com/spf13/viper"
 )
+
+const (
+	trivyName = "trivy"
+)
+
+// syncIntegration is aware of the following events
+// A new integration added
+// An integration removed from the Integration block
+func (h *handler) syncIntegration(ctx context.Context,
+	i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
+) {
+	response := &schemav1.AddConfigResponse{
+		Status: "",
+	}
+	integrationProvider := integration.NewIntegration()
+	if i.Integrations == nil {
+		// If there are locally activate integrations, disable them
+		err := h.deactivateAllIntegrations(integrationProvider)
+		if err != nil {
+			response.Status = "Deactivated all integrations"
+			return response, err
+		}
+		return response, nil
+	}
+	coreFilters, _, _ := analyzer.ListFilters()
+	// Update filters
+	activeFilters := viper.GetStringSlice("active_filters")
+	if len(activeFilters) == 0 {
+		activeFilters = coreFilters
+	}
+	var err error
+	deactivateFunc := func(integrationRef integration.IIntegration) error {
+		return integrationProvider.Deactivate(trivyName, integrationRef.GetNamespace())
+	}
+	integrationRef, err := integrationProvider.Get(trivyName)
+	if err != nil {
+		return response, err
+	}
+	if i.Integrations.Trivy != nil {
+		switch i.Integrations.Trivy.Enabled {
+		case true:
+			err = integrationProvider.Activate(trivyName, i.Integrations.Trivy.Namespace,
+				activeFilters, i.Integrations.Trivy.SkipInstall)
+		case false:
+			err = deactivateFunc(integrationRef)
+			// This break is included purely for static analysis to pass
+			if err != nil {
+				break
+			}
+		}
+	} else {
+		// If Trivy has been removed, disable it
+		err = deactivateFunc(integrationRef)
+	}
+
+	return response, err
+}
 
 func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrationsRequest) (*schemav1.ListIntegrationsResponse, error) {
 
@@ -21,4 +81,24 @@ func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrat
 		}
 	}
 	return resp, nil
+}
+
+func (*handler) deactivateAllIntegrations(integrationProvider *integration.Integration) error {
+	integrations := integrationProvider.List()
+	for _, i := range integrations {
+		b, _ := integrationProvider.IsActivate(i)
+		if b {
+			in, err := integrationProvider.Get(i)
+			if err == nil {
+				if in.GetNamespace() != "" {
+					integrationProvider.Deactivate(i, in.GetNamespace())
+				} else {
+					fmt.Printf("Skipping deactivation of %s, not installed\n", i)
+				}
+			} else {
+				return err
+			}
+		}
+	}
+	return nil
 }

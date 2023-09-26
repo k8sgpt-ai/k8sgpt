@@ -32,6 +32,8 @@ type IIntegration interface {
 	AddAnalyzer(*map[string]common.IAnalyzer)
 
 	GetAnalyzerName() []string
+	// An integration must keep record of its deployed namespace (if not using --no-install)
+	GetNamespace() string
 
 	OwnsAnalyzer(string) bool
 
