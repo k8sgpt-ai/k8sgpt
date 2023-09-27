@@ -77,16 +77,19 @@ func (h *handler) syncIntegration(ctx context.Context,
 func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrationsRequest) (*schemav1.ListIntegrationsResponse, error) {
 
 	integrationProvider := integration.NewIntegration()
-	integrations := integrationProvider.List()
+
+	// Update the requester with the status of Trivy
+	trivy, err := integrationProvider.Get(trivyName)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "trivy integration")
+	}
 	resp := &schemav1.ListIntegrationsResponse{
-		Integrations: make([]string, 0),
+		Trivy: &schemav1.Trivy{
+			Enabled:   trivy.IsActivate(),
+			Namespace: trivy.GetNamespace(),
+		},
 	}
-	for _, i := range integrations {
-		b, _ := integrationProvider.IsActivate(i)
-		if b {
-			resp.Integrations = append(resp.Integrations, i)
-		}
-	}
+
 	return resp, nil
 }
 
