@@ -56,19 +56,28 @@ func (h *handler) syncIntegration(ctx context.Context,
 				return response, status.Error(codes.Internal, "integration activation error")
 			} else {
 				if !b {
-					err = integrationProvider.Activate(trivyName, i.Integrations.Trivy.Namespace,
+					err := integrationProvider.Activate(trivyName, i.Integrations.Trivy.Namespace,
 						activeFilters, i.Integrations.Trivy.SkipInstall)
+					if err != nil {
+						return nil, err
+					}
 				} else {
 					return response, status.Error(codes.AlreadyExists, "integration already active")
 				}
 			}
 		case false:
 			err = deactivateFunc(integrationRef)
+			if err != nil {
+				return nil, err
+			}
 			// This break is included purely for static analysis to pass
 		}
 	} else {
 		// If Trivy has been removed, disable it
 		err = deactivateFunc(integrationRef)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return response, err
