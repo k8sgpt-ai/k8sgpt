@@ -39,7 +39,11 @@ func (h *handler) syncIntegration(ctx context.Context,
 	}
 	var err error = status.Error(codes.OK, "")
 	deactivateFunc := func(integrationRef integration.IIntegration) error {
-		err := integrationProvider.Deactivate(trivyName, integrationRef.GetNamespace())
+		namespace, err := integrationRef.GetNamespace()
+		if err != nil {
+			return err
+		}
+		err = integrationProvider.Deactivate(trivyName, namespace)
 		if err != nil {
 			return status.Error(codes.NotFound, "integration already deactivated")
 		}
@@ -86,16 +90,24 @@ func (h *handler) syncIntegration(ctx context.Context,
 func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrationsRequest) (*schemav1.ListIntegrationsResponse, error) {
 
 	integrationProvider := integration.NewIntegration()
-
 	// Update the requester with the status of Trivy
 	trivy, err := integrationProvider.Get(trivyName)
+	active := trivy.IsActivate()
+	var namespace string = ""
+	if active {
+		namespace, err = trivy.GetNamespace()
+		if err != nil {
+			return nil, status.Error(codes.NotFound, "namespace not found")
+		}
+	}
+
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "trivy integration")
 	}
 	resp := &schemav1.ListIntegrationsResponse{
 		Trivy: &schemav1.Trivy{
-			Enabled:   trivy.IsActivate(),
-			Namespace: trivy.GetNamespace(),
+			Enabled:   active,
+			Namespace: namespace,
 		},
 	}
 
@@ -108,9 +120,13 @@ func (*handler) deactivateAllIntegrations(integrationProvider *integration.Integ
 		b, _ := integrationProvider.IsActivate(i)
 		if b {
 			in, err := integrationProvider.Get(i)
+			namespace, err := in.GetNamespace()
+			if err != nil {
+				return err
+			}
 			if err == nil {
-				if in.GetNamespace() != "" {
-					integrationProvider.Deactivate(i, in.GetNamespace())
+				if namespace != "" {
+					integrationProvider.Deactivate(i, namespace)
 				} else {
 					fmt.Printf("Skipping deactivation of %s, not installed\n", i)
 				}

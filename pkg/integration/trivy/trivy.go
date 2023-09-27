@@ -16,6 +16,8 @@ package trivy
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	helmclient "github.com/mittwald/go-helm-client"
@@ -31,8 +33,7 @@ const (
 )
 
 type Trivy struct {
-	namespace string
-	helm      helmclient.Client
+	helm helmclient.Client
 }
 
 func NewTrivy() *Trivy {
@@ -52,8 +53,18 @@ func (t *Trivy) GetAnalyzerName() []string {
 	}
 }
 
-func (t *Trivy) GetNamespace() string {
-	return t.namespace
+// This doesnt work
+func (t *Trivy) GetNamespace() (string, error) {
+	releases, err := t.helm.ListDeployedReleases()
+	if err != nil {
+		return "", err
+	}
+	for _, rel := range releases {
+		if rel.Name == ReleaseName {
+			return rel.Namespace, nil
+		}
+	}
+	return "", status.Error(codes.NotFound, "trivy release not found")
 }
 
 func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
@@ -67,14 +78,11 @@ func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
 }
 func (t *Trivy) Deploy(namespace string) error {
 
-	// Store the namespace
-	t.namespace = namespace
 	// Add the repository
 	chartRepo := repo.Entry{
 		Name: RepoShortName,
 		URL:  Repo,
 	}
-
 	// Add a chart-repository to the client.
 	if err := t.helm.AddOrUpdateChartRepo(chartRepo); err != nil {
 		panic(err)
