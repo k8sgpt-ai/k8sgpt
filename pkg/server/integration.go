@@ -93,11 +93,15 @@ func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrat
 	// Update the requester with the status of Trivy
 	trivy, err := integrationProvider.Get(trivyName)
 	active := trivy.IsActivate()
+	var skipInstall bool
 	var namespace string = ""
 	if active {
 		namespace, err = trivy.GetNamespace()
 		if err != nil {
 			return nil, status.Error(codes.NotFound, "namespace not found")
+		}
+		if namespace == "" {
+			skipInstall = true
 		}
 	}
 
@@ -106,8 +110,9 @@ func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrat
 	}
 	resp := &schemav1.ListIntegrationsResponse{
 		Trivy: &schemav1.Trivy{
-			Enabled:   active,
-			Namespace: namespace,
+			Enabled:     active,
+			Namespace:   namespace,
+			SkipInstall: skipInstall,
 		},
 	}
 
