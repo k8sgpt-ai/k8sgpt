@@ -1,8 +1,8 @@
-buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230919114723-34e017906403.1 h1:OMpJ48yTsJ12DDJlhpNXTZOfNEfkrcAwGqgSvL1vg7U=
-buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230919114723-34e017906403.1/go.mod h1:cc42fuhIhL3qTsCrT4dK0kZ5u6hm02WJraREmSVZHmA=
-buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.28.1-20230919114723-34e017906403.4/go.mod h1:i/s4ALHwKvjA1oGNKpoHg0FpEOTbufoOm/NdTE6YQAE=
-buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230919114723-34e017906403.1 h1:rn//G20ZMgHwnfl7shj5zmpDgzS8aZsoVkeJ7+fMkfo=
-buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230919114723-34e017906403.1/go.mod h1:gtnk2yAUexdY5nTuUg0SH5WCCGvpKzr7pd3Xbi7MWjE=
+buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230927080702-a2be8a73637d.1 h1:uXlT8FiRD+JL0qzZJ0m5Zmw5HpKyDFs204y27zuT7RA=
+buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230927080702-a2be8a73637d.1/go.mod h1:p9CUiOwgt2bvcr0goNK7NgMfButIVGhKnv8cyWW7FOM=
+buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.28.1-20230927080702-a2be8a73637d.4/go.mod h1:i/s4ALHwKvjA1oGNKpoHg0FpEOTbufoOm/NdTE6YQAE=
+buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230927080702-a2be8a73637d.1 h1:Snnz9mUZNxMFpd+l5m1zaVdIVAplVmdFxYVn5/f4UoI=
+buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20230927080702-a2be8a73637d.1/go.mod h1:gtnk2yAUexdY5nTuUg0SH5WCCGvpKzr7pd3Xbi7MWjE=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.38.0/go.mod h1:990N+gfupTy94rShfmMCWGDn0LpTmnzTp2qbd1dvSRU=
