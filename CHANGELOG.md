@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.3.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.16...v0.3.17) (2023-09-28)
+
+
+### Features
+
+* added create namespace on deploy ([#673](https://github.com/k8sgpt-ai/k8sgpt/issues/673)) ([820e475](https://github.com/k8sgpt-ai/k8sgpt/commit/820e4755a54ecab3b5d800017bf6948dc9212825))
+* integration refactor ([#684](https://github.com/k8sgpt-ai/k8sgpt/issues/684)) ([69fe2db](https://github.com/k8sgpt-ai/k8sgpt/commit/69fe2db8acb795add27f04c1c8ee8d05819300ac))
+* update readme with new analyzers ([#671](https://github.com/k8sgpt-ai/k8sgpt/issues/671)) ([cad605a](https://github.com/k8sgpt-ai/k8sgpt/commit/cad605af462ce8b02ffc279ea847e41b7a64196f))
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.28.2 ([#607](https://github.com/k8sgpt-ai/k8sgpt/issues/607)) ([ddeff9f](https://github.com/k8sgpt-ai/k8sgpt/commit/ddeff9fae4e80d1452893c59b89742633eb6b51b))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.14 ([#672](https://github.com/k8sgpt-ai/k8sgpt/issues/672)) ([1da4b7c](https://github.com/k8sgpt-ai/k8sgpt/commit/1da4b7c8f0eee877d5b76a7dd9abda7631d922f3))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.16 ([#682](https://github.com/k8sgpt-ai/k8sgpt/issues/682)) ([e1a42ff](https://github.com/k8sgpt-ai/k8sgpt/commit/e1a42ff3bcb3ddea71df2a5b5288eade024684dc))
+* **deps:** update module github.com/google/gnostic to v0.7.0 ([#679](https://github.com/k8sgpt-ai/k8sgpt/issues/679)) ([901ffb8](https://github.com/k8sgpt-ai/k8sgpt/commit/901ffb8df451ce41e6dc96da61deab987e51b6df))
+* **deps:** update module google.golang.org/grpc to v1.58.2 ([#680](https://github.com/k8sgpt-ai/k8sgpt/issues/680)) ([402e97d](https://github.com/k8sgpt-ai/k8sgpt/commit/402e97d05ea33879d997d98019b72da0f1074fc7))
+
+
+### Other
+
+* **deps:** update actions/checkout digest to 8ade135 ([#681](https://github.com/k8sgpt-ai/k8sgpt/issues/681)) ([aa9e6a3](https://github.com/k8sgpt-ai/k8sgpt/commit/aa9e6a3549877260423462c35ebbdfd95381be2c))
+
 ## [0.3.16](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.15...v0.3.16) (2023-09-19)
 
 
