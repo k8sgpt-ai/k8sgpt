@@ -1,8 +1,9 @@
 package server
 
 import (
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"context"
+
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,13 +17,15 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 		return resp, err
 	}
 
+	//TODO: Requires new proto schema and refactoring
 	if i.Cache != nil {
 		// Remote cache
 		if i.Cache.BucketName == "" || i.Cache.Region == "" {
 			return resp, status.Error(codes.InvalidArgument, "cache arguments")
 		}
 
-		err := cache.AddRemoteCache(i.Cache.BucketName, i.Cache.Region)
+		cacheProvider := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, "", "")
+		err := cache.AddRemoteCache(cacheProvider)
 		if err != nil {
 			return resp, err
 		}
@@ -32,7 +35,7 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 func (h *handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequest) (*schemav1.RemoveConfigResponse, error,
 ) {
-	err := cache.RemoveRemoteCache(i.Cache.BucketName)
+	err := cache.RemoveRemoteCache()
 	if err != nil {
 		return &schemav1.RemoveConfigResponse{}, err
 	}
