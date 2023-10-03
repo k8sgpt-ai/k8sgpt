@@ -24,27 +24,19 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-<<<<<<< HEAD
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230927080702-a2be8a73637d.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20231002095256-194bc640518b.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.1.0
-=======
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20231002095256-194bc640518b.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20231002095256-194bc640518b.1
->>>>>>> 20e6bd8 (fix(deps): update module buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go to v1.31.0-20231002095256-194bc640518b.1 (#693))
-	github.com/aws/aws-sdk-go v1.45.16
+	github.com/aws/aws-sdk-go v1.45.20
 	github.com/cohere-ai/cohere-go v0.2.0
 )
 
 require (
-<<<<<<< HEAD
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.6.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.0.0 // indirect
-=======
 	github.com/Microsoft/hcsshim v0.11.0 // indirect
->>>>>>> 87c8bce (fix(deps): update module helm.sh/helm/v3 to v3.13.0 (#688))
 	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
