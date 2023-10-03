@@ -24,10 +24,15 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
+<<<<<<< HEAD
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20230927080702-a2be8a73637d.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20231002095256-194bc640518b.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.1.0
+=======
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20231002095256-194bc640518b.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.31.0-20231002095256-194bc640518b.1
+>>>>>>> 20e6bd8 (fix(deps): update module buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go to v1.31.0-20231002095256-194bc640518b.1 (#693))
 	github.com/aws/aws-sdk-go v1.45.16
 	github.com/cohere-ai/cohere-go v0.2.0
 )
