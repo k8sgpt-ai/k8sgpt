@@ -17,14 +17,14 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 		return resp, err
 	}
 
-	//TODO: Requires new proto schema and refactoring
 	if i.Cache != nil {
-		// Remote cache
-		if i.Cache.BucketName == "" || i.Cache.Region == "" {
-			return resp, status.Error(codes.InvalidArgument, "cache arguments")
+		// We check if we have a mixed cache configuration
+		CacheConfigured := (i.Cache.Region == "" && i.Cache.BucketName == "") || (i.Cache.ContainerName == "" && i.Cache.StorageAccount == "")
+		if !CacheConfigured {
+			return resp, status.Error(codes.InvalidArgument, "mixed cache arguments")
 		}
 
-		cacheProvider := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, "", "")
+		cacheProvider := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, i.Cache.StorageAccount, i.Cache.ContainerName)
 		err := cache.AddRemoteCache(cacheProvider)
 		if err != nil {
 			return resp, err
