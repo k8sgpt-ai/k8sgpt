@@ -7,6 +7,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+type CacheType string
+
+const (
+	Azure     CacheType = "azure"
+	S3        CacheType = "s3"
+	FileBased CacheType = "file"
+)
+
 type ICache interface {
 	Store(key string, data string) error
 	Load(key string) (string, error)
@@ -15,12 +23,16 @@ type ICache interface {
 	IsCacheDisabled() bool
 }
 
-func New(noCache bool, remoteCache string) ICache {
+func New(noCache bool, remoteCache CacheType) ICache {
 	switch remoteCache {
-	case "s3":
+	case S3:
 		return NewS3Cache(noCache)
-	case "azure":
+	case Azure:
 		return NewAzureCache(noCache)
+	case FileBased:
+		return &FileBasedCache{
+			noCache: noCache,
+		}
 	default:
 		return &FileBasedCache{
 			noCache: noCache,
@@ -47,7 +59,7 @@ func NewCacheProvider(bucketname, region, storageaccount, containername string) 
 }
 
 // If we have set a remote cache, return the remote cache type
-func RemoteCacheEnabled() (string, error) {
+func RemoteCacheEnabled() (CacheType, error) {
 	// load remote cache if it is configured
 	var cache CacheProvider
 	err := viper.UnmarshalKey("cache", &cache)
@@ -55,11 +67,11 @@ func RemoteCacheEnabled() (string, error) {
 		return "", err
 	}
 	if cache.BucketName != "" && cache.Region != "" {
-		return "s3", nil
+		return S3, nil
 	} else if cache.StorageAccount != "" && cache.ContainerName != "" {
-		return "azure", nil
+		return Azure, nil
 	}
-	return "", nil
+	return FileBased, nil
 }
 
 func AddRemoteCache(cache CacheProvider) error {
