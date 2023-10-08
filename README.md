@@ -485,18 +485,22 @@ Config file locations:
 
 <details>
 There may be scenarios where caching remotely is preferred.
-In these scenarios K8sGPT supports AWS S3 Integration.
+In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
-<summary> Remote caching </summary>
-
- _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+<summary> Remote caching </summary>  
+<em>Note: You can only configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
 
-Note: this will create the bucket if it does not exist
-```
-k8sgpt cache add --region <aws region> --bucket <name>
-```
+ * AWS S3
+   *  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+   * Configuration, ``` k8sgpt cache add --region <aws region> --bucket <name> ```
+     * K8sGPT will create the bucket if it does not exist
+ * Azure Storage
+   * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
+   * Configuration, ``` k8sgpt cache add --storageacc <storage account name> --container <container name> ```
+     * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
+     * It's **users'** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)       
 
 _Listing cache items_
 ```
@@ -504,9 +508,9 @@ k8sgpt cache list
 ```
 
 _Removing the remote cache_
-Note: this will not delete the bucket
+Note: this will not delete the upstream S3 bucket or Azure storage container
 ```
-k8sgpt cache remove --bucket <name>
+k8sgpt cache remove
 ```
 </details>
 
