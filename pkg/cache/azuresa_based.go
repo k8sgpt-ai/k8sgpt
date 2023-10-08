@@ -94,7 +94,6 @@ func (s *AzureCache) IsCacheDisabled() bool {
 }
 
 func NewAzureCache(nocache bool) ICache {
-
 	ctx := context.Background()
 	var cache CacheProvider
 	err := viper.UnmarshalKey("cache", &cache)

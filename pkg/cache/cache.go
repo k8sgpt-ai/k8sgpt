@@ -33,7 +33,7 @@ type CacheProvider struct {
 	BucketName     string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
 	Region         string `mapstructure:"region" yaml:"region,omitempty"`
 	StorageAccount string `mapstructure:"storageaccount" yaml:"storageaccount,omitempty"`
-	ContainerName  string `mapstructure:"containername" yaml:"container,omitempty"`
+	ContainerName  string `mapstructure:"container" yaml:"container,omitempty"`
 }
 
 // NewCacheProvider constructs a new cache struct
