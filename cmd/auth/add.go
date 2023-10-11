@@ -26,6 +26,11 @@ import (
 	"golang.org/x/term"
 )
 
+const (
+	defaultBackend = "openai"
+	defaultModel   = "gpt-3.5-turbo"
+)
+
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add new provider",
@@ -66,8 +71,8 @@ var addCmd = &cobra.Command{
 
 		// check if backend is not empty and a valid value
 		if backend == "" {
-			color.Yellow("Warning: backend input is empty, will use the default value: openai")
-			backend = "openai"
+			color.Yellow(fmt.Sprintf("Warning: backend input is empty, will use the default value: %s", defaultBackend))
+			backend = defaultBackend
 		} else {
 			if !validBackend(ai.Backends, backend) {
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
@@ -77,7 +82,8 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			color.Yellow("Warning: model input is empty, will use the default value: gpt-3.5-turbo")
+			model = defaultModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
@@ -123,9 +129,9 @@ var addCmd = &cobra.Command{
 
 func init() {
 	// add flag for backend
-	addCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	addCmd.Flags().StringVarP(&backend, "backend", "b", defaultBackend, "Backend AI provider")
 	// add flag for model
-	addCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", defaultModel, "Backend AI model")
 	// add flag for password
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
