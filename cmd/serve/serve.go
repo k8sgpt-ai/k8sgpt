@@ -15,6 +15,7 @@ package serve
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -22,6 +23,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+)
+
+const (
+	defaultTemperature float32 = 0.7
 )
 
 var (
@@ -44,6 +49,23 @@ var ServeCmd = &cobra.Command{
 		}
 		var aiProvider *ai.AIProvider
 		if len(configAI.Providers) == 0 {
+			// we validate and set temperature for our backend
+			temperature := func() float32 {
+				env := os.Getenv("K8SGPT_TEMPERATURE")
+				if env == "" {
+					return defaultTemperature
+				}
+				temperature, err := strconv.ParseFloat(env, 32)
+				if err != nil {
+					color.Red("Unable to convert Temperature value: %v", err)
+					os.Exit(1)
+				}
+				if temperature > 1.0 || temperature < 0.0 {
+					color.Red("Error: temperature ranges from 0 to 1.")
+					os.Exit(1)
+				}
+				return float32(temperature)
+			}
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
@@ -55,11 +77,12 @@ var ServeCmd = &cobra.Command{
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:     backend,
-					Password: password,
-					Model:    model,
-					BaseURL:  baseURL,
-					Engine:   engine,
+					Name:        backend,
+					Password:    password,
+					Model:       model,
+					BaseURL:     baseURL,
+					Engine:      engine,
+					Temperature: temperature(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
