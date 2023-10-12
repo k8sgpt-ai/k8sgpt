@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.17...v0.3.18) (2023-10-12)
+
+
+### Features
+
+* adding temperature to server mode ([#705](https://github.com/k8sgpt-ai/k8sgpt/issues/705)) ([539ca3b](https://github.com/k8sgpt-ai/k8sgpt/commit/539ca3b78f96694c11f788255d3b83d2fb335df4))
+
+
+### Bug Fixes
+
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go to v1.3.0-20231002095256-194bc640518b.1 ([#692](https://github.com/k8sgpt-ai/k8sgpt/issues/692)) ([4d4e33b](https://github.com/k8sgpt-ai/k8sgpt/commit/4d4e33bea9cc4f5f9bf5379db5b890d9ba86e0a9))
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go to v1.31.0-20231002095256-194bc640518b.1 ([#693](https://github.com/k8sgpt-ai/k8sgpt/issues/693)) ([20e6bd8](https://github.com/k8sgpt-ai/k8sgpt/commit/20e6bd816f636d4e4c8274d417870ec28fdd8a56))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.20 ([#685](https://github.com/k8sgpt-ai/k8sgpt/issues/685)) ([2494946](https://github.com/k8sgpt-ai/k8sgpt/commit/2494946dc867a532460bd6aac74dfb7da5184c1c))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.21 ([#696](https://github.com/k8sgpt-ai/k8sgpt/issues/696)) ([95c8cc0](https://github.com/k8sgpt-ai/k8sgpt/commit/95c8cc0afb0bb7b99784dcc5ba155f94b5a7dbdf))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.22 ([#697](https://github.com/k8sgpt-ai/k8sgpt/issues/697)) ([923a8c1](https://github.com/k8sgpt-ai/k8sgpt/commit/923a8c13c06b152d04e8b00ab002e2036bf12740))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.23 ([#699](https://github.com/k8sgpt-ai/k8sgpt/issues/699)) ([3f36a44](https://github.com/k8sgpt-ai/k8sgpt/commit/3f36a4441532e3d0ac1bd9d00fc738d4902b23a8))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.45.24 ([#701](https://github.com/k8sgpt-ai/k8sgpt/issues/701)) ([6d3038b](https://github.com/k8sgpt-ai/k8sgpt/commit/6d3038b0e8336235dc6a2fdb69d2381790331596))
+* **deps:** update module github.com/prometheus/client_golang to v1.17.0 ([#687](https://github.com/k8sgpt-ai/k8sgpt/issues/687)) ([9597002](https://github.com/k8sgpt-ai/k8sgpt/commit/95970027237e0079ed1f66dc9655fa01b181f4d7))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.15.4 ([#689](https://github.com/k8sgpt-ai/k8sgpt/issues/689)) ([f11d314](https://github.com/k8sgpt-ai/k8sgpt/commit/f11d3149b228b643155ed66c189cb0f8a4dd5a0f))
+* **deps:** update module helm.sh/helm/v3 to v3.13.0 ([#688](https://github.com/k8sgpt-ai/k8sgpt/issues/688)) ([87c8bce](https://github.com/k8sgpt-ai/k8sgpt/commit/87c8bcea4becd165aeb0ac98d79df7dab9c37ee3))
+* security warning around printing provider details in https://github.com/k8sgpt-ai/k8sgpt/security/code-scanning/1 ([#695](https://github.com/k8sgpt-ai/k8sgpt/issues/695)) ([85ce557](https://github.com/k8sgpt-ai/k8sgpt/commit/85ce55768199f90b1d2a5118ec2621ea5c7a7a67))
+
+
+### Other
+
+* **deps:** update amannn/action-semantic-pull-request action to v5.3.0 ([#683](https://github.com/k8sgpt-ai/k8sgpt/issues/683)) ([c5a8c46](https://github.com/k8sgpt-ai/k8sgpt/commit/c5a8c462989c097bf37ac48ea4f1a9010285042c))
+* fixing default model issue ([#702](https://github.com/k8sgpt-ai/k8sgpt/issues/702)) ([2a34ff2](https://github.com/k8sgpt-ai/k8sgpt/commit/2a34ff24d1f391270ae42531807cb1422880ad27))
+
 ## [0.3.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.16...v0.3.17) (2023-09-28)
 
 
