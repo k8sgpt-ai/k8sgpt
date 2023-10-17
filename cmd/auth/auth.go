@@ -20,6 +20,7 @@ import (
 
 var (
 	backend     string
+	backends    string
 	password    string
 	baseURL     string
 	model       string
