@@ -30,12 +30,12 @@ var removeCmd = &cobra.Command{
 		_ = cmd.MarkFlagRequired("backends")
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if backends == "" {
+		if backend == "" {
 			color.Red("Error: backends must be set.")
 			_ = cmd.Help()
 			return
 		}
-		inputBackends := strings.Split(backends, ",")
+		inputBackends := strings.Split(backend, ",")
 
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
@@ -73,5 +73,5 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	// add flag for backends
-	removeCmd.Flags().StringVarP(&backends, "backends", "b", "", "Backend AI providers to remove (separated by a comma)")
+	removeCmd.Flags().StringVarP(&backend, "backends", "b", "", "Backend AI providers to remove (separated by a comma)")
 }
