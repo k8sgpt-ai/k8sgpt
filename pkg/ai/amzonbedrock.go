@@ -33,19 +33,30 @@ type InvokeModelResponseBody struct {
 
 const BEDROCK_REGION = "us-east-1" // default use us-east-1 region
 
+const (
+	ModelAnthropicClaudeV2        = "anthropic.claude-v2"
+	ModelAnthropicClaudeV1        = "anthropic.claude-v1"
+	ModelAnthropicClaudeInstantV1 = "anthropic.claude-instant-v1"
+)
+
+var BEDROCK_MODELS = []string{
+	ModelAnthropicClaudeV2,
+	ModelAnthropicClaudeV1,
+	ModelAnthropicClaudeInstantV1,
+}
+
 // GetModelOrDefault check config model
 func GetModelOrDefault(model string) string {
-	modelList := []string{"anthropic.claude-v2", "anthropic.claude-v1", "anthropic.claude-instant-v1"}
 
 	// Check if the provided model is in the list
-	for _, m := range modelList {
+	for _, m := range BEDROCK_MODELS {
 		if m == model {
 			return model // Return the provided model
 		}
 	}
 
 	// Return the default model if the provided model is not in the list
-	return modelList[0]
+	return BEDROCK_MODELS[0]
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration and language.
