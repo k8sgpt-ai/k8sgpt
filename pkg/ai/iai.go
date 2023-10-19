@@ -26,6 +26,7 @@ var (
 		&LocalAIClient{},
 		&NoOpAIClient{},
 		&CohereClient{},
+		&AmazonBedRockClient{},
 	}
 	Backends = []string{
 		"openai",
@@ -33,6 +34,7 @@ var (
 		"azureopenai",
 		"noopai",
 		"cohere",
+		"amazonbedrock",
 	}
 )
 
