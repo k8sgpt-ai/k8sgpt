@@ -41,6 +41,7 @@ var addCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
 		}
+
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -103,12 +104,13 @@ var addCmd = &cobra.Command{
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:        backend,
-			Model:       model,
-			Password:    password,
-			BaseURL:     baseURL,
-			Engine:      engine,
-			Temperature: temperature,
+			Name:           backend,
+			Model:          model,
+			Password:       password,
+			BaseURL:        baseURL,
+			Engine:         engine,
+			Temperature:    temperature,
+			ProviderRegion: providerRegion,
 		}
 
 		if providerIndex == -1 {
@@ -140,4 +142,6 @@ func init() {
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
+	//add flag for amazonbedrock region name
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name")
 }

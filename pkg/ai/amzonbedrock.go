@@ -31,7 +31,25 @@ type InvokeModelResponseBody struct {
 	Stop_reason string `json:"stop_reason"`
 }
 
-const BEDROCK_REGION = "us-east-1" // default use us-east-1 region
+// Amazon BedRock support region list US East (N. Virginia),US West (Oregon),Asia Pacific (Singapore),Asia Pacific (Tokyo),Europe (Frankfurt)
+// https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html#bedrock-regions
+const BEDROCK_DEFAULT_REGION = "us-east-1" // default use us-east-1 region
+
+const (
+	US_East_1      = "us-east-1"
+	US_West_2      = "us-west-2"
+	AP_Southeast_1 = "ap-southeast-1"
+	AP_Northeast_1 = "ap-northeast-1"
+	EU_Central_1   = "eu-central-1"
+)
+
+var BEDROCKER_SUPPORTED_REGION = []string{
+	US_East_1,
+	US_West_2,
+	AP_Southeast_1,
+	AP_Northeast_1,
+	EU_Central_1,
+}
 
 const (
 	ModelAnthropicClaudeV2        = "anthropic.claude-v2"
@@ -59,12 +77,28 @@ func GetModelOrDefault(model string) string {
 	return BEDROCK_MODELS[0]
 }
 
+// GetModelOrDefault check config region
+func GetRegionOrDefault(region string) string {
+
+	// Check if the provided model is in the list
+	for _, m := range BEDROCKER_SUPPORTED_REGION {
+		if m == region {
+			return region // Return the provided model
+		}
+	}
+
+	// Return the default model if the provided model is not in the list
+	return BEDROCK_DEFAULT_REGION
+}
+
 // Configure configures the AmazonBedRockClient with the provided configuration and language.
 func (a *AmazonBedRockClient) Configure(config IAIConfig, language string) error {
 
 	// Create a new AWS session
+	providerRegion := GetRegionOrDefault(config.GetProviderRegion())
+
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(BEDROCK_REGION),
+		Region: aws.String(providerRegion),
 	})
 
 	if err != nil {
