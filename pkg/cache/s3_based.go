@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bytes"
+	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -79,13 +80,13 @@ func NewS3Cache(nocache bool) ICache {
 	var cache CacheProvider
 	err := viper.UnmarshalKey("cache", &cache)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if cache.BucketName == "" {
-		panic("Bucket name not configured")
+		log.Fatal("Bucket name not configured")
 	}
 	if cache.Region == "" {
-		panic("Region not configured")
+		log.Fatal("Region not configured")
 	}
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
