@@ -19,12 +19,13 @@ import (
 )
 
 var (
-	backend     string
-	password    string
-	baseURL     string
-	model       string
-	engine      string
-	temperature float32
+	backend        string
+	password       string
+	baseURL        string
+	model          string
+	engine         string
+	temperature    float32
+	providerRegion string
 )
 
 var configAI ai.AIConfiguration
