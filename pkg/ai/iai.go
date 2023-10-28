@@ -26,6 +26,7 @@ var (
 		&LocalAIClient{},
 		&NoOpAIClient{},
 		&CohereClient{},
+		&AmazonBedRockClient{},
 	}
 	Backends = []string{
 		"openai",
@@ -33,6 +34,7 @@ var (
 		"azureopenai",
 		"noopai",
 		"cohere",
+		"amazonbedrock",
 	}
 )
 
@@ -49,6 +51,7 @@ type IAIConfig interface {
 	GetBaseURL() string
 	GetEngine() string
 	GetTemperature() float32
+	GetProviderRegion() string
 }
 
 func NewClient(provider string) IAI {
@@ -67,12 +70,13 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
-	Name        string  `mapstructure:"name"`
-	Model       string  `mapstructure:"model"`
-	Password    string  `mapstructure:"password" yaml:"password,omitempty"`
-	BaseURL     string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
-	Engine      string  `mapstructure:"engine" yaml:"engine,omitempty"`
-	Temperature float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
+	Name           string  `mapstructure:"name"`
+	Model          string  `mapstructure:"model"`
+	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
+	BaseURL        string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
+	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
+	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -92,6 +96,10 @@ func (p *AIProvider) GetEngine() string {
 }
 func (p *AIProvider) GetTemperature() float32 {
 	return p.Temperature
+}
+
+func (p *AIProvider) GetProviderRegion() string {
+	return p.ProviderRegion
 }
 
 func NeedPassword(backend string) bool {
