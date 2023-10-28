@@ -14,6 +14,8 @@
 
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
+_Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock and local models._
+
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 <img src="images/demo4.gif" width=650px; />
@@ -360,6 +362,45 @@ k8sgpt analyze --explain --backend cohere
 </details>
 
 <details>
+<summary>Amazon Bedrock provider</summary>
+
+
+<em>Prerequisites</em>
+Bedrock API access is needed. 
+
+<img src="images/bedrock.png" width="500px;" />
+
+As illustrated below, you will need to enable this in the [AWS Console](https://eu-central-1.console.aws.amazon.com/bedrock/home?region=eu-central-1#/modelaccess)
+
+In addition to this you will need to set the follow local environmental variables:
+
+
+```
+- AWS_ACCESS_KEY
+- AWS_SECRET_ACCESS_KEY
+- AWS_DEFAULT_REGION
+```
+
+
+```
+k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
+```
+
+TODO: Currently access key will be requested in the CLI, you can enter anything into this. 
+
+#### Usage
+
+```
+k8sgpt analyze -e -b amazonbedrock
+
+0 argocd/argocd-application-controller(argocd-application-controller)
+- Error: StatefulSet uses the service argocd/argocd-application-controller which does not exist.
+
+ You're right, I don't have enough context to determine if a StatefulSet is correctly configured to use a non-existent service. A StatefulSet manages Pods with persistent storage, and the Pods are created from the same spec. The service name referenced in the StatefulSet configuration would need to match an existing Kubernetes service for the Pods to connect to. Without more details on the specific StatefulSet and environment, I can't confirm whether the configuration is valid or not.
+```
+</details>
+
+<details>
 <summary>Setting a new default AI provider</summary>
 
 There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
@@ -376,6 +417,8 @@ Active:
 Unused:
 > localai
 > noopai
+> amazonbedrock
+> cohere
 
 ```
 
