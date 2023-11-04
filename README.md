@@ -425,7 +425,7 @@ k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointn
 ***Note**:
 TODO: Currently access key will be requested in the CLI, you can enter anything into this.
 
-To make amazonsagemaer as a default backend run:
+To make amazonsagemaker as a default backend run:
 
 ```bash
 k8sgpt auth default -p amazonsagemaker
