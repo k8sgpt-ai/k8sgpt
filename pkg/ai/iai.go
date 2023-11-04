@@ -55,6 +55,8 @@ type IAIConfig interface {
 	GetEngine() string
 	GetTemperature() float32
 	GetProviderRegion() string
+	GetTopP() float32
+	GetMaxTokens() int
 }
 
 func NewClient(provider string) IAI {
@@ -81,6 +83,10 @@ type AIProvider struct {
 	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
+	TopP   float32  `mapstructure:"topp" yaml:"topp,omitempty"`
+	MaxTokens int  `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+
+
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -89,6 +95,14 @@ func (p *AIProvider) GetBaseURL() string {
 
 func (p *AIProvider) GetEndpointName() string {
 	return p.EndpointName
+}
+
+func (p *AIProvider) GetTopP() float32 {
+	return p.TopP
+}
+
+func (p *AIProvider) GetMaxTokens() int {
+	return p.MaxTokens
 }
 
 func (p *AIProvider) GetPassword() string {

@@ -37,17 +37,31 @@ type SageMakerAIClient struct {
 	model       string
 	temperature float32
 	endpoint    string
+	topP		float32
+	maxTokens	int
 }
 
-const (
-	// SageMaker completion parameters
-	maxNewTokens = 256
-	top_P        = 0.9
-)
+type Generations []struct {
+	Generation struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"generation"`
+}
 
-type Generation struct {
+type Request struct {
+	Inputs [][]Message `json:"inputs"`
+	Parameters Parameters `json:"parameters"`
+}
+
+type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
+}
+
+type Parameters struct {
+	MaxNewTokens int     `json:"max_new_tokens"`
+	TopP         float64 `json:"top_p"`
+	Temperature  float64 `json:"temperature"`
 }
 
 func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
@@ -64,6 +78,8 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	c.model = config.GetModel()
 	c.endpoint = config.GetEndpointName()
 	c.temperature = config.GetTemperature()
+	c.maxTokens = config.GetMaxTokens()
+	c.topP = config.GetTopP()
 	return nil
 }
 
@@ -73,31 +89,30 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	if len(promptTmpl) == 0 {
 		promptTmpl = PromptMap["default"]
 	}
-	// TODO: extract all paramseters to config
-	data := map[string]interface{}{
-		"inputs": []interface{}{
-			[]interface{}{
-				map[string]interface{}{
-					"role":    "system",
-					"content": "DEFAULT_PROMPT",
-				},
-				map[string]interface{}{
-					"role":    "user",
-					"content": fmt.Sprintf(promptTmpl, c.language, prompt),
-				},
+
+	request := Request{
+		Inputs: [][]Message{
+			{
+				{Role: "system", Content: "DEFAULT_PROMPT"},
+				{Role: "user", Content: fmt.Sprintf(promptTmpl, c.language, prompt)},
 			},
 		},
-		"parameters": map[string]interface{}{
-			"max_new_tokens": maxNewTokens,
-			"top_p":          top_P,
-			"temperature":    c.temperature,
+		// Parameters: Parameters{
+		// 	MaxNewTokens: sageMakerMaxTokens, // TODO: move to config params
+		// 	TopP:         sageMakerTopP, // TODO: move to config params
+		// 	Temperature:  float64(c.temperature),
+		// },
+		Parameters: Parameters{
+			MaxNewTokens: int(c.maxTokens), // TODO: move to config params
+			TopP:         float64(c.topP), // TODO: move to config params
+			Temperature:  float64(c.temperature),
 		},
 	}
-	// Convert data to []byte
-	bytesData, err := json.Marshal(data)
+
+	
+	// Convert request to []byte
+	bytesData, err := json.Marshal(request)
 	if err != nil {
-		fmt.Println("Error:", err)
-		log.Fatal(err)
 		return "", err
 	}
 
@@ -117,15 +132,16 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 		return "", err
 	}
 
-	// Define a slice of Generations
-	var generations []struct {
-		Generation Generation `json:"generation"`
-	}
+	// // Define a slice of Generations
+	var generations Generations
 
 	err = json.Unmarshal([]byte(string(result.Body)), &generations)
 	if err != nil {
-		log.Fatal(err)
 		return "", err
+	}
+	// Check for length of generations
+	if len(generations) != 1 {
+		return "", fmt.Errorf("Expected exactly one generation, but got %d", len(generations))
 	}
 
 	// Access the content
