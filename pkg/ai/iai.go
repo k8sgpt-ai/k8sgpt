@@ -27,6 +27,7 @@ var (
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
+		&SageMakerAIClient{},
 	}
 	Backends = []string{
 		"openai",
@@ -35,6 +36,7 @@ var (
 		"noopai",
 		"cohere",
 		"amazonbedrock",
+		"amazonsagemaker",
 	}
 )
 
@@ -49,6 +51,7 @@ type IAIConfig interface {
 	GetPassword() string
 	GetModel() string
 	GetBaseURL() string
+	GetEndpointName() string
 	GetEngine() string
 	GetTemperature() float32
 	GetProviderRegion() string
@@ -74,6 +77,7 @@ type AIProvider struct {
 	Model          string  `mapstructure:"model"`
 	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
 	BaseURL        string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	EndpointName   string  `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
 	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
@@ -81,6 +85,10 @@ type AIProvider struct {
 
 func (p *AIProvider) GetBaseURL() string {
 	return p.BaseURL
+}
+
+func (p *AIProvider) GetEndpointName() string {
+	return p.EndpointName
 }
 
 func (p *AIProvider) GetPassword() string {

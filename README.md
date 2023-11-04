@@ -398,6 +398,58 @@ k8sgpt analyze -e -b amazonbedrock
 
  You're right, I don't have enough context to determine if a StatefulSet is correctly configured to use a non-existent service. A StatefulSet manages Pods with persistent storage, and the Pods are created from the same spec. The service name referenced in the StatefulSet configuration would need to match an existing Kubernetes service for the Pods to connect to. Without more details on the specific StatefulSet and environment, I can't confirm whether the configuration is valid or not.
 ```
+
+</details>
+
+<details>
+<summary>Amazon SageMaker Provider</summary>
+
+<em>Prerequisites</em>
+
+1. **AWS CLI Configuration**: Make sure you have the AWS Command Line Interface (CLI) configured on your machine. If you haven't already configured the AWS CLI, you can follow the official AWS documentation for instructions on how to do it: [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+
+2. **SageMaker Instance**: You need to have an Amazon SageMaker instance set up. If you don't have one already, you can follow the step-by-step instructions provided in this repository for creating a SageMaker instance: [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk).
+
+3. **Backend Configuration**:
+To add amazonsagemaker backend two parameters are required:
+
+* Amazon SageMaker endpoint name: You'll need the name of the SageMaker endpoint.
+* AWS region where your SageMaker instance is created
+
+To add amazonsagemaker as a backend run:
+
+```bash
+k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
+```
+
+***Note**:
+TODO: Currently access key will be requested in the CLI, you can enter anything into this.
+
+To make amazonsagemaer as a default backend run:
+
+```bash
+k8sgpt auth default -p amazonsagemaker
+```
+
+#### AmazonSageMaker Usage
+
+```bash
+./k8sgpt analyze -e -b amazonsagemaker
+ 100% |███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
+AI Provider: amazonsagemaker
+
+0 default/nginx(nginx)
+- Error: Back-off pulling image "nginxx"
+ Error: Back-off pulling image "nginxx"
+
+Solution:
+
+1. Check if the image exists in the registry by running `docker image ls nginxx`.
+2. If the image is not found, try pulling it by running `docker pull nginxx`.
+3. If the image is still not available, check if there are any network issues by running `docker network inspect` and `docker network list`.
+4. If the issue persists, try restarting the Docker daemon by running `sudo service docker restart`.
+```
+
 </details>
 
 <details>

@@ -41,7 +41,10 @@ var addCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
 		}
-
+		if strings.ToLower(backend) == "amazonsagemaker" {
+			_ = cmd.MarkFlagRequired("endpointname")
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -108,6 +111,7 @@ var addCmd = &cobra.Command{
 			Model:          model,
 			Password:       password,
 			BaseURL:        baseURL,
+			EndpointName:   endpointName,
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
@@ -138,6 +142,8 @@ func init() {
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for endpointName
+	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, (e.g `endpoint-xxxxxxxxxxxx`)")
 	// add flag for temperature
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
