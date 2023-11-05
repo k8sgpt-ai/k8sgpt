@@ -93,6 +93,10 @@ var addCmd = &cobra.Command{
 			color.Red("Error: temperature ranges from 0 to 1.")
 			os.Exit(1)
 		}
+		if topP > 1.0 || topP < 0.0 {
+			color.Red("Error: topP ranges from 0 to 1.")
+			os.Exit(1)
+		}
 
 		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
@@ -115,9 +119,8 @@ var addCmd = &cobra.Command{
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
-			TopP: topP,
-			MaxTokens: maxTokens,
-
+			TopP:           topP,
+			MaxTokens:      maxTokens,
 		}
 
 		if providerIndex == -1 {
@@ -147,7 +150,6 @@ func init() {
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
 	// add flag for endpointName
 	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, (e.g `endpoint-xxxxxxxxxxxx`)")
-	// Maybe we could switch p to topp instead of password? 
 	// add flag for topP
 	addCmd.Flags().Float32VarP(&topP, "topp", "c", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
 	// max tokens

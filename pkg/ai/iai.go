@@ -83,10 +83,8 @@ type AIProvider struct {
 	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
-	TopP   float32  `mapstructure:"topp" yaml:"topp,omitempty"`
-	MaxTokens int  `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
-
-
+	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
+	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {

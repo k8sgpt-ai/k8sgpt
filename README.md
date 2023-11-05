@@ -386,7 +386,7 @@ In addition to this you will need to set the follow local environmental variable
 k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
 ```
 
-TODO: Currently access key will be requested in the CLI, you can enter anything into this. 
+TODO: Currently access key will be requested in the CLI, you can enter anything into this.
 
 #### Usage
 
@@ -404,17 +404,18 @@ k8sgpt analyze -e -b amazonbedrock
 <details>
 <summary>Amazon SageMaker Provider</summary>
 
-<em>Prerequisites</em>
+#### Prerequisites
 
 1. **AWS CLI Configuration**: Make sure you have the AWS Command Line Interface (CLI) configured on your machine. If you haven't already configured the AWS CLI, you can follow the official AWS documentation for instructions on how to do it: [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
 
 2. **SageMaker Instance**: You need to have an Amazon SageMaker instance set up. If you don't have one already, you can follow the step-by-step instructions provided in this repository for creating a SageMaker instance: [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk).
 
-3. **Backend Configuration**:
+#### Backend Configuration
+
 To add amazonsagemaker backend two parameters are required:
 
-* Amazon SageMaker endpoint name: You'll need the name of the SageMaker endpoint.
-* AWS region where your SageMaker instance is created
+* `--endpointname` Amazon SageMaker endpoint name.
+* `--providerRegion` AWS region where SageMaker instance is created. `k8sgpt` uses this region to connect to SageMaker (not the one defined with AWS CLI or environment variables )
 
 To add amazonsagemaker as a backend run:
 
@@ -424,6 +425,16 @@ k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointn
 
 ***Note**:
 TODO: Currently access key will be requested in the CLI, you can enter anything into this.
+
+#### Optional params
+
+Optionally, when adding the backend and later by changing the configuration file, you can set the following parameters:
+
+`-l, --maxtokens int`                        Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length (default 2048)
+
+`-t, --temperature float32`                  The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random) (default 0.7)
+
+`-c, --topp float32`                         Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability. (default 0.5)
 
 To make amazonsagemaker as a default backend run:
 

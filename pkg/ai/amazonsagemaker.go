@@ -37,8 +37,8 @@ type SageMakerAIClient struct {
 	model       string
 	temperature float32
 	endpoint    string
-	topP		float32
-	maxTokens	int
+	topP        float32
+	maxTokens   int
 }
 
 type Generations []struct {
@@ -49,8 +49,8 @@ type Generations []struct {
 }
 
 type Request struct {
-	Inputs [][]Message `json:"inputs"`
-	Parameters Parameters `json:"parameters"`
+	Inputs     [][]Message `json:"inputs"`
+	Parameters Parameters  `json:"parameters"`
 }
 
 type Message struct {
@@ -97,19 +97,14 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 				{Role: "user", Content: fmt.Sprintf(promptTmpl, c.language, prompt)},
 			},
 		},
-		// Parameters: Parameters{
-		// 	MaxNewTokens: sageMakerMaxTokens, // TODO: move to config params
-		// 	TopP:         sageMakerTopP, // TODO: move to config params
-		// 	Temperature:  float64(c.temperature),
-		// },
+
 		Parameters: Parameters{
-			MaxNewTokens: int(c.maxTokens), // TODO: move to config params
-			TopP:         float64(c.topP), // TODO: move to config params
+			MaxNewTokens: int(c.maxTokens),
+			TopP:         float64(c.topP),
 			Temperature:  float64(c.temperature),
 		},
 	}
 
-	
 	// Convert request to []byte
 	bytesData, err := json.Marshal(request)
 	if err != nil {
