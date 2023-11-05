@@ -386,8 +386,6 @@ In addition to this you will need to set the follow local environmental variable
 k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
 ```
 
-TODO: Currently access key will be requested in the CLI, you can enter anything into this.
-
 #### Usage
 
 ```
@@ -422,9 +420,6 @@ To add amazonsagemaker as a backend run:
 ```bash
 k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
 ```
-
-***Note**:
-TODO: Currently access key will be requested in the CLI, you can enter anything into this.
 
 #### Optional params
 

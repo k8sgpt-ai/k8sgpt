@@ -122,6 +122,13 @@ func (p *AIProvider) GetProviderRegion() string {
 	return p.ProviderRegion
 }
 
+var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock"}
+
 func NeedPassword(backend string) bool {
-	return backend != "localai"
+	for _, b := range passwordlessProviders {
+		if b == backend {
+			return false
+		}
+	}
+	return true
 }
