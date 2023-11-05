@@ -161,7 +161,7 @@ func (a *SageMakerAIClient) Parse(ctx context.Context, prompt []string, cache ca
 
 	if err != nil {
 		color.Red("error storing value to cache: %v", err)
-		return "", nil
+		return "", err
 	}
 
 	return response, nil
