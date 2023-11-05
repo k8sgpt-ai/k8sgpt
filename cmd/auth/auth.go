@@ -22,10 +22,13 @@ var (
 	backend        string
 	password       string
 	baseURL        string
+	endpointName   string
 	model          string
 	engine         string
 	temperature    float32
 	providerRegion string
+	topP float32
+	maxTokens int
 )
 
 var configAI ai.AIConfiguration

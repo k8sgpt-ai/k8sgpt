@@ -41,7 +41,10 @@ var addCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
 		}
-
+		if strings.ToLower(backend) == "amazonsagemaker" {
+			_ = cmd.MarkFlagRequired("endpointname")
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -90,6 +93,10 @@ var addCmd = &cobra.Command{
 			color.Red("Error: temperature ranges from 0 to 1.")
 			os.Exit(1)
 		}
+		if topP > 1.0 || topP < 0.0 {
+			color.Red("Error: topP ranges from 0 to 1.")
+			os.Exit(1)
+		}
 
 		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
@@ -108,9 +115,12 @@ var addCmd = &cobra.Command{
 			Model:          model,
 			Password:       password,
 			BaseURL:        baseURL,
+			EndpointName:   endpointName,
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
+			TopP:           topP,
+			MaxTokens:      maxTokens,
 		}
 
 		if providerIndex == -1 {
@@ -138,6 +148,12 @@ func init() {
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for endpointName
+	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, (e.g `endpoint-xxxxxxxxxxxx`)")
+	// add flag for topP
+	addCmd.Flags().Float32VarP(&topP, "topp", "c", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
+	// max tokens
+	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
 	// add flag for temperature
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
