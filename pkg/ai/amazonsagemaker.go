@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"encoding/json"
-	"log"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -123,7 +122,6 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	// Call the InvokeEndpoint function
 	result, err := c.client.InvokeEndpoint(input)
 	if err != nil {
-		log.Fatal(err)
 		return "", err
 	}
 
