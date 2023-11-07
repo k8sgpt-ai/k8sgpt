@@ -27,8 +27,8 @@ var (
 	engine         string
 	temperature    float32
 	providerRegion string
-	topP float32
-	maxTokens int
+	topP           float32
+	maxTokens      int
 )
 
 var configAI ai.AIConfiguration
