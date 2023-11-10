@@ -43,6 +43,7 @@ var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Node":                           NodeAnalyzer{},
 	"ValidatingWebhookConfiguration": ValidatingWebhookAnalyzer{},
 	"MutatingWebhookConfiguration":   MutatingWebhookAnalyzer{},
+	"Log":                            LogAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
