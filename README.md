@@ -246,7 +246,7 @@ k8sgpt auth update $MY_BACKEND1,$MY_BACKEND2..
 _Remove configured backends_
 
 ```
-k8sgpt auth remove $MY_BACKEND1,$MY_BACKEND2..
+k8sgpt auth remove -b $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _List integrations_
