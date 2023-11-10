@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.19...v0.3.20) (2023-11-05)
+
+
+### Features
+
+* amazonsagemaker AI provider ([#731](https://github.com/k8sgpt-ai/k8sgpt/issues/731)) ([ccef7f6](https://github.com/k8sgpt-ai/k8sgpt/commit/ccef7f617004723b37d1e8ffb011398005e0b392))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.1 ([#724](https://github.com/k8sgpt-ai/k8sgpt/issues/724)) ([0136b8f](https://github.com/k8sgpt-ai/k8sgpt/commit/0136b8f543a7052e967e29691afe1aab8e5fae1b))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/storage/azblob to v1.2.0 ([#723](https://github.com/k8sgpt-ai/k8sgpt/issues/723)) ([16b229d](https://github.com/k8sgpt-ai/k8sgpt/commit/16b229d5478085655041ff0230d2542c4c0c7ce9))
+* **deps:** update module google.golang.org/grpc to v1.59.0 ([#713](https://github.com/k8sgpt-ai/k8sgpt/issues/713)) ([901c5ec](https://github.com/k8sgpt-ai/k8sgpt/commit/901c5ec18858f2f7fd385ff20aef77d203748c93))
+* **deps:** update module helm.sh/helm/v3 to v3.13.1 ([#706](https://github.com/k8sgpt-ai/k8sgpt/issues/706)) ([40133ad](https://github.com/k8sgpt-ai/k8sgpt/commit/40133adaedff3862199e00f62877a88fcffa67c5))
+* ensure ingress HTTP rule exists to prevent panic ([#726](https://github.com/k8sgpt-ai/k8sgpt/issues/726)) ([37721b5](https://github.com/k8sgpt-ai/k8sgpt/commit/37721b5dd77d66edfb7e8377b2b96470b8a21d1b))
+
+
+### Other
+
+* **deps:** update amannn/action-semantic-pull-request action to v5.4.0 ([#729](https://github.com/k8sgpt-ai/k8sgpt/issues/729)) ([188a8a2](https://github.com/k8sgpt-ai/k8sgpt/commit/188a8a2cd5e25b35446e2eab46279a0ba3976af3))
+
 ## [0.3.19](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.18...v0.3.19) (2023-10-28)
 
 

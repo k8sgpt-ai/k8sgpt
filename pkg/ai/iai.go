@@ -27,6 +27,7 @@ var (
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
+		&SageMakerAIClient{},
 	}
 	Backends = []string{
 		"openai",
@@ -35,6 +36,7 @@ var (
 		"noopai",
 		"cohere",
 		"amazonbedrock",
+		"amazonsagemaker",
 	}
 )
 
@@ -49,9 +51,12 @@ type IAIConfig interface {
 	GetPassword() string
 	GetModel() string
 	GetBaseURL() string
+	GetEndpointName() string
 	GetEngine() string
 	GetTemperature() float32
 	GetProviderRegion() string
+	GetTopP() float32
+	GetMaxTokens() int
 }
 
 func NewClient(provider string) IAI {
@@ -74,13 +79,28 @@ type AIProvider struct {
 	Model          string  `mapstructure:"model"`
 	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
 	BaseURL        string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	EndpointName   string  `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
 	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
+	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
+	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
 	return p.BaseURL
+}
+
+func (p *AIProvider) GetEndpointName() string {
+	return p.EndpointName
+}
+
+func (p *AIProvider) GetTopP() float32 {
+	return p.TopP
+}
+
+func (p *AIProvider) GetMaxTokens() int {
+	return p.MaxTokens
 }
 
 func (p *AIProvider) GetPassword() string {
@@ -102,6 +122,13 @@ func (p *AIProvider) GetProviderRegion() string {
 	return p.ProviderRegion
 }
 
+var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock"}
+
 func NeedPassword(backend string) bool {
-	return backend != "localai"
+	for _, b := range passwordlessProviders {
+		if b == backend {
+			return false
+		}
+	}
+	return true
 }
