@@ -60,7 +60,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// Check through container status to check for crashes or unready
 		for _, containerStatus := range pod.Status.ContainerStatuses {
 			if containerStatus.State.Waiting != nil {
-				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" {
+				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" || containerStatus.State.Waiting.Reason == "CreateContainerConfigError" {
 					if containerStatus.State.Waiting.Message != "" {
 						failures = append(failures, common.Failure{
 							Text:      containerStatus.State.Waiting.Message,
