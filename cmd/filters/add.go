@@ -45,6 +45,13 @@ var addCmd = &cobra.Command{
 			for _, filter := range availableFilters {
 				if filter == f {
 					foundFilter = true
+
+					// WARNING: This is to enable users correctly understand implications
+					// of enabling logs
+					if filter == "Log" {
+						color.Yellow("Warning: by enabling logs, you will be sending potentially sensitive data to the AI backend.")
+					}
+
 					break
 				}
 			}
