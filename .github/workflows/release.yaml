@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-
+     
       - uses: google-github-actions/release-please-action@v3.7.13
         id: release
         with:
