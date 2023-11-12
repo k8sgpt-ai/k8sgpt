@@ -16,11 +16,15 @@ grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:80
 ```
 
 ```
-grpcurl -plaintext  localhost:8080 schema.v1.ServerService/ListIntegrations
+grpcurl -plaintext  localhost:8080 schema.v1.ServerService/ListIntegrations 
 {
   "integrations": [
     "trivy"
   ]
 }
 
+```
+
+```
+grpcurl -plaintext -d '{"integrations":{"trivy":{"enabled":"true","namespace":"default","skipInstall":"false"}}}' localhost:8080 schema.v1.ServerService/AddConfig
 ```

@@ -26,6 +26,11 @@ import (
 	"golang.org/x/term"
 )
 
+const (
+	defaultBackend = "openai"
+	defaultModel   = "gpt-3.5-turbo"
+)
+
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add new provider",
@@ -35,6 +40,10 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "azureopenai" {
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
+		}
+		if strings.ToLower(backend) == "amazonsagemaker" {
+			_ = cmd.MarkFlagRequired("endpointname")
+			_ = cmd.MarkFlagRequired("providerRegion")
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -66,8 +75,8 @@ var addCmd = &cobra.Command{
 
 		// check if backend is not empty and a valid value
 		if backend == "" {
-			color.Yellow("Warning: backend input is empty, will use the default value: openai")
-			backend = "openai"
+			color.Yellow(fmt.Sprintf("Warning: backend input is empty, will use the default value: %s", defaultBackend))
+			backend = defaultBackend
 		} else {
 			if !validBackend(ai.Backends, backend) {
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
@@ -77,10 +86,15 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			color.Yellow("Warning: model input is empty, will use the default value: gpt-3.5-turbo")
+			model = defaultModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
+			os.Exit(1)
+		}
+		if topP > 1.0 || topP < 0.0 {
+			color.Red("Error: topP ranges from 0 to 1.")
 			os.Exit(1)
 		}
 
@@ -97,12 +111,16 @@ var addCmd = &cobra.Command{
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:        backend,
-			Model:       model,
-			Password:    password,
-			BaseURL:     baseURL,
-			Engine:      engine,
-			Temperature: temperature,
+			Name:           backend,
+			Model:          model,
+			Password:       password,
+			BaseURL:        baseURL,
+			EndpointName:   endpointName,
+			Engine:         engine,
+			Temperature:    temperature,
+			ProviderRegion: providerRegion,
+			TopP:           topP,
+			MaxTokens:      maxTokens,
 		}
 
 		if providerIndex == -1 {
@@ -123,15 +141,23 @@ var addCmd = &cobra.Command{
 
 func init() {
 	// add flag for backend
-	addCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	addCmd.Flags().StringVarP(&backend, "backend", "b", defaultBackend, "Backend AI provider")
 	// add flag for model
-	addCmd.Flags().StringVarP(&model, "model", "m", "gpt-3.5-turbo", "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", defaultModel, "Backend AI model")
 	// add flag for password
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
 	addCmd.Flags().StringVarP(&baseURL, "baseurl", "u", "", "URL AI provider, (e.g `http://localhost:8080/v1`)")
+	// add flag for endpointName
+	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, (e.g `endpoint-xxxxxxxxxxxx`)")
+	// add flag for topP
+	addCmd.Flags().Float32VarP(&topP, "topp", "c", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
+	// max tokens
+	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
 	// add flag for temperature
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name")
+	//add flag for amazonbedrock region name
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name")
 }

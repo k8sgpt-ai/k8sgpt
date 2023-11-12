@@ -32,6 +32,8 @@ type IIntegration interface {
 	AddAnalyzer(*map[string]common.IAnalyzer)
 
 	GetAnalyzerName() []string
+	// An integration must keep record of its deployed namespace (if not using --no-install)
+	GetNamespace() (string, error)
 
 	OwnsAnalyzer(string) bool
 
@@ -86,7 +88,6 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 			return err
 		}
 	}
-
 	mergedFilters := activeFilters
 	mergedFilters = append(mergedFilters, integrations[name].GetAnalyzerName()...)
 	uniqueFilters, _ := util.RemoveDuplicates(mergedFilters)
