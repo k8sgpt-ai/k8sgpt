@@ -23,20 +23,23 @@ import (
 )
 
 var removeCmd = &cobra.Command{
-	Use:   "remove [backend(s)]",
-	Short: "Remove a provider",
-	Long:  "The command to remove an AI backend provider",
-	Args:  cobra.ExactArgs(1),
+	Use:   "remove",
+	Short: "Remove provider(s)",
+	Long:  "The command to remove AI backend provider(s)",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		_ = cmd.MarkFlagRequired("backends")
+	},
 	Run: func(cmd *cobra.Command, args []string) {
-		inputBackends := strings.Split(args[0], ",")
+		if backend == "" {
+			color.Red("Error: backends must be set.")
+			_ = cmd.Help()
+			return
+		}
+		inputBackends := strings.Split(backend, ",")
+
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
 			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		if len(inputBackends) == 0 {
-			color.Red("Error: backend must be set.")
 			os.Exit(1)
 		}
 
@@ -54,11 +57,11 @@ var removeCmd = &cobra.Command{
 				}
 			}
 			if !foundBackend {
-				color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", backend)
+				color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", b)
 				os.Exit(1)
 			}
-
 		}
+
 		viper.Set("ai", configAI)
 		if err := viper.WriteConfig(); err != nil {
 			color.Red("Error writing config file: %s", err.Error())
@@ -66,4 +69,9 @@ var removeCmd = &cobra.Command{
 		}
 
 	},
+}
+
+func init() {
+	// add flag for backends
+	removeCmd.Flags().StringVarP(&backend, "backends", "b", "", "Backend AI providers to remove (separated by a comma)")
 }
