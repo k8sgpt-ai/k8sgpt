@@ -14,6 +14,8 @@
 
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
+_Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock and local models._
+
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 <img src="images/demo4.gif" width=650px; />
@@ -34,7 +36,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -43,7 +45,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -55,7 +57,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -63,7 +65,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -76,14 +78,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.16/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.20/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -244,7 +246,7 @@ k8sgpt auth update $MY_BACKEND1,$MY_BACKEND2..
 _Remove configured backends_
 
 ```
-k8sgpt auth remove $MY_BACKEND1,$MY_BACKEND2..
+k8sgpt auth remove -b $MY_BACKEND1,$MY_BACKEND2..
 ```
 
 _List integrations_
@@ -360,6 +362,103 @@ k8sgpt analyze --explain --backend cohere
 </details>
 
 <details>
+<summary>Amazon Bedrock provider</summary>
+
+
+<em>Prerequisites</em>
+Bedrock API access is needed. 
+
+<img src="images/bedrock.png" width="500px;" />
+
+As illustrated below, you will need to enable this in the [AWS Console](https://eu-central-1.console.aws.amazon.com/bedrock/home?region=eu-central-1#/modelaccess)
+
+In addition to this you will need to set the follow local environmental variables:
+
+
+```
+- AWS_ACCESS_KEY
+- AWS_SECRET_ACCESS_KEY
+- AWS_DEFAULT_REGION
+```
+
+
+```
+k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
+```
+
+#### Usage
+
+```
+k8sgpt analyze -e -b amazonbedrock
+
+0 argocd/argocd-application-controller(argocd-application-controller)
+- Error: StatefulSet uses the service argocd/argocd-application-controller which does not exist.
+
+ You're right, I don't have enough context to determine if a StatefulSet is correctly configured to use a non-existent service. A StatefulSet manages Pods with persistent storage, and the Pods are created from the same spec. The service name referenced in the StatefulSet configuration would need to match an existing Kubernetes service for the Pods to connect to. Without more details on the specific StatefulSet and environment, I can't confirm whether the configuration is valid or not.
+```
+
+</details>
+
+<details>
+<summary>Amazon SageMaker Provider</summary>
+
+#### Prerequisites
+
+1. **AWS CLI Configuration**: Make sure you have the AWS Command Line Interface (CLI) configured on your machine. If you haven't already configured the AWS CLI, you can follow the official AWS documentation for instructions on how to do it: [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+
+2. **SageMaker Instance**: You need to have an Amazon SageMaker instance set up. If you don't have one already, you can follow the step-by-step instructions provided in this repository for creating a SageMaker instance: [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk).
+
+#### Backend Configuration
+
+To add amazonsagemaker backend two parameters are required:
+
+* `--endpointname` Amazon SageMaker endpoint name.
+* `--providerRegion` AWS region where SageMaker instance is created. `k8sgpt` uses this region to connect to SageMaker (not the one defined with AWS CLI or environment variables )
+
+To add amazonsagemaker as a backend run:
+
+```bash
+k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
+```
+
+#### Optional params
+
+Optionally, when adding the backend and later by changing the configuration file, you can set the following parameters:
+
+`-l, --maxtokens int`                        Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length (default 2048)
+
+`-t, --temperature float32`                  The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random) (default 0.7)
+
+`-c, --topp float32`                         Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability. (default 0.5)
+
+To make amazonsagemaker as a default backend run:
+
+```bash
+k8sgpt auth default -p amazonsagemaker
+```
+
+#### AmazonSageMaker Usage
+
+```bash
+./k8sgpt analyze -e -b amazonsagemaker
+ 100% |███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
+AI Provider: amazonsagemaker
+
+0 default/nginx(nginx)
+- Error: Back-off pulling image "nginxx"
+ Error: Back-off pulling image "nginxx"
+
+Solution:
+
+1. Check if the image exists in the registry by running `docker image ls nginxx`.
+2. If the image is not found, try pulling it by running `docker pull nginxx`.
+3. If the image is still not available, check if there are any network issues by running `docker network inspect` and `docker network list`.
+4. If the issue persists, try restarting the Docker daemon by running `sudo service docker restart`.
+```
+
+</details>
+
+<details>
 <summary>Setting a new default AI provider</summary>
 
 There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
@@ -376,6 +475,8 @@ Active:
 Unused:
 > localai
 > noopai
+> amazonbedrock
+> cohere
 
 ```
 
@@ -485,18 +586,22 @@ Config file locations:
 
 <details>
 There may be scenarios where caching remotely is preferred.
-In these scenarios K8sGPT supports AWS S3 Integration.
+In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
-<summary> Remote caching </summary>
-
- _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+<summary> Remote caching </summary>  
+<em>Note: You can only configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
 
-Note: this will create the bucket if it does not exist
-```
-k8sgpt cache add --region <aws region> --bucket <name>
-```
+ * AWS S3
+   *  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+   * Configuration, ``` k8sgpt cache add --region <aws region> --bucket <name> ```
+     * K8sGPT will create the bucket if it does not exist
+ * Azure Storage
+   * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
+   * Configuration, ``` k8sgpt cache add --storageacc <storage account name> --container <container name> ```
+     * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
+     * It's **users'** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)       
 
 _Listing cache items_
 ```
@@ -504,9 +609,9 @@ k8sgpt cache list
 ```
 
 _Removing the remote cache_
-Note: this will not delete the bucket
+Note: this will not delete the upstream S3 bucket or Azure storage container
 ```
-k8sgpt cache remove --bucket <name>
+k8sgpt cache remove
 ```
 </details>
 

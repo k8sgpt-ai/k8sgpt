@@ -1,9 +1,18 @@
 package cache
 
 import (
-	"errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/spf13/viper"
+)
+
+type CacheType string
+
+const (
+	Azure     CacheType = "azure"
+	S3        CacheType = "s3"
+	FileBased CacheType = "file"
 )
 
 type ICache interface {
@@ -14,43 +23,68 @@ type ICache interface {
 	IsCacheDisabled() bool
 }
 
-func New(noCache bool, remoteCache bool) ICache {
-	if remoteCache {
+func New(noCache bool, remoteCache CacheType) ICache {
+	switch remoteCache {
+	case S3:
 		return NewS3Cache(noCache)
-	}
-	return &FileBasedCache{
-		noCache: noCache,
+	case Azure:
+		return NewAzureCache(noCache)
+	case FileBased:
+		return &FileBasedCache{
+			noCache: noCache,
+		}
+	default:
+		return &FileBasedCache{
+			noCache: noCache,
+		}
 	}
 }
 
 // CacheProvider is the configuration for the cache provider when using a remote cache
 type CacheProvider struct {
-	BucketName string `mapstructure:"bucketname"`
-	Region     string `mapstructure:"region"`
+	BucketName     string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
+	Region         string `mapstructure:"region" yaml:"region,omitempty"`
+	StorageAccount string `mapstructure:"storageaccount" yaml:"storageaccount,omitempty"`
+	ContainerName  string `mapstructure:"container" yaml:"container,omitempty"`
 }
 
-func RemoteCacheEnabled() (bool, error) {
+// NewCacheProvider constructs a new cache struct
+func NewCacheProvider(bucketname, region, storageaccount, containername string) CacheProvider {
+	return CacheProvider{
+		BucketName:     bucketname,
+		Region:         region,
+		StorageAccount: storageaccount,
+		ContainerName:  containername,
+	}
+}
+
+// If we have set a remote cache, return the remote cache type
+func RemoteCacheEnabled() (CacheType, error) {
 	// load remote cache if it is configured
 	var cache CacheProvider
 	err := viper.UnmarshalKey("cache", &cache)
 	if err != nil {
-		return false, err
+		return "", err
 	}
 	if cache.BucketName != "" && cache.Region != "" {
-		return true, nil
+		return S3, nil
+	} else if cache.StorageAccount != "" && cache.ContainerName != "" {
+		return Azure, nil
 	}
-	return false, nil
+	return FileBased, nil
 }
 
-func AddRemoteCache(bucketName string, region string) error {
+func AddRemoteCache(cache CacheProvider) error {
 	var cacheInfo CacheProvider
 	err := viper.UnmarshalKey("cache", &cacheInfo)
 	if err != nil {
 		return err
 	}
 
-	cacheInfo.BucketName = bucketName
-	cacheInfo.Region = region
+	cacheInfo.BucketName = cache.BucketName
+	cacheInfo.Region = cache.Region
+	cacheInfo.StorageAccount = cache.StorageAccount
+	cacheInfo.ContainerName = cache.ContainerName
 	viper.Set("cache", cacheInfo)
 	err = viper.WriteConfig()
 	if err != nil {
@@ -59,21 +93,21 @@ func AddRemoteCache(bucketName string, region string) error {
 	return nil
 }
 
-func RemoveRemoteCache(bucketName string) error {
+func RemoveRemoteCache() error {
 	var cacheInfo CacheProvider
 	err := viper.UnmarshalKey("cache", &cacheInfo)
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, "cache unmarshal")
 	}
-	if cacheInfo.BucketName == "" {
-		return errors.New("Error: no cache is configured")
+	if cacheInfo.BucketName == "" && cacheInfo.ContainerName == "" && cacheInfo.StorageAccount == "" {
+		return status.Error(codes.Internal, "no remote cache configured")
 	}
 
 	cacheInfo = CacheProvider{}
 	viper.Set("cache", cacheInfo)
 	err = viper.WriteConfig()
 	if err != nil {
-		return err
+		return status.Error(codes.Internal, "unable to write config")
 	}
 
 	return nil

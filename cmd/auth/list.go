@@ -16,8 +16,6 @@ package auth
 import (
 	"fmt"
 	"os"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -96,20 +94,6 @@ func init() {
 func printDetails(provider ai.AIProvider, userInput string) {
 	if provider.Model != "" {
 		fmt.Printf("   - Model: %s\n", provider.Model)
-	}
-	switch userInput {
-	case "y":
-		if provider.Password != "" {
-			fmt.Printf("   - Password: %s\n", provider.Password)
-		}
-	case "n":
-		if provider.Password != "" {
-			nc := utf8.RuneCountInString(provider.Password)
-			newStr := strings.Repeat("*", nc)
-			fmt.Printf("   - Password: %s\n", newStr)
-		}
-	default:
-		break
 	}
 	if provider.Engine != "" {
 		fmt.Printf("   - Engine: %s\n", provider.Engine)
