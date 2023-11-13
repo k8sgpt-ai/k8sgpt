@@ -613,6 +613,7 @@ k8sgpt cache list
 ```
 
 _Purging an object from the cache_
+Note: purging an object using this command will delete upstream files, so it requires appropriate permissions.
 ```
 k8sgpt cache purge $OBJECT_NAME
 ```
