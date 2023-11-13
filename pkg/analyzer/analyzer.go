@@ -49,6 +49,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"HorizontalPodAutoScaler": HpaAnalyzer{},
 	"PodDisruptionBudget":     PdbAnalyzer{},
 	"NetworkPolicy":           NetworkPolicyAnalyzer{},
+	"Log":                     LogAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {

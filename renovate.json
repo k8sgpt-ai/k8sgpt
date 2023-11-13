@@ -4,13 +4,15 @@
     "config:base",
     "helpers:pinGitHubActionDigests",
     ":gitSignOff"
-
   ],
   "addLabels": ["dependencies"],
   "postUpdateOptions": [
     "gomodTidy",
     "gomodMassage"
   ],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
   "packageRules": [
     {
       "description": "Exclude retracted cohere-go versions: https://github.com/renovatebot/renovate/issues/13012",
