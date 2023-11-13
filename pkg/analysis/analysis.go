@@ -115,9 +115,13 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	// load remote cache if it is configured
-	cache, err := cache.GetCacheConfiguration(noCache)
+	cache, err := cache.GetCacheConfiguration()
 	if err != nil {
 		return nil, err
+	}
+
+	if noCache {
+		cache.DisableCache()
 	}
 
 	return &Analysis{

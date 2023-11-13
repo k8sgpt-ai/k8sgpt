@@ -34,7 +34,7 @@ var purgeCmd = &cobra.Command{
 		}
 		objectKey := args[0]
 		fmt.Println(color.YellowString("Purging a remote cache."))
-		c, err := cache.GetCacheConfiguration(false)
+		c, err := cache.GetCacheConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

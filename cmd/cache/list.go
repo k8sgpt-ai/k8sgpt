@@ -32,7 +32,7 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// load remote cache if it is configured
-		c, err := cache.GetCacheConfiguration(false)
+		c, err := cache.GetCacheConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

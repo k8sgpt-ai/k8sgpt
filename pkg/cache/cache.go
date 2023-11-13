@@ -76,7 +76,7 @@ func NewCacheProvider(cacheType, bucketname, region, storageAccount, containerNa
 }
 
 // If we have set a remote cache, return the remote cache configuration
-func GetCacheConfiguration(noCache bool) (ICache, error) {
+func GetCacheConfiguration() (ICache, error) {
 	cacheInfo, err := ParseCacheConfiguration()
 	if err != nil {
 		return nil, err
