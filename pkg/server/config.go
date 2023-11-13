@@ -24,8 +24,8 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 			return resp, status.Error(codes.InvalidArgument, "mixed cache arguments")
 		}
 
-		cacheProvider := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, i.Cache.StorageAccount, i.Cache.ContainerName)
-		err := cache.AddRemoteCache(cacheProvider)
+		cacheProvider, err := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, i.Cache.StorageAccount, i.Cache.ContainerName, "", "", false)
+		err = cache.AddRemoteCache(cacheProvider)
 		if err != nil {
 			return resp, err
 		}

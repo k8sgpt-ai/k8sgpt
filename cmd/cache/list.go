@@ -16,9 +16,11 @@ package cache
 
 import (
 	"os"
+	"reflect"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -30,22 +32,32 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// load remote cache if it is configured
-		remoteCacheEnabled, err := cache.RemoteCacheEnabled()
+		c, err := cache.GetCacheConfiguration(false)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		c := cache.New(false, remoteCacheEnabled)
-		// list the contents of the cache
 		names, err := c.List()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
-		for _, name := range names {
-			println(name)
+		var headers []string
+		obj := cache.CacheObjectDetails{}
+		objType := reflect.TypeOf(obj)
+		for i := 0; i < objType.NumField(); i++ {
+			field := objType.Field(i)
+			headers = append(headers, field.Name)
 		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader(headers)
+
+		for _, v := range names {
+			table.Append([]string{v.Name, v.UpdatedAt.String()})
+		}
+		table.Render()
 	},
 }
 
