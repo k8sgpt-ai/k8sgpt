@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 )
 
 // Generate ICache implementation
@@ -24,8 +25,8 @@ type AzureCacheConfiguration struct {
 	ContainerName  string `mapstructure:"container" yaml:"container,omitempty"`
 }
 
-func (s *AzureCache) Configure(cacheInfo CacheProvider, noCache bool) error {
-	ctx := context.Background()
+func (s *AzureCache) Configure(cacheInfo CacheProvider) error {
+	s.ctx = context.Background()
 	if cacheInfo.Azure.ContainerName == "" {
 		log.Fatal("Azure Container name not configured")
 	}
@@ -44,7 +45,7 @@ func (s *AzureCache) Configure(cacheInfo CacheProvider, noCache bool) error {
 		log.Fatal(err)
 	}
 	// Try to create the blob container
-	_, err = client.CreateContainer(ctx, cacheInfo.Azure.ContainerName, nil)
+	_, err = client.CreateContainer(s.ctx, cacheInfo.Azure.ContainerName, nil)
 	if err != nil {
 		// TODO: Maybe there is a better way to check this?
 		// docs: https://pkg.go.dev/github.com/Azure/azure-storage-blob-go/azblob
@@ -56,7 +57,6 @@ func (s *AzureCache) Configure(cacheInfo CacheProvider, noCache bool) error {
 	}
 	s.containerName = cacheInfo.Azure.ContainerName
 	s.session = client
-	s.noCache = noCache
 
 	return nil
 
@@ -112,6 +112,14 @@ func (s *AzureCache) List() ([]CacheObjectDetails, error) {
 	return files, nil
 }
 
+func (s *AzureCache) Remove(key string) error {
+	_, err := s.session.DeleteBlob(s.ctx, s.containerName, key, &blob.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *AzureCache) Exists(key string) bool {
 	// Check if the object exists in the blob storage
 	pager := s.session.NewListBlobsFlatPager(s.containerName, &azblob.ListBlobsFlatOptions{
@@ -140,4 +148,8 @@ func (s *AzureCache) IsCacheDisabled() bool {
 
 func (s *AzureCache) GetName() string {
 	return "azure"
+}
+
+func (s *AzureCache) DisableCache() {
+	s.noCache = true
 }

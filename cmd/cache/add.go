@@ -33,7 +33,7 @@ var (
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [cache type]",
 	Short: "Add a remote cache",
 	Long: `This command allows you to add a remote cache to store the results of an analysis.
 	The supported cache types are:
@@ -41,9 +41,13 @@ var addCmd = &cobra.Command{
 	- Google Cloud storage
 	- S3`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			color.Red("Error: Please provide a value for cache types. Run k8sgpt cache add --help")
+			os.Exit(1)
+		}
 		fmt.Println(color.YellowString("Adding remote based cache"))
 		cacheType := args[0]
-		remoteCache, err := cache.NewCacheProvider(cacheType, bucketname, region, storageAccount, containerName, projectId, false)
+		remoteCache, err := cache.NewCacheProvider(cacheType, bucketname, region, storageAccount, containerName, projectId)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

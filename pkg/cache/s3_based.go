@@ -21,7 +21,7 @@ type S3CacheConfiguration struct {
 	BucketName string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
 }
 
-func (s *S3Cache) Configure(cacheInfo CacheProvider, noCache bool) error {
+func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if cacheInfo.S3.BucketName == "" {
 		log.Fatal("Bucket name not configured")
 	}
@@ -49,7 +49,6 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider, noCache bool) error {
 		})
 	}
 	s.session = s3Client
-	s.noCache = noCache
 	return nil
 }
 
@@ -62,6 +61,18 @@ func (s *S3Cache) Store(key string, data string) error {
 	})
 	return err
 
+}
+
+func (s *S3Cache) Remove(key string) error {
+	_, err := s.session.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: &s.bucketName,
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *S3Cache) Load(key string) (string, error) {
@@ -115,5 +126,9 @@ func (s *S3Cache) IsCacheDisabled() bool {
 }
 
 func (s *S3Cache) GetName() string {
-	return "gcs"
+	return "s3"
+}
+
+func (s *S3Cache) DisableCache() {
+	s.noCache = true
 }

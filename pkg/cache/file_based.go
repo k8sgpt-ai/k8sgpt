@@ -15,8 +15,7 @@ type FileBasedCache struct {
 	noCache bool
 }
 
-func (f *FileBasedCache) Configure(cacheInfo CacheProvider, noCache bool) error {
-	f.noCache = noCache
+func (f *FileBasedCache) Configure(cacheInfo CacheProvider) error {
 	return nil
 }
 
@@ -84,6 +83,20 @@ func (*FileBasedCache) Load(key string) (string, error) {
 	return string(data), nil
 }
 
+func (*FileBasedCache) Remove(key string) error {
+	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+
+	if err != nil {
+		return err
+	}
+
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (*FileBasedCache) Store(key string, data string) error {
 	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
 
@@ -96,4 +109,8 @@ func (*FileBasedCache) Store(key string, data string) error {
 
 func (s *FileBasedCache) GetName() string {
 	return "file"
+}
+
+func (s *FileBasedCache) DisableCache() {
+	s.noCache = true
 }

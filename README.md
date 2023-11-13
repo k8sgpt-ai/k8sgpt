@@ -595,17 +595,26 @@ _Adding a remote cache_
 
  * AWS S3
    *  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
-   * Configuration, ``` k8sgpt cache add --region <aws region> --bucket <name> ```
+   * Configuration, ``` k8sgpt cache add s3 --region <aws region> --bucket <name> ```
      * K8sGPT will create the bucket if it does not exist
  * Azure Storage
    * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
-   * Configuration, ``` k8sgpt cache add --storageacc <storage account name> --container <container name> ```
+   * Configuration, ``` k8sgpt cache add azure --storageacc <storage account name> --container <container name> ```
      * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
-     * It's **users'** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)       
+     * It's **users'** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)   
+  * Google Cloud Storage
+    * _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
+    * Configuration, ``` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>```
+      * K8sGPT will create the bucket if it does not exist   
 
 _Listing cache items_
 ```
 k8sgpt cache list
+```
+
+_Purging an object from the cache_
+```
+k8sgpt cache purge $OBJECT_NAME
 ```
 
 _Removing the remote cache_

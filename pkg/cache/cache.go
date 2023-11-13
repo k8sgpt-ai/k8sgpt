@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -19,16 +20,18 @@ var (
 )
 
 type ICache interface {
-	Configure(cacheInfo CacheProvider, noCache bool) error
+	Configure(cacheInfo CacheProvider) error
 	Store(key string, data string) error
 	Load(key string) (string, error)
 	List() ([]CacheObjectDetails, error)
+	Remove(key string) error
 	Exists(key string) bool
 	IsCacheDisabled() bool
 	GetName() string
+	DisableCache()
 }
 
-func New(noCache bool, cacheType string) ICache {
+func New(cacheType string) ICache {
 	for _, t := range types {
 		if cacheType == t.GetName() {
 			return t
@@ -36,8 +39,6 @@ func New(noCache bool, cacheType string) ICache {
 	}
 	return &FileBasedCache{}
 }
-
-// CacheProvider is the configuration for the cache provider when using a remote cache
 
 func ParseCacheConfiguration() (CacheProvider, error) {
 	var cacheInfo CacheProvider
@@ -48,8 +49,7 @@ func ParseCacheConfiguration() (CacheProvider, error) {
 	return cacheInfo, nil
 }
 
-func NewCacheProvider(cacheType, bucketname, region, storageAccount, containerName, projectId string, noCache bool) (CacheProvider, error) {
-	cache := New(false, cacheType)
+func NewCacheProvider(cacheType, bucketname, region, storageAccount, containerName, projectId string) (CacheProvider, error) {
 	cProvider := CacheProvider{}
 
 	switch {
@@ -64,24 +64,25 @@ func NewCacheProvider(cacheType, bucketname, region, storageAccount, containerNa
 		cProvider.S3.BucketName = bucketname
 		cProvider.S3.Region = region
 	default:
-		return CacheProvider{}, status.Error(codes.Internal, fmt.Sprintf("%s is not a possible option", cacheType))
+		return CacheProvider{}, status.Error(codes.Internal, fmt.Sprintf("%s is not a valid option", cacheType))
 	}
 
-	err := cache.Configure(cProvider, noCache)
+	cache := New(cacheType)
+	err := cache.Configure(cProvider)
 	if err != nil {
 		return CacheProvider{}, err
 	}
 	return cProvider, nil
 }
 
-// If we have set a remote cache, return the remote cache type
+// If we have set a remote cache, return the remote cache configuration
 func GetCacheConfiguration(noCache bool) (ICache, error) {
-	// load remote cache if it is configured
-	var cache ICache
 	cacheInfo, err := ParseCacheConfiguration()
 	if err != nil {
 		return nil, err
 	}
+
+	var cache ICache
 
 	switch {
 	case !reflect.DeepEqual(cacheInfo.GCS, GCSCacheConfiguration{}):
@@ -94,15 +95,30 @@ func GetCacheConfiguration(noCache bool) (ICache, error) {
 		cache = &FileBasedCache{}
 	}
 
-	cache.Configure(cacheInfo, noCache)
+	cache.Configure(cacheInfo)
 
 	return cache, nil
 }
 
+func HasAnyConfiguration(cacheInfo CacheProvider) bool {
+	return !reflect.DeepEqual(cacheInfo.GCS, GCSCacheConfiguration{}) ||
+		!reflect.DeepEqual(cacheInfo.Azure, AzureCacheConfiguration{}) ||
+		!reflect.DeepEqual(cacheInfo.S3, S3CacheConfiguration{})
+}
+
 func AddRemoteCache(cacheInfo CacheProvider) error {
+	actualConfig, err := ParseCacheConfiguration()
+	if err != nil {
+		return err
+	}
+
+	if HasAnyConfiguration(actualConfig) {
+		return errors.New("Cache configuration already exist. Please use update method.")
+	}
+
 	viper.Set("cache", cacheInfo)
 
-	err := viper.WriteConfig()
+	err = viper.WriteConfig()
 	if err != nil {
 		return err
 	}
@@ -110,23 +126,19 @@ func AddRemoteCache(cacheInfo CacheProvider) error {
 }
 
 func RemoveRemoteCache() error {
+	var cacheInfo CacheProvider
+	err := viper.UnmarshalKey("cache", &cacheInfo)
+	if err != nil {
+		return status.Error(codes.Internal, "cache unmarshal")
+	}
+
+	cacheInfo = CacheProvider{}
+	viper.Set("cache", cacheInfo)
+	err = viper.WriteConfig()
+	if err != nil {
+		return status.Error(codes.Internal, "unable to write config")
+	}
+
 	return nil
-	// var cacheInfo CacheProvider
-	// err := viper.UnmarshalKey("cache", &cacheInfo)
-	// if err != nil {
-	// 	return status.Error(codes.Internal, "cache unmarshal")
-	// }
-	// if cacheInfo.BucketName == "" && cacheInfo.ContainerName == "" && cacheInfo.StorageAccount == "" {
-	// 	return status.Error(codes.Internal, "no remote cache configured")
-	// }
-
-	// cacheInfo = CacheProvider{}
-	// viper.Set("cache", cacheInfo)
-	// err = viper.WriteConfig()
-	// if err != nil {
-	// 	return status.Error(codes.Internal, "unable to write config")
-	// }
-
-	// return nil
 
 }

@@ -10,6 +10,7 @@ import (
 )
 
 type GCSCache struct {
+	ctx        context.Context
 	noCache    bool
 	bucketName string
 	projectId  string
@@ -23,7 +24,8 @@ type GCSCacheConfiguration struct {
 	BucketName string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
 }
 
-func (s *GCSCache) Configure(cacheInfo CacheProvider, noCache bool) error {
+func (s *GCSCache) Configure(cacheInfo CacheProvider) error {
+	s.ctx = context.Background()
 	if cacheInfo.GCS.BucketName == "" {
 		log.Fatal("Bucket name not configured")
 	}
@@ -36,16 +38,14 @@ func (s *GCSCache) Configure(cacheInfo CacheProvider, noCache bool) error {
 	s.bucketName = cacheInfo.GCS.BucketName
 	s.projectId = cacheInfo.GCS.ProjectId
 	s.region = cacheInfo.GCS.Region
-	s.noCache = noCache
-	ctx := context.Background()
-	storageClient, err := storage.NewClient(ctx)
+	storageClient, err := storage.NewClient(s.ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	_, err = storageClient.Bucket(s.bucketName).Attrs(ctx)
+	_, err = storageClient.Bucket(s.bucketName).Attrs(s.ctx)
 	if err == storage.ErrBucketNotExist {
-		storageClient.Bucket(s.bucketName).Create(ctx, s.projectId, &storage.BucketAttrs{
+		storageClient.Bucket(s.bucketName).Create(s.ctx, s.projectId, &storage.BucketAttrs{
 			Location: s.region,
 		})
 	}
@@ -54,8 +54,7 @@ func (s *GCSCache) Configure(cacheInfo CacheProvider, noCache bool) error {
 }
 
 func (s *GCSCache) Store(key string, data string) error {
-	ctx := context.Background()
-	wc := s.session.Bucket(s.bucketName).Object(key).NewWriter(ctx)
+	wc := s.session.Bucket(s.bucketName).Object(key).NewWriter(s.ctx)
 
 	if _, err := wc.Write([]byte(data)); err != nil {
 		return err
@@ -69,8 +68,7 @@ func (s *GCSCache) Store(key string, data string) error {
 }
 
 func (s *GCSCache) Load(key string) (string, error) {
-	ctx := context.Background()
-	reader, err := s.session.Bucket(s.bucketName).Object(key).NewReader(ctx)
+	reader, err := s.session.Bucket(s.bucketName).Object(key).NewReader(s.ctx)
 	if err != nil {
 		return "", err
 	}
@@ -84,11 +82,19 @@ func (s *GCSCache) Load(key string) (string, error) {
 	return string(data), nil
 }
 
+func (s *GCSCache) Remove(key string) error {
+	bucketClient := s.session.Bucket(s.bucketName)
+	obj := bucketClient.Object(key)
+	if err := obj.Delete(s.ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *GCSCache) List() ([]CacheObjectDetails, error) {
-	ctx := context.Background()
 	var files []CacheObjectDetails
 
-	items := s.session.Bucket(s.bucketName).Objects(ctx, nil)
+	items := s.session.Bucket(s.bucketName).Objects(s.ctx, nil)
 	for {
 		attrs, err := items.Next()
 		if err == iterator.Done {
@@ -106,9 +112,8 @@ func (s *GCSCache) List() ([]CacheObjectDetails, error) {
 }
 
 func (s *GCSCache) Exists(key string) bool {
-	ctx := context.Background()
 	obj := s.session.Bucket(s.bucketName).Object(key)
-	_, err := obj.Attrs(ctx)
+	_, err := obj.Attrs(s.ctx)
 	return err == nil
 }
 
@@ -118,4 +123,8 @@ func (s *GCSCache) IsCacheDisabled() bool {
 
 func (s *GCSCache) GetName() string {
 	return "gcs"
+}
+
+func (s *GCSCache) DisableCache() {
+	s.noCache = true
 }
