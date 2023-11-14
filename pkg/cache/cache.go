@@ -1,9 +1,7 @@
 package cache
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/spf13/viper"
 	"google.golang.org/grpc/codes"
@@ -85,11 +83,11 @@ func GetCacheConfiguration() (ICache, error) {
 	var cache ICache
 
 	switch {
-	case !reflect.DeepEqual(cacheInfo.GCS, GCSCacheConfiguration{}):
+	case cacheInfo.GCS != GCSCacheConfiguration{}:
 		cache = &GCSCache{}
-	case !reflect.DeepEqual(cacheInfo.Azure, AzureCacheConfiguration{}):
+	case cacheInfo.Azure != AzureCacheConfiguration{}:
 		cache = &AzureCache{}
-	case !reflect.DeepEqual(cacheInfo.S3, S3CacheConfiguration{}):
+	case cacheInfo.S3 != S3CacheConfiguration{}:
 		cache = &S3Cache{}
 	default:
 		cache = &FileBasedCache{}
@@ -100,25 +98,11 @@ func GetCacheConfiguration() (ICache, error) {
 	return cache, nil
 }
 
-func HasAnyConfiguration(cacheInfo CacheProvider) bool {
-	return !reflect.DeepEqual(cacheInfo.GCS, GCSCacheConfiguration{}) ||
-		!reflect.DeepEqual(cacheInfo.Azure, AzureCacheConfiguration{}) ||
-		!reflect.DeepEqual(cacheInfo.S3, S3CacheConfiguration{})
-}
-
 func AddRemoteCache(cacheInfo CacheProvider) error {
-	actualConfig, err := ParseCacheConfiguration()
-	if err != nil {
-		return err
-	}
-
-	if HasAnyConfiguration(actualConfig) {
-		return errors.New("Cache configuration already exist. Please use update method.")
-	}
 
 	viper.Set("cache", cacheInfo)
 
-	err = viper.WriteConfig()
+	err := viper.WriteConfig()
 	if err != nil {
 		return err
 	}
