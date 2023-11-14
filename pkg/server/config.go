@@ -21,14 +21,14 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 		var err error
 		var remoteCache cache.CacheProvider
 
-		// GetCacheType - Actually switch case not working
-		if choice := i.Cache.GetAzureCache(); choice != nil {
+		switch i.Cache.GetCacheType().(type) {
+		case *schemav1.Cache_AzureCache:
 			remoteCache, err = cache.NewCacheProvider("azure", "", "", i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, "")
-		} else if choice := i.Cache.GetS3Cache(); choice != nil {
+		case *schemav1.Cache_S3Cache:
 			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, "", "", "")
-		} else if choice := i.Cache.GetGcsCache(); choice != nil {
+		case *schemav1.Cache_GcsCache:
 			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, "", "", i.Cache.GetGcsCache().GetProjectId())
-		} else {
+		default:
 			return resp, status.Error(codes.InvalidArgument, "Invalid cache configuration")
 		}
 
