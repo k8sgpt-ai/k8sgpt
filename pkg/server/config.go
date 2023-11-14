@@ -18,17 +18,28 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 	}
 
 	if i.Cache != nil {
-		// We check if we have a mixed cache configuration
-		CacheConfigured := (i.Cache.Region == "" && i.Cache.BucketName == "") || (i.Cache.ContainerName == "" && i.Cache.StorageAccount == "")
-		if !CacheConfigured {
-			return resp, status.Error(codes.InvalidArgument, "mixed cache arguments")
+		var err error
+		var remoteCache cache.CacheProvider
+
+		// GetCacheType - Actually switch case not working
+		if choice := i.Cache.GetAzureCache(); choice != nil {
+			remoteCache, err = cache.NewCacheProvider("azure", "", "", i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, "")
+		} else if choice := i.Cache.GetS3Cache(); choice != nil {
+			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, "", "", "")
+		} else if choice := i.Cache.GetGcsCache(); choice != nil {
+			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, "", "", i.Cache.GetGcsCache().GetProjectId())
+		} else {
+			return resp, status.Error(codes.InvalidArgument, "Invalid cache configuration")
 		}
 
-		cacheProvider, err := cache.NewCacheProvider(i.Cache.BucketName, i.Cache.Region, i.Cache.StorageAccount, i.Cache.ContainerName, "", "")
-		err = cache.AddRemoteCache(cacheProvider)
 		if err != nil {
 			return resp, err
 		}
+		err = cache.AddRemoteCache(remoteCache)
+		if err != nil {
+			return resp, err
+		}
+
 	}
 	return resp, nil
 }
