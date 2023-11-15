@@ -7,7 +7,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.3
-	github.com/sashabaranov/go-openai v1.17.6
+	github.com/sashabaranov/go-openai v1.17.7
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
