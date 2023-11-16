@@ -625,7 +625,7 @@ Find our official documentation available [here](https://docs.k8sgpt.ai)
 
 Please read our [contributing guide](./CONTRIBUTING.md).
 ## Community
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-1rwe5fpzq-VNtJK8DmYbbm~iWL1H34nw)
+Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-276pa9uyq-pxAUr4TCVHubFxEvLZuT1Q)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
