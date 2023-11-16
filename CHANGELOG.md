@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.3.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.20...v0.3.21) (2023-11-12)
+
+
+### Features
+
+* auth remove: add -b flag ([#711](https://github.com/k8sgpt-ai/k8sgpt/issues/711)) ([9dadd18](https://github.com/k8sgpt-ai/k8sgpt/commit/9dadd186c8d03a4284faff3f0842d6e2d00ebbb8))
+* log analyzer ([#744](https://github.com/k8sgpt-ai/k8sgpt/issues/744)) ([d365886](https://github.com/k8sgpt-ai/k8sgpt/commit/d365886753f785bd58118c03510696318ea47941))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.6 ([#728](https://github.com/k8sgpt-ai/k8sgpt/issues/728)) ([bb21ce8](https://github.com/k8sgpt-ai/k8sgpt/commit/bb21ce80c782e011dfa1f808ccdd82ae748bfed8))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.8 ([#741](https://github.com/k8sgpt-ai/k8sgpt/issues/741)) ([d359caa](https://github.com/k8sgpt-ai/k8sgpt/commit/d359caaab6bdb42a54d305be2f4cd8452f512bb8))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.9 ([#743](https://github.com/k8sgpt-ai/k8sgpt/issues/743)) ([45ebad7](https://github.com/k8sgpt-ai/k8sgpt/commit/45ebad7b4d80d93920d5fbad9f42c8fcd45218bd))
+* **deps:** update module github.com/fatih/color to v1.16.0 ([#734](https://github.com/k8sgpt-ai/k8sgpt/issues/734)) ([8ab26d9](https://github.com/k8sgpt-ai/k8sgpt/commit/8ab26d96cec73369ecf014d50fccc26afe15fa44))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.3 ([#737](https://github.com/k8sgpt-ai/k8sgpt/issues/737)) ([48486e9](https://github.com/k8sgpt-ai/k8sgpt/commit/48486e96274a5e52a03cef00bd531148e27b38c5))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.5 ([#742](https://github.com/k8sgpt-ai/k8sgpt/issues/742)) ([3bff9cb](https://github.com/k8sgpt-ai/k8sgpt/commit/3bff9cbe7bb3afb7212735eb91902fd83d3cbb8c))
+* **deps:** update module github.com/schollz/progressbar/v3 to v3.14.1 ([#738](https://github.com/k8sgpt-ai/k8sgpt/issues/738)) ([05f444d](https://github.com/k8sgpt-ai/k8sgpt/commit/05f444dec1f234c191e25f71f3eab4838eb2477a))
+* **deps:** update module github.com/spf13/cobra to v1.8.0 ([#732](https://github.com/k8sgpt-ai/k8sgpt/issues/732)) ([19e502a](https://github.com/k8sgpt-ai/k8sgpt/commit/19e502a841e0463b682b0c6b8291f10aee616d7e))
+* **deps:** update module helm.sh/helm/v3 to v3.13.2 ([#740](https://github.com/k8sgpt-ai/k8sgpt/issues/740)) ([6a665f0](https://github.com/k8sgpt-ai/k8sgpt/commit/6a665f05d782ba9c3051df7a15ff304c89cb34f4))
+
+
+### Other
+
+* **deps:** pin google-github-actions/release-please-action action to db8f2c6 ([#747](https://github.com/k8sgpt-ai/k8sgpt/issues/747)) ([4408110](https://github.com/k8sgpt-ai/k8sgpt/commit/4408110b1a4835bb237b3d5674d6fa8a13f0181b))
+* **deps:** update google-github-actions/release-please-action digest to 4c5670f ([#721](https://github.com/k8sgpt-ai/k8sgpt/issues/721)) ([9c518ba](https://github.com/k8sgpt-ai/k8sgpt/commit/9c518badf53e4ccd9c2f9251cead4692602c0762))
+* **deps:** update google-github-actions/release-please-action digest to db8f2c6 ([#736](https://github.com/k8sgpt-ai/k8sgpt/issues/736)) ([fdb2934](https://github.com/k8sgpt-ai/k8sgpt/commit/fdb2934e8fd02bcb4e47b34c1eca5b099f462faa))
+* enable automerge for renovate ([#745](https://github.com/k8sgpt-ai/k8sgpt/issues/745)) ([66ebb88](https://github.com/k8sgpt-ai/k8sgpt/commit/66ebb88efe1ad5ecae75a5299f58a1e68179b515))
+* pin release-please version ([#746](https://github.com/k8sgpt-ai/k8sgpt/issues/746)) ([c4925b2](https://github.com/k8sgpt-ai/k8sgpt/commit/c4925b2170546d0d86b77d2a13c13d4907e2e3d6))
+
+
+### Dependency Updates
+
+* bump docker fixes CVE GHSA-jq35-85cj-fj4p ([#733](https://github.com/k8sgpt-ai/k8sgpt/issues/733)) ([120027e](https://github.com/k8sgpt-ai/k8sgpt/commit/120027e3cbec2535f0b6cc8d8db1dc27dd9f3ec6))
+
 ## [0.3.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.19...v0.3.20) (2023-11-05)
 
 

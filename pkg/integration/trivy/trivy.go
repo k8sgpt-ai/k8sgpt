@@ -16,11 +16,15 @@ package trivy
 import (
 	"context"
 	"fmt"
+	"os"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	helmclient "github.com/mittwald/go-helm-client"
+	"github.com/spf13/viper"
 	"helm.sh/helm/v3/pkg/repo"
 )
 
@@ -126,13 +130,52 @@ func (t *Trivy) UnDeploy(namespace string) error {
 	return nil
 }
 
-func (t *Trivy) IsActivate() bool {
-
-	if _, err := t.helm.GetRelease(ReleaseName); err != nil {
-		return false
+func (t *Trivy) isDeployed() bool {
+	// check if aquasec apigroup is available as a marker if trivy is installed on the cluster
+	kubecontext := viper.GetString("kubecontext")
+	kubeconfig := viper.GetString("kubeconfig")
+	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if err != nil {
+		// TODO: better error handling
+		color.Red("Error initialising kubernetes client: %v", err)
+		os.Exit(1)
+	}
+	groups, _, err := client.Client.Discovery().ServerGroupsAndResources()
+	if err != nil {
+		// TODO: better error handling
+		color.Red("Error initialising discovery client: %v", err)
+		os.Exit(1)
 	}
 
-	return true
+	for _, group := range groups {
+		if group.Name == "aquasecurity.github.io" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (t *Trivy) isFilterActive() bool {
+	activeFilters := viper.GetStringSlice("active_filters")
+
+	for _, filter := range t.GetAnalyzerName() {
+		for _, af := range activeFilters {
+			if af == filter {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (t *Trivy) IsActivate() bool {
+	if t.isFilterActive() && t.isDeployed() {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
