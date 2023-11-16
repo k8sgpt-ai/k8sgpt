@@ -601,7 +601,7 @@ _Adding a remote cache_
    * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
    * Configuration, ``` k8sgpt cache add azure --storageacc <storage account name> --container <container name> ```
      * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
-     * It's **users'** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)   
+     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor) 
   * Google Cloud Storage
     * _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
     * Configuration, ``` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>```
