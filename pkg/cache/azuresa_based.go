@@ -52,7 +52,7 @@ func (s *AzureCache) Configure(cacheInfo CacheProvider) error {
 		if strings.Contains(err.Error(), "ContainerAlreadyExists") {
 			// do nothing
 		} else {
-			log.Fatal(err)
+			return err
 		}
 	}
 	s.containerName = cacheInfo.Azure.ContainerName

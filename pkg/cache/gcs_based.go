@@ -45,9 +45,12 @@ func (s *GCSCache) Configure(cacheInfo CacheProvider) error {
 
 	_, err = storageClient.Bucket(s.bucketName).Attrs(s.ctx)
 	if err == storage.ErrBucketNotExist {
-		storageClient.Bucket(s.bucketName).Create(s.ctx, s.projectId, &storage.BucketAttrs{
+		err = storageClient.Bucket(s.bucketName).Create(s.ctx, s.projectId, &storage.BucketAttrs{
 			Location: s.region,
 		})
+		if err != nil {
+			return err
+		}
 	}
 	s.session = storageClient
 	return nil

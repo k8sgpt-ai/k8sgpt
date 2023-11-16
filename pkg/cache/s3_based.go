@@ -44,9 +44,12 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 		Bucket: aws.String(cacheInfo.S3.BucketName),
 	})
 	if err != nil {
-		_, _ = s3Client.CreateBucket(&s3.CreateBucketInput{
+		_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 			Bucket: aws.String(cacheInfo.S3.BucketName),
 		})
+		if err != nil {
+			return err
+		}
 	}
 	s.session = s3Client
 	return nil
