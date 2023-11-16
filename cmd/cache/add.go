@@ -74,4 +74,6 @@ func init() {
 	addCmd.MarkFlagsMutuallyExclusive("region", "container")
 	addCmd.MarkFlagsMutuallyExclusive("bucket", "storageacc")
 	addCmd.MarkFlagsMutuallyExclusive("bucket", "container")
+	addCmd.MarkFlagsMutuallyExclusive("projectid", "storageacc")
+	addCmd.MarkFlagsMutuallyExclusive("projectid", "container")
 }
