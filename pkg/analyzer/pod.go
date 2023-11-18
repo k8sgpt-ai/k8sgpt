@@ -59,15 +59,16 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// Check through container status to check for crashes or unready
 		for _, containerStatus := range pod.Status.ContainerStatuses {
+
 			if containerStatus.State.Waiting != nil {
-				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" || containerStatus.State.Waiting.Reason == "ImagePullBackOff" || containerStatus.State.Waiting.Reason == "CreateContainerConfigError" || containerStatus.State.Waiting.Reason == "PreCreateHookError" || containerStatus.State.Waiting.Reason == "CreateContainerError" || containerStatus.State.Waiting.Reason == "PreStartHookError" || containerStatus.State.Waiting.Reason == "RunContainerError" || containerStatus.State.Waiting.Reason == "ImageInspectError" || containerStatus.State.Waiting.Reason == "ErrImagePull" || containerStatus.State.Waiting.Reason == "ErrImageNeverPull" || containerStatus.State.Waiting.Reason == "InvalidImageName" {
-					if containerStatus.State.Waiting.Message != "" {
-						failures = append(failures, common.Failure{
-							Text:      containerStatus.State.Waiting.Message,
-							Sensitive: []common.Sensitive{},
-						})
-					}
+
+				if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
+					failures = append(failures, common.Failure{
+						Text:      containerStatus.State.Waiting.Message,
+						Sensitive: []common.Sensitive{},
+					})
 				}
+
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
 				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
 
@@ -124,4 +125,17 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+func isErrorReason(reason string) bool {
+	failureReasons := []string{
+		"CrashLoopBackOff", "ImagePullBackOff", "CreateContainerConfigError", "PreCreateHookError", "CreateContainerError", "PreStartHookError", "RunContainerError", "ImageInspectError", "ErrImagePull", "ErrImageNeverPull", "InvalidImageName",
+	}
+
+	for _, r := range failureReasons {
+		if r == reason {
+			return true
+		}
+	}
+	return false
 }
