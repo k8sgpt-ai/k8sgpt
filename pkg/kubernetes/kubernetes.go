@@ -15,6 +15,7 @@ package kubernetes
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
@@ -32,6 +33,10 @@ func (c *Client) GetClient() kubernetes.Interface {
 
 func (c *Client) GetRestClient() rest.Interface {
 	return c.RestClient
+}
+
+func (c *Client) GetDynClient() dynamic.Interface {
+	return c.DynClient
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
@@ -68,6 +73,11 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	dynClient, err := dynamic.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	serverVersion, err := clientSet.ServerVersion()
 	if err != nil {
 		return nil, err
@@ -76,6 +86,7 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	return &Client{
 		Client:        clientSet,
 		RestClient:    restClient,
+		DynClient:     dynClient,
 		Config:        config,
 		ServerVersion: serverVersion,
 	}, nil
