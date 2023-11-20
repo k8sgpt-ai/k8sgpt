@@ -14,8 +14,9 @@ import (
 	clienttesting "k8s.io/client-go/testing"
 )
 
+// Testing with the fake dynamic client if GatewayClasses have an accepted status
 func TestGatewayClassAnalyzer(t *testing.T) {
-	unstructuredGatewayClass := map[string]interface{}{
+	unstructuredProbelmaticGatewayClass := map[string]interface{}{
 		"apiVersion": "gateway.networking.k8s.io/v1",
 		"kind":       "GatewayClass",
 		"metadata": map[string]interface{}{
@@ -27,7 +28,7 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 		"status": map[string]interface{}{
 			"conditions": []interface{}{
 				map[string]interface{}{
-					"message": "Valid GatewayClass",
+					"message": "Invalid GatewayClass",
 					"reason":  "foo",
 					"status":  "Uknown",
 					"type":    "Accepted",
@@ -35,7 +36,29 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 			},
 		},
 	}
-	mockGatewayClass := &unstructured.Unstructured{Object: unstructuredGatewayClass}
+
+	unstructuredHealthyGatewayClass := map[string]interface{}{
+		"apiVersion": "gateway.networking.k8s.io/v1",
+		"kind":       "GatewayClass",
+		"metadata": map[string]interface{}{
+			"name": "foobar1",
+		},
+		"spec": map[string]interface{}{
+			"controllerName": "gateway.fooproxy1.io/gatewayclass-controller",
+		},
+		"status": map[string]interface{}{
+			"conditions": []interface{}{
+				map[string]interface{}{
+					"message": "Valid GatewayClass",
+					"reason":  "",
+					"status":  "True",
+					"type":    "Accepted",
+				},
+			},
+		},
+	}
+	mockInvalidGatewayClass := &unstructured.Unstructured{Object: unstructuredProbelmaticGatewayClass}
+	mockValidGatewayClass := &unstructured.Unstructured{Object: unstructuredHealthyGatewayClass}
 
 	// Create a mock unstructured list containing the mock GatewayClass object
 	unstructuredList := &unstructured.UnstructuredList{}
@@ -44,9 +67,9 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 		Version: "v1",
 		Kind:    "GatewayClassList",
 	})
-	unstructuredList.Items = []unstructured.Unstructured{*mockGatewayClass}
+	unstructuredList.Items = []unstructured.Unstructured{*mockInvalidGatewayClass, *mockValidGatewayClass}
 
-	fakeClient := fake.NewSimpleDynamicClient(runtime.NewScheme(), mockGatewayClass)
+	fakeClient := fake.NewSimpleDynamicClient(runtime.NewScheme(), mockInvalidGatewayClass, mockValidGatewayClass)
 	// Inject mock data into the fake dynamic client
 	fakeClient.PrependReactor("list", "gatewayclasses", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
 		return true, unstructuredList, nil
