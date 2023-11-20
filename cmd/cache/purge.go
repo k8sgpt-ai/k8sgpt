@@ -15,53 +15,40 @@ limitations under the License.
 package cache
 
 import (
+	"fmt"
 	"os"
-	"reflect"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List the contents of the cache",
-	Long:  `This command allows you to list the contents of the cache.`,
+var purgeCmd = &cobra.Command{
+	Use:   "purge [object name]",
+	Short: "Purge a remote cache",
+	Long:  "This command allows you to delete/purge one object from the cache",
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// load remote cache if it is configured
+		if len(args) == 0 {
+			color.Red("Error: Please provide a value for object name. Run k8sgpt cache purge --help")
+			os.Exit(1)
+		}
+		objectKey := args[0]
+		fmt.Println(color.YellowString("Purging a remote cache."))
 		c, err := cache.GetCacheConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		names, err := c.List()
+
+		err = c.Remove(objectKey)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-
-		var headers []string
-		obj := cache.CacheObjectDetails{}
-		objType := reflect.TypeOf(obj)
-		for i := 0; i < objType.NumField(); i++ {
-			field := objType.Field(i)
-			headers = append(headers, field.Name)
-		}
-
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(headers)
-
-		for _, v := range names {
-			table.Append([]string{v.Name, v.UpdatedAt.String()})
-		}
-		table.Render()
+		fmt.Println(color.GreenString("Object deleted."))
 	},
 }
 
 func init() {
-	CacheCmd.AddCommand(listCmd)
-
+	CacheCmd.AddCommand(purgeCmd)
 }

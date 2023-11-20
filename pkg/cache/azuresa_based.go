@@ -9,7 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-	"github.com/spf13/viper"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/blob"
 )
 
 // Generate ICache implementation
@@ -18,6 +18,48 @@ type AzureCache struct {
 	noCache       bool
 	containerName string
 	session       *azblob.Client
+}
+
+type AzureCacheConfiguration struct {
+	StorageAccount string `mapstructure:"storageaccount" yaml:"storageaccount,omitempty"`
+	ContainerName  string `mapstructure:"container" yaml:"container,omitempty"`
+}
+
+func (s *AzureCache) Configure(cacheInfo CacheProvider) error {
+	s.ctx = context.Background()
+	if cacheInfo.Azure.ContainerName == "" {
+		log.Fatal("Azure Container name not configured")
+	}
+	if cacheInfo.Azure.StorageAccount == "" {
+		log.Fatal("Azure Storage account not configured")
+	}
+
+	// We assume that Storage account is already in place
+	blobUrl := fmt.Sprintf("https://%s.blob.core.windows.net/", cacheInfo.Azure.StorageAccount)
+	credential, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := azblob.NewClient(blobUrl, credential, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// Try to create the blob container
+	_, err = client.CreateContainer(s.ctx, cacheInfo.Azure.ContainerName, nil)
+	if err != nil {
+		// TODO: Maybe there is a better way to check this?
+		// docs: https://pkg.go.dev/github.com/Azure/azure-storage-blob-go/azblob
+		if strings.Contains(err.Error(), "ContainerAlreadyExists") {
+			// do nothing
+		} else {
+			return err
+		}
+	}
+	s.containerName = cacheInfo.Azure.ContainerName
+	s.session = client
+
+	return nil
+
 }
 
 func (s *AzureCache) Store(key string, data string) error {
@@ -45,9 +87,9 @@ func (s *AzureCache) Load(key string) (string, error) {
 	return data.String(), nil
 }
 
-func (s *AzureCache) List() ([]string, error) {
+func (s *AzureCache) List() ([]CacheObjectDetails, error) {
 	// List the files in the blob containerName
-	files := []string{}
+	files := []CacheObjectDetails{}
 
 	pager := s.session.NewListBlobsFlatPager(s.containerName, &azblob.ListBlobsFlatOptions{
 		Include: azblob.ListBlobsInclude{Snapshots: false, Versions: false},
@@ -60,11 +102,22 @@ func (s *AzureCache) List() ([]string, error) {
 		}
 
 		for _, blob := range resp.Segment.BlobItems {
-			files = append(files, *blob.Name)
+			files = append(files, CacheObjectDetails{
+				Name:      *blob.Name,
+				UpdatedAt: *blob.Properties.LastModified,
+			})
 		}
 	}
 
 	return files, nil
+}
+
+func (s *AzureCache) Remove(key string) error {
+	_, err := s.session.DeleteBlob(s.ctx, s.containerName, key, &blob.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *AzureCache) Exists(key string) bool {
@@ -93,46 +146,10 @@ func (s *AzureCache) IsCacheDisabled() bool {
 	return s.noCache
 }
 
-func NewAzureCache(nocache bool) ICache {
-	ctx := context.Background()
-	var cache CacheProvider
-	err := viper.UnmarshalKey("cache", &cache)
-	if err != nil {
-		panic(err)
-	}
-	if cache.ContainerName == "" {
-		log.Fatal("Azure Container name not configured")
-	}
-	if cache.StorageAccount == "" {
-		log.Fatal("Azure Storage account not configured")
-	}
+func (s *AzureCache) GetName() string {
+	return "azure"
+}
 
-	// We assume that Storage account is already in place
-	blobUrl := fmt.Sprintf("https://%s.blob.core.windows.net/", cache.StorageAccount)
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	client, err := azblob.NewClient(blobUrl, credential, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Try to create the blob container
-	_, err = client.CreateContainer(ctx, cache.ContainerName, nil)
-	if err != nil {
-		// TODO: Maybe there is a better way to check this?
-		// docs: https://pkg.go.dev/github.com/Azure/azure-storage-blob-go/azblob
-		if strings.Contains(err.Error(), "ContainerAlreadyExists") {
-			// do nothing
-		} else {
-			log.Fatal(err)
-		}
-	}
-
-	return &AzureCache{
-		ctx:           ctx,
-		noCache:       nocache,
-		containerName: cache.ContainerName,
-		session:       client,
-	}
+func (s *AzureCache) DisableCache() {
+	s.noCache = true
 }
