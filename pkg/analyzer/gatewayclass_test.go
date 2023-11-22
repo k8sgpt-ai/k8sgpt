@@ -16,23 +16,23 @@ import (
 
 // Testing with the fake dynamic client if GatewayClasses have an accepted status
 func TestGatewayClassAnalyzer(t *testing.T) {
-	ProbelmaticGatewayClass := &gtwapi.GatewayClass{}
-	ProbelmaticGatewayClass.Name = "foobar"
-	ProbelmaticGatewayClass.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	GatewayClass := &gtwapi.GatewayClass{}
+	GatewayClass.Name = "foobar"
+	GatewayClass.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
 	// Initialize Conditions slice before setting properties
-	newCondition := metav1.Condition{
+	BadCondition := metav1.Condition{
 		Type:    "Accepted",
 		Status:  "Uknown",
 		Message: "Waiting for controller",
 		Reason:  "Pending",
 	}
-	ProbelmaticGatewayClass.Status.Conditions = []metav1.Condition{newCondition}
+	GatewayClass.Status.Conditions = []metav1.Condition{BadCondition}
 	// Create a GatewayClassAnalyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.AddToScheme(scheme)
+	gtwapi.Install(scheme)
 	apiextensionsv1.AddToScheme(scheme)
 
-	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(ProbelmaticGatewayClass).Build()
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(GatewayClass).Build()
 
 	analyzerInstance := GatewayClassAnalyzer{}
 	config := common.Analyzer{
