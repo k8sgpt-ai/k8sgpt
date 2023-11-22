@@ -7,79 +7,37 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic/fake"
-	clienttesting "k8s.io/client-go/testing"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	fakeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // Testing with the fake dynamic client if GatewayClasses have an accepted status
 func TestGatewayClassAnalyzer(t *testing.T) {
-	unstructuredProbelmaticGatewayClass := map[string]interface{}{
-		"apiVersion": "gateway.networking.k8s.io/v1",
-		"kind":       "GatewayClass",
-		"metadata": map[string]interface{}{
-			"name": "foobar",
-		},
-		"spec": map[string]interface{}{
-			"controllerName": "gateway.fooproxy.io/gatewayclass-controller",
-		},
-		"status": map[string]interface{}{
-			"conditions": []interface{}{
-				map[string]interface{}{
-					"message": "Invalid GatewayClass",
-					"reason":  "foo",
-					"status":  "Uknown",
-					"type":    "Accepted",
-				},
-			},
-		},
+	ProbelmaticGatewayClass := &gtwapi.GatewayClass{}
+	ProbelmaticGatewayClass.Name = "foobar"
+	ProbelmaticGatewayClass.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	// Initialize Conditions slice before setting properties
+	newCondition := metav1.Condition{
+		Type:    "Accepted",
+		Status:  "Uknown",
+		Message: "Waiting for controller",
+		Reason:  "Pending",
 	}
-
-	unstructuredHealthyGatewayClass := map[string]interface{}{
-		"apiVersion": "gateway.networking.k8s.io/v1",
-		"kind":       "GatewayClass",
-		"metadata": map[string]interface{}{
-			"name": "foobar1",
-		},
-		"spec": map[string]interface{}{
-			"controllerName": "gateway.fooproxy1.io/gatewayclass-controller",
-		},
-		"status": map[string]interface{}{
-			"conditions": []interface{}{
-				map[string]interface{}{
-					"message": "Valid GatewayClass",
-					"reason":  "",
-					"status":  "True",
-					"type":    "Accepted",
-				},
-			},
-		},
-	}
-	mockInvalidGatewayClass := &unstructured.Unstructured{Object: unstructuredProbelmaticGatewayClass}
-	mockValidGatewayClass := &unstructured.Unstructured{Object: unstructuredHealthyGatewayClass}
-
-	// Create a mock unstructured list containing the mock GatewayClass object
-	unstructuredList := &unstructured.UnstructuredList{}
-	unstructuredList.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "gateway.networking.k8s.io",
-		Version: "v1",
-		Kind:    "GatewayClassList",
-	})
-	unstructuredList.Items = []unstructured.Unstructured{*mockInvalidGatewayClass, *mockValidGatewayClass}
-
-	fakeClient := fake.NewSimpleDynamicClient(runtime.NewScheme(), mockInvalidGatewayClass, mockValidGatewayClass)
-	// Inject mock data into the fake dynamic client
-	fakeClient.PrependReactor("list", "gatewayclasses", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
-		return true, unstructuredList, nil
-	})
-
+	ProbelmaticGatewayClass.Status.Conditions = []metav1.Condition{newCondition}
 	// Create a GatewayClassAnalyzer instance with the fake client
+	scheme := scheme.Scheme
+	gtwapi.AddToScheme(scheme)
+	apiextensionsv1.AddToScheme(scheme)
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(ProbelmaticGatewayClass).Build()
+
 	analyzerInstance := GatewayClassAnalyzer{}
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
-			DynClient: fakeClient,
+			CtrlClient: fakeClient,
 		},
 		Context:   context.Background(),
 		Namespace: "default",

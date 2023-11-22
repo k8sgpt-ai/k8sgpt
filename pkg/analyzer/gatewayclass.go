@@ -18,14 +18,12 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const (
-	AcceptedStatus = "True"
-	gtwcResource   = "gatewayclasses"
+	GcAcceptedStatus = "True"
 )
 
 type GatewayClassAnalyzer struct{}
@@ -38,21 +36,22 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	gtwcList := &gtwapi.GatewayClassList{}
-	client := a.Client.DynClient
-	runtimeObj, _ := client.Resource(gtwapi.SchemeGroupVersion.WithResource(gtwcResource)).List((a.Context), metav1.ListOptions{})
-	// converting to schema
-	runtime.DefaultUnstructuredConverter.FromUnstructured(runtimeObj.UnstructuredContent(), gtwcList)
+	gcList := &gtwapi.GatewayClassList{}
+	client := a.Client.CtrlClient
+	gtwapi.AddToScheme(client.Scheme())
+	if err := client.List(a.Context, gcList, &ctrl.ListOptions{}); err != nil {
+		return nil, err
+	}
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	// Find all unhealthy gateway Classes
 
-	for _, gc := range gtwcList.Items {
+	for _, gc := range gcList.Items {
 		var failures []common.Failure
 
 		gcName := gc.GetName()
 		// Check only the current condition
-		if gc.Status.Conditions[0].Status != AcceptedStatus {
+		if gc.Status.Conditions[0].Status != GcAcceptedStatus {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
 					"GatewayClass '%s' with a controller name '%s' is not accepted. Message: '%s'.",

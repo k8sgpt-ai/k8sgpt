@@ -31,9 +31,10 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.0
 	github.com/aws/aws-sdk-go v1.48.0
 	github.com/cohere-ai/cohere-go v0.2.0
-	sigs.k8s.io/gateway-api v1.0.0
 	github.com/olekukonko/tablewriter v0.0.5
 	google.golang.org/api v0.143.0
+	sigs.k8s.io/controller-runtime v0.16.3
+	sigs.k8s.io/gateway-api v1.0.0
 )
 
 require (
@@ -48,6 +49,7 @@ require (
 	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect

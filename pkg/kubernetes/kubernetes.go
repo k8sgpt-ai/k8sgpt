@@ -15,12 +15,12 @@ package kubernetes
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubectl/pkg/scheme"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (c *Client) GetConfig() *rest.Config {
@@ -35,8 +35,8 @@ func (c *Client) GetRestClient() rest.Interface {
 	return c.RestClient
 }
 
-func (c *Client) GetDynClient() dynamic.Interface {
-	return c.DynClient
+func (c *Client) GetCtrlClient() ctrl.Client {
+	return c.CtrlClient
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
@@ -73,7 +73,7 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
-	dynClient, err := dynamic.NewForConfig(config)
+	ctrlClient, err := ctrl.New(config, ctrl.Options{})
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	return &Client{
 		Client:        clientSet,
 		RestClient:    restClient,
-		DynClient:     dynClient,
+		CtrlClient:    ctrlClient,
 		Config:        config,
 		ServerVersion: serverVersion,
 	}, nil

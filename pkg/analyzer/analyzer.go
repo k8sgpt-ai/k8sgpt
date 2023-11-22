@@ -51,6 +51,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"NetworkPolicy":           NetworkPolicyAnalyzer{},
 	"Log":                     LogAnalyzer{},
 	"GatewayClass":            GatewayClassAnalyzer{},
+	"Gateway":                 GatewayAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
