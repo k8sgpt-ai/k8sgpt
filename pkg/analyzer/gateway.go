@@ -93,7 +93,7 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Gateway:        gtw,
 				FailureDetails: failures,
 			}
-			AnalyzerErrorsMetric.WithLabelValues(kind, gtwName, "").Set(float64(len(failures)))
+			AnalyzerErrorsMetric.WithLabelValues(kind, gtwName, gtwNamespace).Set(float64(len(failures)))
 		}
 	}
 	for key, value := range preAnalysis {

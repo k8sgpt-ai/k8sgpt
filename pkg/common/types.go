@@ -60,6 +60,7 @@ type PreAnalysis struct {
 	MutatingWebhook          regv1.MutatingWebhookConfiguration
 	GatewayClass             gtwapi.GatewayClass
 	Gateway                  gtwapi.Gateway
+	HTTPRoute                gtwapi.HTTPRoute
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
 	TrivyConfigAuditReport   trivy.ConfigAuditReport
