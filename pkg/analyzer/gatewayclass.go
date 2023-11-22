@@ -18,12 +18,9 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
-)
-
-const (
-	GcAcceptedStatus = "True"
 )
 
 type GatewayClassAnalyzer struct{}
@@ -51,7 +48,7 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 		gcName := gc.GetName()
 		// Check only the current condition
-		if gc.Status.Conditions[0].Status != GcAcceptedStatus {
+		if gc.Status.Conditions[0].Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
 					"GatewayClass '%s' with a controller name '%s' is not accepted. Message: '%s'.",

@@ -19,12 +19,9 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
-)
-
-const (
-	GtwAcceptedStatus = "True"
 )
 
 type GatewayAnalyzer struct{}
@@ -72,7 +69,7 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// Check only the current conditions
 		// TODO: maybe check other statuses Listeners, addresses?
-		if gtw.Status.Conditions[0].Status != GtwAcceptedStatus {
+		if gtw.Status.Conditions[0].Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("Gateway '%s/%s' is not accepted. Message: '%s'.",
 					gtwNamespace,
