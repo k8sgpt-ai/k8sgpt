@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.3.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.21...v0.3.22) (2023-11-21)
+
+
+### Features
+
+* rework cache package - add gcs cache - add cache purge command ([#750](https://github.com/k8sgpt-ai/k8sgpt/issues/750)) ([12146bf](https://github.com/k8sgpt-ai/k8sgpt/commit/12146bf356a3b26176c47e3a013a713fd14f346d))
+
+
+### Bug Fixes
+
+* cover more error reason messages ([#759](https://github.com/k8sgpt-ai/k8sgpt/issues/759)) ([5b27c3e](https://github.com/k8sgpt-ai/k8sgpt/commit/5b27c3e352701819f1d0449df9acf706040f1f13))
+* **deps:** update kubernetes packages to v0.28.4 ([#756](https://github.com/k8sgpt-ai/k8sgpt/issues/756)) ([24132c2](https://github.com/k8sgpt-ai/k8sgpt/commit/24132c2d87024157009589cf2bd410bac2a26241))
+* **deps:** update module cloud.google.com/go/storage to v1.35.1 ([#762](https://github.com/k8sgpt-ai/k8sgpt/issues/762)) ([58d182e](https://github.com/k8sgpt-ai/k8sgpt/commit/58d182e94f75f9b035a9e45159fa87ce8a57de38))
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.16.4 ([#676](https://github.com/k8sgpt-ai/k8sgpt/issues/676)) ([4531278](https://github.com/k8sgpt-ai/k8sgpt/commit/45312788c3c15e141027c3fc8e428cfaa71d3ace))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.10 ([#751](https://github.com/k8sgpt-ai/k8sgpt/issues/751)) ([2aa31bc](https://github.com/k8sgpt-ai/k8sgpt/commit/2aa31bc66d239906b1047f53bcaa58b0c30a2856))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.47.11 ([#752](https://github.com/k8sgpt-ai/k8sgpt/issues/752)) ([531fa79](https://github.com/k8sgpt-ai/k8sgpt/commit/531fa79ed640846b177c516559dc82f088fa940f))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.48.0 ([#754](https://github.com/k8sgpt-ai/k8sgpt/issues/754)) ([e2bb567](https://github.com/k8sgpt-ai/k8sgpt/commit/e2bb567d2f8d59a904583309c2774d4174eb367f))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.48.1 ([#766](https://github.com/k8sgpt-ai/k8sgpt/issues/766)) ([16469c0](https://github.com/k8sgpt-ai/k8sgpt/commit/16469c01c962fd5bfa4ad11dd88a41f3e00e4a0d))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.6 ([#749](https://github.com/k8sgpt-ai/k8sgpt/issues/749)) ([84df364](https://github.com/k8sgpt-ai/k8sgpt/commit/84df3640bc114bb2c768f158d3575732103ff799))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.7 ([#753](https://github.com/k8sgpt-ai/k8sgpt/issues/753)) ([9971699](https://github.com/k8sgpt-ai/k8sgpt/commit/9971699fcf42b3309449d81875d45180f723de8d))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.8 ([#761](https://github.com/k8sgpt-ai/k8sgpt/issues/761)) ([beaa532](https://github.com/k8sgpt-ai/k8sgpt/commit/beaa53251c8201028db83d60f208e2b0658c93d8))
+* **deps:** update module google.golang.org/api to v0.151.0 ([#763](https://github.com/k8sgpt-ai/k8sgpt/issues/763)) ([3e3f6a9](https://github.com/k8sgpt-ai/k8sgpt/commit/3e3f6a903a81d9622660f5adf9cae7d22a5c99f4))
+* show trivy as active when activated with --no-install flag ([#675](https://github.com/k8sgpt-ai/k8sgpt/issues/675)) ([7368271](https://github.com/k8sgpt-ai/k8sgpt/commit/73682717eda4fa2e0cbc6311d5c97e01e0f2673c))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.15.0 ([#765](https://github.com/k8sgpt-ai/k8sgpt/issues/765)) ([cf1e243](https://github.com/k8sgpt-ai/k8sgpt/commit/cf1e243708ab406f070da3f96be1fc60b7ce2ea4))
+* **deps:** update docker/build-push-action digest to 4a13e50 ([#760](https://github.com/k8sgpt-ai/k8sgpt/issues/760)) ([b5853de](https://github.com/k8sgpt-ai/k8sgpt/commit/b5853de8a6fcd17b1c1a4c53dbe3ffc82b83f72f))
+
 ## [0.3.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.20...v0.3.21) (2023-11-12)
 
 
