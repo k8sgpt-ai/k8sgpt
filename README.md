@@ -159,6 +159,9 @@ you will be able to write your own analyzers.
 - [x] hpaAnalyzer
 - [x] pdbAnalyzer
 - [x] networkPolicyAnalyzer
+- [x] gatewayClass
+- [x] gateway
+- [x] httproute
 
 ## Examples
 
