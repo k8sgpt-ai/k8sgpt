@@ -2,7 +2,6 @@ package analyzer
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -144,11 +143,7 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 		t.Error(err)
 	}
 	var errorFound bool
-	want := fmt.Sprintf("Gateway '%s/%s' is not accepted. Message: '%s'.",
-		"default",
-		"foobar",
-		"An expected message",
-	)
+	want := "Gateway 'default/foobar' is not accepted. Message: 'An expected message'."
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
 			if want == got.Text {

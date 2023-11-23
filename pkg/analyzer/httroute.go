@@ -61,7 +61,7 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if errors.IsNotFound(err) {
 				failures = append(failures, common.Failure{
 					Text: fmt.Sprintf(
-						"HTTPRoute uses the Gateway %s/%s which does not exist.",
+						"HTTPRoute uses the Gateway '%s/%s' which does not exist in the same namespace.",
 						namespace,
 						gtwref.Name,
 					),
@@ -85,7 +85,7 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							// check if Gateway is in the same namespace
 							if route.Namespace != gtw.Namespace {
 								failures = append(failures, common.Failure{
-									Text: fmt.Sprintf("HTTPRoute '%s/%s' is deployed in a different namespace from Gateway '%s/%s.",
+									Text: fmt.Sprintf("HTTPRoute '%s/%s' is deployed in a different namespace from Gateway '%s/%s' which only allows HTTPRoutes from its namespace.",
 										route.Namespace,
 										route.Name,
 										gtw.Namespace,
