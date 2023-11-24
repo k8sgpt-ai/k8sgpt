@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.23](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.22...v0.3.23) (2023-11-24)
+
+
+### Features
+
+* add Gateway analysers ([#764](https://github.com/k8sgpt-ai/k8sgpt/issues/764)) ([ec08cac](https://github.com/k8sgpt-ai/k8sgpt/commit/ec08cac21496b34b123b75b06d9283eb6539e890))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/aws/aws-sdk-go to v1.48.3 ([#768](https://github.com/k8sgpt-ai/k8sgpt/issues/768)) ([b1c791a](https://github.com/k8sgpt-ai/k8sgpt/commit/b1c791a396b7287ef916e8f8d382a0e14ba39949))
+* **deps:** update module github.com/mittwald/go-helm-client to v0.12.4 ([#767](https://github.com/k8sgpt-ai/k8sgpt/issues/767)) ([dca5b47](https://github.com/k8sgpt-ai/k8sgpt/commit/dca5b4710d1bb35dfc3346219d3bddb7c726300e))
+
 ## [0.3.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.21...v0.3.22) (2023-11-21)
 
 
