@@ -219,3 +219,14 @@ func MapToString(m map[string]string) string {
 	}
 	return result[:len(result)-1]
 }
+
+func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
+	// Check if any label in the predefinedSelector exists in Labels
+	for key := range predefinedSelector {
+		if _, exists := Labels[key]; exists {
+			return true
+		}
+	}
+
+	return false
+}

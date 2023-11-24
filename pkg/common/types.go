@@ -26,6 +26,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 type IAnalyzer interface {
@@ -57,6 +58,9 @@ type PreAnalysis struct {
 	Node                     v1.Node
 	ValidatingWebhook        regv1.ValidatingWebhookConfiguration
 	MutatingWebhook          regv1.MutatingWebhookConfiguration
+	GatewayClass             gtwapi.GatewayClass
+	Gateway                  gtwapi.Gateway
+	HTTPRoute                gtwapi.HTTPRoute
 	// Integrations
 	TrivyVulnerabilityReport trivy.VulnerabilityReport
 	TrivyConfigAuditReport   trivy.ConfigAuditReport

@@ -50,6 +50,9 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"PodDisruptionBudget":     PdbAnalyzer{},
 	"NetworkPolicy":           NetworkPolicyAnalyzer{},
 	"Log":                     LogAnalyzer{},
+	"GatewayClass":            GatewayClassAnalyzer{},
+	"Gateway":                 GatewayAnalyzer{},
+	"HTTPRoute":               HTTPRouteAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
