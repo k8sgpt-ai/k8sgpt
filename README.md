@@ -285,7 +285,7 @@ k8sgpt serve
 _Analysis with serve mode_
 
 ```
-curl -X GET "http://localhost:8080/analyze?namespace=k8sgpt&explain=false"
+grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain": false}' localhost:8080 schema.v1.ServerService/Analyze
 ```
 </details>
 
