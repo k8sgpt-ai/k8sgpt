@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -42,6 +43,9 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
 	})
+
+	// get analyzer flags
+	cronjobMaxTime := viper.GetString("cronjobMaxTime")
 
 	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{})
 	if err != nil {
@@ -114,6 +118,47 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 				}
 			}
 
+			// check cronjob running time is exceed cronjobMaxTime
+			if cronjobMaxTime != "" && cronJob.Status.Active != nil && len(cronJob.Status.Active) > 0 {
+				// parse cronjobMaxTime
+				maxTimeDuration, err := time.ParseDuration(cronjobMaxTime)
+				if err != nil {
+					return nil, err
+				}
+				jobName := cronJob.Status.Active[0].Name
+
+				// get running pod of cronjob
+				pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, v1.ListOptions{
+					LabelSelector: fmt.Sprintf("job-name=%s", jobName),
+				})
+				if err != nil {
+					return nil, err
+				}
+				if len(pods.Items) > 0 {
+					pod := pods.Items[0]
+					if pod.Status.StartTime != nil {
+						runningTime := time.Since(pod.Status.StartTime.Time)
+						if runningTime > maxTimeDuration {
+							doc := apiDoc.GetApiDocV2("spec.status")
+
+							failures = append(failures, common.Failure{
+								Text:          fmt.Sprintf("CronJob %s is running for more than max time threshold: %s", cronJob.Name, cronjobMaxTime),
+								KubernetesDoc: doc,
+								Sensitive: []common.Sensitive{
+									{
+										Unmasked: cronJob.Namespace,
+										Masked:   util.MaskString(cronJob.Namespace),
+									},
+									{
+										Unmasked: cronJob.Name,
+										Masked:   util.MaskString(cronJob.Name),
+									},
+								},
+							})
+						}
+					}
+				}
+			}
 		}
 
 		if len(failures) > 0 {
