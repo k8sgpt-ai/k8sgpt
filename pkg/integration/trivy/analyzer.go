@@ -15,12 +15,12 @@ package trivy
 
 import (
 	"fmt"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	"k8s.io/client-go/rest"
 )
 
 type TrivyAnalyzer struct {
@@ -32,18 +32,9 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
-	config := a.Client.GetConfig()
-	// Add group version to sceheme
-	config.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
-	config.UserAgent = rest.DefaultKubernetesUserAgent()
-	config.APIPath = "/apis"
-
-	restClient, err := rest.UnversionedRESTClientFor(config)
-	if err != nil {
-		return nil, err
-	}
-	err = restClient.Get().Resource("vulnerabilityreports").Namespace(a.Namespace).Do(a.Context).Into(result)
-	if err != nil {
+	client := a.Client.CtrlClient
+	v1alpha1.AddToScheme(client.Scheme())
+	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -93,18 +84,9 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 	// Get all trivy ConfigAuditReports
 	result := &v1alpha1.ConfigAuditReportList{}
 
-	config := a.Client.GetConfig()
-	// Add group version to sceheme
-	config.ContentConfig.GroupVersion = &v1alpha1.SchemeGroupVersion
-	config.UserAgent = rest.DefaultKubernetesUserAgent()
-	config.APIPath = "/apis"
-
-	restClient, err := rest.UnversionedRESTClientFor(config)
-	if err != nil {
-		return nil, err
-	}
-	err = restClient.Get().Resource("configauditreports").Namespace(a.Namespace).Do(a.Context).Into(result)
-	if err != nil {
+	client := a.Client.CtrlClient
+	v1alpha1.AddToScheme(client.Scheme())
+	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
 
