@@ -11,7 +11,6 @@ import (
 
 type Client struct {
 	Client        kubernetes.Interface
-	RestClient    rest.Interface
 	CtrlClient    ctrl.Client
 	Config        *rest.Config
 	ServerVersion *version.Info
