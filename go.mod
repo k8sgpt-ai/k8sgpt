@@ -1,6 +1,8 @@
 module github.com/k8sgpt-ai/k8sgpt
 
-go 1.20
+go 1.21
+
+toolchain go1.21.4
 
 require (
 	github.com/aquasecurity/trivy-operator v0.16.4
@@ -17,7 +19,7 @@ require (
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
 	k8s.io/client-go v0.28.4
-	k8s.io/kubectl v0.28.4
+	k8s.io/kubectl v0.28.4 // indirect
 
 )
 
@@ -29,12 +31,12 @@ require (
 	cloud.google.com/go/storage v1.35.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.0
-	github.com/aws/aws-sdk-go v1.48.3
+	github.com/aws/aws-sdk-go v1.48.11
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/olekukonko/tablewriter v0.0.5
+	google.golang.org/api v0.151.0
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
-	google.golang.org/api v0.151.0
 )
 
 require (
@@ -201,7 +203,7 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.28.3 // indirect
+	k8s.io/apiextensions-apiserver v0.28.3
 	k8s.io/apiserver v0.28.3 // indirect
 	k8s.io/cli-runtime v0.28.4 // indirect
 	k8s.io/component-base v0.28.4 // indirect
