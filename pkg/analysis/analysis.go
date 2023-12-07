@@ -30,6 +30,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
 )
@@ -55,6 +57,17 @@ type AnalysisErrors []string
 const (
 	StateOK              AnalysisStatus = "OK"
 	StateProblemDetected AnalysisStatus = "ProblemDetected"
+)
+
+var (
+	SuccessfulAIBackendCalls = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "ai_backend_successful_calls",
+		Help: "Number of successful calls to the AI backend",
+	}, []string{"backend"})
+	FailedAIBackendCalls = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "ai_backend_failed_calls",
+		Help: "Number of failed calls to the AI backend",
+	}, []string{"backend"})
 )
 
 type JsonOutput struct {
@@ -273,13 +286,15 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			promptTemplate = ai.PromptMap["default"]
 		}
 		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache, promptTemplate)
+
 		if err != nil {
+			// Update metrics
+			FailedAIBackendCalls.WithLabelValues(a.AIClient.GetName()).Inc()
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?
 			if output != "json" {
 				_ = bar.Exit()
 			}
-
 			// Check for exhaustion
 			if strings.Contains(err.Error(), "status code: 429") {
 				return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
@@ -287,6 +302,10 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 				return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
 			}
 		}
+
+		// Update metrics
+		// This currently does not account for cache hits
+		SuccessfulAIBackendCalls.WithLabelValues(a.AIClient.GetName()).Inc()
 
 		if anonymize {
 			for _, failure := range analysis.Error {
