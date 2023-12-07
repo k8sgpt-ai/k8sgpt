@@ -2,8 +2,6 @@ module github.com/k8sgpt-ai/k8sgpt
 
 go 1.21
 
-toolchain go1.21.1
-
 require (
 	github.com/aquasecurity/trivy-operator v0.16.4
 	github.com/fatih/color v1.16.0
