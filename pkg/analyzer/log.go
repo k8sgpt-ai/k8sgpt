@@ -69,7 +69,7 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		} else {
 			rawlogs := string(podLogs)
-			if errorPattern.MatchString(rawlogs) {
+			if errorPattern.MatchString(strings.ToLower(rawlogs)) {
 				failures = append(failures, common.Failure{
 					Text: printErrorLines(pod.Name, pod.Namespace, rawlogs, errorPattern),
 					Sensitive: []common.Sensitive{
@@ -108,7 +108,7 @@ func printErrorLines(podName, namespace, logs string, errorPattern *regexp.Regex
 
 	// Check each line for errors and print the lines containing errors
 	for _, line := range logLines {
-		if errorPattern.MatchString(line) {
+		if errorPattern.MatchString(strings.ToLower(line)) {
 			return line
 		}
 	}
