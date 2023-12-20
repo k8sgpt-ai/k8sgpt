@@ -84,6 +84,14 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						})
 					}
 				}
+
+				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
+				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" {
+					failures = append(failures, common.Failure{
+						Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, pod.Name),
+						Sensitive: []common.Sensitive{},
+					})
+				}
 			} else {
 				// when pod is Running but its ReadinessProbe fails
 				if !containerStatus.Ready && pod.Status.Phase == "Running" {
