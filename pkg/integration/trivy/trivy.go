@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -28,16 +29,24 @@ import (
 	"helm.sh/helm/v3/pkg/repo"
 )
 
-const (
-	Repo          = "https://aquasecurity.github.io/helm-charts/"
-	Version       = "0.13.0"
-	ChartName     = "trivy-operator"
-	RepoShortName = "aqua"
-	ReleaseName   = "trivy-operator-k8sgpt"
+var (
+	Repo          = getEnv("TRIVY_REPO", "https://aquasecurity.github.io/helm-charts/")
+	Version       = getEnv("TRIVY_VERSION", "0.13.0")
+	ChartName     = getEnv("TRIVY_CHART_NAME", "trivy-operator")
+	RepoShortName = getEnv("TRIVY_REPO_SHORT_NAME", "aqua")
+	ReleaseName   = getEnv("TRIVY_RELEASE_NAME", "trivy-operator-k8sgpt")
 )
 
 type Trivy struct {
 	helm helmclient.Client
+}
+
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
 
 func NewTrivy() *Trivy {
