@@ -15,7 +15,9 @@ package analyze
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
@@ -33,6 +35,7 @@ var (
 	anonymize      bool
 	maxConcurrency int
 	withDoc        bool
+	cronjobMaxTime string
 )
 
 // AnalyzeCmd represents the problems command
@@ -43,6 +46,16 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// check if cronjobMaxTime is valid
+		if cronjobMaxTime != "" {
+			_, err := time.ParseDuration(cronjobMaxTime)
+			if err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
+			}
+			viper.Set("cronjobMaxTime", cronjobMaxTime)
+		}
 
 		// AnalysisResult configuration
 		config, err := analysis.NewAnalysis(backend,
@@ -94,4 +107,6 @@ func init() {
 	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
 	// kubernetes doc flag
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
+	// cronjob max time
+	AnalyzeCmd.Flags().StringVarP(&cronjobMaxTime, "cronjob-max-time", "", "", "Maximum time to wait for a CronJob to finish (e.g. 1h, 30m, 10s)")
 }
