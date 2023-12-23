@@ -1,5 +1,47 @@
 # Changelog
 
+## [0.3.24](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.23...v0.3.24) (2023-12-23)
+
+
+### Features
+
+* add last termination state when pod is in CrashloopBackoff ([#792](https://github.com/k8sgpt-ai/k8sgpt/issues/792)) ([ff4aaf7](https://github.com/k8sgpt-ai/k8sgpt/commit/ff4aaf7c328a58fcad8e4fb0f93ea543725eedd5))
+* Add license scan report and status ([#796](https://github.com/k8sgpt-ai/k8sgpt/issues/796)) ([343aec8](https://github.com/k8sgpt-ai/k8sgpt/commit/343aec8f0455c9461eb8d495ca5bd446b4bad667))
+* version upgrade to 1.21 ([#798](https://github.com/k8sgpt-ai/k8sgpt/issues/798)) ([c23f24d](https://github.com/k8sgpt-ai/k8sgpt/commit/c23f24de2e79347e4f5465e28af34e138cc13231))
+
+
+### Bug Fixes
+
+* added the ability to set the trivy variables by the user ([#797](https://github.com/k8sgpt-ai/k8sgpt/issues/797)) ([928b39a](https://github.com/k8sgpt-ai/k8sgpt/commit/928b39a7283ee274dd517e727624eceb3795594d))
+* **deps:** update module cloud.google.com/go/storage to v1.36.0 ([#805](https://github.com/k8sgpt-ai/k8sgpt/issues/805)) ([390f309](https://github.com/k8sgpt-ai/k8sgpt/commit/390f30908800dfe21e2c1660139b0bd9d36b34d6))
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.17.1 ([#780](https://github.com/k8sgpt-ai/k8sgpt/issues/780)) ([71f36bd](https://github.com/k8sgpt-ai/k8sgpt/commit/71f36bdb0b3729c4357299b7d03829dd5b6a69ec))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.49.6 ([#783](https://github.com/k8sgpt-ai/k8sgpt/issues/783)) ([1b386f6](https://github.com/k8sgpt-ai/k8sgpt/commit/1b386f64f2863d8a49f423ad571cba009807bc55))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.49.7 ([#804](https://github.com/k8sgpt-ai/k8sgpt/issues/804)) ([3c6c759](https://github.com/k8sgpt-ai/k8sgpt/commit/3c6c7597e014bfd68794b1764c3a8902e8a798ea))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.49.8 ([#807](https://github.com/k8sgpt-ai/k8sgpt/issues/807)) ([93b5ca1](https://github.com/k8sgpt-ai/k8sgpt/commit/93b5ca1985c3730592388ba6fc32ecca9b806888))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.49.9 ([#808](https://github.com/k8sgpt-ai/k8sgpt/issues/808)) ([130e4c2](https://github.com/k8sgpt-ai/k8sgpt/commit/130e4c2efd0e5b34cdc84c357c6c1f3987cf7c35))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/storage/azblob to v1.2.1 ([#801](https://github.com/k8sgpt-ai/k8sgpt/issues/801)) ([aa05756](https://github.com/k8sgpt-ai/k8sgpt/commit/aa057565b5c971c493443f3ede4aed8f8a6399f7))
+* **deps:** update module github.com/mittwald/go-helm-client to v0.12.5 ([#802](https://github.com/k8sgpt-ai/k8sgpt/issues/802)) ([4a7bad3](https://github.com/k8sgpt-ai/k8sgpt/commit/4a7bad313b66750bd830413b7fef005580ad843c))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.17.9 ([#772](https://github.com/k8sgpt-ai/k8sgpt/issues/772)) ([13d64a5](https://github.com/k8sgpt-ai/k8sgpt/commit/13d64a58750c7262c07042b557fbf2c4a511b777))
+* **deps:** update module github.com/spf13/viper to v1.18.2 ([#787](https://github.com/k8sgpt-ai/k8sgpt/issues/787)) ([8dea617](https://github.com/k8sgpt-ai/k8sgpt/commit/8dea6170a2c00c03f08f25e4f0a232be617536f1))
+* **deps:** update module google.golang.org/api to v0.154.0 ([#779](https://github.com/k8sgpt-ai/k8sgpt/issues/779)) ([78f7f2b](https://github.com/k8sgpt-ai/k8sgpt/commit/78f7f2ba85fd357cab13ccc15e9e767e8611773a))
+* **deps:** update module google.golang.org/grpc to v1.60.1 ([#790](https://github.com/k8sgpt-ai/k8sgpt/issues/790)) ([5d54c3f](https://github.com/k8sgpt-ai/k8sgpt/commit/5d54c3f840a9ce002606b6601187e69fb62f8a28))
+* **deps:** update module helm.sh/helm/v3 to v3.13.3 ([#803](https://github.com/k8sgpt-ai/k8sgpt/issues/803)) ([a8e1932](https://github.com/k8sgpt-ai/k8sgpt/commit/a8e193212222811f3a278df6056dd2165c4323bd))
+* lowercase logs before running regex matching in LogAnalyzer ([#794](https://github.com/k8sgpt-ai/k8sgpt/issues/794)) ([03b63be](https://github.com/k8sgpt-ai/k8sgpt/commit/03b63befa247ac84b795a0ec8d5280196b8d570d))
+
+
+### Other
+
+* **deps:** update actions/setup-go action to v5 ([#788](https://github.com/k8sgpt-ai/k8sgpt/issues/788)) ([d00ed33](https://github.com/k8sgpt-ai/k8sgpt/commit/d00ed33678b1560a3996f1d735d84ca0ca05c0b0))
+* **deps:** update actions/upload-artifact action to v4 ([#806](https://github.com/k8sgpt-ai/k8sgpt/issues/806)) ([d6fb648](https://github.com/k8sgpt-ai/k8sgpt/commit/d6fb648e23c1ed1e4680fc4b7b4e96501f50ad48))
+* **deps:** update anchore/sbom-action action to v0.15.1 ([#784](https://github.com/k8sgpt-ai/k8sgpt/issues/784)) ([6473a2b](https://github.com/k8sgpt-ai/k8sgpt/commit/6473a2b532491b707b3af922fc2198e626ebf219))
+* **deps:** update google-github-actions/release-please-action action to v4 ([#782](https://github.com/k8sgpt-ai/k8sgpt/issues/782)) ([2c28c55](https://github.com/k8sgpt-ai/k8sgpt/commit/2c28c555cf4e891b90ebd9e9eae1cd8724e9886f))
+* **deps:** update google-github-actions/release-please-action action to v4.0.2 ([#800](https://github.com/k8sgpt-ai/k8sgpt/issues/800)) ([be4b0bb](https://github.com/k8sgpt-ai/k8sgpt/commit/be4b0bb3c24e04d35f40d16fd8e94ddbc8457ca6))
+
+
+### Refactoring
+
+* replace rest client with controller-runtime clientset for Trivy analyzers ([#776](https://github.com/k8sgpt-ai/k8sgpt/issues/776)) ([1d19628](https://github.com/k8sgpt-ai/k8sgpt/commit/1d196286b75f0ea6c068e8bdb01455fb36c52432))
+
 ## [0.3.23](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.22...v0.3.23) (2023-11-24)
 
 
