@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  golangci-lint:
+  code-coverage:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
