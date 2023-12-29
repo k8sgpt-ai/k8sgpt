@@ -42,6 +42,7 @@ type Config struct {
 	Handler        *handler
 	Logger         *zap.Logger
 	metricsServer  *http.Server
+	listener       net.Listener
 }
 
 type Health struct {
@@ -56,6 +57,10 @@ var health = Health{
 	Failure: 0,
 }
 
+func (s *Config) Shutdown() error {
+	return s.listener.Close()
+}
+
 func (s *Config) Serve() error {
 
 	var lis net.Listener
@@ -65,6 +70,7 @@ func (s *Config) Serve() error {
 	if err != nil {
 		return err
 	}
+	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
 	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(logInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)
