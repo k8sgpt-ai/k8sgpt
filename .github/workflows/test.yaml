@@ -23,8 +23,10 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: Unit Test
-        run: make test
+      - name: Run coverage
+        run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3
 
       # - name: Fmt Test
       #   run: fmtFiles=$(make fmt); if [ "$fmtFiles" != "" ];then exit 1; fi
