@@ -29,7 +29,7 @@ require (
 	cloud.google.com/go/storage v1.36.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
-	github.com/aws/aws-sdk-go v1.49.10
+	github.com/aws/aws-sdk-go v1.49.12
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/olekukonko/tablewriter v0.0.5
 	google.golang.org/api v0.154.0
