@@ -44,9 +44,17 @@ var AnalyzeCmd = &cobra.Command{
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// AnalysisResult configuration
-		config, err := analysis.NewAnalysis(backend,
-			language, filters, namespace, nocache, explain, maxConcurrency, withDoc)
+		// Create analysis configuration first.
+		config, err := analysis.NewAnalysis(
+			backend,
+			language,
+			filters,
+			namespace,
+			nocache,
+			explain,
+			maxConcurrency,
+			withDoc,
+		)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -55,8 +63,7 @@ var AnalyzeCmd = &cobra.Command{
 		config.RunAnalysis()
 
 		if explain {
-			err := config.GetAIResults(output, anonymize)
-			if err != nil {
+			if err := config.GetAIResults(output, anonymize); err != nil {
 				color.Red("Error: %v", err)
 				os.Exit(1)
 			}

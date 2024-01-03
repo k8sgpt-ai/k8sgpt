@@ -17,12 +17,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 	"sync"
 
-	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -65,17 +63,56 @@ type JsonOutput struct {
 	Results  []common.Result `json:"results"`
 }
 
-func NewAnalysis(backend string, language string, filters []string, namespace string, noCache bool, explain bool, maxConcurrency int, withDoc bool) (*Analysis, error) {
-	var configAI ai.AIConfiguration
-	err := viper.UnmarshalKey("ai", &configAI)
+func NewAnalysis(
+	backend string,
+	language string,
+	filters []string,
+	namespace string,
+	noCache bool,
+	explain bool,
+	maxConcurrency int,
+	withDoc bool,
+) (*Analysis, error) {
+	// Get kubernetes client from viper.
+	kubecontext := viper.GetString("kubecontext")
+	kubeconfig := viper.GetString("kubeconfig")
+	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
 	if err != nil {
-		color.Red("Error: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("initialising kubernetes client: %w", err)
 	}
 
-	if len(configAI.Providers) == 0 && explain {
-		color.Red("Error: AI provider not specified in configuration. Please run k8sgpt auth")
-		os.Exit(1)
+	// Load remote cache if it is configured.
+	cache, err := cache.GetCacheConfiguration()
+	if err != nil {
+		return nil, err
+	}
+
+	if noCache {
+		cache.DisableCache()
+	}
+
+	a := &Analysis{
+		Context:        context.Background(),
+		Filters:        filters,
+		Client:         client,
+		Namespace:      namespace,
+		Cache:          cache,
+		Explain:        explain,
+		MaxConcurrency: maxConcurrency,
+		WithDoc:        withDoc,
+	}
+	if !explain {
+		// Return early if AI use was not requested.
+		return a, nil
+	}
+
+	var configAI ai.AIConfiguration
+	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
+		return nil, err
+	}
+
+	if len(configAI.Providers) == 0 {
+		return nil, errors.New("AI provider not specified in configuration. Please run k8sgpt auth")
 	}
 
 	// Backend string will have high priority than a default provider
@@ -93,49 +130,16 @@ func NewAnalysis(backend string, language string, filters []string, namespace st
 	}
 
 	if aiProvider.Name == "" {
-		color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
-		return nil, errors.New("AI provider not specified in configuration")
+		return nil, fmt.Errorf("AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
 	if err := aiClient.Configure(&aiProvider, language); err != nil {
-		color.Red("Error: %v", err)
 		return nil, err
 	}
-
-	ctx := context.Background()
-	// Get kubernetes client from viper
-
-	kubecontext := viper.GetString("kubecontext")
-	kubeconfig := viper.GetString("kubeconfig")
-	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
-	if err != nil {
-		color.Red("Error initialising kubernetes client: %v", err)
-		return nil, err
-	}
-
-	// load remote cache if it is configured
-	cache, err := cache.GetCacheConfiguration()
-	if err != nil {
-		return nil, err
-	}
-
-	if noCache {
-		cache.DisableCache()
-	}
-
-	return &Analysis{
-		Context:            ctx,
-		Filters:            filters,
-		Client:             client,
-		AIClient:           aiClient,
-		Namespace:          namespace,
-		Cache:              cache,
-		Explain:            explain,
-		MaxConcurrency:     maxConcurrency,
-		AnalysisAIProvider: backend,
-		WithDoc:            withDoc,
-	}, nil
+	a.AIClient = aiClient
+	a.AnalysisAIProvider = aiProvider.Name
+	return a, nil
 }
 
 func (a *Analysis) RunAnalysis() {
