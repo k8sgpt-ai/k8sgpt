@@ -26,15 +26,17 @@ var (
 		&CohereClient{},
 		&AmazonBedRockClient{},
 		&SageMakerAIClient{},
+		&GoogleGenAIClient{},
 	}
 	Backends = []string{
 		"openai",
 		"localai",
 		"azureopenai",
-		"noopai",
 		"cohere",
 		"amazonbedrock",
 		"amazonsagemaker",
+		googleAIClientName,
+		"noopai",
 	}
 )
 
@@ -47,7 +49,14 @@ type IAI interface {
 	GetCompletion(ctx context.Context, prompt string) (string, error)
 	// GetName returns name of the backend/client.
 	GetName() string
+	// Close cleans all the resources. No other methods should be used on the
+	// objects after this method is invoked.
+	Close()
 }
+
+type nopCloser struct{}
+
+func (nopCloser) Close() {}
 
 type IAIConfig interface {
 	GetPassword() string

@@ -12,6 +12,8 @@ import (
 
 // AmazonBedRockClient represents the client for interacting with the Amazon Bedrock service.
 type AmazonBedRockClient struct {
+	nopCloser
+
 	client      *bedrockruntime.BedrockRuntime
 	model       string
 	temperature float32

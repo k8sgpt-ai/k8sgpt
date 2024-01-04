@@ -21,6 +21,8 @@ import (
 )
 
 type CohereClient struct {
+	nopCloser
+	
 	client      *cohere.Client
 	model       string
 	temperature float32

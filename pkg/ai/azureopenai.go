@@ -8,6 +8,8 @@ import (
 )
 
 type AzureAIClient struct {
+	nopCloser
+
 	client      *openai.Client
 	model       string
 	temperature float32

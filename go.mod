@@ -31,6 +31,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
 	github.com/aws/aws-sdk-go v1.49.14
 	github.com/cohere-ai/cohere-go v0.2.0
+	github.com/google/generative-ai-go v0.5.0
 	github.com/olekukonko/tablewriter v0.0.5
 	google.golang.org/api v0.154.0
 	sigs.k8s.io/controller-runtime v0.16.3
@@ -39,9 +40,11 @@ require (
 
 require (
 	cloud.google.com/go v0.110.10 // indirect
+	cloud.google.com/go/ai v0.3.0 // indirect
 	cloud.google.com/go/compute v1.23.3 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.5 // indirect
+	cloud.google.com/go/longrunning v0.5.4 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.1 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.0 // indirect

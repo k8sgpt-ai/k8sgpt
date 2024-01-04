@@ -24,6 +24,8 @@ import (
 )
 
 type SageMakerAIClient struct {
+	nopCloser
+
 	client      *sagemakerruntime.SageMakerRuntime
 	model       string
 	temperature float32

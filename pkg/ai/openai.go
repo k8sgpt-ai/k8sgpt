@@ -21,6 +21,8 @@ import (
 )
 
 type OpenAIClient struct {
+	nopCloser
+
 	client      *openai.Client
 	model       string
 	temperature float32

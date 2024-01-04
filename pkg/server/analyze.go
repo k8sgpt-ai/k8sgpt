@@ -35,10 +35,11 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		false, // Kubernetes Doc disabled in server mode
 	)
 	config.Context = ctx // Replace context for correct timeouts.
-
 	if err != nil {
 		return &schemav1.AnalyzeResponse{}, err
 	}
+	defer config.Close()
+
 	config.RunAnalysis()
 
 	if i.Explain {

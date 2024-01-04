@@ -18,6 +18,7 @@ import (
 )
 
 type NoOpAIClient struct {
+	nopCloser
 }
 
 func (c *NoOpAIClient) Configure(_ IAIConfig) error {
