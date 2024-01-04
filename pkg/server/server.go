@@ -100,7 +100,7 @@ func (s *Config) Serve() error {
 	if s.EnableRest {
 		s.Logger.Info("enabling rest api")
 		gwmux := runtime.NewServeMux()
-		err = rpc.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, "localhost:8080", []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		err = rpc.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 		if err != nil {
 			log.Fatalln("Failed to register gateway:", err)
 		}
