@@ -90,9 +90,9 @@ func (s *S3Cache) Load(key string) (string, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(result.Body)
+	_, err_read := buf.ReadFrom(result.Body)
 	result.Body.Close()
-	return buf.String(), nil
+	return buf.String(), err_read
 }
 
 func (s *S3Cache) List() ([]CacheObjectDetails, error) {
