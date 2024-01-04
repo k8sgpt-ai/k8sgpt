@@ -15,26 +15,18 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/cohere-ai/cohere-go"
-	"github.com/fatih/color"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
 type CohereClient struct {
 	client      *cohere.Client
-	language    string
 	model       string
 	temperature float32
 }
 
-func (c *CohereClient) Configure(config IAIConfig, language string) error {
+func (c *CohereClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 
 	client, err := cohere.CreateClient(token)
@@ -50,21 +42,17 @@ func (c *CohereClient) Configure(config IAIConfig, language string) error {
 	if client == nil {
 		return errors.New("error creating Cohere client")
 	}
-	c.language = language
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	return nil
 }
 
-func (c *CohereClient) GetCompletion(ctx context.Context, prompt, promptTmpl string) (string, error) {
+func (c *CohereClient) GetCompletion(_ context.Context, prompt string) (string, error) {
 	// Create a completion request
-	if len(promptTmpl) == 0 {
-		promptTmpl = PromptMap["default"]
-	}
 	resp, err := c.client.Generate(cohere.GenerateOptions{
 		Model:             c.model,
-		Prompt:            fmt.Sprintf(strings.TrimSpace(promptTmpl), c.language, prompt),
+		Prompt:            prompt,
 		MaxTokens:         cohere.Uint(2048),
 		Temperature:       cohere.Float64(float64(c.temperature)),
 		K:                 cohere.Int(0),
@@ -77,42 +65,6 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt, promptTmpl str
 	return resp.Generations[0].Text, nil
 }
 
-func (a *CohereClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
-
-	if !cache.IsCacheDisabled() && cache.Exists(cacheKey) {
-		response, err := cache.Load(cacheKey)
-		if err != nil {
-			return "", err
-		}
-
-		if response != "" {
-			output, err := base64.StdEncoding.DecodeString(response)
-			if err != nil {
-				color.Red("error decoding cached data: %v", err)
-				return "", nil
-			}
-			return string(output), nil
-		}
-	}
-
-	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
-	if err != nil {
-		return "", err
-	}
-
-	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-
-	if err != nil {
-		color.Red("error storing value to cache: %v", err)
-		return "", nil
-	}
-
-	return response, nil
-}
-
-func (a *CohereClient) GetName() string {
+func (c *CohereClient) GetName() string {
 	return "cohere"
 }
