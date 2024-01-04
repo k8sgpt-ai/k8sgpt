@@ -154,7 +154,10 @@ func SliceDiff(source, dest []string) []string {
 func MaskString(input string) string {
 	key := make([]byte, len(input))
 	result := make([]rune, len(input))
-	rand.Read(key)
+	_, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
 	for i := range result {
 		result[i] = anonymizePattern[int(key[i])%len(anonymizePattern)]
 	}
