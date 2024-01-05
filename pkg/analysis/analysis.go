@@ -15,12 +15,14 @@ package analysis
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -36,6 +38,7 @@ type Analysis struct {
 	Context            context.Context
 	Filters            []string
 	Client             *kubernetes.Client
+	Language           string
 	AIClient           ai.IAI
 	Results            []common.Result
 	Errors             []string
@@ -95,6 +98,7 @@ func NewAnalysis(
 		Context:        context.Background(),
 		Filters:        filters,
 		Client:         client,
+		Language:       language,
 		Namespace:      namespace,
 		Cache:          cache,
 		Explain:        explain,
@@ -134,7 +138,7 @@ func NewAnalysis(
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
-	if err := aiClient.Configure(&aiProvider, language); err != nil {
+	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
 	}
 	a.AIClient = aiClient
@@ -269,14 +273,14 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			}
 			texts = append(texts, failure.Text)
 		}
-		// If the resource `Kind` comes from a "integration plugin", maybe a customized prompt template will be involved.
-		var promptTemplate string
+
+		promptTemplate := ai.PromptMap["default"]
+		// If the resource `Kind` comes from an "integration plugin",
+		// maybe a customized prompt template will be involved.
 		if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
 			promptTemplate = prompt
-		} else {
-			promptTemplate = ai.PromptMap["default"]
 		}
-		parsedText, err := a.AIClient.Parse(a.Context, texts, a.Cache, promptTemplate)
+		result, err := a.getAIResultForSanitizedFailures(texts, promptTemplate)
 		if err != nil {
 			// FIXME: can we avoid checking if output is json multiple times?
 			//   maybe implement the progress bar better?
@@ -284,27 +288,67 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 				_ = bar.Exit()
 			}
 
-			// Check for exhaustion
+			// Check for exhaustion.
 			if strings.Contains(err.Error(), "status code: 429") {
 				return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
-			} else {
-				return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
 			}
+			return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
 		}
 
 		if anonymize {
 			for _, failure := range analysis.Error {
 				for _, s := range failure.Sensitive {
-					parsedText = strings.ReplaceAll(parsedText, s.Masked, s.Unmasked)
+					result = strings.ReplaceAll(result, s.Masked, s.Unmasked)
 				}
 			}
 		}
 
-		analysis.Details = parsedText
+		analysis.Details = result
 		if output != "json" {
 			_ = bar.Add(1)
 		}
 		a.Results[index] = analysis
 	}
 	return nil
+}
+
+func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl string) (string, error) {
+	inputKey := strings.Join(texts, " ")
+	// Check for cached data.
+	// TODO(bwplotka): This might depend on model too (or even other client configuration pieces), fix it in later PRs.
+	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, inputKey)
+
+	if !a.Cache.IsCacheDisabled() && a.Cache.Exists(cacheKey) {
+		response, err := a.Cache.Load(cacheKey)
+		if err != nil {
+			return "", err
+		}
+
+		if response != "" {
+			output, err := base64.StdEncoding.DecodeString(response)
+			if err == nil {
+				return string(output), nil
+			}
+			color.Red("error decoding cached data; ignoring cache item: %v", err)
+		}
+	}
+
+	// Process template.
+	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
+	response, err := a.AIClient.GetCompletion(a.Context, prompt)
+	if err != nil {
+		return "", err
+	}
+
+	if err = a.Cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response))); err != nil {
+		color.Red("error storing value to cache; value won't be cached: %v", err)
+	}
+	return response, nil
+}
+
+func (a *Analysis) Close() {
+	if a.AIClient == nil {
+		return
+	}
+	a.AIClient.Close()
 }

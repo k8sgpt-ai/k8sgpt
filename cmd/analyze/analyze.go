@@ -59,6 +59,7 @@ var AnalyzeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		defer config.Close()
 
 		config.RunAnalysis()
 

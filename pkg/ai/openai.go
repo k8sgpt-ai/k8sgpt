@@ -15,22 +15,15 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
-	"fmt"
-	"strings"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 
 	"github.com/sashabaranov/go-openai"
-
-	"github.com/fatih/color"
 )
 
 type OpenAIClient struct {
+	nopCloser
+
 	client      *openai.Client
-	language    string
 	model       string
 	temperature float32
 }
@@ -43,7 +36,7 @@ const (
 	topP             = 1.0
 )
 
-func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
+func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
 
@@ -56,24 +49,20 @@ func (c *OpenAIClient) Configure(config IAIConfig, language string) error {
 	if client == nil {
 		return errors.New("error creating OpenAI client")
 	}
-	c.language = language
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	return nil
 }
 
-func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
+func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	if len(promptTmpl) == 0 {
-		promptTmpl = PromptMap["default"]
-	}
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    "user",
-				Content: fmt.Sprintf(promptTmpl, c.language, prompt),
+				Content: prompt,
 			},
 		},
 		Temperature:      c.temperature,
@@ -88,42 +77,6 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string, promptT
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (a *OpenAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, inputKey)
-
-	if !cache.IsCacheDisabled() && cache.Exists(cacheKey) {
-		response, err := cache.Load(cacheKey)
-		if err != nil {
-			return "", err
-		}
-
-		if response != "" {
-			output, err := base64.StdEncoding.DecodeString(response)
-			if err != nil {
-				color.Red("error decoding cached data: %v", err)
-				return "", nil
-			}
-			return string(output), nil
-		}
-	}
-
-	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
-	if err != nil {
-		return "", err
-	}
-
-	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-
-	if err != nil {
-		color.Red("error storing value to cache: %v", err)
-		return "", nil
-	}
-
-	return response, nil
-}
-
-func (a *OpenAIClient) GetName() string {
+func (c *OpenAIClient) GetName() string {
 	return "openai"
 }

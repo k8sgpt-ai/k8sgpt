@@ -15,15 +15,8 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
-	"strings"
-
 	"encoding/json"
-
-	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,8 +24,9 @@ import (
 )
 
 type SageMakerAIClient struct {
+	nopCloser
+
 	client      *sagemakerruntime.SageMakerRuntime
-	language    string
 	model       string
 	temperature float32
 	endpoint    string
@@ -63,7 +57,7 @@ type Parameters struct {
 	Temperature  float64 `json:"temperature"`
 }
 
-func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
+func (c *SageMakerAIClient) Configure(config IAIConfig) error {
 
 	// Create a new AWS session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -71,7 +65,6 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
-	c.language = language
 	// Create a new SageMaker runtime client
 	c.client = sagemakerruntime.New(sess)
 	c.model = config.GetModel()
@@ -82,18 +75,13 @@ func (c *SageMakerAIClient) Configure(config IAIConfig, language string) error {
 	return nil
 }
 
-func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
+func (c *SageMakerAIClient) GetCompletion(_ context.Context, prompt string) (string, error) {
 	// Create a completion request
-
-	if len(promptTmpl) == 0 {
-		promptTmpl = PromptMap["default"]
-	}
-
 	request := Request{
 		Inputs: [][]Message{
 			{
 				{Role: "system", Content: "DEFAULT_PROMPT"},
-				{Role: "user", Content: fmt.Sprintf(promptTmpl, c.language, prompt)},
+				{Role: "user", Content: prompt},
 			},
 		},
 
@@ -142,29 +130,6 @@ func (c *SageMakerAIClient) GetCompletion(ctx context.Context, prompt string, pr
 	return content, nil
 }
 
-func (a *SageMakerAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
-	// parse the text with the AI backend
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
-
-	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
-	if err != nil {
-		color.Red("error getting completion: %v", err)
-		return "", err
-	}
-
-	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-
-	if err != nil {
-		color.Red("error storing value to cache: %v", err)
-		return "", err
-	}
-
-	return response, nil
-}
-
-func (a *SageMakerAIClient) GetName() string {
+func (c *SageMakerAIClient) GetName() string {
 	return "amazonsagemaker"
 }

@@ -15,58 +15,21 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
-	"strings"
-
-	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 )
 
 type NoOpAIClient struct {
-	client   string
-	language string
-	model    string
+	nopCloser
 }
 
-func (c *NoOpAIClient) Configure(config IAIConfig, language string) error {
-	token := config.GetPassword()
-	c.language = language
-	c.client = fmt.Sprintf("I am a noop client with the token %s ", token)
-	c.model = config.GetModel()
+func (c *NoOpAIClient) Configure(_ IAIConfig) error {
 	return nil
 }
 
-func (c *NoOpAIClient) GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error) {
-	// Create a completion request
+func (c *NoOpAIClient) GetCompletion(_ context.Context, prompt string) (string, error) {
 	response := "I am a noop response to the prompt " + prompt
 	return response, nil
 }
 
-func (a *NoOpAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
-	// parse the text with the AI backend
-	inputKey := strings.Join(prompt, " ")
-	// Check for cached data
-	sEnc := base64.StdEncoding.EncodeToString([]byte(inputKey))
-	cacheKey := util.GetCacheKey(a.GetName(), a.language, sEnc)
-
-	response, err := a.GetCompletion(ctx, inputKey, promptTmpl)
-	if err != nil {
-		color.Red("error getting completion: %v", err)
-		return "", err
-	}
-
-	err = cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response)))
-
-	if err != nil {
-		color.Red("error storing value to cache: %v", err)
-		return "", nil
-	}
-
-	return response, nil
-}
-
-func (a *NoOpAIClient) GetName() string {
+func (c *NoOpAIClient) GetName() string {
 	return "noopai"
 }
