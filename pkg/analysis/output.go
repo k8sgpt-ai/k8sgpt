@@ -58,8 +58,12 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 func (a *Analysis) textOutput() ([]byte, error) {
 	var output strings.Builder
 
-	// Print the AI provider used for this analysis
-	output.WriteString(fmt.Sprintf("AI Provider: %s\n", color.YellowString(a.AnalysisAIProvider)))
+	// Print the AI provider used for this analysis (if explain was enabled).
+	if a.Explain {
+		output.WriteString(fmt.Sprintf("AI Provider: %s\n", color.YellowString(a.AnalysisAIProvider)))
+	} else {
+		output.WriteString(fmt.Sprintf("AI Provider: %s\n", color.YellowString("AI not used; --explain not set")))
+	}
 
 	if len(a.Errors) != 0 {
 		output.WriteString("\n")

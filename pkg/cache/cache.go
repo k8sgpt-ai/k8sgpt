@@ -93,9 +93,9 @@ func GetCacheConfiguration() (ICache, error) {
 		cache = &FileBasedCache{}
 	}
 
-	cache.Configure(cacheInfo)
+	err_config := cache.Configure(cacheInfo)
 
-	return cache, nil
+	return cache, err_config
 }
 
 func AddRemoteCache(cacheInfo CacheProvider) error {

@@ -28,7 +28,10 @@ var CacheCmd = &cobra.Command{
 	Short: "For working with the cache the results of an analysis",
 	Long:  `Cache commands allow you to add a remote cache, list the contents of the cache, and remove items from the cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		err := cmd.Help()
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 

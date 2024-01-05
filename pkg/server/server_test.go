@@ -1,12 +1,13 @@
 package server
 
 import (
-	"github.com/fatih/color"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 	"os"
 	"sync"
 	"testing"
+
+	"github.com/fatih/color"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestServerInit(t *testing.T) {
