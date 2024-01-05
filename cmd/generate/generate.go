@@ -15,11 +15,12 @@ package generate
 
 import (
 	"fmt"
+	"os/exec"
+	"runtime"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os/exec"
-	"runtime"
 )
 
 var (
@@ -85,6 +86,6 @@ func printInstructions(isGui bool, backendType string) {
 		color.Green("Please open: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
 		fmt.Println("")
 	}
-	color.Green("Please copy the generated key and run `k8sgpt auth` to add it to your config file")
+	color.Green("Please copy the generated key and run `k8sgpt auth add` to add it to your config file")
 	fmt.Println("")
 }
