@@ -25,11 +25,10 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock and local
 # CLI Installation
 
 
-### Linux/Mac via brew
+### Linux/Mac via [brew](https://brew.sh/)
 
-```
-brew tap k8sgpt-ai/k8sgpt
-brew install k8sgpt
+```sh
+$ brew install k8sgpt
 ```
 
 <details>
@@ -298,10 +297,10 @@ K8sGPT uses the chosen LLM, generative AI provider when you want to explain the 
 You can list available providers using `k8sgpt auth list`:
 
 ```
-Default: 
+Default:
 > openai
-Active: 
-Unused: 
+Active:
+Unused:
 > openai
 > localai
 > azureopenai
@@ -418,7 +417,7 @@ Config file locations:
 There may be scenarios where caching remotely is preferred.
 In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
-<summary> Remote caching </summary>  
+<summary> Remote caching </summary>
 <em>Note: You can only configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
@@ -431,11 +430,11 @@ _Adding a remote cache_
    * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
    * Configuration, ``` k8sgpt cache add azure --storageacc <storage account name> --container <container name> ```
      * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
-     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor) 
+     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)
   * Google Cloud Storage
     * _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
     * Configuration, ``` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>```
-      * K8sGPT will create the bucket if it does not exist   
+      * K8sGPT will create the bucket if it does not exist
 
 _Listing cache items_
 ```
