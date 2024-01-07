@@ -20,9 +20,11 @@ import (
 	"github.com/cohere-ai/cohere-go"
 )
 
+const cohereAIClientName = "cohere"
+
 type CohereClient struct {
 	nopCloser
-	
+
 	client      *cohere.Client
 	model       string
 	temperature float32
@@ -68,5 +70,5 @@ func (c *CohereClient) GetCompletion(_ context.Context, prompt string) (string, 
 }
 
 func (c *CohereClient) GetName() string {
-	return "cohere"
+	return cohereAIClientName
 }

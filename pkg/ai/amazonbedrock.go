@@ -10,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/bedrockruntime"
 )
 
+const amazonbedrockAIClientName = "amazonbedrock"
+
 // AmazonBedRockClient represents the client for interacting with the Amazon Bedrock service.
 type AmazonBedRockClient struct {
 	nopCloser
@@ -147,5 +149,5 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 
 // GetName returns the name of the AmazonBedRockClient.
 func (a *AmazonBedRockClient) GetName() string {
-	return "amazonbedrock"
+	return amazonbedrockAIClientName
 }

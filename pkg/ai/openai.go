@@ -20,6 +20,8 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
+const openAIClientName = "openai"
+
 type OpenAIClient struct {
 	nopCloser
 
@@ -78,5 +80,5 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 }
 
 func (c *OpenAIClient) GetName() string {
-	return "openai"
+	return openAIClientName
 }
