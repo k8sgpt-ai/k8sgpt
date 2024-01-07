@@ -29,14 +29,14 @@ var (
 		&GoogleGenAIClient{},
 	}
 	Backends = []string{
-		"openai",
-		"localai",
-		"azureopenai",
-		"cohere",
-		"amazonbedrock",
-		"amazonsagemaker",
+		openAIClientName,
+		localAIClientName,
+		azureAIClientName,
+		cohereAIClientName,
+		amazonbedrockAIClientName,
+		amazonsagemakerAIClientName,
 		googleAIClientName,
-		"noopai",
+		noopAIClientName,
 	}
 )
 

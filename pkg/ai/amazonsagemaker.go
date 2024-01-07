@@ -23,6 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sagemakerruntime"
 )
 
+const amazonsagemakerAIClientName = "amazonsagemaker"
+
 type SageMakerAIClient struct {
 	nopCloser
 
@@ -131,5 +133,5 @@ func (c *SageMakerAIClient) GetCompletion(_ context.Context, prompt string) (str
 }
 
 func (c *SageMakerAIClient) GetName() string {
-	return "amazonsagemaker"
+	return amazonsagemakerAIClientName
 }
