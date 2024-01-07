@@ -16,23 +16,26 @@ package analyze
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
 var (
-	explain        bool
-	backend        string
-	output         string
-	filters        []string
-	language       string
-	nocache        bool
-	namespace      string
-	anonymize      bool
-	maxConcurrency int
-	withDoc        bool
+	explain         bool
+	backend         string
+	output          string
+	filters         []string
+	language        string
+	nocache         bool
+	namespace       string
+	anonymize       bool
+	maxConcurrency  int
+	withDoc         bool
+	interactiveMode bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -54,6 +57,7 @@ var AnalyzeCmd = &cobra.Command{
 			explain,
 			maxConcurrency,
 			withDoc,
+			interactiveMode,
 		)
 		if err != nil {
 			color.Red("Error: %v", err)
@@ -69,7 +73,6 @@ var AnalyzeCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
-
 		// print results
 		output, err := config.PrintOutput(output)
 		if err != nil {
@@ -77,6 +80,36 @@ var AnalyzeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Println(string(output))
+
+		// Interactive mode
+		if interactiveMode && explain {
+			pterm.Println("Interactive mode enabled [type exit to close.]")
+			for {
+				query := pterm.DefaultInteractiveTextInput.WithMultiLine(false)
+				queryString, err := query.Show()
+				if err != nil {
+					fmt.Println(err)
+				}
+				if queryString == "" {
+					continue
+				}
+				if strings.Contains(queryString, "exit") {
+					os.Exit(0)
+				}
+				// Print a blank line for better readability
+				pterm.Println()
+				//Print the user's answer with an info prefix
+				contextWindow := fmt.Sprintf("Given the context %s %s", string(output),
+					queryString)
+
+				response, err := config.AIClient.GetCompletion(config.Context, contextWindow)
+				if err != nil {
+					color.Red("Error: %v", err)
+					os.Exit(1)
+				}
+				pterm.Println(response)
+			}
+		}
 	},
 }
 
@@ -102,4 +135,6 @@ func init() {
 	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
 	// kubernetes doc flag
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
+	// interactive mode flag
+	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Interactive mode to debug commands can only be used with --explain flag")
 }

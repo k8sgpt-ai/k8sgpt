@@ -9,8 +9,8 @@ import (
 )
 
 func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
-		*schemav1.AnalyzeResponse,
-		error,
+	*schemav1.AnalyzeResponse,
+	error,
 ) {
 	if i.Output == "" {
 		i.Output = "json"
@@ -33,6 +33,7 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Explain,
 		int(i.MaxConcurrency),
 		false, // Kubernetes Doc disabled in server mode
+		false, // Interactive mode disabled in server mode
 	)
 	config.Context = ctx // Replace context for correct timeouts.
 	if err != nil {

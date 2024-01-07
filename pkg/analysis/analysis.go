@@ -75,6 +75,7 @@ func NewAnalysis(
 	explain bool,
 	maxConcurrency int,
 	withDoc bool,
+	interactiveMode bool,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
