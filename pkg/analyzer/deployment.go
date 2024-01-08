@@ -23,6 +23,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // DeploymentAnalyzer is an analyzer that checks for misconfigured Deployments
@@ -45,14 +47,25 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
 		"analyzer_name": kind,
 	})
-
-	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{})
-	if err != nil {
-		return nil, err
+	var list *appsv1.DeploymentList = &appsv1.DeploymentList{}
+	if len(a.Resources["Deployment"]) > 0 {
+		for _, name := range a.Resources["Deployment"] {
+			deploy, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).Get(a.Context, name, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+			list.Items = append(list.Items, *deploy)
+		}
+	} else {
+		var err error
+		list, err = a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
 
-	for _, deployment := range deployments.Items {
+	for _, deployment := range list.Items {
 		var failures []common.Failure
 		if *deployment.Spec.Replicas != deployment.Status.Replicas {
 			doc := apiDoc.GetApiDocV2("spec.replicas")

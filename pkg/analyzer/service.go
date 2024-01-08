@@ -17,13 +17,13 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
 type ServiceAnalyzer struct{}
@@ -44,10 +44,21 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
-	if err != nil {
-		return nil, err
+	var list *corev1.EndpointsList = &corev1.EndpointsList{}
+	if len(a.Resources["Service"]) > 0 {
+		for _, name := range a.Resources["Service"] {
+			ep, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).Get(a.Context, name, metav1.GetOptions{})
+			if err != nil {
+				return nil, err
+			}
+			list.Items = append(list.Items, *ep)
+		}
+	} else {
+		var err error
+		list, err = a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var preAnalysis = map[string]common.PreAnalysis{}

@@ -48,6 +48,7 @@ type Analysis struct {
 	MaxConcurrency     int
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
 	WithDoc            bool
+	SpecificResources  []string // format: slices of <kind>/<name> or just <name>
 }
 
 type AnalysisStatus string
@@ -75,6 +76,7 @@ func NewAnalysis(
 	explain bool,
 	maxConcurrency int,
 	withDoc bool,
+	specificResources []string,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -95,15 +97,16 @@ func NewAnalysis(
 	}
 
 	a := &Analysis{
-		Context:        context.Background(),
-		Filters:        filters,
-		Client:         client,
-		Language:       language,
-		Namespace:      namespace,
-		Cache:          cache,
-		Explain:        explain,
-		MaxConcurrency: maxConcurrency,
-		WithDoc:        withDoc,
+		Context:           context.Background(),
+		Filters:           filters,
+		Client:            client,
+		Language:          language,
+		Namespace:         namespace,
+		Cache:             cache,
+		Explain:           explain,
+		MaxConcurrency:    maxConcurrency,
+		WithDoc:           withDoc,
+		SpecificResources: specificResources,
 	}
 	if !explain {
 		// Return early if AI use was not requested.
@@ -151,6 +154,54 @@ func (a *Analysis) RunAnalysis() {
 
 	coreAnalyzerMap, analyzerMap := analyzer.GetAnalyzerMap()
 
+	// validate the specificResources
+	resourceMap := make(map[string][]string)
+	// --------------
+	// Rule:
+	//    The specific resource arguments can be below situations :
+	//    (1)  "pod/<podName>, service/<svcName>, .."
+	//
+	//           NOTE: when --filter specifies ONLY one kind of filter, example , --filters=Pod, then above resource "service/<svcName>" will be omitted
+
+	//    (2)  "<name1>, <name2>, .."
+	//
+	//           NOTE: it's ONLY valid when `--filter` specifies ONLY one kind of filter, to avoid ambiguity.
+	//                 example, --filters=Pod    ,     ALL of the resource names will be treated as "Pod"
+	//                 example, --filters=Ingress,     ALL of the resource names will be treated as "Ingress"
+	//                 example, --filters=Pod,Ingress, those no-kind resources will be treated as INVALID
+	//                 example, --filters=<blank>,     those no-kind resources will be treated as INVALID
+
+	//
+
+	for _, resource := range a.SpecificResources {
+		if strings.Count(resource, "/") == 0 {
+			// no-kind resources
+			if len(a.Filters) == 1 {
+				filterflag := a.Filters[0]
+				resourceMap[filterflag] = append(resourceMap[filterflag], resource)
+			} else {
+				//  no-kind resources is ONLY allowed when `--filter` arg number == 1.
+				a.Errors = append(a.Errors, fmt.Sprintf("Error: wrong argument: kubernetes resource format should be <kind>/<pod>, but given: %v", resource))
+				return
+			}
+		} else {
+			pair := strings.Split(resource, "/") // Split "pod/busybox" into "<kind>:<name>" pair
+			// verify the kind is supported (in analyzerMap)
+			matched := false
+			for k, _ := range analyzerMap {
+				if strings.EqualFold(pair[0], k) {
+					matched = true
+					pair[0] = k // to align the capitalization
+					break
+				}
+			}
+			if !matched {
+				a.Errors = append(a.Errors, fmt.Sprintf("Error: wrong argument: unrecognized kubernetes resource given: %v", resource))
+				return
+			}
+			resourceMap[pair[0]] = append(resourceMap[pair[0]], pair[1])
+		}
+	}
 	// we get the openapi schema from the server only if required by the flag "with-doc"
 	openapiSchema := &openapi_v2.Document{}
 	if a.WithDoc {
@@ -169,13 +220,26 @@ func (a *Analysis) RunAnalysis() {
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
+	analyzerConfig.Resources = make(map[string][]string)
+	for k, v := range resourceMap {
+		analyzerConfig.Resources[k] = v
+	}
+	if len(analyzerConfig.Resources) > 0 && len(analyzerConfig.Namespace) == 0 {
+		analyzerConfig.Namespace = "default" // to avoid "an empty namespace may not be set when a resource name is provided"
+	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
-		for _, analyzer := range coreAnalyzerMap {
+		for k, analyzer := range coreAnalyzerMap {
+			if len(analyzerConfig.Resources) > 0 {
+				if _, ok := analyzerConfig.Resources[k]; !ok {
+					// NOTE: if specific resources given(example: pod/nginx), the other analyzer(like deploy/svc) can be skipped
+					continue
+				}
+			}
 			wg.Add(1)
 			semaphore <- struct{}{}
 			go func(analyzer common.IAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
@@ -202,6 +266,12 @@ func (a *Analysis) RunAnalysis() {
 		var wg sync.WaitGroup
 		var mutex sync.Mutex
 		for _, filter := range a.Filters {
+			if len(analyzerConfig.Resources) > 0 {
+				if _, ok := analyzerConfig.Resources[filter]; !ok {
+					// NOTE: if specific resources given(example: pod/nginx), the other analyzer(like deploy/svc) can be skipped
+					continue
+				}
+			}
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
 				wg.Add(1)
@@ -231,6 +301,12 @@ func (a *Analysis) RunAnalysis() {
 	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// use active_filters
 	for _, filter := range activeFilters {
+		if len(analyzerConfig.Resources) > 0 {
+			if _, ok := analyzerConfig.Resources[filter]; !ok {
+				// NOTE: if specific resources given(example: pod/nginx), the other analyzer(like deploy/svc) can be skipped
+				continue
+			}
+		}
 		if analyzer, ok := analyzerMap[filter]; ok {
 			semaphore <- struct{}{}
 			wg.Add(1)
