@@ -101,3 +101,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	return a.Results, err
 }
+
+func (PdbAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze pod disruption budget."
+}

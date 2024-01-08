@@ -148,6 +148,10 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	return a.Results, nil
 }
 
+func (HpaAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze resources of type Horizontal Pod Autoscaler on Kubernetes."
+}
+
 type PodInfo interface {
 	GetPodSpec() corev1.PodSpec
 }

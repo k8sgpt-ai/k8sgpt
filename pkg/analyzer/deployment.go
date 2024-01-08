@@ -93,3 +93,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	return a.Results, nil
 }
+
+func (d DeploymentAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze resources of type Deployment on Kubernetes."
+}

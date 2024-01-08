@@ -107,3 +107,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 	return a.Results, nil
 }
+
+func (NetworkPolicyAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze network policies."
+}

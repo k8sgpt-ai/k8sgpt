@@ -49,7 +49,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"HorizontalPodAutoScaler": HpaAnalyzer{},
 	"PodDisruptionBudget":     PdbAnalyzer{},
 	"NetworkPolicy":           NetworkPolicyAnalyzer{},
-	"Log":                     LogAnalyzer{},
+	"PodLog":                  LogAnalyzer{},
 	"GatewayClass":            GatewayClassAnalyzer{},
 	"Gateway":                 GatewayAnalyzer{},
 	"HTTPRoute":               HTTPRouteAnalyzer{},
@@ -119,4 +119,15 @@ func GetAnalyzerMap() (map[string]common.IAnalyzer, map[string]common.IAnalyzer)
 	}
 
 	return coreAnalyzer, mergedAnalyzerMap
+}
+
+func GetAnalyzerNames() []string {
+	_, analyzers := GetAnalyzerMap()
+	keys := make([]string, 0, len(analyzers))
+	for key := range analyzers {
+		text := fmt.Sprintf("%s: %s", key, analyzers[key].GetDescription())
+		keys = append(keys, text)
+	}
+
+	return keys
 }

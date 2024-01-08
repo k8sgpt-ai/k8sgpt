@@ -102,6 +102,11 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	return a.Results, nil
 }
+
+func (LogAnalyzer) GetDescription() string {
+	return "This analyzer allows you to get & analyze pod logs."
+}
+
 func printErrorLines(podName, namespace, logs string, errorPattern *regexp.Regexp) string {
 	// Split the logs into lines
 	logLines := strings.Split(logs, "\n")

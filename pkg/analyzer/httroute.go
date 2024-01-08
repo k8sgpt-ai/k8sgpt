@@ -226,3 +226,7 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	return a.Results, nil
 
 }
+
+func (HTTPRouteAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze resources of type HTTP Route on Kubernetes."
+}

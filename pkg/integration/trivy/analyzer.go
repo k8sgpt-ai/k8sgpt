@@ -15,8 +15,9 @@ package trivy
 
 import (
 	"fmt"
-	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
+
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -160,4 +161,8 @@ func (t TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return common, nil
 	}
 	return make([]common.Result, 0), nil
+}
+
+func (t TrivyAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze security with trivy."
 }

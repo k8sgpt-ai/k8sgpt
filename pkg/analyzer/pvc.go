@@ -80,3 +80,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	return a.Results, nil
 }
+
+func (PvcAnalyzer) GetDescription() string {
+	return "This analyzer allows you to analyze persistent volum claim."
+}
