@@ -36,6 +36,7 @@ var (
 	anonymize      bool
 	maxConcurrency int
 	withDoc        bool
+	verbose        bool
 
 	example = templates.Examples(i18n.T(`
 
@@ -88,6 +89,7 @@ var AnalyzeCmd = &cobra.Command{
 			maxConcurrency,
 			withDoc,
 			args,
+			verbose,
 		)
 		if err != nil {
 			color.Red("Error: %v", err)
@@ -136,4 +138,5 @@ func init() {
 	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
 	// kubernetes doc flag
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
+	AnalyzeCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose analysis details")
 }

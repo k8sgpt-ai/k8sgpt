@@ -82,6 +82,19 @@ func (a *Analysis) textOutput() ([]byte, error) {
 			color.YellowString(result.Name), color.CyanString(result.ParentObject)))
 		for _, err := range result.Error {
 			output.WriteString(fmt.Sprintf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text)))
+			if err.AdditionalContextText != "" {
+				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Additional Context:"), color.CyanString(err.AdditionalContextText)))
+			}
+
+			if a.Verbose {
+				if err.NextStepsText != "" {
+					output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Potential Next Steps:"), color.CyanString(err.NextStepsText)))
+				}
+				for _, q := range err.UsefulQuestions {
+					output.WriteString(fmt.Sprintf("  %s\n", color.CyanString(q)))
+				}
+			}
+
 			if err.KubernetesDoc != "" {
 				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Kubernetes Doc:"), color.RedString(err.KubernetesDoc)))
 			}

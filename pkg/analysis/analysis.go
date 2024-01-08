@@ -14,6 +14,7 @@ limitations under the License.
 package analysis
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -21,6 +22,7 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"text/template"
 
 	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
@@ -49,6 +51,7 @@ type Analysis struct {
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
 	WithDoc            bool
 	SpecificResources  []string // format: slices of <kind>/<name> or just <name>
+	Verbose            bool
 }
 
 type AnalysisStatus string
@@ -77,6 +80,7 @@ func NewAnalysis(
 	maxConcurrency int,
 	withDoc bool,
 	specificResources []string,
+	verbose bool,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -107,6 +111,7 @@ func NewAnalysis(
 		MaxConcurrency:    maxConcurrency,
 		WithDoc:           withDoc,
 		SpecificResources: specificResources,
+		Verbose:           verbose,
 	}
 	if !explain {
 		// Return early if AI use was not requested.
@@ -219,6 +224,7 @@ func (a *Analysis) RunAnalysis() {
 		Namespace:     a.Namespace,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
+		Verbose:       a.Verbose,
 	}
 	analyzerConfig.Resources = make(map[string][]string)
 	for k, v := range resourceMap {
@@ -227,6 +233,41 @@ func (a *Analysis) RunAnalysis() {
 	if len(analyzerConfig.Resources) > 0 && len(analyzerConfig.Namespace) == 0 {
 		analyzerConfig.Namespace = "default" // to avoid "an empty namespace may not be set when a resource name is provided"
 	}
+
+	defer func() {
+		// Analyzers can schedule further analysis, go through those.
+		var wg sync.WaitGroup
+		var mutex sync.Mutex
+		semaphore := make(chan struct{}, a.MaxConcurrency)
+
+		for _, r := range a.Results {
+			for _, e := range r.Error {
+				for _, cfg := range e.ScheduledAnalysis {
+					for kind := range cfg.Resources {
+						if analyzer, ok := analyzerMap[kind]; ok {
+							semaphore <- struct{}{}
+							wg.Add(1)
+							go func(analyzer common.IAnalyzer) {
+								defer wg.Done()
+								results, err := analyzer.Analyze(cfg)
+								if err != nil {
+									mutex.Lock()
+									a.Errors = append(a.Errors, err.Error())
+									mutex.Unlock()
+								}
+								mutex.Lock()
+								// Further scheduled analysis will are ignored.
+								a.Results = append(a.Results, results...)
+								mutex.Unlock()
+								<-semaphore
+							}(analyzer)
+						}
+					}
+				}
+			}
+		}
+		wg.Wait()
+	}()
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	// if there are no filters selected and no active_filters then run coreAnalyzer
@@ -339,47 +380,52 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	}
 
 	for index, analysis := range a.Results {
-		var texts []string
-
+		// NOTE(bwplotka): Completely changing the flow -- asking per failure/error now.
 		for _, failure := range analysis.Error {
+			v := common.FailureTemplateVars{
+				Language: a.Language,
+				Failure:  failure,
+			}
 			if anonymize {
 				for _, s := range failure.Sensitive {
-					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
+					v.Failure.Text = util.ReplaceIfMatch(v.Failure.Text, s.Unmasked, s.Masked)
 				}
 			}
-			texts = append(texts, failure.Text)
-		}
 
-		promptTemplate := ai.PromptMap["default"]
-		// If the resource `Kind` comes from an "integration plugin",
-		// maybe a customized prompt template will be involved.
-		if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
-			promptTemplate = prompt
-		}
-		result, err := a.getAIResultForSanitizedFailures(texts, promptTemplate)
-		if err != nil {
-			// FIXME: can we avoid checking if output is json multiple times?
-			//   maybe implement the progress bar better?
-			if output != "json" {
-				_ = bar.Exit()
+			promptTemplate := failure.CustomPromptTemplate
+			if promptTemplate == nil {
+				promptTemplate = ai.PromptMap["default"]
+				// If the resource `Kind` comes from an "integration plugin",
+				// maybe a customized prompt template will be involved.
+				if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
+					promptTemplate = prompt
+				}
 			}
 
-			// Check for exhaustion.
-			if strings.Contains(err.Error(), "status code: 429") {
-				return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
-			}
-			return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
-		}
+			result, err := a.getAIResultForSanitizedFailure(v, promptTemplate)
+			if err != nil {
+				// FIXME: can we avoid checking if output is json multiple times?
+				//   maybe implement the progress bar better?
+				if output != "json" {
+					_ = bar.Exit()
+				}
 
-		if anonymize {
-			for _, failure := range analysis.Error {
+				// Check for exhaustion.
+				if strings.Contains(err.Error(), "status code: 429") {
+					return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
+				}
+				return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
+			}
+
+			if anonymize {
 				for _, s := range failure.Sensitive {
 					result = strings.ReplaceAll(result, s.Masked, s.Unmasked)
 				}
 			}
+			// YOLO.
+			analysis.Details += result
 		}
 
-		analysis.Details = result
 		if output != "json" {
 			_ = bar.Add(1)
 		}
@@ -388,11 +434,10 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	return nil
 }
 
-func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl string) (string, error) {
-	inputKey := strings.Join(texts, " ")
+func (a *Analysis) getAIResultForSanitizedFailure(vars common.FailureTemplateVars, promptTmpl *template.Template) (string, error) {
 	// Check for cached data.
 	// TODO(bwplotka): This might depend on model too (or even other client configuration pieces), fix it in later PRs.
-	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, inputKey)
+	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, ""+vars.Failure.AdditionalContextText+vars.Failure.Text)
 
 	if !a.Cache.IsCacheDisabled() && a.Cache.Exists(cacheKey) {
 		response, err := a.Cache.Load(cacheKey)
@@ -410,8 +455,13 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	}
 
 	// Process template.
-	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
-	response, err := a.AIClient.GetCompletion(a.Context, prompt)
+	b := bytes.Buffer{}
+	promptTmpl.Execute(&b, vars)
+
+	if a.Verbose {
+		color.Blue("asking %v", b.String())
+	}
+	response, err := a.AIClient.GetCompletion(a.Context, b.String())
 	if err != nil {
 		return "", err
 	}

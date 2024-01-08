@@ -15,6 +15,7 @@ package common
 
 import (
 	"context"
+	"text/template"
 
 	trivy "github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
@@ -42,6 +43,7 @@ type Analyzer struct {
 	PreAnalysis   map[string]PreAnalysis
 	Results       []Result
 	OpenapiSchema *openapi_v2.Document
+	Verbose       bool
 }
 
 type PreAnalysis struct {
@@ -67,18 +69,45 @@ type PreAnalysis struct {
 	TrivyConfigAuditReport   trivy.ConfigAuditReport
 }
 
+// Result represents analysis result for a specific resource.
 type Result struct {
-	Kind         string    `json:"kind"`
-	Name         string    `json:"name"`
-	Error        []Failure `json:"error"`
-	Details      string    `json:"details"`
-	ParentObject string    `json:"parentObject"`
+	Kind string `json:"kind"`
+	Name string `json:"name"`
+
+	// Errors added by analyzers.
+	Error []Failure `json:"error"`
+
+	// Details is used by the results from the AI provider.
+	Details      string `json:"details"`
+	ParentObject string `json:"parentObject"`
 }
 
 type Failure struct {
-	Text          string
+	// Text describes the error as analyzer found it.
+	Text string
+	// AdditionalContextText provides an optional, additional context about the failure.
+	AdditionalContextText string
+	// NextStepsText describes the optional a potential solution or next steps
+	// analyzer proposes. This can be then later suggested to AI provider as one option.
+	NextStepsText string
+
+	// TODO(bwplotka): If we talk custom template.. perhaps it's easier to override prompt itself?
+	CustomPromptTemplate *template.Template
+
+	// UsefulQuestions is an optional set of isolated prompts to ask the potential LLM
+	// in the background (on top of the normal prompt).
+	UsefulQuestions []string
+	// ScheduledAnalysis is an optional set of further analysis to schedule for this problem
+	// as decided by the failure creator.
+	ScheduledAnalysis []Analyzer
+
 	KubernetesDoc string
 	Sensitive     []Sensitive
+}
+
+type FailureTemplateVars struct {
+	Language string
+	Failure  Failure
 }
 
 type Sensitive struct {
