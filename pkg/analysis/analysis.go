@@ -24,6 +24,7 @@ import (
 
 	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/agent"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -35,18 +36,19 @@ import (
 )
 
 type Analysis struct {
-	Context            context.Context
-	Filters            []string
-	Client             *kubernetes.Client
-	Language           string
+	Alert              string
 	AIClient           ai.IAI
-	Results            []common.Result
-	Errors             []string
-	Namespace          string
-	Cache              cache.ICache
-	Explain            bool
-	MaxConcurrency     int
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
+	Cache              cache.ICache
+	Client             *kubernetes.Client
+	Context            context.Context
+	Errors             []string
+	Explain            bool
+	Filters            []string
+	Language           string
+	MaxConcurrency     int
+	Namespace          string
+	Results            []common.Result
 	WithDoc            bool
 }
 
@@ -67,13 +69,14 @@ type JsonOutput struct {
 }
 
 func NewAnalysis(
+	alert string,
 	backend string,
-	language string,
+	explain bool,
 	filters []string,
+	language string,
+	maxConcurrency int,
 	namespace string,
 	noCache bool,
-	explain bool,
-	maxConcurrency int,
 	withDoc bool,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
@@ -95,6 +98,7 @@ func NewAnalysis(
 	}
 
 	a := &Analysis{
+		Alert:          alert,
 		Context:        context.Background(),
 		Filters:        filters,
 		Client:         client,
@@ -147,9 +151,14 @@ func NewAnalysis(
 }
 
 func (a *Analysis) RunAnalysis() {
+
 	activeFilters := viper.GetStringSlice("active_filters")
 
 	coreAnalyzerMap, analyzerMap := analyzer.GetAnalyzerMap()
+
+	if a.Alert != "" {
+		activeFilters = a.GetAIRouterResults()
+	}
 
 	// we get the openapi schema from the server only if required by the flag "with-doc"
 	openapiSchema := &openapi_v2.Document{}
@@ -252,6 +261,75 @@ func (a *Analysis) RunAnalysis() {
 	wg.Wait()
 }
 
+func (a *Analysis) EvaluateResult() error {
+	evaluatedResult := []common.Result{}
+	for _, analysis := range a.Results {
+		for _, failure := range analysis.Error {
+			if a.Alert != "" {
+				agentConfiguration := agent.AgentConfiguration{
+					AiClient: a.AIClient,
+					Context:  a.Context,
+					Evaluator: agent.EvaluatorAgentConfiguration{
+						Alert:  a.Alert,
+						Result: failure.Text,
+					},
+				}
+
+				evaluatorAgent := agent.EvaluatorAgent{}
+				evaluatorAgent.Configure(agentConfiguration)
+				response, err := evaluatorAgent.Process()
+				if err != nil {
+					return err
+				}
+				if response {
+					evaluatedResult = append(evaluatedResult, analysis)
+					break
+				}
+			}
+		}
+
+	}
+	a.Results = evaluatedResult
+	return nil
+}
+
+func (a *Analysis) GetAIRouterResults() []string {
+	agentConfiguration := agent.AgentConfiguration{
+		AiClient: a.AIClient,
+		Context:  a.Context,
+		Router: agent.RouterAgentConfiguration{
+			Alert:     a.Alert,
+			Analyzers: analyzer.GetAnalyzerNames(),
+		},
+	}
+	routerAgent := agent.RouterAgent{}
+	routerAgent.Configure(agentConfiguration)
+	response, err := routerAgent.Process()
+	if err != nil {
+		fmt.Printf("Router agent error: %v. Fallback to configuration.\n", err)
+	}
+	return response
+}
+
+func (a *Analysis) GetAIAnalyzerResult(texts []string, cacheKey, promptTmpl string) string {
+	AgentConfiguration := agent.AgentConfiguration{
+		AiClient: a.AIClient,
+		Context:  a.Context,
+		Analyzer: agent.AnalyzerAgentConfiguration{
+			Language: a.Language,
+			Texts:    texts,
+			Prompt:   promptTmpl,
+		},
+	}
+	analyzerAgent := agent.AnalyzerAgent{}
+	analyzerAgent.Configure(AgentConfiguration)
+	response, err := analyzerAgent.Process()
+	if err = a.Cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response))); err != nil {
+		color.Red("error storing value to cache; value won't be cached: %v", err)
+	}
+	return response
+}
+
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
@@ -266,6 +344,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		var texts []string
 
 		for _, failure := range analysis.Error {
+
 			if anonymize {
 				for _, s := range failure.Sensitive {
 					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
@@ -274,10 +353,10 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			texts = append(texts, failure.Text)
 		}
 
-		promptTemplate := ai.PromptMap["default"]
+		promptTemplate := "default"
 		// If the resource `Kind` comes from an "integration plugin",
 		// maybe a customized prompt template will be involved.
-		if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
+		if prompt, ok := agent.PromptMap[analysis.Kind]; ok {
 			promptTemplate = prompt
 		}
 		result, err := a.getAIResultForSanitizedFailures(texts, promptTemplate)
@@ -334,16 +413,8 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	}
 
 	// Process template.
-	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
-	response, err := a.AIClient.GetCompletion(a.Context, prompt)
-	if err != nil {
-		return "", err
-	}
 
-	if err = a.Cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response))); err != nil {
-		color.Red("error storing value to cache; value won't be cached: %v", err)
-	}
-	return response, nil
+	return a.GetAIAnalyzerResult(texts, cacheKey, promptTmpl), nil
 }
 
 func (a *Analysis) Close() {

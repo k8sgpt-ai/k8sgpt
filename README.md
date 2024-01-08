@@ -187,6 +187,11 @@ _Filter by namespace_
 k8sgpt analyze --explain --filter=Pod --namespace=default
 ```
 
+_Analyze an error_
+```
+k8sgpt analyze analyze --alert "Kubernetes pod crash looping: /crashloop-pod-d57db968d-zk2v9"
+```
+
 _Output to JSON_
 
 ```

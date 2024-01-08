@@ -16,7 +16,9 @@ package analyze
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/spf13/cobra"
@@ -31,6 +33,7 @@ var (
 	nocache        bool
 	namespace      string
 	anonymize      bool
+	alert          string
 	maxConcurrency int
 	withDoc        bool
 )
@@ -44,24 +47,55 @@ var AnalyzeCmd = &cobra.Command{
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		if alert != "" {
+			explain = true
+		}
+
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
+			alert,
 			backend,
-			language,
+			explain,
 			filters,
+			language,
+			maxConcurrency,
 			namespace,
 			nocache,
-			explain,
-			maxConcurrency,
 			withDoc,
 		)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+
 		defer config.Close()
 
-		config.RunAnalysis()
+		s := spinner.New(spinner.CharSets[9], 100*time.Millisecond)
+		done := make(chan bool)
+
+		s.Suffix = " Analysis in progress..."
+		s.Start()
+		go func() {
+			config.RunAnalysis()
+			done <- true
+		}()
+
+		<-done
+		s.Stop()
+
+		if alert != "" {
+			s.Suffix = " Evaluation in progress..."
+			s.Start()
+			go func() {
+				if err := config.EvaluateResult(); err != nil {
+					color.Red("Error: %v", err)
+					os.Exit(1)
+				}
+				done <- true
+			}()
+			<-done
+			s.Stop()
+		}
 
 		if explain {
 			if err := config.GetAIResults(output, anonymize); err != nil {
@@ -88,6 +122,8 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&nocache, "no-cache", "c", false, "Do not use cached data")
 	// anonymize flag
 	AnalyzeCmd.Flags().BoolVarP(&anonymize, "anonymize", "a", false, "Anonymize data before sending it to the AI backend. This flag masks sensitive data, such as Kubernetes object names and labels, by replacing it with a key. However, please note that this flag does not currently apply to events.")
+	// alert flag
+	AnalyzeCmd.Flags().StringVarP(&alert, "alert", "", "", "Alert to be analyzed")
 	// array of strings flag
 	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analyzers (e.g. Pod, PersistentVolumeClaim, Service, ReplicaSet)")
 	// explain flag
