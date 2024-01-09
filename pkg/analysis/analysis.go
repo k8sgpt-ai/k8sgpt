@@ -271,7 +271,7 @@ func (a *Analysis) EvaluateResult() error {
 					Context:  a.Context,
 					Evaluator: agent.EvaluatorAgentConfiguration{
 						Alert:  a.Alert,
-						Result: failure.Text,
+						Result: fmt.Sprintf("%s/%s: %s", analysis.Kind, analysis.Name, failure.Text),
 					},
 				}
 

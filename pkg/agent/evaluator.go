@@ -27,12 +27,12 @@ func (agent *EvaluatorAgent) Configure(agentConfiguration AgentConfiguration) {
 	agent.alert = agentConfiguration.Evaluator.Alert
 	agent.result = agentConfiguration.Evaluator.Result
 	agent.prompt = `
-	You are a Kubernetes expert. Your role is to assess whether an error detected in the cluster matches an error sent by the user. Your response is crucial in resolving the alert, so you must be VERY precise.
+You are a Kubernetes expert. Your role is to assess whether an error detected in the cluster matches an error sent by the user. Your response is crucial in resolving the alert, so you must be VERY precise.
 
-	The alert : "%s"
-	The error : "%s"
+The alert : "%s"
+The error : "%s"
 
-	You will respond with "true" only if the alert matches the error and "false" in all other cases.
+IMPORTANT: You will respond with "true" only if the alert matches the error and "false" in all other cases.
 	`
 }
 
