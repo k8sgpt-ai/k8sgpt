@@ -31,14 +31,14 @@ func (agent *RouterAgent) Configure(agentConfiguration AgentConfiguration) {
 	agent.alert = agentConfiguration.Router.Alert
 	agent.analyzers = agentConfiguration.Router.Analyzers
 	agent.context = agentConfiguration.Context
-	agent.prompt = `You are part of a multi-agent autonomous AI system. You are Kubernetes expert and are responsible for assisting SREs in understanding and resolving issues. Your role is to decide which analyzers I should activate to investigate the following alert:
+	agent.prompt = `You are part of a multi-agent autonomous AI system. You are Kubernetes expert and are responsible for assisting SREs in understanding and resolving issues. The system consists of analyzers. Each analyzer can be used to analyze a specific type of resource or function in a Kubernetes cluster. It contains an error identification logic. Your role is to decide which analyzers I should activate to investigate the following alert:
 	Error: %s
 	
-	The list of all analyzers and description of each role is available here :
+	The list of all analyzers here :
 
 %s
 
-	Feel free to return multiple analyzers in order to obtain a comprehensive understanding of the error! 
+	Feel free to return multiple analyzers in order to obtain a comprehensive understanding of the error! The result cannot be empty.
 
 	WARNING: Your response must ONLY contain a JSON table containing the names of the selected analyzers as strings. No other format is allowed.
 
