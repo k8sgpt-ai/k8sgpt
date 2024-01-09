@@ -116,7 +116,3 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	return a.Results, nil
 }
-
-func (StatefulSetAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze statefulset."
-}

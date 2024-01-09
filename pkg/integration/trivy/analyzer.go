@@ -162,7 +162,3 @@ func (t TrivyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 	return make([]common.Result, 0), nil
 }
-
-func (t TrivyAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze security with trivy."
-}

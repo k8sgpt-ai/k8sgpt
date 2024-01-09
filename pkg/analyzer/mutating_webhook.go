@@ -153,7 +153,3 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 
 	return a.Results, nil
 }
-
-func (MutatingWebhookAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze mutating webhook."
-}

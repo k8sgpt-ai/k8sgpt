@@ -125,7 +125,7 @@ func GetAnalyzerNames() []string {
 	_, analyzers := GetAnalyzerMap()
 	keys := make([]string, 0, len(analyzers))
 	for key := range analyzers {
-		text := fmt.Sprintf("%s: %s", key, analyzers[key].GetDescription())
+		text := fmt.Sprintf("%s", key)
 		keys = append(keys, text)
 	}
 

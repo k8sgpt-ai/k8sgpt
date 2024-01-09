@@ -132,7 +132,3 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 	return a.Results, nil
 }
-
-func (ServiceAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze service."
-}

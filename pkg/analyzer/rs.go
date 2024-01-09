@@ -78,7 +78,3 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 	return a.Results, nil
 }
-
-func (ReplicaSetAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze replica set."
-}

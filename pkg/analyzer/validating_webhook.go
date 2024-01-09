@@ -151,7 +151,3 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 
 	return a.Results, nil
 }
-
-func (ValidatingWebhookAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze validating webhook."
-}

@@ -137,10 +137,6 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 	return a.Results, nil
 }
 
-func (analyzer CronJobAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze resources of type CronJob on Kubernetes."
-}
-
 // Check CRON schedule format
 func CheckCronScheduleIsValid(schedule string) (bool, error) {
 	_, err := cron.ParseStandard(schedule)

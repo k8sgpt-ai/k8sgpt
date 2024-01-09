@@ -82,10 +82,6 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	return a.Results, err
 }
 
-func (NodeAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze nodes."
-}
-
 func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCondition v1.NodeCondition) []common.Failure {
 	failures = append(failures, common.Failure{
 		Text: fmt.Sprintf("%s has condition of type %s, reason %s: %s", nodeName, nodeCondition.Type, nodeCondition.Reason, nodeCondition.Message),

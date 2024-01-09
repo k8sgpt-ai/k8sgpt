@@ -135,10 +135,6 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	return a.Results, nil
 }
 
-func (PodAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze pod."
-}
-
 func isErrorReason(reason string) bool {
 	failureReasons := []string{
 		"CrashLoopBackOff", "ImagePullBackOff", "CreateContainerConfigError", "PreCreateHookError", "CreateContainerError", "PreStartHookError", "RunContainerError", "ImageInspectError", "ErrImagePull", "ErrImageNeverPull", "InvalidImageName",

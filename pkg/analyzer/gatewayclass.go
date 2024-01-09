@@ -82,7 +82,3 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 	return a.Results, nil
 }
-
-func (GatewayClassAnalyzer) GetDescription() string {
-	return "This analyzer allows you to analyze resources of type GatewayClassAnalyzer on Kubernetes."
-}

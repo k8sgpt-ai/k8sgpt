@@ -31,7 +31,6 @@ import (
 
 type IAnalyzer interface {
 	Analyze(analysis Analyzer) ([]Result, error)
-	GetDescription() string
 }
 
 type Analyzer struct {
