@@ -18,6 +18,7 @@ const (
 	trivy_conf_prompt = "Explain the following trivy scan result and the detail risk or root cause of the security check, then provide a solution."
 )
 
+// TODO(matthisholleville): This map allows us to choose an analyzer prompt. We need to rework this and make it more flexible.
 var PromptMap = map[string]string{
 	"default":             default_prompt,
 	"VulnerabilityReport": trivy_vuln_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
