@@ -123,7 +123,7 @@ func init() {
 	// anonymize flag
 	AnalyzeCmd.Flags().BoolVarP(&anonymize, "anonymize", "a", false, "Anonymize data before sending it to the AI backend. This flag masks sensitive data, such as Kubernetes object names and labels, by replacing it with a key. However, please note that this flag does not currently apply to events.")
 	// alert flag
-	AnalyzeCmd.Flags().StringVarP(&alert, "alert", "l", "", "Alert to be analyzed")
+	AnalyzeCmd.Flags().StringVarP(&alert, "alert", "t", "", "Alert to be analyzed")
 	// array of strings flag
 	AnalyzeCmd.Flags().StringSliceVarP(&filters, "filter", "f", []string{}, "Filter for these analyzers (e.g. Pod, PersistentVolumeClaim, Service, ReplicaSet)")
 	// explain flag
