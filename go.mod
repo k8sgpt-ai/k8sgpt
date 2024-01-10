@@ -7,7 +7,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
-	github.com/sashabaranov/go-openai v1.17.10
+	github.com/sashabaranov/go-openai v1.17.11
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
@@ -29,7 +29,7 @@ require (
 	cloud.google.com/go/storage v1.36.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
-	github.com/aws/aws-sdk-go v1.49.16
+	github.com/aws/aws-sdk-go v1.49.17
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.5.0
 	github.com/olekukonko/tablewriter v0.0.5

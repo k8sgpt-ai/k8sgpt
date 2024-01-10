@@ -17,6 +17,8 @@ import (
 	"context"
 )
 
+const noopAIClientName = "noopai"
+
 type NoOpAIClient struct {
 	nopCloser
 }
@@ -31,5 +33,5 @@ func (c *NoOpAIClient) GetCompletion(_ context.Context, prompt string) (string, 
 }
 
 func (c *NoOpAIClient) GetName() string {
-	return "noopai"
+	return noopAIClientName
 }
