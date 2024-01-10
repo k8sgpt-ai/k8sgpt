@@ -1,4 +1,4 @@
-package agent
+package interactive
 
 import (
 	"fmt"
@@ -14,26 +14,27 @@ type AGENT_STATE int
 const (
 	prompt = "Given the following context: "
 )
+
 const (
 	E_RUNNING AGENT_STATE = iota
 	E_EXITED              = iota
 )
 
-type AIAgent struct {
+type InteractionRunner struct {
 	config        *analysis.Analysis
-	contextWindow []byte
 	State         chan AGENT_STATE
+	contextWindow []byte
 }
 
-func NewAIAgent(config *analysis.Analysis, contextWindow []byte) *AIAgent {
-	return &AIAgent{
+func NewInteractionRunner(config *analysis.Analysis, contextWindow []byte) *InteractionRunner {
+	return &InteractionRunner{
 		config:        config,
 		contextWindow: contextWindow,
 		State:         make(chan AGENT_STATE),
 	}
 }
 
-func (a *AIAgent) StartInteraction() {
+func (a *InteractionRunner) StartInteraction() {
 	a.State <- E_RUNNING
 	pterm.Println("Interactive mode enabled [type exit to close.]")
 	for {

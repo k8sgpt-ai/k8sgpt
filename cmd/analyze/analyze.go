@@ -20,7 +20,7 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/agent"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/interactive"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +47,6 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -75,18 +74,20 @@ var AnalyzeCmd = &cobra.Command{
 			}
 		}
 		// print results
-		output, err := config.PrintOutput(output)
+		output_data, err := config.PrintOutput(output)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		fmt.Println(string(output))
+		fmt.Println(string(output_data))
 
-		// Interactive mode
 		if interactiveMode && explain {
+			if output == "json" {
+				color.Yellow("Caution: interactive mode using --json enabled may use additional tokens.")
+			}
 			sigs := make(chan os.Signal, 1)
 			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-			agentClient := agent.NewAIAgent(config, output)
+			agentClient := interactive.NewInteractionRunner(config, output_data)
 
 			go agentClient.StartInteraction()
 			for {
@@ -98,7 +99,7 @@ var AnalyzeCmd = &cobra.Command{
 					}
 				case res := <-agentClient.State:
 					switch res {
-					case agent.E_EXITED:
+					case interactive.E_EXITED:
 						os.Exit(0)
 					}
 				}
@@ -108,7 +109,6 @@ var AnalyzeCmd = &cobra.Command{
 }
 
 func init() {
-
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag
@@ -130,5 +130,5 @@ func init() {
 	// kubernetes doc flag
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
 	// interactive mode flag
-	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Interactive mode to debug commands can only be used with --explain flag")
+	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
 }
