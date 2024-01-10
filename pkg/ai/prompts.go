@@ -10,8 +10,8 @@ const (
 	trivy_conf_prompt = "Explain the following trivy scan result and the detail risk or root cause of the security check, then provide a solution."
 
 	prom_conf_prompt = `Simplify the following Prometheus error message delimited by triple dashes written in --- %s --- language; --- %s ---.
-	This error came from the Prometheus configuration file, documented at https://prometheus.io/docs/prometheus/latest/configuration/configuration/.
-	Provide step by step instructions to fix, with suggestions, referencing Prometheus documentation if relevenat.
+	This error came when validating the Prometheus configuration file.
+	Provide step by step instructions to fix, with suggestions, referencing Prometheus documentation if relevant.
 	Write the output in the following format in no more than 300 characters:
 	Error: {Explain error here}
 	Solution: {Step by step solution here}
@@ -32,6 +32,7 @@ const (
 	For each job_name, describe the Kubernetes service and pod labels,
 	namespaces, ports, and containers they match.
 	Return the message:
+	Discovered and parsed Prometheus scrape configurations.
 	For targets to be scraped by Prometheus, ensure they are running with
 	at least one of the following label sets:
 	Then for each job, write this format:

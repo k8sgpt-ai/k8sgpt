@@ -188,6 +188,9 @@ func findPrometheusConfigPath(ctx context.Context, client kubernetes.Interface, 
 	var err error
 	for _, container := range pod.Spec.Containers {
 		for _, arg := range container.Args {
+			// Prefer the config-reloader container config file as it normally
+			// references the ConfigMap or Secret volume mount.
+			// Fallback to the prometheus container if that's not found.
 			if strings.HasPrefix(arg, prometheusConfigFlag) {
 				path = strings.TrimLeft(arg, prometheusConfigFlag)
 			}
@@ -272,11 +275,11 @@ func unmarshalPromConfigBytes(b []byte) (*promconfig.Config, error) {
 		if err != nil {
 			return &config, err
 		}
-		ub, err := io.ReadAll(r)
+		gunzipBytes, err := io.ReadAll(r)
 		if err != nil {
 			return &config, err
 		}
-		err = yaml.Unmarshal(ub, &config)
+		err = yaml.Unmarshal(gunzipBytes, &config)
 		if err != nil {
 			return nil, err
 		}
