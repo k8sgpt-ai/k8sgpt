@@ -12,6 +12,9 @@ import (
 type AGENT_STATE int
 
 const (
+	prompt = "Given the following context: "
+)
+const (
 	E_RUNNING AGENT_STATE = iota
 	E_EXITED              = iota
 )
@@ -31,7 +34,6 @@ func NewAIAgent(config *analysis.Analysis, contextWindow []byte) *AIAgent {
 }
 
 func (a *AIAgent) StartInteraction() {
-
 	a.State <- E_RUNNING
 	pterm.Println("Interactive mode enabled [type exit to close.]")
 	for {
@@ -49,7 +51,7 @@ func (a *AIAgent) StartInteraction() {
 			continue
 		}
 		pterm.Println()
-		contextWindow := fmt.Sprintf("Given the context %s %s", string(a.contextWindow),
+		contextWindow := fmt.Sprintf("%s %s %s", prompt, string(a.contextWindow),
 			queryString)
 
 		response, err := a.config.AIClient.GetCompletion(a.config.Context,
