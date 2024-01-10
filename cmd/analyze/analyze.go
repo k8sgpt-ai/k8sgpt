@@ -16,11 +16,12 @@ package analyze
 import (
 	"fmt"
 	"os"
-	"strings"
+	"os/signal"
+	"syscall"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/agent"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
-	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 )
 
@@ -83,31 +84,24 @@ var AnalyzeCmd = &cobra.Command{
 
 		// Interactive mode
 		if interactiveMode && explain {
-			pterm.Println("Interactive mode enabled [type exit to close.]")
-			for {
-				query := pterm.DefaultInteractiveTextInput.WithMultiLine(false)
-				queryString, err := query.Show()
-				if err != nil {
-					fmt.Println(err)
-				}
-				if queryString == "" {
-					continue
-				}
-				if strings.Contains(queryString, "exit") {
-					os.Exit(0)
-				}
-				// Print a blank line for better readability
-				pterm.Println()
-				//Print the user's answer with an info prefix
-				contextWindow := fmt.Sprintf("Given the context %s %s", string(output),
-					queryString)
+			sigs := make(chan os.Signal, 1)
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+			agentClient := agent.NewAIAgent(config, output)
 
-				response, err := config.AIClient.GetCompletion(config.Context, contextWindow)
-				if err != nil {
-					color.Red("Error: %v", err)
-					os.Exit(1)
+			go agentClient.StartInteraction()
+			for {
+				select {
+				case res := <-sigs:
+					switch res {
+					default:
+						os.Exit(0)
+					}
+				case res := <-agentClient.State:
+					switch res {
+					case agent.E_EXITED:
+						os.Exit(0)
+					}
 				}
-				pterm.Println(response)
 			}
 		}
 	},
