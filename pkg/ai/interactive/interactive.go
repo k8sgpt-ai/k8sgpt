@@ -9,20 +9,20 @@ import (
 	"github.com/pterm/pterm"
 )
 
-type AGENT_STATE int
+type INTERACTIVE_STATE int
 
 const (
 	prompt = "Given the following context: "
 )
 
 const (
-	E_RUNNING AGENT_STATE = iota
-	E_EXITED              = iota
+	E_RUNNING INTERACTIVE_STATE = iota
+	E_EXITED                    = iota
 )
 
 type InteractionRunner struct {
 	config        *analysis.Analysis
-	State         chan AGENT_STATE
+	State         chan INTERACTIVE_STATE
 	contextWindow []byte
 }
 
@@ -30,7 +30,7 @@ func NewInteractionRunner(config *analysis.Analysis, contextWindow []byte) *Inte
 	return &InteractionRunner{
 		config:        config,
 		contextWindow: contextWindow,
-		State:         make(chan AGENT_STATE),
+		State:         make(chan INTERACTIVE_STATE),
 	}
 }
 
