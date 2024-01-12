@@ -87,9 +87,9 @@ var AnalyzeCmd = &cobra.Command{
 			}
 			sigs := make(chan os.Signal, 1)
 			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-			agentClient := interactive.NewInteractionRunner(config, output_data)
+			interactiveClient := interactive.NewInteractionRunner(config, output_data)
 
-			go agentClient.StartInteraction()
+			go interactiveClient.StartInteraction()
 			for {
 				select {
 				case res := <-sigs:
@@ -97,7 +97,7 @@ var AnalyzeCmd = &cobra.Command{
 					default:
 						os.Exit(0)
 					}
-				case res := <-agentClient.State:
+				case res := <-interactiveClient.State:
 					switch res {
 					case interactive.E_EXITED:
 						os.Exit(0)
