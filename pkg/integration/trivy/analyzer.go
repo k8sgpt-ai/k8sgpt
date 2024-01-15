@@ -15,8 +15,9 @@ package trivy
 
 import (
 	"fmt"
-	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
+
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -56,8 +57,8 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 			}
 		}
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
-				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", report.Namespace,
+				report.Name)] = common.PreAnalysis{
 				TrivyVulnerabilityReport: report,
 				FailureDetails:           failures,
 			}
@@ -116,8 +117,8 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", report.Labels["trivy-operator.resource.namespace"],
-				report.Labels["trivy-operator.resource.name"])] = common.PreAnalysis{
+			preAnalysis[fmt.Sprintf("%s/%s", report.Namespace,
+				report.Name)] = common.PreAnalysis{
 				TrivyConfigAuditReport: report,
 				FailureDetails:         failures,
 			}
