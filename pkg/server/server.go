@@ -49,7 +49,7 @@ type Config struct {
 	Logger         *zap.Logger
 	metricsServer  *http.Server
 	listener       net.Listener
-	EnableRest     bool
+	EnableHttp     bool
 }
 
 type Health struct {
@@ -97,8 +97,8 @@ func (s *Config) Serve() error {
 	reflection.Register(grpcServer)
 	rpc.RegisterServerServiceServer(grpcServer, s.Handler)
 
-	if s.EnableRest {
-		s.Logger.Info("enabling rest api")
+	if s.EnableHttp {
+		s.Logger.Info("enabling rest/http api")
 		gwmux := runtime.NewServeMux()
 		err = rpc.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 		if err != nil {

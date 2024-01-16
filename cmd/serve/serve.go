@@ -33,7 +33,7 @@ var (
 	port        string
 	metricsPort string
 	backend     string
-	enableRest  bool
+	enableHttp  bool
 )
 
 var ServeCmd = &cobra.Command{
@@ -127,7 +127,7 @@ var ServeCmd = &cobra.Command{
 			Backend:     aiProvider.Name,
 			Port:        port,
 			MetricsPort: metricsPort,
-			EnableRest:  enableRest,
+			EnableHttp:  enableHttp,
 			Token:       aiProvider.Password,
 			Logger:      logger,
 		}
@@ -155,5 +155,5 @@ func init() {
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
 	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
-	ServeCmd.Flags().BoolVarP(&enableRest, "enable-REST", "r", false, "Enable REST api using gppc-gateway")
+	ServeCmd.Flags().BoolVarP(&enableHttp, "enable-http", "http", false, "Enable REST/http using gppc-gateway")
 }
