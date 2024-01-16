@@ -33,12 +33,18 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Explain,
 		int(i.MaxConcurrency),
 		false, // Kubernetes Doc disabled in server mode
+		false, // Interactive mode disabled in server mode
 	)
 	config.Context = ctx // Replace context for correct timeouts.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2351033 (feat: enable REST/http api support)
 	if err != nil {
 		return &schemav1.AnalyzeResponse{}, err
 	}
+	defer config.Close()
+
 	config.RunAnalysis()
 
 	if i.Explain {

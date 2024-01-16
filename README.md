@@ -38,7 +38,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -47,7 +47,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -59,7 +59,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -67,7 +67,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -80,14 +80,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.24/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -125,14 +125,14 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 
 ## Quick Start
 
-* Currently the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
+* Currently, the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
   * You can do this by running `k8sgpt generate` to open a browser link to generate it
 * Run `k8sgpt auth add` to set it in k8sgpt.
   * You can provide the password directly using the `--password` flag.
 * Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
 * Run `k8sgpt analyze` to run a scan.
 * And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
-* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from kubernetes.
+* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
 
 ## Analyzers
 
@@ -291,200 +291,28 @@ grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain": false}' localhost:8080
 ```
 </details>
 
+## LLM AI Backends
 
-## Key Features
+K8sGPT uses the chosen LLM, generative AI provider when you want to explain the analysis results using --explain flag e.g. `k8sgpt analyze --explain`. You can use `--backend` flag to specify a configured provider (it's `openai` by default).
 
-<details>
-<summary> LocalAI provider </summary>
-
-To run local models, it is possible to use OpenAI compatible APIs, for instance [LocalAI](https://github.com/go-skynet/LocalAI) which uses [llama.cpp](https://github.com/ggerganov/llama.cpp) and [ggml](https://github.com/ggerganov/ggml) to run inference on consumer-grade hardware. Models supported by LocalAI for instance are Vicuna, Alpaca, LLaMA, Cerebras, GPT4ALL, GPT4ALL-J and koala.
-
-
-To run local inference, you need to download the models first, for instance you can find `ggml` compatible models in [huggingface.com](https://huggingface.co/models?search=ggml) (for example vicuna, alpaca and koala).
-
-### Start the API server
-
-To start the API server, follow the instruction in [LocalAI](https://github.com/go-skynet/LocalAI#example-use-gpt4all-j-model).
-
-### Run k8sgpt
-
-To run k8sgpt, run `k8sgpt auth add` with the `localai` backend:
+You can list available providers using `k8sgpt auth list`:
 
 ```
-k8sgpt auth add --backend localai --model <model_name> --baseurl http://localhost:8080/v1 --temperature 0.7
-```
-
-Now you can analyze with the `localai` backend:
-
-```
-k8sgpt analyze --explain --backend localai
-```
-
-</details>
-
-<details>
-<summary> AzureOpenAI provider </summary>
-
-<em>Prerequisites:</em> an Azure OpenAI deployment is needed, please visit MS official [documentation](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource) to create your own.
-
-To authenticate with k8sgpt, you will need the Azure OpenAI endpoint of your tenant `"https://your Azure OpenAI Endpoint"`, the api key to access your deployment, the deployment name of your model and the model name itself.
-
-
-To run k8sgpt, run `k8sgpt auth` with the `azureopenai` backend:
-```
-k8sgpt auth add --backend azureopenai --baseurl https://<your Azure OpenAI endpoint> --engine <deployment_name> --model <model_name>
-```
-Lastly, enter your Azure API key, after the prompt.
-
-Now you are ready to analyze with the azure openai backend:
-```
-k8sgpt analyze --explain --backend azureopenai
-```
-
-
-
-</details>
-
-<details>
-<summary>Cohere provider</summary>
-
-<em>Prerequisites:</em> a Cohere API key is needed, please visit the [Cohere dashboard](https://dashboard.cohere.ai/api-keys) to create one.
-
-To run k8sgpt, run `k8sgpt auth` with the `cohere` backend:
-
-```
-k8sgpt auth add --backend cohere --model command-nightly
-```
-
-Lastly, enter your Cohere API key, after the prompt.
-
-Now you are ready to analyze with the Cohere backend:
-
-```
-k8sgpt analyze --explain --backend cohere
-```
-
-</details>
-
-<details>
-<summary>Amazon Bedrock provider</summary>
-
-
-<em>Prerequisites</em>
-Bedrock API access is needed. 
-
-<img src="images/bedrock.png" width="500px;" />
-
-As illustrated below, you will need to enable this in the [AWS Console](https://eu-central-1.console.aws.amazon.com/bedrock/home?region=eu-central-1#/modelaccess)
-
-In addition to this you will need to set the follow local environmental variables:
-
-
-```
-- AWS_ACCESS_KEY
-- AWS_SECRET_ACCESS_KEY
-- AWS_DEFAULT_REGION
-```
-
-
-```
-k8sgpt auth add --backend amazonbedrock --model anthropic.claude-v2
-```
-
-#### Usage
-
-```
-k8sgpt analyze -e -b amazonbedrock
-
-0 argocd/argocd-application-controller(argocd-application-controller)
-- Error: StatefulSet uses the service argocd/argocd-application-controller which does not exist.
-
- You're right, I don't have enough context to determine if a StatefulSet is correctly configured to use a non-existent service. A StatefulSet manages Pods with persistent storage, and the Pods are created from the same spec. The service name referenced in the StatefulSet configuration would need to match an existing Kubernetes service for the Pods to connect to. Without more details on the specific StatefulSet and environment, I can't confirm whether the configuration is valid or not.
-```
-
-</details>
-
-<details>
-<summary>Amazon SageMaker Provider</summary>
-
-#### Prerequisites
-
-1. **AWS CLI Configuration**: Make sure you have the AWS Command Line Interface (CLI) configured on your machine. If you haven't already configured the AWS CLI, you can follow the official AWS documentation for instructions on how to do it: [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
-
-2. **SageMaker Instance**: You need to have an Amazon SageMaker instance set up. If you don't have one already, you can follow the step-by-step instructions provided in this repository for creating a SageMaker instance: [llm-sagemaker-jumpstart-cdk](https://github.com/zaremb/llm-sagemaker-jumpstart-cdk).
-
-#### Backend Configuration
-
-To add amazonsagemaker backend two parameters are required:
-
-* `--endpointname` Amazon SageMaker endpoint name.
-* `--providerRegion` AWS region where SageMaker instance is created. `k8sgpt` uses this region to connect to SageMaker (not the one defined with AWS CLI or environment variables )
-
-To add amazonsagemaker as a backend run:
-
-```bash
-k8sgpt auth add --backend amazonsagemaker --providerRegion eu-west-1 --endpointname endpoint-xxxxxxxxxx
-```
-
-#### Optional params
-
-Optionally, when adding the backend and later by changing the configuration file, you can set the following parameters:
-
-`-l, --maxtokens int`                        Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length (default 2048)
-
-`-t, --temperature float32`                  The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random) (default 0.7)
-
-`-c, --topp float32`                         Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability. (default 0.5)
-
-To make amazonsagemaker as a default backend run:
-
-```bash
-k8sgpt auth default -p amazonsagemaker
-```
-
-#### AmazonSageMaker Usage
-
-```bash
-./k8sgpt analyze -e -b amazonsagemaker
- 100% |███████████████████████████████████████████████████████████████████████████████████████████████████████████████████| (1/1, 14 it/min)
-AI Provider: amazonsagemaker
-
-0 default/nginx(nginx)
-- Error: Back-off pulling image "nginxx"
- Error: Back-off pulling image "nginxx"
-
-Solution:
-
-1. Check if the image exists in the registry by running `docker image ls nginxx`.
-2. If the image is not found, try pulling it by running `docker pull nginxx`.
-3. If the image is still not available, check if there are any network issues by running `docker network inspect` and `docker network list`.
-4. If the issue persists, try restarting the Docker daemon by running `sudo service docker restart`.
-```
-
-</details>
-
-<details>
-<summary>Setting a new default AI provider</summary>
-
-There may be scenarios where you wish to have K8sGPT plugged into several default AI providers. In this case you may wish to use one as a new default, other than OpenAI which is the project default.
-
-_To view available providers_
-
-```
-k8sgpt auth list
-Default:
+Default: 
 > openai
-Active:
+Active: 
+Unused: 
 > openai
-> azureopenai
-Unused:
 > localai
-> noopai
-> amazonbedrock
+> azureopenai
 > cohere
-
+> amazonbedrock
+> amazonsagemaker
+> google
+> noopai
 ```
 
+For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
 
 _To set a new default provider_
 
@@ -493,14 +321,11 @@ k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
 ```
 
-
-</details>
-
+## Key Features
 
 <details>
 
 With this option, the data is anonymized before being sent to the AI Backend. During the analysis execution, `k8sgpt` retrieves sensitive data (Kubernetes object names, labels, etc.). This data is masked when sent to the AI backend and replaced by a key that can be used to de-anonymize the data when the solution is returned to the user.
-
 
 <summary> Anonymization </summary>
 

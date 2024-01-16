@@ -16,23 +16,27 @@ package analyze
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/interactive"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/spf13/cobra"
 )
 
 var (
-	explain        bool
-	backend        string
-	output         string
-	filters        []string
-	language       string
-	nocache        bool
-	namespace      string
-	anonymize      bool
-	maxConcurrency int
-	withDoc        bool
+	explain         bool
+	backend         string
+	output          string
+	filters         []string
+	language        string
+	nocache         bool
+	namespace       string
+	anonymize       bool
+	maxConcurrency  int
+	withDoc         bool
+	interactiveMode bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -43,7 +47,10 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2351033 (feat: enable REST/http api support)
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -54,11 +61,16 @@ var AnalyzeCmd = &cobra.Command{
 			explain,
 			maxConcurrency,
 			withDoc,
+<<<<<<< HEAD
+=======
+			interactiveMode,
+>>>>>>> 2351033 (feat: enable REST/http api support)
 		)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		defer config.Close()
 
 		config.RunAnalysis()
 
@@ -68,19 +80,42 @@ var AnalyzeCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
-
 		// print results
-		output, err := config.PrintOutput(output)
+		output_data, err := config.PrintOutput(output)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		fmt.Println(string(output))
+		fmt.Println(string(output_data))
+
+		if interactiveMode && explain {
+			if output == "json" {
+				color.Yellow("Caution: interactive mode using --json enabled may use additional tokens.")
+			}
+			sigs := make(chan os.Signal, 1)
+			signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+			interactiveClient := interactive.NewInteractionRunner(config, output_data)
+
+			go interactiveClient.StartInteraction()
+			for {
+				select {
+				case res := <-sigs:
+					switch res {
+					default:
+						os.Exit(0)
+					}
+				case res := <-interactiveClient.State:
+					switch res {
+					case interactive.E_EXITED:
+						os.Exit(0)
+					}
+				}
+			}
+		}
 	},
 }
 
 func init() {
-
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
 	// no cache flag
@@ -101,4 +136,6 @@ func init() {
 	AnalyzeCmd.Flags().IntVarP(&maxConcurrency, "max-concurrency", "m", 10, "Maximum number of concurrent requests to the Kubernetes API server")
 	// kubernetes doc flag
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
+	// interactive mode flag
+	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
 }

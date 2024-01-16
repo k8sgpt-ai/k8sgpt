@@ -15,8 +15,6 @@ package ai
 
 import (
 	"context"
-
-	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 )
 
 var (
@@ -28,24 +26,37 @@ var (
 		&CohereClient{},
 		&AmazonBedRockClient{},
 		&SageMakerAIClient{},
+		&GoogleGenAIClient{},
 	}
 	Backends = []string{
-		"openai",
-		"localai",
-		"azureopenai",
-		"noopai",
-		"cohere",
-		"amazonbedrock",
-		"amazonsagemaker",
+		openAIClientName,
+		localAIClientName,
+		azureAIClientName,
+		cohereAIClientName,
+		amazonbedrockAIClientName,
+		amazonsagemakerAIClientName,
+		googleAIClientName,
+		noopAIClientName,
 	}
 )
 
+// IAI is an interface all clients (representing backends) share.
 type IAI interface {
-	Configure(config IAIConfig, language string) error
-	GetCompletion(ctx context.Context, prompt string, promptTmpl string) (string, error)
-	Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error)
+	// Configure sets up client for given configuration. This is expected to be
+	// executed once per client life-time (e.g. analysis CLI command invocation).
+	Configure(config IAIConfig) error
+	// GetCompletion generates text based on prompt.
+	GetCompletion(ctx context.Context, prompt string) (string, error)
+	// GetName returns name of the backend/client.
 	GetName() string
+	// Close cleans all the resources. No other methods should be used on the
+	// objects after this method is invoked.
+	Close()
 }
+
+type nopCloser struct{}
+
+func (nopCloser) Close() {}
 
 type IAIConfig interface {
 	GetPassword() string
