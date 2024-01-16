@@ -57,7 +57,7 @@ archives:
 brews:
   - name: k8sgpt
     homepage: https://k8sgpt.ai
-    tap:
+    repository:
       owner: k8sgpt-ai
       name: homebrew-k8sgpt
 
