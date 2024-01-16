@@ -49,11 +49,7 @@ jobs:
         with:
           go-version: '1.21'
       - name: Download Syft
-<<<<<<< HEAD
-        uses: anchore/sbom-action/download-syft@719133684c7d294116626d1344fe64f0d2ff3e9e # v0.15.2
-=======
         uses: anchore/sbom-action/download-syft@c7f031d9249a826a082ea14c79d3b686a51d485a # v0.15.3
->>>>>>> 2351033 (feat: enable REST/http api support)
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5
         with:
@@ -108,11 +104,7 @@ jobs:
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
 
       - name: Generate SBOM
-<<<<<<< HEAD
-        uses: anchore/sbom-action@719133684c7d294116626d1344fe64f0d2ff3e9e # v0.15.2
-=======
         uses: anchore/sbom-action@c7f031d9249a826a082ea14c79d3b686a51d485a # v0.15.3
->>>>>>> 2351033 (feat: enable REST/http api support)
         with:
           image: ${{ env.IMAGE_TAG }}
           artifact-name: sbom-${{ env.IMAGE_NAME }}

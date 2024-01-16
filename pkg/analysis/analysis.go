@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -74,10 +75,7 @@ func NewAnalysis(
 	explain bool,
 	maxConcurrency int,
 	withDoc bool,
-<<<<<<< HEAD
-=======
 	interactiveMode bool,
->>>>>>> 2351033 (feat: enable REST/http api support)
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -101,10 +99,7 @@ func NewAnalysis(
 		Context:        context.Background(),
 		Filters:        filters,
 		Client:         client,
-<<<<<<< HEAD
-=======
 		Language:       language,
->>>>>>> 2351033 (feat: enable REST/http api support)
 		Namespace:      namespace,
 		Cache:          cache,
 		Explain:        explain,
@@ -144,11 +139,7 @@ func NewAnalysis(
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
-<<<<<<< HEAD
-	if err := aiClient.Configure(&aiProvider, language); err != nil {
-=======
 	if err := aiClient.Configure(&aiProvider); err != nil {
->>>>>>> 2351033 (feat: enable REST/http api support)
 		return nil, err
 	}
 	a.AIClient = aiClient

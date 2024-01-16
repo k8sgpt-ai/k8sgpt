@@ -47,10 +47,6 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
-<<<<<<< HEAD
-
-=======
->>>>>>> 2351033 (feat: enable REST/http api support)
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -61,10 +57,7 @@ var AnalyzeCmd = &cobra.Command{
 			explain,
 			maxConcurrency,
 			withDoc,
-<<<<<<< HEAD
-=======
 			interactiveMode,
->>>>>>> 2351033 (feat: enable REST/http api support)
 		)
 		if err != nil {
 			color.Red("Error: %v", err)

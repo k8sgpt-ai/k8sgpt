@@ -7,12 +7,8 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
-<<<<<<< HEAD
-	github.com/sashabaranov/go-openai v1.17.10
-=======
 	github.com/prometheus/prometheus v1.8.2-0.20211119115433-692a54649ed7
 	github.com/sashabaranov/go-openai v1.18.2
->>>>>>> 2351033 (feat: enable REST/http api support)
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
@@ -34,14 +30,7 @@ require (
 	cloud.google.com/go/storage v1.36.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
-<<<<<<< HEAD
 	github.com/aws/aws-sdk-go v1.49.14
-	github.com/cohere-ai/cohere-go v0.2.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
-	github.com/olekukonko/tablewriter v0.0.5
-	google.golang.org/api v0.155.0
-=======
-	github.com/aws/aws-sdk-go v1.49.21
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.5.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
@@ -49,7 +38,6 @@ require (
 	github.com/pterm/pterm v0.12.74
 	google.golang.org/api v0.155.0
 	gopkg.in/yaml.v2 v2.4.0
->>>>>>> 2351033 (feat: enable REST/http api support)
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
 )
@@ -68,10 +56,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.1 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.0 // indirect
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
-<<<<<<< HEAD
-=======
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
->>>>>>> 2351033 (feat: enable REST/http api support)
 	github.com/anchore/go-struct-converter v0.0.0-20230627203149-c72ef8859ca9 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
