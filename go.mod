@@ -8,7 +8,7 @@ require (
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
 	github.com/prometheus/prometheus v1.8.2-0.20211119115433-692a54649ed7
-	github.com/sashabaranov/go-openai v1.17.11
+	github.com/sashabaranov/go-openai v1.18.2
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
@@ -30,13 +30,14 @@ require (
 	cloud.google.com/go/storage v1.36.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
-	github.com/aws/aws-sdk-go v1.49.19
+	github.com/aws/aws-sdk-go v1.49.21
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.5.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pterm/pterm v0.12.74
 	google.golang.org/api v0.155.0
 	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
 )
@@ -93,7 +94,6 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20231211222908-989df2bf70f3 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231212172506-995d672761c0 // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.7.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
