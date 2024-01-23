@@ -33,7 +33,10 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 	result := &v1alpha1.VulnerabilityReportList{}
 
 	client := a.Client.CtrlClient
-	v1alpha1.AddToScheme(client.Scheme())
+	err := v1alpha1.AddToScheme(client.Scheme())
+	if err != nil {
+		return nil, err
+	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
@@ -85,7 +88,10 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 	result := &v1alpha1.ConfigAuditReportList{}
 
 	client := a.Client.CtrlClient
-	v1alpha1.AddToScheme(client.Scheme())
+	err := v1alpha1.AddToScheme(client.Scheme())
+	if err != nil {
+		return nil, err
+	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}

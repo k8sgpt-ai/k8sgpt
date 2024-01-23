@@ -24,7 +24,8 @@ import (
 )
 
 var (
-	region         string
+	region string
+	//nolint:unused
 	bucketName     string
 	storageAccount string
 	containerName  string

@@ -14,13 +14,10 @@ limitations under the License.
 package server
 
 import (
-	json "encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
@@ -32,25 +29,26 @@ import (
 )
 
 type Config struct {
-	Port           string
-	MetricsPort    string
-	Backend        string
-	Key            string
-	Token          string
-	Output         string
-	maxConcurrency int
-	Handler        *handler
-	Logger         *zap.Logger
-	metricsServer  *http.Server
-	listener       net.Listener
+	Port          string
+	MetricsPort   string
+	Backend       string
+	Key           string
+	Token         string
+	Output        string
+	Handler       *handler
+	Logger        *zap.Logger
+	metricsServer *http.Server
+	listener      net.Listener
 }
 
+//nolint:unused
 type Health struct {
 	Status  string `json:"status"`
 	Success int    `json:"success"`
 	Failure int    `json:"failure"`
 }
 
+//nolint:unused
 var health = Health{
 	Status:  "ok",
 	Success: 0,
@@ -105,22 +103,4 @@ func (s *Config) ServeMetrics() error {
 		return err
 	}
 	return nil
-}
-
-func (s *Config) healthzHandler(w http.ResponseWriter, r *http.Request) {
-	js, err := json.MarshalIndent(health, "", "  ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(js))
-}
-
-func getBoolParam(param string) bool {
-	b, err := strconv.ParseBool(strings.ToLower(param))
-	if err != nil {
-		// Handle error if conversion fails
-		return false
-	}
-	return b
 }
