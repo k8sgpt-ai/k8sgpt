@@ -131,7 +131,10 @@ func (*handler) deactivateAllIntegrations(integrationProvider *integration.Integ
 			}
 			if err == nil {
 				if namespace != "" {
-					integrationProvider.Deactivate(i, namespace)
+					err := integrationProvider.Deactivate(i, namespace)
+					if err != nil {
+						return err
+					}
 				} else {
 					fmt.Printf("Skipping deactivation of %s, not installed\n", i)
 				}
