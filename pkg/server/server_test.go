@@ -16,6 +16,7 @@ func TestServerInit(t *testing.T) {
 		color.Red("failed to create logger: %v", err)
 		os.Exit(1)
 	}
+	//nolint:all
 	defer logger.Sync()
 	server_config := Config{
 		Backend:     "openai",

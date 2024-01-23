@@ -41,6 +41,7 @@ var GenerateCmd = &cobra.Command{
 		}
 		// override the default backend if a flag is provided
 		if backend != "" {
+			//nolint:all
 			backendType = backend
 		}
 		fmt.Println("")

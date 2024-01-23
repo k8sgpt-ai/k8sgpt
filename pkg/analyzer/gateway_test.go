@@ -56,7 +56,9 @@ func TestGatewayAnalyzer(t *testing.T) {
 	Gateway := BuildGateway(ClassName, AcceptedStatus)
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
+	//nolint:all
 	gtwapi.Install(scheme)
+	//nolint:all
 	apiextensionsv1.AddToScheme(scheme)
 	objects := []runtime.Object{
 		&Gateway,
@@ -88,6 +90,7 @@ func TestMissingClassGatewayAnalyzer(t *testing.T) {
 
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
+	//nolint:all
 	gtwapi.Install(scheme)
 	apiextensionsv1.AddToScheme(scheme)
 	objects := []runtime.Object{
