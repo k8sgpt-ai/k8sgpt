@@ -45,7 +45,6 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	// Find all unhealthy gateway Classes
-
 	for _, route := range routeList.Items {
 		var failures []common.Failure
 
