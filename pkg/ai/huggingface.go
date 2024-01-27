@@ -3,7 +3,7 @@ package ai
 import (
 	"context"
 	"github.com/hupe1980/go-huggingface"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 const huggingfaceAIClientName = "huggingface"
@@ -27,7 +27,11 @@ func (c *HuggingfaceClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.topP = config.GetTopP()
 	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
+	if config.GetMaxTokens() > 500 {
+		c.maxTokens = 500
+	} else {
+		c.maxTokens = config.GetMaxTokens()
+	}
 	return nil
 }
 
@@ -38,12 +42,12 @@ func (c *HuggingfaceClient) GetCompletion(ctx context.Context, prompt string) (s
 		},
 		Model: c.model,
 		Parameters: huggingface.ConversationalParameters{
-			TopP:        pointer.Float64(float64(c.topP)),
-			Temperature: pointer.Float64(float64(c.temperature)),
+			TopP:        ptr.To[float64](float64(c.topP)),
+			Temperature: ptr.To[float64](float64(c.temperature)),
 			MaxLength:   &c.maxTokens,
 		},
 		Options: huggingface.Options{
-			WaitForModel: pointer.Bool(true),
+			WaitForModel: ptr.To[bool](true),
 		},
 	})
 	if err != nil {
