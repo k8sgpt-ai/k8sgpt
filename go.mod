@@ -7,7 +7,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
-	github.com/prometheus/prometheus v1.8.2-0.20211119115433-692a54649ed7
+	github.com/prometheus/prometheus v1.99.0
 	github.com/sashabaranov/go-openai v1.18.2
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
