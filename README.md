@@ -309,6 +309,7 @@ Unused:
 > amazonbedrock
 > amazonsagemaker
 > google
+> huggingface
 > noopai
 ```
 

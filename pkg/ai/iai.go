@@ -27,6 +27,7 @@ var (
 		&AmazonBedRockClient{},
 		&SageMakerAIClient{},
 		&GoogleGenAIClient{},
+		&HuggingfaceClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -37,6 +38,7 @@ var (
 		amazonsagemakerAIClientName,
 		googleAIClientName,
 		noopAIClientName,
+		huggingfaceAIClientName,
 	}
 )
 
