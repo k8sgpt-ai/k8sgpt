@@ -7,7 +7,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
-	github.com/prometheus/prometheus v1.8.2-0.20211119115433-692a54649ed7
+	github.com/prometheus/prometheus/v2 v2.35.0-retract
 	github.com/sashabaranov/go-openai v1.18.2
 	github.com/schollz/progressbar/v3 v3.14.1
 	github.com/spf13/cobra v1.8.0
@@ -30,10 +30,12 @@ require (
 	cloud.google.com/go/storage v1.36.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
-	github.com/aws/aws-sdk-go v1.49.21
+	github.com/aws/aws-sdk-go v1.50.2
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.5.0
+	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/olekukonko/tablewriter v0.0.5
+	github.com/prometheus/prometheus v0.49.1
 	github.com/pterm/pterm v0.12.75
 	google.golang.org/api v0.157.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -55,7 +57,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.1 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.0 // indirect
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
-	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
+	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20230627203149-c72ef8859ca9 // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
@@ -65,7 +67,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.7.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
-	github.com/go-logfmt/logfmt v0.5.1 // indirect
+	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
@@ -73,6 +75,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
+	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -158,7 +161,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.2 // indirect
+	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
@@ -213,7 +216,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
@@ -230,9 +233,9 @@ require (
 	k8s.io/apiserver v0.28.4 // indirect
 	k8s.io/cli-runtime v0.28.4 // indirect
 	k8s.io/component-base v0.28.4 // indirect
-	k8s.io/klog/v2 v2.100.1 // indirect
+	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
-	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
+	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 	oras.land/oras-go v1.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.15.0 // indirect
