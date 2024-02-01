@@ -77,7 +77,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					if err != nil || evt == nil {
 						continue
 					}
-					if evt.Reason == "FailedCreatePodSandBox" && evt.Message != "" {
+					if isEvtErrorReason(evt.Reason) && evt.Message != "" {
 						failures = append(failures, common.Failure{
 							Text:      evt.Message,
 							Sensitive: []common.Sensitive{},
@@ -137,7 +137,21 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 func isErrorReason(reason string) bool {
 	failureReasons := []string{
-		"CrashLoopBackOff", "ImagePullBackOff", "CreateContainerConfigError", "PreCreateHookError", "CreateContainerError", "PreStartHookError", "RunContainerError", "ImageInspectError", "ErrImagePull", "ErrImageNeverPull", "InvalidImageName",
+		"CrashLoopBackOff", "ImagePullBackOff", "CreateContainerConfigError", "PreCreateHookError", "CreateContainerError",
+		"PreStartHookError", "RunContainerError", "ImageInspectError", "ErrImagePull", "ErrImageNeverPull", "InvalidImageName",
+	}
+
+	for _, r := range failureReasons {
+		if r == reason {
+			return true
+		}
+	}
+	return false
+}
+
+func isEvtErrorReason(reason string) bool {
+	failureReasons := []string{
+		"FailedCreatePodSandBox", "FailedMount",
 	}
 
 	for _, r := range failureReasons {
