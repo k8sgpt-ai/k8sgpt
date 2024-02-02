@@ -5,6 +5,6 @@ type Connection struct {
 	Port string `json:"port"`
 }
 type CustomAnalyzer struct {
-	Name       string     `json:"name""`
-	Connection Connection `json:"connection""`
+	Name       string     `json:"name"`
+	Connection Connection `json:"connection"`
 }
