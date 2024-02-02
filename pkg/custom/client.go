@@ -16,7 +16,7 @@ type Client struct {
 
 func NewClient(c Connection) (*Client, error) {
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", c.Url, c.Port, grpc.WithInsecure()))
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", c.Url, c.Port), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
