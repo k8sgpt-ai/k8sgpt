@@ -462,6 +462,10 @@ k8sgpt cache remove
 There may be scenarios where you wish to write your own analyzer in a language of your choice.
 K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
 To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
+In addition to this you will need to enable the following flag on analysis:
+```
+k8sgpt analyze --custom-analysis
+```
 
 Here is an example local host analyzer in [Rust](https://github.com/k8sgpt-ai/host-analyzer)
 When this is run on `localhost:8080` the K8sGPT config can pick it up with the following additions:
