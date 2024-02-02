@@ -456,6 +456,29 @@ k8sgpt cache remove
 ```
 </details>
 
+<details>
+<summary> Custom Analyzers</summary>
+
+There may be scenarios where you wish to write your own analyzer in a language of your choice.
+K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
+To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
+
+Here is an example local host analyzer in [Rust](https://github.com/k8sgpt-ai/host-analyzer)
+When this is run on `localhost:8080` the K8sGPT config can pick it up with the following additions:
+
+```
+custom_analyzers:
+  - name: host-analyzer
+    connection:
+      url: localhost
+      port: 8080
+```
+
+This now gives the ability to pass through hostOS information ( from this analyzer example ) to K8sGPT to use as context with normal analysis.
+
+_See the docs on how to write a custom analyzer_
+
+</details>
 
 ## Documentation
 

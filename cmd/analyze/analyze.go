@@ -65,6 +65,7 @@ var AnalyzeCmd = &cobra.Command{
 		}
 		defer config.Close()
 
+		config.RunCustomAnalysis()
 		config.RunAnalysis()
 
 		if explain {
