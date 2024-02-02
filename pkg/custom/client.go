@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type Client struct {
@@ -16,7 +17,8 @@ type Client struct {
 
 func NewClient(c Connection) (*Client, error) {
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", c.Url, c.Port), grpc.WithInsecure())
+	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", c.Url, c.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
 	if err != nil {
 		return nil, err
 	}
