@@ -7,13 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
 // Generate ICache implementation
 type S3Cache struct {
 	noCache    bool
 	bucketName string
-	session    *s3.S3
+	session    s3iface.S3API
 }
 
 type S3CacheConfiguration struct {
