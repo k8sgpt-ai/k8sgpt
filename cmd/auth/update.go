@@ -23,7 +23,7 @@ import (
 )
 
 var updateCmd = &cobra.Command{
-	Use:   "update",
+	Use:   "update [backend]",
 	Short: "Update a backend provider",
 	Long:  "The command to update an AI backend provider",
 	Args:  cobra.ExactArgs(1),
