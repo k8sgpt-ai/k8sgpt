@@ -56,10 +56,15 @@ func TestGatewayAnalyzer(t *testing.T) {
 	Gateway := BuildGateway(ClassName, AcceptedStatus)
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	//nolint:all
-	gtwapi.Install(scheme)
-	//nolint:all
-	apiextensionsv1.AddToScheme(scheme)
+
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&Gateway,
 		&GatewayClass,
@@ -90,9 +95,14 @@ func TestMissingClassGatewayAnalyzer(t *testing.T) {
 
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	//nolint:all
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&Gateway,
 	}
@@ -124,8 +134,14 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&Gateway,
 		&GatewayClass,

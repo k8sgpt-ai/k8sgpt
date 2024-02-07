@@ -38,6 +38,9 @@ func (h *handler) syncIntegration(ctx context.Context,
 		activeFilters = coreFilters
 	}
 	var err error = status.Error(codes.OK, "")
+	if err != nil {
+		fmt.Println(err)
+	}
 	deactivateFunc := func(integrationRef integration.IIntegration) error {
 		namespace, err := integrationRef.GetNamespace()
 		if err != nil {
@@ -125,6 +128,9 @@ func (*handler) deactivateAllIntegrations(integrationProvider *integration.Integ
 		b, _ := integrationProvider.IsActivate(i)
 		if b {
 			in, err := integrationProvider.Get(i)
+			if err != nil {
+				return err
+			}
 			namespace, err := in.GetNamespace()
 			if err != nil {
 				return err
