@@ -29,8 +29,14 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 	GatewayClass.Status.Conditions = []metav1.Condition{BadCondition}
 	// Create a GatewayClassAnalyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 
 	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(GatewayClass).Build()
 
