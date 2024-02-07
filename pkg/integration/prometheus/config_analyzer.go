@@ -122,7 +122,7 @@ func findPrometheusPodConfigs(ctx context.Context, client kubernetes.Interface, 
 	var configCache = make(map[string]bool)
 
 	for _, pod := range pods {
-		// Extract volume of Promethues config.
+		// Extract volume of Prometheus config.
 		volume, key, err := findPrometheusConfigVolumeAndKey(ctx, client, &pod)
 		if err != nil {
 			return nil, err
