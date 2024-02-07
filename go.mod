@@ -245,4 +245,4 @@ require (
 
 // v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
 // v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
-replace oras.land/oras-go => oras.land/oras-go v1.2.4
+replace oras.land/oras-go/v2 => oras.land/oras-go v2.4.0
