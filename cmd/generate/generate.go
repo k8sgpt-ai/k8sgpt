@@ -24,7 +24,8 @@ import (
 )
 
 var (
-	backend string
+	backend     string
+	backendType string
 )
 
 // generateCmd represents the auth command
@@ -34,7 +35,7 @@ var GenerateCmd = &cobra.Command{
 	Long:  `Opens your browser to generate a key for your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		backendType := viper.GetString("backend_type")
+		backendType = viper.GetString("backend_type")
 		if backendType == "" {
 			// Set the default backend
 			backend = "openai"

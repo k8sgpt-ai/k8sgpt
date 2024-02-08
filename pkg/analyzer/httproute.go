@@ -38,14 +38,16 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtw := &gtwapi.Gateway{}
 	service := &corev1.Service{}
 	client := a.Client.CtrlClient
-	gtwapi.AddToScheme(client.Scheme())
+	err := gtwapi.AddToScheme(client.Scheme())
+	if err != nil {
+		return nil, err
+	}
 	if err := client.List(a.Context, routeList, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
 
 	// Find all unhealthy gateway Classes
-
 	for _, route := range routeList.Items {
 		var failures []common.Failure
 

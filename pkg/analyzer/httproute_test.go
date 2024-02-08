@@ -104,8 +104,14 @@ func TestGWMissiningHTTRouteAnalyzer(t *testing.T) {
 	HTTPRoute := BuildHTTPRoute(backendName, gtwName, gtwNamespace, &svcPort, httpRouteNamespace)
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&HTTPRoute,
 	}
@@ -156,8 +162,14 @@ func TestGWConfigSameHTTRouteAnalyzer(t *testing.T) {
 	Gateway := BuildRouteGateway("differentnamespace", "gatewayname", "Same")
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&HTTPRoute,
 		&Gateway,
@@ -207,8 +219,14 @@ func TestGWConfigSelectorHTTRouteAnalyzer(t *testing.T) {
 	Gateway := BuildRouteGateway("default", "gatewayname", "Selector")
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&HTTPRoute,
 		&Gateway,
@@ -259,8 +277,14 @@ func TestSvcMissingHTTRouteAnalyzer(t *testing.T) {
 	Gateway := BuildRouteGateway("default", "gatewayname", "Same")
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&HTTPRoute,
 		&Gateway,
@@ -332,8 +356,14 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 	Gateway := BuildRouteGateway("default", "gatewayname", "Same")
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
-	gtwapi.Install(scheme)
-	apiextensionsv1.AddToScheme(scheme)
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
 	objects := []runtime.Object{
 		&HTTPRoute,
 		&Gateway,

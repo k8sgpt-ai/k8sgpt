@@ -15,13 +15,11 @@ package server
 
 import (
 	"context"
-	json "encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -58,6 +56,7 @@ type Health struct {
 	Failure int    `json:"failure"`
 }
 
+//nolint:unused
 var health = Health{
 	Status:  "ok",
 	Success: 0,
@@ -143,22 +142,4 @@ func (s *Config) ServeMetrics() error {
 		return err
 	}
 	return nil
-}
-
-func (s *Config) healthzHandler(w http.ResponseWriter, r *http.Request) {
-	js, err := json.MarshalIndent(health, "", "  ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(js))
-}
-
-func getBoolParam(param string) bool {
-	b, err := strconv.ParseBool(strings.ToLower(param))
-	if err != nil {
-		// Handle error if conversion fails
-		return false
-	}
-	return b
 }
