@@ -81,7 +81,6 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 }
 
 func (s *Config) Serve() error {
-
 	var lis net.Listener
 	var err error
 	address := fmt.Sprintf(":%s", s.Port)
