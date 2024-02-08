@@ -30,6 +30,18 @@ var deactivateCmd = &cobra.Command{
 
 		integration := integration.NewIntegration()
 
+		// Check if the integation exists and active
+		isActive, err := integration.IsActivate(integrationName)
+		if err != nil {
+			color.Red("Error: %v", err)
+			return
+		}
+
+		if !isActive {
+			color.Red("Integration %s is not active", integrationName)
+			return
+		}
+
 		if err := integration.Deactivate(integrationName, namespace); err != nil {
 			color.Red("Error: %v", err)
 			return

@@ -42,8 +42,20 @@ var activateCmd = &cobra.Command{
 		}
 
 		integration := integration.NewIntegration()
-		// Check if the integation exists
-		err := integration.Activate(integrationName, namespace, activeFilters, skipInstall)
+
+		// Check if the integation exists and active
+		isActive, err := integration.IsActivate(integrationName)
+		if err != nil {
+			color.Red("Error: %v", err)
+			return
+		}
+
+		if isActive {
+			color.Red("Integration %s is already activated", integrationName)
+			return
+		}
+
+		err = integration.Activate(integrationName, namespace, activeFilters, skipInstall)
 		if err != nil {
 			color.Red("Error: %v", err)
 			return
