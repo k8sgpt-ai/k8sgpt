@@ -95,12 +95,12 @@ func GetVertexAIRegionOrDefault(region string) string {
 	return VERTEXAI_DEFAULT_REGION
 }
 
-func (g *GoogleVertexAIClient) Configure(config IAIConfig) error {
+func (g *GoogleVertexAIClient) Configure(config IAIConfig, index int) error {
 	ctx := context.Background()
 
 	// Currently you can access VertexAI either by being authenticated via OAuth or Bearer token so we need to consider both
-	projectId := config.GetProviderId()
-	region := GetVertexAIRegionOrDefault(config.GetProviderRegion())
+	projectId := config.GetProviderId(index)
+	region := GetVertexAIRegionOrDefault(config.GetProviderRegion(index))
 
 	client, err := genai.NewClient(ctx, projectId, region)
 	if err != nil {
@@ -108,10 +108,10 @@ func (g *GoogleVertexAIClient) Configure(config IAIConfig) error {
 	}
 
 	g.client = client
-	g.model = GetVertexAIModelOrDefault(config.GetModel())
-	g.temperature = config.GetTemperature()
-	g.topP = config.GetTopP()
-	g.maxTokens = config.GetMaxTokens()
+	g.model = GetVertexAIModelOrDefault(config.GetModel(index))
+	g.temperature = config.GetTemperature(index)
+	g.topP = config.GetTopP(index)
+	g.maxTokens = config.GetMaxTokens(index)
 
 	return nil
 }

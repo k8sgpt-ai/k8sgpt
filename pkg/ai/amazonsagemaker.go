@@ -59,21 +59,21 @@ type Parameters struct {
 	Temperature  float64 `json:"temperature"`
 }
 
-func (c *SageMakerAIClient) Configure(config IAIConfig) error {
+func (c *SageMakerAIClient) Configure(config IAIConfig, index int) error {
 
 	// Create a new AWS session
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Config:            aws.Config{Region: aws.String(config.GetProviderRegion())},
+		Config:            aws.Config{Region: aws.String(config.GetProviderRegion(index))},
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
 	// Create a new SageMaker runtime client
 	c.client = sagemakerruntime.New(sess)
-	c.model = config.GetModel()
-	c.endpoint = config.GetEndpointName()
-	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
-	c.topP = config.GetTopP()
+	c.model = config.GetModel(index)
+	c.endpoint = config.GetEndpointName(index)
+	c.temperature = config.GetTemperature(index)
+	c.maxTokens = config.GetMaxTokens(index)
+	c.topP = config.GetTopP(index)
 	return nil
 }
 

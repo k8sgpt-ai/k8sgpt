@@ -92,10 +92,10 @@ func GetRegionOrDefault(region string) string {
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.
-func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
+func (a *AmazonBedRockClient) Configure(config IAIConfig, index int) error {
 
 	// Create a new AWS session
-	providerRegion := GetRegionOrDefault(config.GetProviderRegion())
+	providerRegion := GetRegionOrDefault(config.GetProviderRegion(index))
 
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(providerRegion),
@@ -107,8 +107,8 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
-	a.model = GetModelOrDefault(config.GetModel())
-	a.temperature = config.GetTemperature()
+	a.model = GetModelOrDefault(config.GetModel(index))
+	a.temperature = config.GetTemperature(index)
 
 	return nil
 }

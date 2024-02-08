@@ -96,14 +96,20 @@ var ServeCmd = &cobra.Command{
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:          backend,
-					Password:      password,
-					Model:         model,
-					BaseURL:       baseURL,
-					Engine:        engine,
-					ProxyEndpoint: proxyEndpoint,
-					Temperature:   temperature(),
-					TopP:          topP(),
+					Backend: backend,
+					Configs: []ai.AIProviderConfig{
+						{
+							Name:          backend,
+							Password:      password,
+							Model:         model,
+							BaseURL:       baseURL,
+							Engine:        engine,
+							ProxyEndpoint: proxyEndpoint,
+							Temperature:   temperature(),
+							TopP:          topP(),
+						},
+					},
+					DefaultConfig: 0,
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
@@ -120,7 +126,7 @@ var ServeCmd = &cobra.Command{
 		}
 		if aiProvider == nil {
 			for _, provider := range configAI.Providers {
-				if backend == provider.Name {
+				if backend == provider.Backend {
 					// the pointer to the range variable is not really an issue here, as there
 					// is a break right after, but to prevent potential future issues, a temp
 					// variable is assigned
@@ -131,7 +137,7 @@ var ServeCmd = &cobra.Command{
 			}
 		}
 
-		if aiProvider.Name == "" {
+		if aiProvider.Backend == "" {
 			color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
 			os.Exit(1)
 		}
@@ -149,11 +155,11 @@ var ServeCmd = &cobra.Command{
 		}()
 
 		server := k8sgptserver.Config{
-			Backend:     aiProvider.Name,
+			Backend:     aiProvider.Backend,
 			Port:        port,
 			MetricsPort: metricsPort,
 			EnableHttp:  enableHttp,
-			Token:       aiProvider.Password,
+			Token:       aiProvider.Configs[aiProvider.DefaultConfig].Password,
 			Logger:      logger,
 		}
 		go func() {

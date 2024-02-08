@@ -22,11 +22,99 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	newConfigName string
+)
+
+func runUpdateCommand(cmd *cobra.Command, args []string) {
+	// Get the ai configurations
+	err := viper.UnmarshalKey("ai", &configAI)
+	if err != nil {
+		color.Red("Error: %v", err)
+		os.Exit(1)
+	}
+
+	// Check if the backend flag is set.
+	if backend == "" {
+		color.Red("Error: backend must be set.")
+		_ = cmd.Help()
+		return
+	}
+
+	// Validate the temperature range.
+	if temperature > 1.0 || temperature < 0.0 {
+		color.Red("Error: temperature ranges from 0 to 1.")
+		os.Exit(1)
+	}
+
+	// Iterate over all the providers present in the config file.
+	for i, provider := range configAI.Providers {
+		if backend == provider.Backend {
+			configIndex := -1
+
+			if configName == "" {
+				// Modify the default config if the config name is not specified.
+				color.Yellow("Since no config name was specified, changes will be made to the default config")
+				configIndex = provider.DefaultConfig
+				configName = provider.Configs[provider.DefaultConfig].Name
+			} else {
+				// Iterate over all the configs present in that backend provider.
+				for index, config := range provider.Configs {
+					// Check if the config to be updated exists or not.
+					if configName == config.Name {
+						configIndex = index
+					}
+				}
+			}
+
+			if configIndex == -1 {
+				color.Red("Error: The backend provider \"%s\" does not have a configuration with the name \"%s\"", backend, configName)
+				os.Exit(1)
+			} else {
+				// Config exists, now update the parameters
+				if newConfigName != "" {
+					configAI.Providers[i].Configs[configIndex].Name = newConfigName
+					color.Blue("Config name updated successfully")
+				}
+				if model != "" {
+					configAI.Providers[i].Configs[configIndex].Model = model
+					color.Blue("Model updated successfully")
+				}
+				if password != "" {
+					configAI.Providers[i].Configs[configIndex].Password = password
+					color.Blue("Password updated successfully")
+				}
+				if baseURL != "" {
+					configAI.Providers[i].Configs[configIndex].BaseURL = baseURL
+					color.Blue("Base URL updated successfully")
+				}
+				if engine != "" {
+					configAI.Providers[i].Configs[configIndex].Engine = engine
+					color.Blue("Engine updated successfully")
+				}
+				configAI.Providers[i].Configs[configIndex].Temperature = temperature
+				color.Green("Config \"%s\" for the backend provider \"%s\" has been successfully updated", configName, backend)
+			}
+
+			// Break out of the loop if the desired backend provider has been updated.
+			break
+		}
+	}
+
+	// Write the configuration to the config file.
+	viper.Set("ai", configAI)
+	if err := viper.WriteConfig(); err != nil {
+		color.Red("Error writing config file: %s", err.Error())
+		os.Exit(1)
+	}
+}
+
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update a backend provider",
 	Long:  "The command to update an AI backend provider",
-	Args:  cobra.ExactArgs(1),
+	// TODO: Why was this present in the first place?
+	// Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		backend, _ := cmd.Flags().GetString("backend")
 		if strings.ToLower(backend) == "azureopenai" {
@@ -34,72 +122,16 @@ var updateCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("baseurl")
 		}
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-
-		// get ai configuration
-		err := viper.UnmarshalKey("ai", &configAI)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		inputBackends := strings.Split(args[0], ",")
-
-		if len(inputBackends) == 0 {
-			color.Red("Error: backend must be set.")
-			os.Exit(1)
-		}
-		if temperature > 1.0 || temperature < 0.0 {
-			color.Red("Error: temperature ranges from 0 to 1.")
-			os.Exit(1)
-		}
-
-		for _, b := range inputBackends {
-			foundBackend := false
-			for i, provider := range configAI.Providers {
-				if b == provider.Name {
-					foundBackend = true
-					if backend != "" {
-						configAI.Providers[i].Name = backend
-						color.Blue("Backend name updated successfully")
-					}
-					if model != "" {
-						configAI.Providers[i].Model = model
-						color.Blue("Model updated successfully")
-					}
-					if password != "" {
-						configAI.Providers[i].Password = password
-						color.Blue("Password updated successfully")
-					}
-					if baseURL != "" {
-						configAI.Providers[i].BaseURL = baseURL
-						color.Blue("Base URL updated successfully")
-					}
-					if engine != "" {
-						configAI.Providers[i].Engine = engine
-					}
-					configAI.Providers[i].Temperature = temperature
-					color.Green("%s updated in the AI backend provider list", b)
-				}
-			}
-			if !foundBackend {
-				color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", args[0])
-				os.Exit(1)
-			}
-
-		}
-
-		viper.Set("ai", configAI)
-		if err := viper.WriteConfig(); err != nil {
-			color.Red("Error writing config file: %s", err.Error())
-			os.Exit(1)
-		}
-	},
+	Run: runUpdateCommand,
 }
 
 func init() {
 	// update flag for backend
 	updateCmd.Flags().StringVarP(&backend, "backend", "b", "", "Update backend AI provider")
+	// update flag for config-name
+	updateCmd.Flags().StringVarP(&configName, "config-name", "", "", "Name of the configuration to update")
+	// update flag for config-name
+	updateCmd.Flags().StringVarP(&newConfigName, "name", "n", "", "New name for the configuration to update")
 	// update flag for model
 	updateCmd.Flags().StringVarP(&model, "model", "m", "", "Update backend AI model")
 	// update flag for password

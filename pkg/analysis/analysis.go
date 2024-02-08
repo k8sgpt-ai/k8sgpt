@@ -71,6 +71,7 @@ type JsonOutput struct {
 
 func NewAnalysis(
 	backend string,
+	configName string,
 	language string,
 	filters []string,
 	namespace string,
@@ -133,24 +134,44 @@ func NewAnalysis(
 		backend = "openai"
 	}
 
+	configIndex := -1
 	var aiProvider ai.AIProvider
 	for _, provider := range configAI.Providers {
-		if backend == provider.Name {
+		if backend == provider.Backend {
 			aiProvider = provider
+
+			if configName != "" {
+				// Iterate over all the configs and check if the specified
+				// config-name is present or not.
+				for index, config := range provider.Configs {
+					if configName == config.Name {
+						configIndex = index
+						break
+					}
+				}
+			} else {
+				// Use the default config if no valid config-name is specified.
+				configIndex = provider.DefaultConfig
+			}
+
 			break
 		}
 	}
 
-	if aiProvider.Name == "" {
+	if aiProvider.Backend == "" {
 		return nil, fmt.Errorf("AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
 	}
 
-	aiClient := ai.NewClient(aiProvider.Name)
-	if err := aiClient.Configure(&aiProvider); err != nil {
+	if configIndex == -1 {
+		return nil, fmt.Errorf("config \"%s\" not found. Please run k8sgpt auth list to find the right config-name", configName)
+	}
+
+	aiClient := ai.NewClient(aiProvider.Backend)
+	if err := aiClient.Configure(&aiProvider, configIndex); err != nil {
 		return nil, err
 	}
 	a.AIClient = aiClient
-	a.AnalysisAIProvider = aiProvider.Name
+	a.AnalysisAIProvider = aiProvider.Backend
 	return a, nil
 }
 

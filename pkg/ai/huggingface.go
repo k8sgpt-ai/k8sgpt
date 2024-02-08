@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+
 	"github.com/hupe1980/go-huggingface"
 	"k8s.io/utils/ptr"
 )
@@ -18,19 +19,19 @@ type HuggingfaceClient struct {
 	maxTokens   int
 }
 
-func (c *HuggingfaceClient) Configure(config IAIConfig) error {
-	token := config.GetPassword()
+func (c *HuggingfaceClient) Configure(config IAIConfig, index int) error {
+	token := config.GetPassword(index)
 
 	client := huggingface.NewInferenceClient(token)
 
 	c.client = client
-	c.model = config.GetModel()
-	c.topP = config.GetTopP()
-	c.temperature = config.GetTemperature()
-	if config.GetMaxTokens() > 500 {
+	c.model = config.GetModel(index)
+	c.topP = config.GetTopP(index)
+	c.temperature = config.GetTemperature(index)
+	if config.GetMaxTokens(index) > 500 {
 		c.maxTokens = 500
 	} else {
-		c.maxTokens = config.GetMaxTokens()
+		c.maxTokens = config.GetMaxTokens(index)
 	}
 	return nil
 }

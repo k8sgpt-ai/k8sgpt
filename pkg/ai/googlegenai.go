@@ -34,11 +34,11 @@ type GoogleGenAIClient struct {
 	maxTokens   int
 }
 
-func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
+func (c *GoogleGenAIClient) Configure(config IAIConfig, index int) error {
 	ctx := context.Background()
 
 	// Access your API key as an environment variable (see "Set up your API key" above)
-	token := config.GetPassword()
+	token := config.GetPassword(index)
 	authOption := option.WithAPIKey(token)
 	if token[0] == '{' {
 		authOption = option.WithCredentialsJSON([]byte(token))
@@ -50,10 +50,10 @@ func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
 	}
 
 	c.client = client
-	c.model = config.GetModel()
-	c.temperature = config.GetTemperature()
-	c.topP = config.GetTopP()
-	c.maxTokens = config.GetMaxTokens()
+	c.model = config.GetModel(index)
+	c.temperature = config.GetTemperature(index)
+	c.topP = config.GetTopP(index)
+	c.maxTokens = config.GetMaxTokens(index)
 	return nil
 }
 
