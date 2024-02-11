@@ -15,19 +15,20 @@ limitations under the License.
 package cache
 
 import (
-	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
 // listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List cache providers",
-	Long:  `The list command displays a list of available cache providers with their status.`,
+var dataCmd = &cobra.Command{
+	Use:   "data",
+	Short: "List the contents of the cache",
+	Long:  `This command allows you to list the contents of the cache.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// load remote cache if it is configured
@@ -36,14 +37,33 @@ var listCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		fmt.Print(color.YellowString("Active: \n"))
-		fmt.Printf("> %s\n", color.GreenString("%s", c.GetName()))
-		fmt.Print(color.YellowString("Unused: \n"))
-		for _, cache := range cache.GetAllCacheProviders() {
-			if cache != c.GetName() {
-				fmt.Printf("> %s\n", color.RedString("%s", cache))
-			}
+		names, err := c.List()
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
+
+		var headers []string
+		obj := cache.CacheObjectDetails{}
+		objType := reflect.TypeOf(obj)
+		cacheProvider, _, err := cache.GetActiveCache()
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+		color.Green("\nCache Provider: %s", cacheProvider)
+		for i := 0; i < objType.NumField(); i++ {
+			field := objType.Field(i)
+			headers = append(headers, field.Name)
+		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader(headers)
+
+		for _, v := range names {
+			table.Append([]string{v.Name, v.UpdatedAt.String()})
+		}
+		table.Render()
 	},
 }
 

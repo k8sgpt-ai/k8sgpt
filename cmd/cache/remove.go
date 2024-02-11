@@ -28,16 +28,20 @@ var removeCmd = &cobra.Command{
 	Short: "Remove the remote cache",
 	Long:  `This command allows you to remove the remote cache and use the default filecache.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		err := cache.RemoveRemoteCache()
+		_, activeCache, err := cache.GetActiveCache()
 		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+		if activeCache == "file" {
+			color.Red("Error: No remote cache is active. Run k8sgpt cache add --help to add a remote cache.")
+			os.Exit(1)
+		}
+
+		if err := cache.RemoveRemoteCache(); err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 		color.Green("Successfully removed the remote cache")
 	},
-}
-
-func init() {
-	CacheCmd.AddCommand(removeCmd)
 }
