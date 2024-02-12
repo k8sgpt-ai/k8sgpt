@@ -1,9 +1,0 @@
-.idea
-__debug*
-.DS_Store
-k8sgpt*
-!charts/k8sgpt
-*.vscode
-dist/
-
-bin/
