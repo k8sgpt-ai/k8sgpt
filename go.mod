@@ -24,7 +24,7 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240208090903-d4147b284845.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240213144542-6e830f3fdf19.2
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240208090903-d4147b284845.1
 	cloud.google.com/go/storage v1.37.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
