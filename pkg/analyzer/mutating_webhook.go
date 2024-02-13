@@ -75,6 +75,11 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 						},
 					},
 				})
+				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+					MutatingWebhook: webhookConfig,
+					FailureDetails:  failures,
+				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
 				continue
 			}
 
