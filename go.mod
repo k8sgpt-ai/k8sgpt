@@ -24,8 +24,8 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240208090903-d4147b284845.2
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240208090903-d4147b284845.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240213144542-6e830f3fdf19.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240213144542-6e830f3fdf19.1
 	cloud.google.com/go/storage v1.37.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.4.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
@@ -46,6 +46,7 @@ require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.19.1-20240213144542-6e830f3fdf19.1 // indirect
 	cloud.google.com/go v0.112.0 // indirect
 	cloud.google.com/go/ai v0.3.0 // indirect
 	cloud.google.com/go/compute v1.23.3 // indirect
