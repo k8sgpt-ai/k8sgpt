@@ -31,7 +31,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.2.1
 	github.com/aws/aws-sdk-go v1.50.2
 	github.com/cohere-ai/cohere-go v0.2.0
-	github.com/google/generative-ai-go v0.5.0
+	github.com/google/generative-ai-go v0.7.0
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus/prometheus v0.49.1
