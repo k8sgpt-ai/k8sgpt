@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server-service/schemav1gateway"
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -98,7 +99,7 @@ func (s *Config) Serve() error {
 	if s.EnableHttp {
 		s.Logger.Info("enabling rest/http api")
 		gwmux := runtime.NewServeMux()
-		err = rpc.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		err = gw.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 		if err != nil {
 			log.Fatalln("Failed to register gateway:", err)
 		}
