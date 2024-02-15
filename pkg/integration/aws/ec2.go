@@ -11,7 +11,8 @@ type EC2Analyzer struct {
 }
 
 func (e *EC2Analyzer) Analyze(analysis common.Analyzer) ([]common.Result, error) {
-	var common []common.Result = []common.Result{}
+	var cr []common.Result = []common.Result{}
+	var _ = map[string]common.PreAnalysis{}
 	// ec2session
 	ec2session := ec2.New(e.session)
 
@@ -29,5 +30,5 @@ func (e *EC2Analyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 	}
 
 	// get all instances
-	return common, nil
+	return cr, nil
 }
