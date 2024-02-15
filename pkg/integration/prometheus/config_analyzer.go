@@ -192,10 +192,10 @@ func findPrometheusConfigPath(ctx context.Context, client kubernetes.Interface, 
 			// references the ConfigMap or Secret volume mount.
 			// Fallback to the prometheus container if that's not found.
 			if strings.HasPrefix(arg, prometheusConfigFlag) {
-				path = strings.TrimLeft(arg, prometheusConfigFlag)
+				path = strings.TrimPrefix(arg, prometheusConfigFlag)
 			}
 			if strings.HasPrefix(arg, configReloaderConfigFlag) {
-				path = strings.TrimLeft(arg, configReloaderConfigFlag)
+				path = strings.TrimPrefix(arg, configReloaderConfigFlag)
 			}
 		}
 		if container.Name == configReloaderContainerName {

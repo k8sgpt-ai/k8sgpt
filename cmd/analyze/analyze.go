@@ -37,6 +37,7 @@ var (
 	maxConcurrency  int
 	withDoc         bool
 	interactiveMode bool
+	customAnalysis  bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -65,6 +66,9 @@ var AnalyzeCmd = &cobra.Command{
 		}
 		defer config.Close()
 
+		if customAnalysis {
+			config.RunCustomAnalysis()
+		}
 		config.RunAnalysis()
 
 		if explain {
@@ -131,4 +135,7 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
 	// interactive mode flag
 	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
+	// custom analysis flag
+	AnalyzeCmd.Flags().BoolVarP(&customAnalysis, "custom-analysis", "z", false, "Enable custom analyzers")
+
 }

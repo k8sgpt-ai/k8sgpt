@@ -41,7 +41,6 @@ type Config struct {
 	listener      net.Listener
 }
 
-//nolint:unused
 type Health struct {
 	Status  string `json:"status"`
 	Success int    `json:"success"`
