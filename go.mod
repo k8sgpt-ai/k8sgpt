@@ -24,10 +24,7 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-<<<<<<< HEAD
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.19.1-20240213144542-6e830f3fdf19.1
-=======
->>>>>>> main
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240213144542-6e830f3fdf19.2
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240213144542-6e830f3fdf19.1
 	cloud.google.com/go/storage v1.37.0
@@ -35,21 +32,13 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.0
 	github.com/aws/aws-sdk-go v1.50.2
 	github.com/cohere-ai/cohere-go v0.2.0
-<<<<<<< HEAD
-	github.com/google/generative-ai-go v0.5.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
-=======
 	github.com/google/generative-ai-go v0.7.0
->>>>>>> main
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus/prometheus v0.49.1
 	github.com/pterm/pterm v0.12.79
-<<<<<<< HEAD
-	google.golang.org/api v0.162.0
-=======
 	google.golang.org/api v0.164.0
->>>>>>> main
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
@@ -63,19 +52,11 @@ require (
 	cloud.google.com/go/ai v0.3.0 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-<<<<<<< HEAD
-	cloud.google.com/go/iam v1.1.6 // indirect
-	cloud.google.com/go/longrunning v0.5.5 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.1 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.1 // indirect
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.0 // indirect
-=======
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/longrunning v0.5.4 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.2 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.1 // indirect
->>>>>>> main
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20230627203149-c72ef8859ca9 // indirect
@@ -111,17 +92,10 @@ require (
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.47.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0 // indirect
-<<<<<<< HEAD
-	go.opentelemetry.io/otel/metric v1.22.0 // indirect
-	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240213162025-012b6fc9bca9 // indirect
-=======
 	go.opentelemetry.io/otel/metric v1.23.0 // indirect
 	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240205150955-31a09d347014 // indirect
->>>>>>> main
 	gopkg.in/evanphx/json-patch.v5 v5.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -237,25 +211,15 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-<<<<<<< HEAD
-	go.opentelemetry.io/otel v1.22.0 // indirect
-	go.opentelemetry.io/otel/trace v1.22.0 // indirect
-=======
 	go.opentelemetry.io/otel v1.23.0 // indirect
 	go.opentelemetry.io/otel/trace v1.23.0 // indirect
->>>>>>> main
 	go.starlark.net v0.0.0-20231016134836-22325403fcb3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
-<<<<<<< HEAD
 	golang.org/x/net v0.21.0
-	golang.org/x/oauth2 v0.16.0 // indirect
-=======
-	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
->>>>>>> main
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
