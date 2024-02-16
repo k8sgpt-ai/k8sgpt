@@ -37,18 +37,17 @@ import (
 )
 
 type Config struct {
-	Port           string
-	MetricsPort    string
-	Backend        string
-	Key            string
-	Token          string
-	Output         string
-	maxConcurrency int
-	Handler        *handler
-	Logger         *zap.Logger
-	metricsServer  *http.Server
-	listener       net.Listener
-	EnableHttp     bool
+	Port          string
+	MetricsPort   string
+	Backend       string
+	Key           string
+	Token         string
+	Output        string
+	Handler       *handler
+	Logger        *zap.Logger
+	metricsServer *http.Server
+	listener      net.Listener
+	EnableHttp    bool
 }
 
 type Health struct {
