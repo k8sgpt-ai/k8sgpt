@@ -38,7 +38,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus/prometheus v0.49.1
 	github.com/pterm/pterm v0.12.79
-	google.golang.org/api v0.164.0
+	google.golang.org/api v0.165.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
