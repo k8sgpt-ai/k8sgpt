@@ -30,7 +30,7 @@ require (
 	cloud.google.com/go/storage v1.37.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.1
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.0
-	github.com/aws/aws-sdk-go v1.50.2
+	github.com/aws/aws-sdk-go v1.50.20
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.7.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
