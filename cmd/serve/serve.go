@@ -120,7 +120,12 @@ var ServeCmd = &cobra.Command{
 			color.Red("failed to create logger: %v", err)
 			os.Exit(1)
 		}
-		defer logger.Sync()
+		defer func() {
+			if err := logger.Sync(); err != nil {
+				color.Red("failed to sync logger: %v", err)
+				os.Exit(1)
+			}
+		}()
 
 		server := k8sgptserver.Config{
 			Backend:     aiProvider.Name,
