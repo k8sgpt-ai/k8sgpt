@@ -16,10 +16,6 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Output = "json"
 	}
 
-	if i.Backend == "" {
-		i.Backend = "openai"
-	}
-
 	if int(i.MaxConcurrency) == 0 {
 		i.MaxConcurrency = 10
 	}
