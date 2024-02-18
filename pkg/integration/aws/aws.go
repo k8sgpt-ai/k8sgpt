@@ -34,21 +34,18 @@ func (a *AWS) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
 		Config:            aws.Config{},
 	}))
 	a.sess = sess
-	(*mergedMap)["EC2"] = &EC2Analyzer{
-		session: a.sess,
-	}
 	(*mergedMap)["EKS"] = &EKSAnalyzer{
 		session: a.sess,
 	}
 }
 
 func (a *AWS) GetAnalyzerName() []string {
-	// TODO implement me
-	return []string{"EC2", "EKS"}
+
+	return []string{"EKS"}
 }
 
 func (a *AWS) GetNamespace() (string, error) {
-	// TODO implement me
+
 	return "", nil
 }
 

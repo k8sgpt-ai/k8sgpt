@@ -40,6 +40,9 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 	}
 	for _, cluster := range result.Clusters {
 		// describe the cluster
+		if !strings.Contains(currentConfig, *cluster) {
+			continue
+		}
 		input := &eks.DescribeClusterInput{
 			Name: cluster,
 		}
@@ -57,12 +60,11 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 				})
 				cr = append(cr, common.Result{
 					Kind:  "EKS",
-					Name:  *cluster,
+					Name:  "AWS/EKS",
 					Error: err,
 				})
 			}
 		}
 	}
-
 	return cr, nil
 }
