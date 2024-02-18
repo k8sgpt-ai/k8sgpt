@@ -27,6 +27,9 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 		&clientcmd.ConfigOverrides{
 			CurrentContext: "",
 		}).RawConfig()
+	if err != nil {
+		return cr, err
+	}
 	currentConfig := config.CurrentContext
 
 	if !strings.Contains(currentConfig, "eks") {
@@ -52,7 +55,7 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 		}
 		if len(result.Cluster.Health.Issues) > 0 {
 			for _, issue := range result.Cluster.Health.Issues {
-				var err = make([]common.Failure, 0)
+				err := make([]common.Failure, 0)
 				err = append(err, common.Failure{
 					Text:          issue.String(),
 					KubernetesDoc: "",
