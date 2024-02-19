@@ -21,9 +21,9 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 	_ = map[string]common.PreAnalysis{}
 	svc := eks.New(e.session)
 	// Get the name of the current cluster
-	kubecConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	kubeConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubecConfigPath},
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath},
 		&clientcmd.ConfigOverrides{
 			CurrentContext: "",
 		}).RawConfig()
