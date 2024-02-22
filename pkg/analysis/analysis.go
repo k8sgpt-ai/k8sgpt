@@ -28,6 +28,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/custom"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
@@ -50,8 +51,10 @@ type Analysis struct {
 	WithDoc            bool
 }
 
-type AnalysisStatus string
-type AnalysisErrors []string
+type (
+	AnalysisStatus string
+	AnalysisErrors []string
+)
 
 const (
 	StateOK              AnalysisStatus = "OK"
@@ -145,6 +148,27 @@ func NewAnalysis(
 	a.AIClient = aiClient
 	a.AnalysisAIProvider = aiProvider.Name
 	return a, nil
+}
+
+func (a *Analysis) RunCustomAnalysis() {
+	var customAnalyzers []custom.CustomAnalyzer
+	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
+		a.Errors = append(a.Errors, err.Error())
+	}
+
+	for _, cAnalyzer := range customAnalyzers {
+
+		canClient, err := custom.NewClient(cAnalyzer.Connection)
+		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+			continue
+		}
+
+		result, err := canClient.Run()
+		if err != nil {
+			a.Results = append(a.Results, result)
+		}
+	}
 }
 
 func (a *Analysis) RunAnalysis() {
