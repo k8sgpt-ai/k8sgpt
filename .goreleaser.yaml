@@ -23,7 +23,7 @@ nfpms:
     homepage: https://k8sgpt.ai
     description: >-
       K8sGPT is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english. It has SRE experience codified into it’s analyzers and helps to pull out the most relevant information to enrich it with AI.
-    license: "MIT"
+    license: "Apache-2.0"
     formats:
       - deb
       - rpm
@@ -57,7 +57,7 @@ archives:
 brews:
   - name: k8sgpt
     homepage: https://k8sgpt.ai
-    tap:
+    repository:
       owner: k8sgpt-ai
       name: homebrew-k8sgpt
 

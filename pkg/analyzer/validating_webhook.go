@@ -73,6 +73,11 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 						},
 					},
 				})
+				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+					ValidatingWebhook: webhookConfig,
+					FailureDetails:    failures,
+				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
 				continue
 			}
 

@@ -49,29 +49,17 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// Iterate through each pod
 
 	for _, pod := range list.Items {
-		var failures []common.Failure
 		podName := pod.Name
-		podLogOptions := v1.PodLogOptions{
-			TailLines: &tailLines,
-		}
-
-		podLogs, err := a.Client.Client.CoreV1().Pods(pod.Namespace).GetLogs(podName, &podLogOptions).DoRaw(a.Context)
-		if err != nil {
-			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Error %s from Pod %s", err.Error(), pod.Name),
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: pod.Name,
-						Masked:   util.MaskString(pod.Name),
-					},
-				},
-			})
-
-		} else {
-			rawlogs := string(podLogs)
-			if errorPattern.MatchString(strings.ToLower(rawlogs)) {
+		for _, c := range pod.Spec.Containers {
+			var failures []common.Failure
+			podLogOptions := v1.PodLogOptions{
+				TailLines: &tailLines,
+				Container: c.Name,
+			}
+			podLogs, err := a.Client.Client.CoreV1().Pods(pod.Namespace).GetLogs(podName, &podLogOptions).DoRaw(a.Context)
+			if err != nil {
 				failures = append(failures, common.Failure{
-					Text: printErrorLines(pod.Name, pod.Namespace, rawlogs, errorPattern),
+					Text: fmt.Sprintf("Error %s from Pod %s", err.Error(), pod.Name),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: pod.Name,
@@ -79,14 +67,27 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						},
 					},
 				})
+			} else {
+				rawlogs := string(podLogs)
+				if errorPattern.MatchString(strings.ToLower(rawlogs)) {
+					failures = append(failures, common.Failure{
+						Text: printErrorLines(pod.Name, pod.Namespace, rawlogs, errorPattern),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: pod.Name,
+								Masked:   util.MaskString(pod.Name),
+							},
+						},
+					})
+				}
 			}
-		}
-		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
-				FailureDetails: failures,
-				Pod:            pod,
+			if len(failures) > 0 {
+				preAnalysis[fmt.Sprintf("%s/%s/%s", pod.Namespace, pod.Name, c.Name)] = common.PreAnalysis{
+					FailureDetails: failures,
+					Pod:            pod,
+				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
 			}
-			AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
 		}
 	}
 	for key, value := range preAnalysis {

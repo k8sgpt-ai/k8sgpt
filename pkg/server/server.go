@@ -14,35 +14,40 @@ limitations under the License.
 package server
 
 import (
-	json "encoding/json"
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
+	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server-service/schemav1gateway"
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
-	Port           string
-	MetricsPort    string
-	Backend        string
-	Key            string
-	Token          string
-	Output         string
-	maxConcurrency int
-	Handler        *handler
-	Logger         *zap.Logger
-	metricsServer  *http.Server
-	listener       net.Listener
+	Port          string
+	MetricsPort   string
+	Backend       string
+	Key           string
+	Token         string
+	Output        string
+	Handler       *handler
+	Logger        *zap.Logger
+	metricsServer *http.Server
+	listener      net.Listener
+	EnableHttp    bool
 }
 
 type Health struct {
@@ -51,6 +56,7 @@ type Health struct {
 	Failure int    `json:"failure"`
 }
 
+//nolint:unused
 var health = Health{
 	Status:  "ok",
 	Success: 0,
@@ -61,8 +67,19 @@ func (s *Config) Shutdown() error {
 	return s.listener.Close()
 }
 
-func (s *Config) Serve() error {
+// grpcHandlerFunc returns an http.Handler that delegates to grpcServer on incoming gRPC
+// connections or otherHandler otherwise.
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	})
+}
 
+func (s *Config) Serve() error {
 	var lis net.Listener
 	var err error
 	address := fmt.Sprintf(":%s", s.Port)
@@ -70,16 +87,36 @@ func (s *Config) Serve() error {
 	if err != nil {
 		return err
 	}
+
 	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
 	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(logInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)
 	reflection.Register(grpcServer)
 	rpc.RegisterServerServiceServer(grpcServer, s.Handler)
-	if err := grpcServer.Serve(
-		lis,
-	); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return err
+
+	if s.EnableHttp {
+		s.Logger.Info("enabling rest/http api")
+		gwmux := runtime.NewServeMux()
+		err = gw.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		if err != nil {
+			log.Fatalln("Failed to register gateway:", err)
+		}
+
+		srv := &http.Server{
+			Addr:    address,
+			Handler: h2c.NewHandler(grpcHandlerFunc(grpcServer, gwmux), &http2.Server{}),
+		}
+
+		if err := srv.Serve(lis); err != nil {
+			return err
+		}
+	} else {
+		if err := grpcServer.Serve(
+			lis,
+		); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
 	}
 
 	return nil
@@ -105,22 +142,4 @@ func (s *Config) ServeMetrics() error {
 		return err
 	}
 	return nil
-}
-
-func (s *Config) healthzHandler(w http.ResponseWriter, r *http.Request) {
-	js, err := json.MarshalIndent(health, "", "  ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	fmt.Fprint(w, string(js))
-}
-
-func getBoolParam(param string) bool {
-	b, err := strconv.ParseBool(strings.ToLower(param))
-	if err != nil {
-		// Handle error if conversion fails
-		return false
-	}
-	return b
 }

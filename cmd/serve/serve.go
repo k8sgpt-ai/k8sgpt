@@ -33,6 +33,7 @@ var (
 	port        string
 	metricsPort string
 	backend     string
+	enableHttp  bool
 )
 
 var ServeCmd = &cobra.Command{
@@ -120,12 +121,18 @@ var ServeCmd = &cobra.Command{
 			color.Red("failed to create logger: %v", err)
 			os.Exit(1)
 		}
-		defer logger.Sync()
+		defer func() {
+			if err := logger.Sync(); err != nil {
+				color.Red("failed to sync logger: %v", err)
+				os.Exit(1)
+			}
+		}()
 
 		server := k8sgptserver.Config{
 			Backend:     aiProvider.Name,
 			Port:        port,
 			MetricsPort: metricsPort,
+			EnableHttp:  enableHttp,
 			Token:       aiProvider.Password,
 			Logger:      logger,
 		}
@@ -153,4 +160,5 @@ func init() {
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
 	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 }
