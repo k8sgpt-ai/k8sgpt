@@ -2,6 +2,7 @@ package aws
 
 import (
 	"errors"
+	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,9 +22,15 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 	_ = map[string]common.PreAnalysis{}
 	svc := eks.New(e.session)
 	// Get the name of the current cluster
-	kubeConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	var kubeconfig string
+	kubeconfigFromPath := viper.GetString("kubeconfig")
+	if kubeconfigFromPath != "" {
+		kubeconfig = kubeconfigFromPath
+	} else {
+		kubeconfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	}
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeConfigPath},
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
 		&clientcmd.ConfigOverrides{
 			CurrentContext: "",
 		}).RawConfig()
