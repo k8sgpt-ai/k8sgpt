@@ -119,6 +119,7 @@ var addCmd = &cobra.Command{
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
+			ProviderId:     providerId,
 			TopP:           topP,
 			MaxTokens:      maxTokens,
 		}
@@ -159,5 +160,7 @@ func init() {
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock backend)")
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
+	//add flag for vertexAI Project ID
+	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider Region name (only for googlevertexai backend)")
 }
