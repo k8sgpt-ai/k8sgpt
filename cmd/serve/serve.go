@@ -160,5 +160,5 @@ func init() {
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
 	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
-	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "h", false, "Enable REST/http using gppc-gateway")
+	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 }
