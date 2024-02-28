@@ -124,9 +124,13 @@ func NewAnalysis(
 	}
 
 	// Backend string will have high priority than a default provider
-	// Backend as "openai" represents the default CLI argument passed through
-	if configAI.DefaultProvider != "" && backend == "openai" {
+	// Hence, use the default provider only if the backend is not specified by the user.
+	if configAI.DefaultProvider != "" && backend == "" {
 		backend = configAI.DefaultProvider
+	}
+
+	if backend == "" {
+		backend = "openai"
 	}
 
 	var aiProvider ai.AIProvider
