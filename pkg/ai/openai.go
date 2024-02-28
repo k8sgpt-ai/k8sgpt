@@ -16,6 +16,8 @@ package ai
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/url"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -41,12 +43,27 @@ const (
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
+	proxyEndpoint := config.GetProxyEndpoint()
 
 	baseURL := config.GetBaseURL()
 	if baseURL != "" {
 		defaultConfig.BaseURL = baseURL
 	}
 
+	if proxyEndpoint != "" {
+		proxyUrl, err := url.Parse(proxyEndpoint)
+		if err != nil {
+			return err
+		}
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+
+		defaultConfig.HTTPClient = &http.Client{
+			Transport: transport,
+		}
+	}
+	
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating OpenAI client")

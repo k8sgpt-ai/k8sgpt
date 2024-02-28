@@ -73,6 +73,7 @@ var ServeCmd = &cobra.Command{
 			model := os.Getenv("K8SGPT_MODEL")
 			baseURL := os.Getenv("K8SGPT_BASEURL")
 			engine := os.Getenv("K8SGPT_ENGINE")
+			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
 			envIsSet := backend != "" || password != "" || model != ""
@@ -83,6 +84,7 @@ var ServeCmd = &cobra.Command{
 					Model:       model,
 					BaseURL:     baseURL,
 					Engine:      engine,
+					ProxyEndpoint: proxyEndpoint,
 					Temperature: temperature(),
 				}
 

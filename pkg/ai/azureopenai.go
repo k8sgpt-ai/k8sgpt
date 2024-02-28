@@ -3,6 +3,8 @@ package ai
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/url"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -21,6 +23,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	baseURL := config.GetBaseURL()
 	engine := config.GetEngine()
+	proxyEndpoint := config.GetProxyEndpoint()
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
 
 	defaultConfig.AzureModelMapperFunc = func(model string) string {
@@ -30,6 +33,20 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 		}
 		return azureModelMapping[model]
 
+	}
+	
+	if proxyEndpoint != "" {
+		proxyUrl, err := url.Parse(proxyEndpoint)
+		if err != nil {
+			return err
+		}
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+
+		defaultConfig.HTTPClient = &http.Client{
+			Transport: transport,
+		}
 	}
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
