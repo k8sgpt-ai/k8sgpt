@@ -29,7 +29,7 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240213144542-6e830f3fdf19.1
 	cloud.google.com/go/storage v1.38.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.1
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.0
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
 	github.com/aws/aws-sdk-go v1.50.22
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.8.0
