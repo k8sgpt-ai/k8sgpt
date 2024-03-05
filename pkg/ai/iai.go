@@ -66,6 +66,7 @@ type IAIConfig interface {
 	GetPassword() string
 	GetModel() string
 	GetBaseURL() string
+	GetProxyEndpoint() string
 	GetEndpointName() string
 	GetEngine() string
 	GetTemperature() float32
@@ -95,6 +96,8 @@ type AIProvider struct {
 	Model          string  `mapstructure:"model"`
 	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
 	BaseURL        string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	ProxyEndpoint  string  `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
+	ProxyPort      string  `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
 	EndpointName   string  `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
 	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
@@ -106,6 +109,10 @@ type AIProvider struct {
 
 func (p *AIProvider) GetBaseURL() string {
 	return p.BaseURL
+}
+
+func (p *AIProvider) GetProxyEndpoint() string {
+	return p.ProxyEndpoint
 }
 
 func (p *AIProvider) GetEndpointName() string {

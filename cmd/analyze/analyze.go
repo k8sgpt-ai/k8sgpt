@@ -60,6 +60,7 @@ var AnalyzeCmd = &cobra.Command{
 			withDoc,
 			interactiveMode,
 		)
+
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -124,7 +125,7 @@ func init() {
 	// explain flag
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
-	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 	// output as json
 	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 	// add language options for output
