@@ -162,5 +162,5 @@ func init() {
 	//add flag for amazonbedrock region name
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
 	//add flag for vertexAI Project ID
-	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider Region name (only for googlevertexai backend)")
+	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai backend)")
 }
