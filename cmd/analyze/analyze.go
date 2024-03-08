@@ -37,6 +37,7 @@ var (
 	maxConcurrency  int
 	withDoc         bool
 	interactiveMode bool
+	customAnalysis  bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -59,12 +60,16 @@ var AnalyzeCmd = &cobra.Command{
 			withDoc,
 			interactiveMode,
 		)
+
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 		defer config.Close()
 
+		if customAnalysis {
+			config.RunCustomAnalysis()
+		}
 		config.RunAnalysis()
 
 		if explain {
@@ -120,7 +125,7 @@ func init() {
 	// explain flag
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
-	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 	// output as json
 	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 	// add language options for output
@@ -131,4 +136,7 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&withDoc, "with-doc", "d", false, "Give me the official documentation of the involved field")
 	// interactive mode flag
 	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
+	// custom analysis flag
+	AnalyzeCmd.Flags().BoolVarP(&customAnalysis, "custom-analysis", "z", false, "Enable custom analyzers")
+
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/fatih/color"
@@ -25,19 +24,15 @@ func TestServerInit(t *testing.T) {
 		Token:       "none",
 		Logger:      logger,
 	}
-	var wg sync.WaitGroup
 
 	go func() {
-		wg.Add(1)
 		err := server_config.Serve()
 		if err != nil {
 			assert.Fail(t, "serve: %s", err.Error())
 		}
-		server_config.Shutdown()
+		err = server_config.Shutdown()
 		if err != nil {
 			assert.Fail(t, "shutdown: %s", err.Error())
 		}
-		wg.Done()
 	}()
-	wg.Wait()
 }

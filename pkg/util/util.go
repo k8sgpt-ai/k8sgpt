@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
@@ -216,11 +217,18 @@ func EnsureDirExists(dir string) error {
 }
 
 func MapToString(m map[string]string) string {
-	var result string
-	for k, v := range m {
-		result += fmt.Sprintf("%s=%s,", k, v)
+	// Handle empty map case
+	if len(m) == 0 {
+		return ""
 	}
-	return result[:len(result)-1]
+
+	var pairs []string
+	for k, v := range m {
+		pairs = append(pairs, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	// Efficient string joining
+	return strings.Join(pairs, ",")
 }
 
 func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {

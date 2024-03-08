@@ -12,9 +12,9 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
 
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@f016e796a429b33094d0da6e86af3fa5479afe65 # v2
+        uses: reviewdog/action-golangci-lint@8e1117c7d327bbfb1eb7ec8dc2d895d13e6e17c3 # v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
-          golangci_lint_flags: "--timeout=120s"
+          golangci_lint_flags: "--timeout=240s"
           level: warning

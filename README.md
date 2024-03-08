@@ -8,9 +8,12 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/k8sgpt-ai/k8sgpt/release.yaml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7272/badge)](https://bestpractices.coreinfrastructure.org/projects/7272)
-[![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)
+[![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)  
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_shield)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go version](https://img.shields.io/github/go-mod/go-version/k8sgpt-ai/k8sgpt.svg)](https://github.com/k8sgpt-ai/k8sgpt)
 [![codecov](https://codecov.io/github/k8sgpt-ai/k8sgpt/graph/badge.svg?token=ZLR7NG8URE)](https://codecov.io/github/k8sgpt-ai/k8sgpt)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/k8sgpt-ai/k8sgpt/main)  
 
 `k8sgpt` is a tool for scanning your Kubernetes clusters, diagnosing, and triaging issues in simple English.
 
@@ -38,7 +41,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_386.rpm
   sudo rpm -ivh k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
@@ -47,7 +50,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.rpm
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_amd64.rpm
   sudo rpm -ivh -i k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
@@ -59,7 +62,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -67,7 +70,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -80,14 +83,14 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_386.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_386.apk
   apk add k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.26/k8sgpt_amd64.apk
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.27/k8sgpt_amd64.apk
   apk add k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->x
@@ -456,6 +459,33 @@ k8sgpt cache remove
 ```
 </details>
 
+<details>
+<summary> Custom Analyzers</summary>
+
+There may be scenarios where you wish to write your own analyzer in a language of your choice.
+K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
+To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
+In addition to this you will need to enable the following flag on analysis:
+```
+k8sgpt analyze --custom-analysis
+```
+
+Here is an example local host analyzer in [Rust](https://github.com/k8sgpt-ai/host-analyzer)
+When this is run on `localhost:8080` the K8sGPT config can pick it up with the following additions:
+
+```
+custom_analyzers:
+  - name: host-analyzer
+    connection:
+      url: localhost
+      port: 8080
+```
+
+This now gives the ability to pass through hostOS information ( from this analyzer example ) to K8sGPT to use as context with normal analysis.
+
+_See the docs on how to write a custom analyzer_
+
+</details>
 
 ## Documentation
 
