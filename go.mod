@@ -11,7 +11,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.17.0
 	helm.sh/helm/v3 v3.13.3
 	k8s.io/api v0.28.4
