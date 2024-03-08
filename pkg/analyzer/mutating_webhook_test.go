@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestValidatingWebhookAnalyzer(t *testing.T) {
+func TestMutatingWebhookAnalyzer(t *testing.T) {
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: fake.NewSimpleClientset(
@@ -72,12 +72,12 @@ func TestValidatingWebhookAnalyzer(t *testing.T) {
 						Selector: map[string]string{},
 					},
 				},
-				&admissionregistrationv1.ValidatingWebhookConfiguration{
+				&admissionregistrationv1.MutatingWebhookConfiguration{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-validating-webhook-config",
+						Name:      "test-mutating-webhook-config",
 						Namespace: "test",
 					},
-					Webhooks: []admissionregistrationv1.ValidatingWebhook{
+					Webhooks: []admissionregistrationv1.MutatingWebhook{
 						{
 							// Failure: Pointing to an inactive receiver pod
 							Name: "webhook1",
@@ -130,8 +130,8 @@ func TestValidatingWebhookAnalyzer(t *testing.T) {
 		Namespace: "default",
 	}
 
-	vwAnalyzer := ValidatingWebhookAnalyzer{}
-	results, err := vwAnalyzer.Analyze(config)
+	mwAnalyzer := MutatingWebhookAnalyzer{}
+	results, err := mwAnalyzer.Analyze(config)
 	require.NoError(t, err)
 
 	// The results should contain: webhook1, webhook2, and webhook4
