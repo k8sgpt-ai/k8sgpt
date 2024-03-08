@@ -11,7 +11,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.14.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.17.0
 	helm.sh/helm/v3 v3.13.3
 	k8s.io/api v0.28.4
@@ -30,7 +30,7 @@ require (
 	cloud.google.com/go/storage v1.38.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.1
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
-	github.com/aws/aws-sdk-go v1.50.22
+	github.com/aws/aws-sdk-go v1.50.34
 	github.com/cohere-ai/cohere-go v0.2.0
 	github.com/google/generative-ai-go v0.8.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
