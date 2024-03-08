@@ -142,10 +142,10 @@ func TestReplicaSetAnalyzer(t *testing.T) {
 		},
 	}
 
-	for i, result := range results {
-		require.Equal(t, expectations[i].name, result.Name)
-		for j, failure := range result.Error {
-			require.Equal(t, expectations[i].failuresText[j], failure.Text)
+	for i, expectation := range expectations {
+		require.Equal(t, expectation.name, results[i].Name)
+		for j, failure := range results[i].Error {
+			require.Equal(t, expectation.failuresText[j], failure.Text)
 		}
 	}
 }
