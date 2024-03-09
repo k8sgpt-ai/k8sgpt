@@ -30,7 +30,7 @@
       "groupName": "kubernetes-group"
     },
     {
-      "matchPackageNames": ["^github.com/golang/"],
+      "matchPackageNames": ["^github.com/golang/","^golang.org"],
       "enabled": true,
       "group": "golang-group"
     },
