@@ -15,46 +15,29 @@
   "platformAutomerge": true,
   "packageRules": [
     {
-      "matchPackageNames": ["^github.com/sashabaranov/go-openai", "^github.com/google/generative-ai-go"],
-      "bundler": {
-        "enabled": true,
-        "group": "openai-group"
-      }
-    },
-    {
       "matchPackageNames": ["^github.com/Azure/azure-sdk-for-go/"],
-      "bundler": {
-        "enabled": true,
-        "group": "azure-group"
-      }
+      "enabled": true,
+      "group": "azure-group"
     },
     {
       "matchPackageNames": ["^github.com/prometheus/"],
-      "bundler": {
-        "enabled": true,
-        "group": "prometheus-group"
-      }
+      "enabled": true,
+      "group": "prometheus-group"
     },
     {
       "matchPackageNames": ["^k8s.io/", "^sigs.k8s.io/"],
-      "bundler": {
-        "enabled": true,
-        "group": "kubernetes-group"
-      }
+      "enabled": true,
+      "groupName": "kubernetes-group"
     },
     {
       "matchPackageNames": ["^github.com/golang/"],
-      "bundler": {
-        "enabled": true,
-        "group": "golang-group"
-      }
+      "enabled": true,
+      "group": "golang-group"
     },
     {
       "matchPackageNames": ["^github.com/"],
-      "bundler": {
-        "enabled": true,
-        "group": "github-dependencies"
-      }
+      "enabled": true,
+      "group": "github arbitrary dependencies"
     },
     {
       "description": "Exclude retracted cohere-go versions: https://github.com/renovatebot/renovate/issues/13012",
