@@ -27,6 +27,7 @@ var (
 	engine         string
 	temperature    float32
 	providerRegion string
+	providerId     string
 	topP           float32
 	maxTokens      int
 )

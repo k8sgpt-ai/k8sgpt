@@ -50,10 +50,12 @@ require (
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.112.0 // indirect
 	cloud.google.com/go/ai v0.3.0 // indirect
+	cloud.google.com/go/aiplatform v1.59.0 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.6 // indirect
 	cloud.google.com/go/longrunning v0.5.5 // indirect
+	cloud.google.com/go/vertexai v0.7.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.2 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.1 // indirect
