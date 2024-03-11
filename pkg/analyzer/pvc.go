@@ -18,6 +18,7 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	appsv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -43,7 +44,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 
 		// Check for empty rs
-		if pvc.Status.Phase == "Pending" {
+		if pvc.Status.Phase == appsv1.ClaimPending {
 
 			// parse the event log and append details
 			evt, err := FetchLatestEvent(a.Context, a.Client, pvc.Namespace, pvc.Name)
