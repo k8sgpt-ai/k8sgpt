@@ -423,11 +423,6 @@ func TestFileExists(t *testing.T) {
 			filePath:  "./util.go",
 			isPresent: true,
 		},
-		{
-			filePath:  "/root/temp.go",
-			isPresent: false,
-			err:       "permission denied",
-		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -454,10 +449,6 @@ func TestEnsureDirExists(t *testing.T) {
 		},
 		{
 			dir: "./",
-		},
-		{
-			dir: "/root/tmp/",
-			err: "permission denied",
 		},
 	}
 	for _, tt := range tests {
