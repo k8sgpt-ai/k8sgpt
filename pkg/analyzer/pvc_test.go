@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -205,6 +206,12 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 			if tt.expectations == nil {
 				require.Equal(t, 0, len(results))
 			} else {
+				sort.Slice(results, func(i, j int) bool {
+					return results[i].Name < results[j].Name
+				})
+
+				require.Equal(t, len(tt.expectations), len(results))
+
 				for i, expectation := range tt.expectations {
 					require.Equal(t, expectation, results[i].Name)
 					for _, failure := range results[i].Error {
