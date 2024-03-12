@@ -138,7 +138,7 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 			},
 		},
 		{
-			name: "event other than privision failure",
+			name: "event other than provision failure",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(

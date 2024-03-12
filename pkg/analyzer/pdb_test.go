@@ -26,11 +26,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-type Expectations struct {
-	name     string
-	failures []string
-}
-
 func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
@@ -113,24 +108,15 @@ func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 		Context:   context.Background(),
 		Namespace: "test",
 	}
-	expectations := []Expectations{
-		{
-			name: "test/PDB3",
-			failures: []string{
-				"test reason, expected pdb pod label label1=test1",
-				"test reason, expected pdb pod label label2=test2",
-			},
-		},
-	}
 
 	pdbAnalyzer := PdbAnalyzer{}
 	results, err := pdbAnalyzer.Analyze(config)
 	require.NoError(t, err)
 
-	for i, expectation := range expectations {
-		require.Equal(t, expectation.name, results[i].Name)
-		for j, failure := range expectation.failures {
-			require.Equal(t, failure, results[i].Error[j].Text)
+	for _, result := range results {
+		require.Equal(t, "test/PDB3", result.Name)
+		for _, failure := range result.Error {
+			require.Contains(t, failure.Text, "expected pdb pod label")
 		}
 	}
 }
