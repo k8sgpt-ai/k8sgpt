@@ -138,6 +138,19 @@ func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
+				Name:      "policy-without-podselector-match-labels",
+				Namespace: "default",
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{
+					// len(MatchLabels) == 0 should trigger a failure.
+					// Allowing traffic to all pods.
+					MatchLabels: map[string]string{},
+				},
+			},
+		},
+		&networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
 				Namespace: "default",
 			},
@@ -203,7 +216,7 @@ func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, len(results), 1)
+	assert.Equal(t, len(results), 2)
 	assert.Equal(t, results[0].Kind, "NetworkPolicy")
 
 }
