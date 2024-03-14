@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.3.28](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.27...v0.3.28) (2024-03-14)
+
+
+### Features
+
+* add Google Vertex AI as provider to utilize gemini via GCP ([#984](https://github.com/k8sgpt-ai/k8sgpt/issues/984)) ([55ac0b2](https://github.com/k8sgpt-ai/k8sgpt/commit/55ac0b2129a438661a0253251f546db6b59f2b92))
+* add proxysettings for azureopenai and openai ([#987](https://github.com/k8sgpt-ai/k8sgpt/issues/987)) ([307710e](https://github.com/k8sgpt-ai/k8sgpt/commit/307710eddc1c3f96f40a674f7dda786510e9c4cc))
+* aws integration ([#967](https://github.com/k8sgpt-ai/k8sgpt/issues/967)) ([a81377f](https://github.com/k8sgpt-ai/k8sgpt/commit/a81377f72db7f322e0afbb6d613c2bfffecf8080))
+* enable Rest api using grpc-gateway ([#834](https://github.com/k8sgpt-ai/k8sgpt/issues/834)) ([f2138c7](https://github.com/k8sgpt-ai/k8sgpt/commit/f2138c71017b391625eebdfb4c5708c824824f69))
+
+
+### Bug Fixes
+
+* analyze command default backend bug ([#966](https://github.com/k8sgpt-ai/k8sgpt/issues/966)) ([aab8d77](https://github.com/k8sgpt-ai/k8sgpt/commit/aab8d77febdd4b42ff74aafbb2ada27745c04ae1))
+* **deps:** update module cloud.google.com/go/storage to v1.38.0 ([#950](https://github.com/k8sgpt-ai/k8sgpt/issues/950)) ([6207c70](https://github.com/k8sgpt-ai/k8sgpt/commit/6207c70c51d2885c4590c255c8f78e7ee2009034))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.50.20 ([#930](https://github.com/k8sgpt-ai/k8sgpt/issues/930)) ([3f0356b](https://github.com/k8sgpt-ai/k8sgpt/commit/3f0356be662c32d82ce4f3db05f859477823717d))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.50.21 ([#970](https://github.com/k8sgpt-ai/k8sgpt/issues/970)) ([00c91f0](https://github.com/k8sgpt-ai/k8sgpt/commit/00c91f05a62b2c8b2d756b58b95279195ff38d3d))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.50.22 ([#971](https://github.com/k8sgpt-ai/k8sgpt/issues/971)) ([6ac815c](https://github.com/k8sgpt-ai/k8sgpt/commit/6ac815c10fb073f4251e338ab22e247625f21406))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.50.34 ([#974](https://github.com/k8sgpt-ai/k8sgpt/issues/974)) ([425f33b](https://github.com/k8sgpt-ai/k8sgpt/commit/425f33bb2ddf8cdaff079b097d6956f675c89b0e))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/storage/azblob to v1.3.1 ([#992](https://github.com/k8sgpt-ai/k8sgpt/issues/992)) ([85f18dd](https://github.com/k8sgpt-ai/k8sgpt/commit/85f18dde1f820fe2413cc6b3109e67b7a010142c))
+* **deps:** update module github.com/google/generative-ai-go to v0.8.0 ([#965](https://github.com/k8sgpt-ai/k8sgpt/issues/965)) ([248260e](https://github.com/k8sgpt-ai/k8sgpt/commit/248260e081327de9f9d1d2c851efab2b4a3e7ede))
+* **deps:** update module github.com/prometheus/client_golang to v1.19.0 ([#989](https://github.com/k8sgpt-ai/k8sgpt/issues/989)) ([4065fae](https://github.com/k8sgpt-ai/k8sgpt/commit/4065faef13691f9cf1f50696c62d3b30b0933b4b))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.19.4 ([#963](https://github.com/k8sgpt-ai/k8sgpt/issues/963)) ([8b0b61e](https://github.com/k8sgpt-ai/k8sgpt/commit/8b0b61e596f790b9558a5e3d1f634a5ee1c6cb0c))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.20.0 ([#977](https://github.com/k8sgpt-ai/k8sgpt/issues/977)) ([e07822c](https://github.com/k8sgpt-ai/k8sgpt/commit/e07822c10bff5dbd91f4da592914c25538353d6b))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.20.1 ([#986](https://github.com/k8sgpt-ai/k8sgpt/issues/986)) ([88a7907](https://github.com/k8sgpt-ai/k8sgpt/commit/88a7907db4700c241e9aa109bc3d8604a8186f87))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.20.2 ([#991](https://github.com/k8sgpt-ai/k8sgpt/issues/991)) ([d2754d3](https://github.com/k8sgpt-ai/k8sgpt/commit/d2754d320fb1f285f93fdced2b8469280bd47fd2))
+* **deps:** update module github.com/schollz/progressbar/v3 to v3.14.2 ([#983](https://github.com/k8sgpt-ai/k8sgpt/issues/983)) ([af3732a](https://github.com/k8sgpt-ai/k8sgpt/commit/af3732ad067b809c54c5f08f6cf5a7a519b452d7))
+* **deps:** update module github.com/stretchr/testify to v1.9.0 ([#999](https://github.com/k8sgpt-ai/k8sgpt/issues/999)) ([1491e67](https://github.com/k8sgpt-ai/k8sgpt/commit/1491e675673dcc13ccf6ac1778113762542e8cbc))
+* **deps:** update module go.uber.org/zap to v1.27.0 ([#972](https://github.com/k8sgpt-ai/k8sgpt/issues/972)) ([8f00218](https://github.com/k8sgpt-ai/k8sgpt/commit/8f002180901c8bf7e6b1a5451dd97ef566260b0f))
+* **deps:** update module google.golang.org/api to v0.165.0 ([#959](https://github.com/k8sgpt-ai/k8sgpt/issues/959)) ([cc99bd5](https://github.com/k8sgpt-ai/k8sgpt/commit/cc99bd51f05db4e87f806ac58ee1cb7a83b25e4d))
+* **deps:** update module google.golang.org/api to v0.167.0 ([#973](https://github.com/k8sgpt-ai/k8sgpt/issues/973)) ([6103c96](https://github.com/k8sgpt-ai/k8sgpt/commit/6103c96c41e10e2fe13d285ff15a36bf2fbeb5c2))
+* **deps:** update module google.golang.org/grpc to v1.62.0 ([#975](https://github.com/k8sgpt-ai/k8sgpt/issues/975)) ([97446aa](https://github.com/k8sgpt-ai/k8sgpt/commit/97446aae079824d6556416314c0a27514088a667))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#957](https://github.com/k8sgpt-ai/k8sgpt/issues/957)) ([f929e7f](https://github.com/k8sgpt-ai/k8sgpt/commit/f929e7feea5931ddec77af49dd08937aca85fd49))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#979](https://github.com/k8sgpt-ai/k8sgpt/issues/979)) ([35f5185](https://github.com/k8sgpt-ai/k8sgpt/commit/35f51859140c78ce953443afcc27f77230287809))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#980](https://github.com/k8sgpt-ai/k8sgpt/issues/980)) ([334a86a](https://github.com/k8sgpt-ai/k8sgpt/commit/334a86aaf40e5421929cf380191841db064d9bf7))
+* log analyzer failed with multiple containers in the pod ([#920](https://github.com/k8sgpt-ai/k8sgpt/issues/920)) ([98286a9](https://github.com/k8sgpt-ai/k8sgpt/commit/98286a965e4c4c680deeb43d3397b51089968366))
+* set result name and namespace to trivy vulnreport and configaudi… ([#869](https://github.com/k8sgpt-ai/k8sgpt/issues/869)) ([a3cd7e6](https://github.com/k8sgpt-ai/k8sgpt/commit/a3cd7e6385365a1d190a9e8439311cb9d5eeda56))
+* shorthand for the http flag in serve command ([#969](https://github.com/k8sgpt-ai/k8sgpt/issues/969)) ([f55f837](https://github.com/k8sgpt-ai/k8sgpt/commit/f55f8370ebf0db6db629641337cd78ad7f120865))
+
+
+### Other
+
+* attempt to group renovate deps ([#1007](https://github.com/k8sgpt-ai/k8sgpt/issues/1007)) ([adf4f17](https://github.com/k8sgpt-ai/k8sgpt/commit/adf4f17085672fd5ae78dad4f8ac1d887029836d))
+* **deps:** update anchore/sbom-action action to v0.15.9 ([#1004](https://github.com/k8sgpt-ai/k8sgpt/issues/1004)) ([b05b6a3](https://github.com/k8sgpt-ai/k8sgpt/commit/b05b6a38ed4a9fc017f9dcb52cff8a332c11056d))
+* **deps:** update docker/build-push-action digest to af5a7ed ([#1003](https://github.com/k8sgpt-ai/k8sgpt/issues/1003)) ([b58b719](https://github.com/k8sgpt-ai/k8sgpt/commit/b58b7191af2fe082d94d46ef6a2784c1ea322340))
+* **deps:** update docker/setup-buildx-action digest to 0d103c3 ([#988](https://github.com/k8sgpt-ai/k8sgpt/issues/988)) ([f24bcd8](https://github.com/k8sgpt-ai/k8sgpt/commit/f24bcd88b6a915798897b49a562b86265a9b524c))
+* **deps:** update reviewdog/action-golangci-lint digest to 00311c2 ([#1002](https://github.com/k8sgpt-ai/k8sgpt/issues/1002)) ([4ec143a](https://github.com/k8sgpt-ai/k8sgpt/commit/4ec143ab772ca4dc3072c248e95da8f7c0a2974b))
+
 ## [0.3.27](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.26...v0.3.27) (2024-02-15)
 
 
