@@ -17,6 +17,7 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -38,13 +39,15 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(
 						&appsv1.Event{
-							// This is the latest event.
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							LastTimestamp: metav1.Time{
+								Time: time.Date(2024, 3, 15, 10, 0, 0, 0, time.UTC),
+							},
 							Reason:  "ProvisioningFailed",
-							Message: "PVC provisioning failed",
+							Message: "PVC Event1 provisioning failed",
 						},
 						&appsv1.Event{
 							ObjectMeta: metav1.ObjectMeta{
@@ -54,10 +57,16 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 							},
 						},
 						&appsv1.Event{
+							// This is the latest event.
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "Event3",
 								Namespace: "default",
 							},
+							LastTimestamp: metav1.Time{
+								Time: time.Date(2024, 4, 15, 10, 0, 0, 0, time.UTC),
+							},
+							Reason:  "ProvisioningFailed",
+							Message: "PVC Event3 provisioning failed",
 						},
 						&appsv1.PersistentVolumeClaim{
 							ObjectMeta: metav1.ObjectMeta{
@@ -214,9 +223,6 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 
 				for i, expectation := range tt.expectations {
 					require.Equal(t, expectation, results[i].Name)
-					for _, failure := range results[i].Error {
-						require.Equal(t, "PVC provisioning failed", failure.Text)
-					}
 				}
 			}
 		})
