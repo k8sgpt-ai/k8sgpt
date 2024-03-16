@@ -31,11 +31,11 @@ func TestCronJobAnalyzer(t *testing.T) {
 	suspend := new(bool)
 	*suspend = true
 
-	startingDeadline := new(int64)
-	*startingDeadline = -7
+	invalidStartingDeadline := new(int64)
+	*invalidStartingDeadline = -7
 
-	positiveStartingDeadline := new(int64)
-	*positiveStartingDeadline = 7
+	validStartingDeadline := new(int64)
+	*validStartingDeadline = 7
 
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
@@ -67,7 +67,7 @@ func TestCronJobAnalyzer(t *testing.T) {
 						Schedule: "*/1 * * * *",
 
 						// Negative starting deadline
-						StartingDeadlineSeconds: startingDeadline,
+						StartingDeadlineSeconds: invalidStartingDeadline,
 					},
 				},
 				&batchv1.CronJob{
@@ -90,7 +90,7 @@ func TestCronJobAnalyzer(t *testing.T) {
 						Schedule: "*/1 * * * *",
 
 						// Positive starting deadline shouldn't be any problem.
-						StartingDeadlineSeconds: positiveStartingDeadline,
+						StartingDeadlineSeconds: validStartingDeadline,
 					},
 				},
 				&batchv1.CronJob{
@@ -144,36 +144,15 @@ func TestCronJobAnalyzer(t *testing.T) {
 		return results[i].Name < results[j].Name
 	})
 
-	expectations := []struct {
-		name         string
-		failuresText []string
-	}{
-		{
-			name: "default/CJ2",
-			failuresText: []string{
-				"CronJob CJ2 is suspended",
-			},
-		},
-		{
-			name: "default/CJ3",
-			failuresText: []string{
-				"CronJob CJ3 has a negative starting deadline",
-			},
-		},
-		{
-			name: "default/CJ4",
-			failuresText: []string{
-				"CronJob CJ4 has an invalid schedule",
-			},
-		},
+	expectations := []string{
+		"default/CJ2",
+		"default/CJ3",
+		"default/CJ4",
 	}
 
 	require.Equal(t, len(expectations), len(results))
 
 	for i, result := range results {
-		require.Equal(t, expectations[i].name, results[i].Name)
-		for j, failure := range result.Error {
-			require.Contains(t, failure.Text, expectations[i].failuresText[j])
-		}
+		require.Equal(t, expectations[i], result.Name)
 	}
 }

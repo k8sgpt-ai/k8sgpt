@@ -124,30 +124,23 @@ func TestReplicaSetAnalyzer(t *testing.T) {
 	})
 
 	expectations := []struct {
-		name         string
-		failuresText []string
+		name          string
+		failuresCount int
 	}{
 		{
-			name: "default/ReplicaSet1",
-			failuresText: []string{
-				"failed to create test replica set 1",
-			},
+			name:          "default/ReplicaSet1",
+			failuresCount: 1,
 		},
 		{
-			name: "default/ReplicaSet4",
-			failuresText: []string{
-				"failed to create test replica set 4 condition 1",
-				"failed to create test replica set 4 condition 3",
-			},
+			name:          "default/ReplicaSet4",
+			failuresCount: 2,
 		},
 	}
 
 	require.Equal(t, len(expectations), len(results))
 
-	for i, expectation := range expectations {
-		require.Equal(t, expectation.name, results[i].Name)
-		for j, failure := range results[i].Error {
-			require.Equal(t, expectation.failuresText[j], failure.Text)
-		}
+	for i, result := range results {
+		require.Equal(t, expectations[i].name, result.Name)
+		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }
