@@ -12,6 +12,9 @@
   ],
   "automerge": true,
   "automergeType": "pr",
+  "schedule": [
+    "at any time"
+  ],
   "platformAutomerge": true,
   "packageRules": [
     {
