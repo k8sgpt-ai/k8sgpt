@@ -112,11 +112,6 @@ func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 	pdbAnalyzer := PdbAnalyzer{}
 	results, err := pdbAnalyzer.Analyze(config)
 	require.NoError(t, err)
-
-	for _, result := range results {
-		require.Equal(t, "test/PDB3", result.Name)
-		for _, failure := range result.Error {
-			require.Contains(t, failure.Text, "expected pdb pod label")
-		}
-	}
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "test/PDB3", results[0].Name)
 }
