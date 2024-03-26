@@ -145,21 +145,16 @@ func TestServiceAnalyzer(t *testing.T) {
 	})
 
 	expectations := []struct {
-		name         string
-		failuresText []string
+		name          string
+		failuresCount int
 	}{
 		{
-			name: "test/Endpoint1",
-			failuresText: []string{
-				"Service has not ready endpoints, pods",
-			},
+			name:          "test/Endpoint1",
+			failuresCount: 1,
 		},
 		{
-			name: "test/Service1",
-			failuresText: []string{
-				"Service has no endpoints, expected label",
-				"Service has no endpoints, expected label",
-			},
+			name:          "test/Service1",
+			failuresCount: 2,
 		},
 	}
 
@@ -167,8 +162,6 @@ func TestServiceAnalyzer(t *testing.T) {
 
 	for i, result := range results {
 		require.Equal(t, expectations[i].name, result.Name)
-		for j, failure := range result.Error {
-			require.Contains(t, failure.Text, expectations[i].failuresText[j])
-		}
+		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }

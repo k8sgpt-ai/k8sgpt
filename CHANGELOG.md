@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.29](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.28...v0.3.29) (2024-03-22)
+
+
+### Features
+
+* codecov ([#1023](https://github.com/k8sgpt-ai/k8sgpt/issues/1023)) ([fe81d16](https://github.com/k8sgpt-ai/k8sgpt/commit/fe81d16f756e5ea9db909e42e6caf1e17e040f86))
+
+
+### Other
+
+* allows an environmental override of the default AWS region and… ([#1025](https://github.com/k8sgpt-ai/k8sgpt/issues/1025)) ([8f8f5c6](https://github.com/k8sgpt-ai/k8sgpt/commit/8f8f5c6df7fbcd08ee48d91a4f2e011a3e69e4ac))
+
 ## [0.3.28](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.27...v0.3.28) (2024-03-14)
 
 
