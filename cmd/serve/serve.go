@@ -79,13 +79,13 @@ var ServeCmd = &cobra.Command{
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:        backend,
-					Password:    password,
-					Model:       model,
-					BaseURL:     baseURL,
-					Engine:      engine,
+					Name:          backend,
+					Password:      password,
+					Model:         model,
+					BaseURL:       baseURL,
+					Engine:        engine,
 					ProxyEndpoint: proxyEndpoint,
-					Temperature: temperature(),
+					Temperature:   temperature(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)

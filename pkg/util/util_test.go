@@ -26,29 +26,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestSliceContainsString(t *testing.T) {
-	tests := []struct {
-		slice    []string
-		s        string
-		expected bool
-	}{
-		{
-			expected: false,
-		},
-		{
-			slice:    []string{"temp", "value"},
-			s:        "value",
-			expected: true,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.s, func(t *testing.T) {
-			require.Equal(t, tt.expected, SliceContainsString(tt.slice, tt.s))
-		})
-	}
-}
-
 func TestGetParent(t *testing.T) {
 	ownerName := "test-name"
 	namespace := "test"
@@ -409,6 +386,7 @@ func TestGetPodListByLabels(t *testing.T) {
 		})
 	}
 }
+
 func TestFileExists(t *testing.T) {
 	tests := []struct {
 		filePath  string
