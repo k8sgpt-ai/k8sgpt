@@ -14,6 +14,7 @@ limitations under the License.
 package trivy
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"os"
@@ -30,23 +31,15 @@ import (
 )
 
 var (
-	Repo          = getEnv("TRIVY_REPO", "https://aquasecurity.github.io/helm-charts/")
-	Version       = getEnv("TRIVY_VERSION", "0.13.0")
-	ChartName     = getEnv("TRIVY_CHART_NAME", "trivy-operator")
-	RepoShortName = getEnv("TRIVY_REPO_SHORT_NAME", "aqua")
-	ReleaseName   = getEnv("TRIVY_RELEASE_NAME", "trivy-operator-k8sgpt")
+	Repo          = cmp.Or("TRIVY_REPO", "https://aquasecurity.github.io/helm-charts/")
+	Version       = cmp.Or("TRIVY_VERSION", "0.13.0")
+	ChartName     = cmp.Or("TRIVY_CHART_NAME", "trivy-operator")
+	RepoShortName = cmp.Or("TRIVY_REPO_SHORT_NAME", "aqua")
+	ReleaseName   = cmp.Or("TRIVY_RELEASE_NAME", "trivy-operator-k8sgpt")
 )
 
 type Trivy struct {
 	helm helmclient.Client
-}
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
 }
 
 func NewTrivy() *Trivy {
@@ -81,7 +74,6 @@ func (t *Trivy) GetNamespace() (string, error) {
 }
 
 func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
-
 	for _, a := range t.GetAnalyzerName() {
 		if analyzer == a {
 			return true
@@ -89,8 +81,8 @@ func (t *Trivy) OwnsAnalyzer(analyzer string) bool {
 	}
 	return false
 }
-func (t *Trivy) Deploy(namespace string) error {
 
+func (t *Trivy) Deploy(namespace string) error {
 	// Add the repository
 	chartRepo := repo.Entry{
 		Name: RepoShortName,
@@ -106,7 +98,7 @@ func (t *Trivy) Deploy(namespace string) error {
 		ChartName:   fmt.Sprintf("%s/%s", RepoShortName, ChartName),
 		Namespace:   namespace,
 
-		//TODO: All of this should be configurable
+		// TODO: All of this should be configurable
 		UpgradeCRDs:     true,
 		Wait:            false,
 		Timeout:         300,
@@ -188,12 +180,10 @@ func (t *Trivy) IsActivate() bool {
 }
 
 func (t *Trivy) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
-
 	(*mergedMap)["VulnerabilityReport"] = &TrivyAnalyzer{
 		vulernabilityReportAnalysis: true,
 	}
 	(*mergedMap)["ConfigAuditReport"] = &TrivyAnalyzer{
 		configAuditReportAnalysis: true,
 	}
-
 }

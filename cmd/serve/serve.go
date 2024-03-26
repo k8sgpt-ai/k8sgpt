@@ -41,7 +41,6 @@ var ServeCmd = &cobra.Command{
 	Short: "Runs k8sgpt as a server",
 	Long:  `Runs k8sgpt as a server to allow for easy integration with other applications.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		var configAI ai.AIConfiguration
 		err := viper.UnmarshalKey("ai", &configAI)
 		if err != nil {
@@ -79,13 +78,13 @@ var ServeCmd = &cobra.Command{
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:        backend,
-					Password:    password,
-					Model:       model,
-					BaseURL:     baseURL,
-					Engine:      engine,
+					Name:          backend,
+					Password:      password,
+					Model:         model,
+					BaseURL:       baseURL,
+					Engine:        engine,
 					ProxyEndpoint: proxyEndpoint,
-					Temperature: temperature(),
+					Temperature:   temperature(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
