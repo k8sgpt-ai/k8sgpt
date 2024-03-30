@@ -23,11 +23,11 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 		switch i.Cache.GetCacheType().(type) {
 		case *schemav1.Cache_AzureCache:
-			remoteCache, err = cache.NewCacheProvider("azure", "", "", i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, "")
+			remoteCache, err = cache.NewCacheProvider("azure", "", "", "", i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, "")
 		case *schemav1.Cache_S3Cache:
-			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, "", "", "")
+			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, i.Cache.GetS3Cache().Endpoint, "", "", "")
 		case *schemav1.Cache_GcsCache:
-			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, "", "", i.Cache.GetGcsCache().GetProjectId())
+			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, "", "", "", i.Cache.GetGcsCache().GetProjectId())
 		default:
 			return resp, status.Error(codes.InvalidArgument, "Invalid cache configuration")
 		}
