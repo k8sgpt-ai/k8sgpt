@@ -31,6 +31,7 @@ var (
 	containerName  string
 	projectId      string
 	endpoint       string
+	insecure       bool
 )
 
 // addCmd represents the add command
@@ -49,7 +50,7 @@ var addCmd = &cobra.Command{
 		}
 		fmt.Println(color.YellowString("Adding remote based cache"))
 		cacheType := args[0]
-		remoteCache, err := cache.NewCacheProvider(cacheType, bucketName, region, endpoint, storageAccount, containerName, projectId)
+		remoteCache, err := cache.NewCacheProvider(cacheType, bucketName, region, endpoint, storageAccount, containerName, projectId, insecure)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
@@ -66,6 +67,7 @@ func init() {
 	CacheCmd.AddCommand(addCmd)
 	addCmd.Flags().StringVarP(&region, "region", "r", "us-east-1", "The region to use for the AWS S3 or GCS cache")
 	addCmd.Flags().StringVarP(&endpoint, "endpoint", "e", "", "The S3 or minio endpoint")
+	addCmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "Skip TLS verification for S3/Minio custom endpoint")
 	addCmd.Flags().StringVarP(&bucketName, "bucket", "b", "", "The name of the AWS S3 bucket to use for the cache")
 	addCmd.Flags().StringVarP(&projectId, "projectid", "p", "", "The GCP project ID")
 	addCmd.Flags().StringVarP(&storageAccount, "storageacc", "s", "", "The Azure storage account name of the container")

@@ -47,7 +47,7 @@ func ParseCacheConfiguration() (CacheProvider, error) {
 	return cacheInfo, nil
 }
 
-func NewCacheProvider(cacheType, bucketname, region, endpoint, storageAccount, containerName, projectId string) (CacheProvider, error) {
+func NewCacheProvider(cacheType, bucketname, region, endpoint, storageAccount, containerName, projectId string, insecure bool) (CacheProvider, error) {
 	cProvider := CacheProvider{}
 
 	switch {
@@ -62,6 +62,7 @@ func NewCacheProvider(cacheType, bucketname, region, endpoint, storageAccount, c
 		cProvider.S3.BucketName = bucketname
 		cProvider.S3.Region = region
 		cProvider.S3.Endpoint = endpoint
+		cProvider.S3.InsecureSkipVerify = insecure
 	default:
 		return CacheProvider{}, status.Error(codes.Internal, fmt.Sprintf("%s is not a valid option", cacheType))
 	}

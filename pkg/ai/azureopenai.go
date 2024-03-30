@@ -34,7 +34,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 		return azureModelMapping[model]
 
 	}
-	
+
 	if proxyEndpoint != "" {
 		proxyUrl, err := url.Parse(proxyEndpoint)
 		if err != nil {

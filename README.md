@@ -431,7 +431,8 @@ _Adding a remote cache_
  * AWS S3
    *  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
    * Configuration, ``` k8sgpt cache add s3 --region <aws region> --bucket <name> ```
-   * Minio Configuration ``` k8sgpt cache add s3 --bucket <name> --endpoint <http://localhost:9000> ```
+   * Minio Configuration with HTTP endpoint ``` k8sgpt cache add s3 --bucket <name> --endpoint <http://localhost:9000>```
+   * Minio Configuration with HTTPs endpoint, skipping TLS verification ``` k8sgpt cache add s3 --bucket <name> --endpoint <https://localhost:9000> --insecure```
      * K8sGPT will create the bucket if it does not exist
  * Azure Storage
    * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure

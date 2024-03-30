@@ -63,7 +63,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 			Transport: transport,
 		}
 	}
-	
+
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating OpenAI client")
