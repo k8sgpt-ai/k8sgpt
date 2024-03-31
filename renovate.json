@@ -12,32 +12,30 @@
   ],
   "automerge": true,
   "automergeType": "pr",
+  "schedule": [
+    "at any time"
+  ],
   "platformAutomerge": true,
   "packageRules": [
     {
-      "matchPackageNames": ["^github.com/Azure/azure-sdk-for-go/"],
+      "matchPackageNames": ["azure-sdk-for-go"],
       "enabled": true,
-      "group": "azure-group"
+      "groupName": "azure-group"
     },
     {
-      "matchPackageNames": ["^github.com/prometheus/"],
+      "matchPackageNames": ["prometheus"],
       "enabled": true,
-      "group": "prometheus-group"
+      "groupName": "prometheus-group"
     },
     {
-      "matchPackageNames": ["^k8s.io/", "^sigs.k8s.io/"],
+      "matchPackageNames": ["k8s.io", "sigs.k8s.io"],
       "enabled": true,
       "groupName": "kubernetes-group"
     },
     {
-      "matchPackageNames": ["^github.com/golang/","^golang.org"],
+      "matchPackageNames": ["golang"],
       "enabled": true,
-      "group": "golang-group"
-    },
-    {
-      "matchPackageNames": ["^github.com/"],
-      "enabled": true,
-      "group": "github arbitrary dependencies"
+      "groupName": "golang-group"
     },
     {
       "description": "Exclude retracted cohere-go versions: https://github.com/renovatebot/renovate/issues/13012",

@@ -45,6 +45,9 @@ var addCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("endpointname")
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "amazonbedrock" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 

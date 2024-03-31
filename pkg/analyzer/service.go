@@ -98,15 +98,17 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
-
-					doc := apiDoc.GetApiDocV2("subsets.notReadyAddresses")
-
-					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
-						KubernetesDoc: doc,
-						Sensitive:     []common.Sensitive{},
-					})
 				}
+			}
+
+			if count > 0 {
+				doc := apiDoc.GetApiDocV2("subsets.notReadyAddresses")
+
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
+					KubernetesDoc: doc,
+					Sensitive:     []common.Sensitive{},
+				})
 			}
 		}
 
