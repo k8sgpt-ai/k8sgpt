@@ -488,6 +488,40 @@ _See the docs on how to write a custom analyzer_
 
 </details>
 
+<details>
+<summary> GKE Analyzers (integration) </summary>
+
+K8sGPT now supports the ability to integrate with Google Cloud to pull in additional context about your GKE cluster.
+
+- Feature List
+
+| analyzer | feature                     | required parameters |
+|----------|-----------------------------|---------------------|
+| GKE      | ClusterNotificationAnalysis | ✔                   |
+
+- Parameters required for GKE
+
+```yaml
+# Default K8sGPT configuration file path is $HOME/.config/k8sgpt/k8sgpt.yaml
+googlecloud:
+    enable_gke_clusternotificationanalysis: "Whether to enable GKE ClusterNotificationAnalysis(type: bool)" # Default true
+    gke:
+        cluster_notification_analysis_list:
+            - cluster_notification_subscription_id: "YOUR_SUBSCRIPTION_ID(type: string)"
+              project_id: "YOUR_PROJECT_ID(type: string)"
+    pubsub:
+        enable_ack: "Whether to return an Ack when a message is received(type: bool)" # Default true
+        timeout_sec: "HTTP request timeout value unit is seconds(type: int)" # Default 10
+        max_messages: "How many Pub/Sub messages are received in a single request?(type: int)" # Default 1
+```
+
+- Activate the GoogleCloud integration
+```shell
+k8sgpt integrations activate googlecloud
+```
+
+</details>
+
 ## Documentation
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)

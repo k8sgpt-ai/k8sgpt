@@ -48,12 +48,63 @@ const (
 	  - Containers:
 	    - {list of container names}
 	`
+	gke_cluster_notification_upgrade_prompt = `
+Return your prompt in this language: %s.
+This is a UpgradeEvent or UpgradeAvailabilityEvent of Google Kubernetes Engine (GKE) cluster notification.
+Provide the output according to the message format.
+---
+%s
+---
+Return the message format:
+**Notification**
+{The payload within the first triple dash surrounded by code blocks}
+**Notification Attribute**
+- {project id}
+- {cluster location}
+- {cluster name}
+**Explanation**
+{severity}
+**{Next Action}**
+{what should I do next}
+**Reference URL**
+{reference URL}
+`
+	gke_cluster_notification_security_bulletin_event_prompt = `
+Return your prompt in this language: %s.
+This is a SecurityBulletinEvent of Google Kubernetes Engine (GKE) cluster notification.
+Explain the following that and the detail risk or root cause of the CVE ID, then provide a solution.
+---
+%s
+---
+Return the message format:
+**Notification**
+{The payload within the first triple dash surrounded by code blocks}
+**Notification Attribute**
+- {project id}
+- {cluster location}
+- {cluster name}
+**Severity**
+- {severity}
+**CVE ID**
+- {CVE ID}
+**Description**
+- {description}
+- {danger of this vulnerability in kubernetes cluster}
+**Solution**
+- {solution}
+**Reference URL**
+- {reference URL}
+)
+`
 )
 
 var PromptMap = map[string]string{
-	"default":                       default_prompt,
-	"VulnerabilityReport":           trivy_vuln_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
-	"ConfigAuditReport":             trivy_conf_prompt,
-	"PrometheusConfigValidate":      prom_conf_prompt,
-	"PrometheusConfigRelabelReport": prom_relabel_prompt,
+	"default":                                        default_prompt,
+	"VulnerabilityReport":                            trivy_vuln_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
+	"ConfigAuditReport":                              trivy_conf_prompt,
+	"PrometheusConfigValidate":                       prom_conf_prompt,
+	"PrometheusConfigRelabelReport":                  prom_relabel_prompt,
+	"GKEClusterNotificationUpgradeEvent":             gke_cluster_notification_upgrade_prompt,
+	"GKEClusterNotificationUpgradeAvailabilityEvent": gke_cluster_notification_upgrade_prompt,
+	"GKEClusterNotificationSecurityBulletinEvent":    gke_cluster_notification_security_bulletin_event_prompt,
 }
