@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/aws"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/googlecloud"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/prometheus"
@@ -46,9 +47,10 @@ type Integration struct {
 }
 
 var integrations = map[string]IIntegration{
-	"trivy":      trivy.NewTrivy(),
-	"prometheus": prometheus.NewPrometheus(),
-	"aws":        aws.NewAWS(),
+	"trivy":       trivy.NewTrivy(),
+	"prometheus":  prometheus.NewPrometheus(),
+	"aws":         aws.NewAWS(),
+	"googlecloud": googlecloud.NewGoogleCloud(),
 }
 
 func NewIntegration() *Integration {
