@@ -97,7 +97,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 			if containerStatus.State.Waiting.Reason == "ContainerCreating" && statusPhase == "Pending" {
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
 				// parse the event log and append details
-				evt, err := FetchLatestEvent(a.Context, a.Client, namespace, name)
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
 				if err != nil || evt == nil {
 					continue
 				}
@@ -123,7 +123,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 			// when pod is Running but its ReadinessProbe fails
 			if !containerStatus.Ready && statusPhase == "Running" {
 				// parse the event log and append details
-				evt, err := FetchLatestEvent(a.Context, a.Client, namespace, name)
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
 				if err != nil || evt == nil {
 					continue
 				}
