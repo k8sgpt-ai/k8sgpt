@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
 	github.com/fatih/color v1.16.0
+	github.com/kedacore/keda/v2 v2.11.2
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
 	github.com/sashabaranov/go-openai v1.20.4
@@ -92,11 +93,13 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240314234333-6e1732d8331c // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2 // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
 )
 
 require (

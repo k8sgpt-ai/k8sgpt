@@ -1799,6 +1799,8 @@ github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213/go.mod h1:vNUNkEQ1
 github.com/karrick/godirwalk v1.16.1 h1:DynhcF+bztK8gooS0+NDJFrdNZjJ3gzVzC545UNA9iw=
 github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51/go.mod h1:CzGEWj7cYgsdH8dAjBGEr58BoE7ScuLd+fwFZ44+/x8=
+github.com/kedacore/keda/v2 v2.11.2 h1:UgPww0NREqUkM1PGERUz+eb5PlO5oU8V/sT9Hh+ZD60=
+github.com/kedacore/keda/v2 v2.11.2/go.mod h1:eutYX+QXTi3QH90F7JvY3tYtV5Jq10o5f56Chk5IVF8=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
 github.com/kevinburke/ssh_config v1.2.0/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
@@ -3048,6 +3050,8 @@ k8s.io/kubectl v0.28.4 h1:gWpUXW/T7aFne+rchYeHkyB8eVDl5UZce8G4X//kjUQ=
 k8s.io/kubectl v0.28.4/go.mod h1:CKOccVx3l+3MmDbkXtIUtibq93nN2hkDR99XDCn7c/c=
 k8s.io/utils v0.0.0-20240310230437-4693a0247e57 h1:gbqbevonBh57eILzModw6mrkbwM0gQBEuevE/AaBsHY=
 k8s.io/utils v0.0.0-20240310230437-4693a0247e57/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
+knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 h1:weQWWxEEbNOPuL4qtGiBZuMSFhcjF/Cu163uktd/xFE=
+knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0/go.mod h1:dqC6IrvyBE7E+oZocs5PkVhq1G59pDTA7r8U17EAKMk=
 lukechampine.com/uint128 v1.1.1/go.mod h1:c4eWIwlEGaxC/+H1VguhU4PHXNWDCDMUlWdIWl2j1gk=
 lukechampine.com/uint128 v1.2.0/go.mod h1:c4eWIwlEGaxC/+H1VguhU4PHXNWDCDMUlWdIWl2j1gk=
 modernc.org/cc/v3 v3.36.0/go.mod h1:NFUHyPn4ekoC/JHeZFfZurN6ixxawE1BnVonP/oahEI=
