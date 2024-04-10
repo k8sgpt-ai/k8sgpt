@@ -25,8 +25,6 @@ import (
 
 var (
 	region string
-	//nolint:unused
-	bucketName     string
 	storageAccount string
 	containerName  string
 	projectId      string
@@ -46,8 +44,28 @@ var addCmd = &cobra.Command{
 			color.Red("Error: Please provide a value for cache types. Run k8sgpt cache add --help")
 			os.Exit(1)
 		}
-		fmt.Println(color.YellowString("Adding remote based cache"))
 		cacheType := args[0]
+
+		// Check if the cache type is valid
+		valid := cache.IsCacheValid(cacheType)
+		if !valid {
+			color.Red("Error: %v is not a valid cache type", cacheType)
+			os.Exit(1)
+		}
+
+		// Check if the cache is already active
+		_, activeCache, err := cache.GetActiveCache()
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+
+		if activeCache == cacheType {
+			color.Red("Error: %v is already the active cache", cacheType)
+			os.Exit(1)
+		}
+
+		fmt.Println(color.YellowString("Adding remote based cache"))
 		remoteCache, err := cache.NewCacheProvider(cacheType, bucketname, region, storageAccount, containerName, projectId)
 		if err != nil {
 			color.Red("Error: %v", err)
@@ -62,7 +80,6 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	CacheCmd.AddCommand(addCmd)
 	addCmd.Flags().StringVarP(&region, "region", "r", "", "The region to use for the AWS S3 or GCS cache")
 	addCmd.Flags().StringVarP(&bucketname, "bucket", "b", "", "The name of the AWS S3 bucket to use for the cache")
 	addCmd.MarkFlagsRequiredTogether("region", "bucket")

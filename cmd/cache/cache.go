@@ -36,4 +36,9 @@ var CacheCmd = &cobra.Command{
 }
 
 func init() {
+	CacheCmd.AddCommand(addCmd)
+	CacheCmd.AddCommand(dataCmd)
+	CacheCmd.AddCommand(listCmd)
+	CacheCmd.AddCommand(purgeCmd)
+	CacheCmd.AddCommand(removeCmd)
 }

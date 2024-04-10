@@ -124,5 +124,36 @@ func RemoveRemoteCache() error {
 	}
 
 	return nil
+}
 
+func GetActiveCache() (string, string, error) {
+	cacheInfo, err := ParseCacheConfiguration()
+	if err != nil {
+		return "", "", err
+	}
+
+	switch {
+	case cacheInfo.GCS != GCSCacheConfiguration{}:
+		return "Google Cloud storage", "gcs", nil
+	case cacheInfo.Azure != AzureCacheConfiguration{}:
+		return "Azure Blob storage", "azure", nil
+	case cacheInfo.S3 != S3CacheConfiguration{}:
+		return "AWS S3", "s3", nil
+	}
+	return "File (Local)", "file", nil
+}
+
+func GetAllCacheProviders() []string {
+	var providers []string
+	for _, t := range types {
+		providers = append(providers, t.GetName())
+	}
+	return providers
+}
+
+func IsCacheValid(cacheType string) bool {
+	if cacheType == "s3" || cacheType == "gcs" || cacheType == "azure" {
+		return true
+	}
+	return false
 }

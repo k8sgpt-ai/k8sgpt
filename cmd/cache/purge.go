@@ -48,7 +48,3 @@ var purgeCmd = &cobra.Command{
 		fmt.Println(color.GreenString("Object deleted."))
 	},
 }
-
-func init() {
-	CacheCmd.AddCommand(purgeCmd)
-}
