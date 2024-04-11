@@ -30,7 +30,6 @@ type CohereClient struct {
 	client      *cohere.Client
 	model       string
 	temperature float32
-	topP        float32
 	maxTokens   int
 }
 
