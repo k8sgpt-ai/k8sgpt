@@ -308,6 +308,7 @@ Active:
 Unused: 
 > openai
 > localai
+> ollama
 > azureopenai
 > cohere
 > amazonbedrock

@@ -22,6 +22,7 @@ var (
 		&OpenAIClient{},
 		&AzureAIClient{},
 		&LocalAIClient{},
+		&OllamaClient{},
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
@@ -34,6 +35,7 @@ var (
 	Backends = []string{
 		openAIClientName,
 		localAIClientName,
+		ollamaClientName,
 		azureAIClientName,
 		cohereAIClientName,
 		amazonbedrockAIClientName,
@@ -164,7 +166,7 @@ func (p *AIProvider) GetCompartmentId() string {
 	return p.CompartmentId
 }
 
-var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {
