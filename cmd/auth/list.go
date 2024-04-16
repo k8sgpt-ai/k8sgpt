@@ -24,7 +24,6 @@ import (
 )
 
 var details bool
-var userInput string
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -37,11 +36,6 @@ var listCmd = &cobra.Command{
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
-		}
-
-		if details {
-			fmt.Println("Show password ? (y/n)")
-			fmt.Scan(&userInput)
 		}
 
 		// Print the default if it is set
@@ -66,7 +60,7 @@ var listCmd = &cobra.Command{
 				if details {
 					for _, provider := range configAI.Providers {
 						if provider.Name == aiBackend {
-							printDetails(provider, userInput)
+							printDetails(provider)
 						}
 					}
 				}
@@ -91,7 +85,7 @@ func init() {
 	listCmd.Flags().BoolVar(&details, "details", false, "Print active provider configuration details")
 }
 
-func printDetails(provider ai.AIProvider, userInput string) {
+func printDetails(provider ai.AIProvider) {
 	if provider.Model != "" {
 		fmt.Printf("   - Model: %s\n", provider.Model)
 	}
