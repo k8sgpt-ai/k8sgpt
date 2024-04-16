@@ -71,7 +71,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
-    c.topP = config.GetTopP()
+	c.topP = config.GetTopP()
 	return nil
 }
 
