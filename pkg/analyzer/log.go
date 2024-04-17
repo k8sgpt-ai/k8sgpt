@@ -96,8 +96,10 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Name:  key,
 			Error: value.FailureDetails,
 		}
-		parent, _ := util.GetParent(a.Client, value.Pod.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.Pod.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 
