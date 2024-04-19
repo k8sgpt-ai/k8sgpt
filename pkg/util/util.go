@@ -33,15 +33,6 @@ import (
 
 var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
 
-func SliceContainsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
 func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool) {
 	if meta.OwnerReferences != nil {
 		for _, owner := range meta.OwnerReferences {
@@ -183,7 +174,8 @@ func GetCacheKey(provider string, language string, sEnc string) string {
 
 func GetPodListByLabels(client k.Interface,
 	namespace string,
-	labels map[string]string) (*v1.PodList, error) {
+	labels map[string]string,
+) (*v1.PodList, error) {
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
 			MatchLabels: labels,
@@ -207,7 +199,7 @@ func FileExists(path string) (bool, error) {
 }
 
 func EnsureDirExists(dir string) error {
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0o755)
 
 	if errors.Is(err, os.ErrExist) {
 		return nil
