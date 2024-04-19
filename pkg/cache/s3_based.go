@@ -2,7 +2,9 @@ package cache
 
 import (
 	"bytes"
+	"crypto/tls"
 	"log"
+	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -17,16 +19,15 @@ type S3Cache struct {
 }
 
 type S3CacheConfiguration struct {
-	Region     string `mapstructure:"region" yaml:"region,omitempty"`
-	BucketName string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
+	Region             string `mapstructure:"region" yaml:"region,omitempty"`
+	BucketName         string `mapstructure:"bucketname" yaml:"bucketname,omitempty"`
+	Endpoint           string `mapstructure:"endpoint" yaml:"endpoint,omitempty"`
+	InsecureSkipVerify bool   `mapstructure:"insecure" yaml:"insecure,omitempty"`
 }
 
 func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if cacheInfo.S3.BucketName == "" {
 		log.Fatal("Bucket name not configured")
-	}
-	if cacheInfo.S3.Region == "" {
-		log.Fatal("Region not configured")
 	}
 	s.bucketName = cacheInfo.S3.BucketName
 
@@ -36,6 +37,15 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 			Region: aws.String(cacheInfo.S3.Region),
 		},
 	}))
+	if cacheInfo.S3.Endpoint != "" {
+		sess.Config.Endpoint = &cacheInfo.S3.Endpoint
+		sess.Config.S3ForcePathStyle = aws.Bool(true)
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cacheInfo.S3.InsecureSkipVerify},
+		}
+		customClient := &http.Client{Transport: transport}
+		sess.Config.HTTPClient = customClient
+	}
 
 	s3Client := s3.New(sess)
 
