@@ -18,10 +18,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	bucketname string
-)
-
 // cacheCmd represents the cache command
 var CacheCmd = &cobra.Command{
 	Use:   "cache",
