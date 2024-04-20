@@ -78,8 +78,10 @@ func (a *Analysis) textOutput() ([]byte, error) {
 		return []byte(output.String()), nil
 	}
 	for n, result := range a.Results {
-		output.WriteString(fmt.Sprintf("%s %s(%s)\n", color.CyanString("%d", n),
-			color.YellowString(result.Name), color.CyanString(result.ParentObject)))
+		output.WriteString(fmt.Sprintf("%s: %s %s(%s)\n", color.CyanString("%d", n),
+			color.HiYellowString(result.Kind),
+			color.YellowString(result.Name),
+			color.CyanString(result.ParentObject)))
 		for _, err := range result.Error {
 			output.WriteString(fmt.Sprintf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text)))
 			if err.KubernetesDoc != "" {
