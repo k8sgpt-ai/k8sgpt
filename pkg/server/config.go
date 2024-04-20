@@ -9,6 +9,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	notUsedBucket        = ""
+	notUsedRegion        = ""
+	notUsedEndpoint      = ""
+	notUsedStorageAcc    = ""
+	notUsedContainerName = ""
+	notUsedProjectId     = ""
+	notUsedInsecure      = false
+)
+
 func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
 ) {
 
@@ -23,11 +33,11 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 		switch i.Cache.GetCacheType().(type) {
 		case *schemav1.Cache_AzureCache:
-			remoteCache, err = cache.NewCacheProvider("azure", "", "", i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, "")
+			remoteCache, err = cache.NewCacheProvider("azure", notUsedBucket, notUsedRegion, notUsedEndpoint, i.Cache.GetAzureCache().StorageAccount, i.Cache.GetAzureCache().ContainerName, notUsedProjectId, notUsedInsecure)
 		case *schemav1.Cache_S3Cache:
-			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, "", "", "")
+			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, i.Cache.GetS3Cache().Endpoint, notUsedStorageAcc, notUsedContainerName, notUsedProjectId, i.Cache.GetS3Cache().Insecure)
 		case *schemav1.Cache_GcsCache:
-			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, "", "", i.Cache.GetGcsCache().GetProjectId())
+			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, notUsedEndpoint, notUsedStorageAcc, notUsedContainerName, i.Cache.GetGcsCache().GetProjectId(), notUsedInsecure)
 		default:
 			return resp, status.Error(codes.InvalidArgument, "Invalid cache configuration")
 		}

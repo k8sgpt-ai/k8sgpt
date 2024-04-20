@@ -30,6 +30,7 @@ type OpenAIClient struct {
 	client      *openai.Client
 	model       string
 	temperature float32
+	topP        float32
 }
 
 const (
@@ -37,7 +38,6 @@ const (
 	maxToken         = 2048
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
-	topP             = 1.0
 )
 
 func (c *OpenAIClient) Configure(config IAIConfig) error {
@@ -63,7 +63,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 			Transport: transport,
 		}
 	}
-	
+
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating OpenAI client")
@@ -71,6 +71,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
+	c.topP = config.GetTopP()
 	return nil
 }
 
@@ -88,7 +89,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 		MaxTokens:        maxToken,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
-		TopP:             topP,
+		TopP:             c.topP,
 	})
 	if err != nil {
 		return "", err

@@ -26,13 +26,13 @@ require github.com/adrg/xdg v0.4.0
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.19.1-20240213144542-6e830f3fdf19.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240213144542-6e830f3fdf19.2
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.32.0-20240213144542-6e830f3fdf19.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.33.0-20240406062209-1cc152efbf5c.1
 	cloud.google.com/go/storage v1.40.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.1
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
-	github.com/aws/aws-sdk-go v1.51.14
-	github.com/cohere-ai/cohere-go/v2 v2.7.1
+	github.com/aws/aws-sdk-go v1.51.21
+  github.com/cohere-ai/cohere-go/v2 v2.7.1
 	github.com/google/generative-ai-go v0.10.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hupe1980/go-huggingface v0.0.15
@@ -217,7 +217,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
-	golang.org/x/net v0.22.0
+	golang.org/x/net v0.23.0
 	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
