@@ -17,7 +17,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cohere-ai/cohere-go"
+	api "github.com/cohere-ai/cohere-go/v2"
+	cohere "github.com/cohere-ai/cohere-go/v2/client"
+	"github.com/cohere-ai/cohere-go/v2/option"
 )
 
 const cohereAIClientName = "cohere"
@@ -28,45 +30,49 @@ type CohereClient struct {
 	client      *cohere.Client
 	model       string
 	temperature float32
+	maxTokens   int
 }
 
 func (c *CohereClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 
-	client, err := cohere.CreateClient(token)
-	if err != nil {
-		return err
+	opts := []option.RequestOption{
+		cohere.WithToken(token),
 	}
 
 	baseURL := config.GetBaseURL()
 	if baseURL != "" {
-		client.BaseURL = baseURL
+		opts = append(opts, cohere.WithBaseURL(baseURL))
 	}
 
+	client := cohere.NewClient(opts...)
 	if client == nil {
 		return errors.New("error creating Cohere client")
 	}
+
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
+	c.maxTokens = config.GetMaxTokens()
+
 	return nil
 }
 
-func (c *CohereClient) GetCompletion(_ context.Context, prompt string) (string, error) {
+func (c *CohereClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	resp, err := c.client.Generate(cohere.GenerateOptions{
-		Model:             c.model,
-		Prompt:            prompt,
-		MaxTokens:         cohere.Uint(2048),
-		Temperature:       cohere.Float64(float64(c.temperature)),
-		K:                 cohere.Int(0),
-		StopSequences:     []string{},
-		ReturnLikelihoods: "NONE",
+	response, err := c.client.Chat(ctx, &api.ChatRequest{
+		Message:      prompt,
+		Model:        &c.model,
+		K:            api.Int(0),
+		Preamble:     api.String(""),
+		Temperature:  api.Float64(float64(c.temperature)),
+		RawPrompting: api.Bool(false),
+		MaxTokens:    api.Int(c.maxTokens),
 	})
 	if err != nil {
 		return "", err
 	}
-	return resp.Generations[0].Text, nil
+	return response.Text, nil
 }
 
 func (c *CohereClient) GetName() string {
