@@ -32,7 +32,7 @@ nfpms:
     section: utils
     contents:
       - src: ./LICENSE
-        dst: /usr/share/doc/nfpm/copyright
+        dst: /usr/share/doc/k8sgpt/copyright
         file_info:
           mode: 0644
 
