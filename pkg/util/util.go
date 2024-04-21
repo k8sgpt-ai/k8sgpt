@@ -109,7 +109,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 			}
 		}
 	}
-	return meta.Name, false //should be return "", false ?
+	return "", false
 }
 
 func RemoveDuplicates(slice []string) ([]string, []string) {
