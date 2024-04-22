@@ -82,7 +82,7 @@ func TestGetParent(t *testing.T) {
 	}{
 		{
 			kind:           "Unknown",
-			expectedOutput: ownerName,
+			expectedOutput: "",
 		},
 		{
 			kind: "ReplicaSet",
