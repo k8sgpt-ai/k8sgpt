@@ -233,3 +233,31 @@ func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
 
 	return false
 }
+
+func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
+
+	// get the list of events
+	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
+		metav1.ListOptions{
+			FieldSelector: "involvedObject.name=" + name,
+		})
+
+	if err != nil {
+		return nil, err
+	}
+	// find most recent event
+	var latestEvent *v1.Event
+	for _, event := range events.Items {
+		if latestEvent == nil {
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
+		}
+		if event.LastTimestamp.After(latestEvent.LastTimestamp.Time) {
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
+		}
+	}
+	return latestEvent, nil
+}
