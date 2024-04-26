@@ -149,8 +149,10 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.ValidatingWebhook.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.ValidatingWebhook.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

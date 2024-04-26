@@ -45,7 +45,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if rs.OwnerReferences != nil {
 					return GetParent(client, rs.ObjectMeta)
 				}
-				return "ReplicaSet/" + rs.Name, false
+				return "ReplicaSet/" + rs.Name, true
 
 			case "Deployment":
 				dep, err := client.GetClient().AppsV1().Deployments(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -55,7 +55,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if dep.OwnerReferences != nil {
 					return GetParent(client, dep.ObjectMeta)
 				}
-				return "Deployment/" + dep.Name, false
+				return "Deployment/" + dep.Name, true
 
 			case "StatefulSet":
 				sts, err := client.GetClient().AppsV1().StatefulSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -65,7 +65,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if sts.OwnerReferences != nil {
 					return GetParent(client, sts.ObjectMeta)
 				}
-				return "StatefulSet/" + sts.Name, false
+				return "StatefulSet/" + sts.Name, true
 
 			case "DaemonSet":
 				ds, err := client.GetClient().AppsV1().DaemonSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -75,7 +75,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if ds.OwnerReferences != nil {
 					return GetParent(client, ds.ObjectMeta)
 				}
-				return "DaemonSet/" + ds.Name, false
+				return "DaemonSet/" + ds.Name, true
 
 			case "Ingress":
 				ds, err := client.GetClient().NetworkingV1().Ingresses(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -85,7 +85,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if ds.OwnerReferences != nil {
 					return GetParent(client, ds.ObjectMeta)
 				}
-				return "Ingress/" + ds.Name, false
+				return "Ingress/" + ds.Name, true
 
 			case "MutatingWebhookConfiguration":
 				mw, err := client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -95,7 +95,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if mw.OwnerReferences != nil {
 					return GetParent(client, mw.ObjectMeta)
 				}
-				return "MutatingWebhook/" + mw.Name, false
+				return "MutatingWebhook/" + mw.Name, true
 
 			case "ValidatingWebhookConfiguration":
 				vw, err := client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -105,11 +105,11 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if vw.OwnerReferences != nil {
 					return GetParent(client, vw.ObjectMeta)
 				}
-				return "ValidatingWebhook/" + vw.Name, false
+				return "ValidatingWebhook/" + vw.Name, true
 			}
 		}
 	}
-	return meta.Name, false
+	return "", false
 }
 
 func RemoveDuplicates(slice []string) ([]string, []string) {
