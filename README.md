@@ -167,6 +167,7 @@ you will be able to write your own analyzers.
 - [x] gatewayClass
 - [x] gateway
 - [x] httproute
+- [x] logAnalyzer
 
 ## Examples
 
@@ -379,6 +380,7 @@ Note: **Anonymization does not currently apply to events.**
   - RepicaSet
   - PersistentVolumeClaim
   - Pod
+  - Log
   - **_*Events_**
 
 ***Note**:
