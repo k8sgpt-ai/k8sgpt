@@ -34,13 +34,13 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
 	github.com/aws/aws-sdk-go v1.51.32
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
-	github.com/google/generative-ai-go v0.10.0
+	github.com/google/generative-ai-go v0.11.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus/prometheus v0.49.1
 	github.com/pterm/pterm v0.12.79
-	google.golang.org/api v0.170.0
+	google.golang.org/api v0.172.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
@@ -51,12 +51,12 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.112.1 // indirect
-	cloud.google.com/go/ai v0.3.0 // indirect
+	cloud.google.com/go/ai v0.3.5-0.20240409161017-ce55ad694f21 // indirect
 	cloud.google.com/go/aiplatform v1.60.0 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
-	cloud.google.com/go/longrunning v0.5.5 // indirect
+	cloud.google.com/go/longrunning v0.5.6 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
@@ -95,8 +95,8 @@ require (
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240314234333-6e1732d8331c // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240325203815-454cdb8f5daa // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
