@@ -82,7 +82,7 @@ func TestGetParent(t *testing.T) {
 	}{
 		{
 			kind:           "Unknown",
-			expectedOutput: ownerName,
+			expectedOutput: "",
 		},
 		{
 			kind: "ReplicaSet",
@@ -155,8 +155,12 @@ func TestGetParent(t *testing.T) {
 				},
 			}
 			output, ok := GetParent(&kubeClient, meta)
+			if meta.OwnerReferences[0].Name != "" {
+				require.Equal(t, true, ok)
+			} else {
+				require.Equal(t, false, ok)
+			}
 			require.Equal(t, tt.expectedOutput, output)
-			require.Equal(t, false, ok)
 		})
 	}
 }

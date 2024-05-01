@@ -163,8 +163,10 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.Ingress.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.Ingress.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

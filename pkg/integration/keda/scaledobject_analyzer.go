@@ -1,17 +1,4 @@
-/*
-Copyright 2023 The K8sGPT Authors.
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package analyzer
+package keda
 
 import (
 	"fmt"
@@ -19,68 +6,66 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	kedaSchema "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	"github.com/kedacore/keda/v2/pkg/generated/clientset/versioned/typed/keda/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-type HpaAnalyzer struct{}
+type ScaledObjectAnalyzer struct{}
 
-func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+	kClient, _ := v1alpha1.NewForConfig(a.Client.GetConfig())
+	kind := "ScaledObject"
 
-	kind := "HorizontalPodAutoscaler"
 	apiDoc := kubernetes.K8sApiReference{
-		Kind: kind,
-		ApiVersion: schema.GroupVersion{
-			Group:   "autoscaling",
-			Version: "v1",
-		},
+		Kind:          kind,
+		ApiVersion:    kedaSchema.GroupVersion,
 		OpenapiSchema: a.OpenapiSchema,
 	}
 
-	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
-		"analyzer_name": kind,
-	})
-
-	list, err := a.Client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{})
+	list, err := kClient.ScaledObjects(a.Namespace).List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	var preAnalysis = map[string]common.PreAnalysis{}
 
-	for _, hpa := range list.Items {
+	for _, so := range list.Items {
 		var failures []common.Failure
 
-		// check ScaleTargetRef exist
-		scaleTargetRef := hpa.Spec.ScaleTargetRef
+		scaleTargetRef := so.Spec.ScaleTargetRef
+		if scaleTargetRef.Kind == "" {
+			scaleTargetRef.Kind = "Deployment"
+		}
+
 		var podInfo PodInfo
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
-			deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			deployment, err := a.Client.GetClient().AppsV1().Deployments(so.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = DeploymentInfo{deployment}
 			}
 		case "ReplicationController":
-			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(so.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = ReplicationControllerInfo{rc}
 			}
 		case "ReplicaSet":
-			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(so.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = ReplicaSetInfo{rs}
 			}
 		case "StatefulSet":
-			ss, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			ss, err := a.Client.GetClient().AppsV1().StatefulSets(so.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = StatefulSetInfo{ss}
 			}
 		default:
 			failures = append(failures, common.Failure{
-				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
+				Text:      fmt.Sprintf("ScaledObject uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
 				Sensitive: []common.Sensitive{},
 			})
 		}
@@ -89,7 +74,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
 
 			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+				Text:          fmt.Sprintf("ScaledObject uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
 				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
@@ -101,8 +86,13 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		} else {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {
-				if container.Resources.Requests == nil || container.Resources.Limits == nil {
-					containers--
+				for _, trigger := range so.Spec.Triggers {
+					if trigger.Type == "cpu" || trigger.Type == "memory" {
+						if container.Resources.Requests == nil || container.Resources.Limits == nil {
+							containers--
+							break
+						}
+					}
 				}
 			}
 
@@ -110,7 +100,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef.kind")
 
 				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
+					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, so.Namespace, scaleTargetRef.Name),
 					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
@@ -121,16 +111,30 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				})
 			}
 
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, so.Namespace, so.Name)
+			if err != nil || evt == nil {
+				continue
+			}
+
+			if evt.Type != "Normal" {
+				failures = append(failures, common.Failure{
+					Text: evt.Message,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: scaleTargetRef.Name,
+							Masked:   util.MaskString(scaleTargetRef.Name),
+						},
+					},
+				})
+			}
 		}
 
 		if len(failures) > 0 {
-			preAnalysis[fmt.Sprintf("%s/%s", hpa.Namespace, hpa.Name)] = common.PreAnalysis{
-				HorizontalPodAutoscalers: hpa,
-				FailureDetails:           failures,
+			preAnalysis[fmt.Sprintf("%s/%s", so.Namespace, so.Name)] = common.PreAnalysis{
+				ScaledObject:   so,
+				FailureDetails: failures,
 			}
-			AnalyzerErrorsMetric.WithLabelValues(kind, hpa.Name, hpa.Namespace).Set(float64(len(failures)))
 		}
-
 	}
 
 	for key, value := range preAnalysis {
@@ -140,10 +144,8 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, found := util.GetParent(a.Client, value.HorizontalPodAutoscalers.ObjectMeta)
-		if found {
-			currentAnalysis.ParentObject = parent
-		}
+		parent, _ := util.GetParent(a.Client, value.ScaledObject.ObjectMeta)
+		currentAnalysis.ParentObject = parent
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

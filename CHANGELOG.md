@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.3.30](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.29...v0.3.30) (2024-04-26)
+
+
+### Features
+
+* add keda integration ([#1058](https://github.com/k8sgpt-ai/k8sgpt/issues/1058)) ([9a73d19](https://github.com/k8sgpt-ai/k8sgpt/commit/9a73d1923f146aa1343465d89225e64bcb8e0112))
+* add minio support ([#1048](https://github.com/k8sgpt-ai/k8sgpt/issues/1048)) ([e6085d4](https://github.com/k8sgpt-ai/k8sgpt/commit/e6085d4191a1695e295f4f6a2ac7219b67a37225))
+* add Resource Kind in output ([#1069](https://github.com/k8sgpt-ai/k8sgpt/issues/1069)) ([aa276a5](https://github.com/k8sgpt-ai/k8sgpt/commit/aa276a5379b3d24a8e7a1f8b1193832df5a46220))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 4693a02 ([#1037](https://github.com/k8sgpt-ai/k8sgpt/issues/1037)) ([94cdce4](https://github.com/k8sgpt-ai/k8sgpt/commit/94cdce44b49e0bb85e8b541688b2206e7c1dc33d))
+* **deps:** update module cloud.google.com/go/storage to v1.39.1 ([#1029](https://github.com/k8sgpt-ai/k8sgpt/issues/1029)) ([a3896f4](https://github.com/k8sgpt-ai/k8sgpt/commit/a3896f4518ec6666a43de22a24a18f2b93c58073))
+* **deps:** update module cloud.google.com/go/storage to v1.40.0 ([#1054](https://github.com/k8sgpt-ai/k8sgpt/issues/1054)) ([6df0169](https://github.com/k8sgpt-ai/k8sgpt/commit/6df01694916504cc4af3795361a4285098e2de85))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.51.14 ([#1051](https://github.com/k8sgpt-ai/k8sgpt/issues/1051)) ([007b4bb](https://github.com/k8sgpt-ai/k8sgpt/commit/007b4bb8ec4b36705f76fd2f5d96464c75915573))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.51.21 ([#1056](https://github.com/k8sgpt-ai/k8sgpt/issues/1056)) ([ccb692c](https://github.com/k8sgpt-ai/k8sgpt/commit/ccb692c1fdc5496d9d5810dfe41dbf1bdeb68d00))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.51.8 ([#1046](https://github.com/k8sgpt-ai/k8sgpt/issues/1046)) ([19ae31b](https://github.com/k8sgpt-ai/k8sgpt/commit/19ae31b5dd5c54413025cee8081d112223e38400))
+* **deps:** update module github.com/google/generative-ai-go to v0.10.0 ([#1047](https://github.com/k8sgpt-ai/k8sgpt/issues/1047)) ([6b38a56](https://github.com/k8sgpt-ai/k8sgpt/commit/6b38a56afbdaa8e0d8f025088a52d3022673ef9d))
+* **deps:** update module github.com/sashabaranov/go-openai to v1.20.4 ([#1039](https://github.com/k8sgpt-ai/k8sgpt/issues/1039)) ([6a46a26](https://github.com/k8sgpt-ai/k8sgpt/commit/6a46a26789f730d298cf49a706421f36bc8523b1))
+* **deps:** update module golang.org/x/net to v0.23.0 [security] ([#1071](https://github.com/k8sgpt-ai/k8sgpt/issues/1071)) ([693b23f](https://github.com/k8sgpt-ai/k8sgpt/commit/693b23f1fc33659a3c4f52fc4d9c23348b22bfb1))
+* invalid ParentObj in output ([#1068](https://github.com/k8sgpt-ai/k8sgpt/issues/1068)) ([b2ab943](https://github.com/k8sgpt-ai/k8sgpt/commit/b2ab94375e4233cdfa9762877995445c313bb962))
+* remove show password in auth list ([#1061](https://github.com/k8sgpt-ai/k8sgpt/issues/1061)) ([9e02637](https://github.com/k8sgpt-ai/k8sgpt/commit/9e0263778f6dbc179184fa9d86f07d808283d63e))
+* set topP from config ([#1053](https://github.com/k8sgpt-ai/k8sgpt/issues/1053)) ([c162cc2](https://github.com/k8sgpt-ai/k8sgpt/commit/c162cc22ee468070e0602d3fd684b022fa585c4f))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.15.10 ([#1044](https://github.com/k8sgpt-ai/k8sgpt/issues/1044)) ([e05a902](https://github.com/k8sgpt-ai/k8sgpt/commit/e05a902d904fc0b63998ae290f15e79d330317fb))
+* **deps:** update cohere client implementation to v2  ([#1062](https://github.com/k8sgpt-ai/k8sgpt/issues/1062)) ([eb7687a](https://github.com/k8sgpt-ai/k8sgpt/commit/eb7687a08917ad4048c6f00c17bb45591a935a3a))
+* **deps:** update docker/login-action digest to e92390c ([#1033](https://github.com/k8sgpt-ai/k8sgpt/issues/1033)) ([c872e49](https://github.com/k8sgpt-ai/k8sgpt/commit/c872e495ad6f787cf566a5b2f295deb3f08aba15))
+* **deps:** update docker/setup-buildx-action digest to 2b51285 ([#1036](https://github.com/k8sgpt-ai/k8sgpt/issues/1036)) ([10c00ba](https://github.com/k8sgpt-ai/k8sgpt/commit/10c00ba9fe61a3ee1dc90d87dd7997da276905b4))
+* **deps:** update docker/setup-buildx-action digest to d70bba7 ([#1066](https://github.com/k8sgpt-ai/k8sgpt/issues/1066)) ([3eaf776](https://github.com/k8sgpt-ai/k8sgpt/commit/3eaf776249719a0a13909d24e6b48deb6bf818b6))
+* update license file path to avoid conflicting installations ([#878](https://github.com/k8sgpt-ai/k8sgpt/issues/878)) ([#1073](https://github.com/k8sgpt-ai/k8sgpt/issues/1073)) ([85a76a3](https://github.com/k8sgpt-ai/k8sgpt/commit/85a76a3be06df0ff713192d1f08fd01d1e8f219b))
+* update renovate config and bundle deps in groups ([#1026](https://github.com/k8sgpt-ai/k8sgpt/issues/1026)) ([bd2e06b](https://github.com/k8sgpt-ai/k8sgpt/commit/bd2e06bae72528c5af1b4f44674d624d474d40dc))
+
+
+### Refactoring
+
+* replace util.SliceContainsString with slices.Contains & make fmt ([#1041](https://github.com/k8sgpt-ai/k8sgpt/issues/1041)) ([1ae4e75](https://github.com/k8sgpt-ai/k8sgpt/commit/1ae4e751967850e8146f8f3fa04c0dd302ef15bf))
+
 ## [0.3.29](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.28...v0.3.29) (2024-03-22)
 
 

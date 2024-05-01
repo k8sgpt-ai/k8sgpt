@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
 	github.com/fatih/color v1.16.0
+	github.com/kedacore/keda/v2 v2.11.2
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.5
 	github.com/sashabaranov/go-openai v1.20.4
@@ -24,22 +25,22 @@ require (
 require github.com/adrg/xdg v0.4.0
 
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.19.1-20240213144542-6e830f3fdf19.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240213144542-6e830f3fdf19.2
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.33.0-20240406062209-1cc152efbf5c.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.19.1-20240406062209-1cc152efbf5c.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240406062209-1cc152efbf5c.3
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.0-20240406062209-1cc152efbf5c.1
 	cloud.google.com/go/storage v1.40.0
 	cloud.google.com/go/vertexai v0.7.1
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.1
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.1
-	github.com/aws/aws-sdk-go v1.51.21
-	github.com/cohere-ai/cohere-go/v2 v2.7.1
-	github.com/google/generative-ai-go v0.10.0
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.5.2
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
+	github.com/aws/aws-sdk-go v1.51.32
+	github.com/cohere-ai/cohere-go/v2 v2.7.3
+	github.com/google/generative-ai-go v0.11.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/prometheus/prometheus v0.49.1
 	github.com/pterm/pterm v0.12.79
-	google.golang.org/api v0.170.0
+	google.golang.org/api v0.172.0
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/gateway-api v1.0.0
@@ -50,15 +51,15 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.112.1 // indirect
-	cloud.google.com/go/ai v0.3.0 // indirect
+	cloud.google.com/go/ai v0.3.5-0.20240409161017-ce55ad694f21 // indirect
 	cloud.google.com/go/aiplatform v1.60.0 // indirect
 	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
-	cloud.google.com/go/longrunning v0.5.5 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.2 // indirect
+	cloud.google.com/go/longrunning v0.5.6 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.5.2 // indirect
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.1 // indirect
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.2 // indirect
 	github.com/Microsoft/hcsshim v0.11.4 // indirect
 	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
 	github.com/anchore/go-struct-converter v0.0.0-20230627203149-c72ef8859ca9 // indirect
@@ -69,7 +70,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
@@ -92,11 +93,13 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.49.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20240213162025-012b6fc9bca9 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240314234333-6e1732d8331c // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240311132316-a219d84964c2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240325203815-454cdb8f5daa // indirect
 	gopkg.in/evanphx/json-patch.v5 v5.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
 )
 
 require (
@@ -226,7 +229,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/grpc v1.62.1
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.34.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	k8s.io/apiextensions-apiserver v0.28.4
@@ -235,7 +238,7 @@ require (
 	k8s.io/component-base v0.28.4 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
-	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
+	k8s.io/utils v0.0.0-20240423183400-0849a56e8f22
 	oras.land/oras-go v1.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.15.0 // indirect
