@@ -18,6 +18,7 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -41,12 +42,12 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, pod := range list.Items {
 		var failures []common.Failure
+
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
-
 			// Check through container status to check for crashes
 			for _, containerStatus := range pod.Status.Conditions {
-				if containerStatus.Type == "PodScheduled" && containerStatus.Reason == "Unschedulable" {
+				if containerStatus.Type == v1.PodScheduled && containerStatus.Reason == "Unschedulable" {
 					if containerStatus.Message != "" {
 						failures = append(failures, common.Failure{
 							Text:      containerStatus.Message,
@@ -57,60 +58,12 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 
-		// Check through container status to check for crashes or unready
-		for _, containerStatus := range pod.Status.ContainerStatuses {
+		// Check for errors in the init containers.
+		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.InitContainerStatuses, pod.Name, pod.Namespace, string(pod.Status.Phase))...)
 
-			if containerStatus.State.Waiting != nil {
+		// Check for errors in containers.
+		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.ContainerStatuses, pod.Name, pod.Namespace, string(pod.Status.Phase))...)
 
-				if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
-					failures = append(failures, common.Failure{
-						Text:      containerStatus.State.Waiting.Message,
-						Sensitive: []common.Sensitive{},
-					})
-				}
-
-				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
-				if containerStatus.State.Waiting.Reason == "ContainerCreating" && pod.Status.Phase == "Pending" {
-
-					// parse the event log and append details
-					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
-					if err != nil || evt == nil {
-						continue
-					}
-					if isEvtErrorReason(evt.Reason) && evt.Message != "" {
-						failures = append(failures, common.Failure{
-							Text:      evt.Message,
-							Sensitive: []common.Sensitive{},
-						})
-					}
-				}
-
-				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
-				if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" {
-					failures = append(failures, common.Failure{
-						Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, pod.Name),
-						Sensitive: []common.Sensitive{},
-					})
-				}
-			} else {
-				// when pod is Running but its ReadinessProbe fails
-				if !containerStatus.Ready && pod.Status.Phase == "Running" {
-					// parse the event log and append details
-					evt, err := FetchLatestEvent(a.Context, a.Client, pod.Namespace, pod.Name)
-					if err != nil || evt == nil {
-						continue
-					}
-					if evt.Reason == "Unhealthy" && evt.Message != "" {
-						failures = append(failures, common.Failure{
-							Text:      evt.Message,
-							Sensitive: []common.Sensitive{},
-						})
-
-					}
-
-				}
-			}
-		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
 				Pod:            pod,
@@ -127,12 +80,66 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.Pod.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.Pod.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 
 	return a.Results, nil
+}
+
+func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerStatus, name string, namespace string, statusPhase string) []common.Failure {
+	var failures []common.Failure
+
+	// Check through container status to check for crashes or unready
+	for _, containerStatus := range statuses {
+		if containerStatus.State.Waiting != nil {
+			if containerStatus.State.Waiting.Reason == "ContainerCreating" && statusPhase == "Pending" {
+				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
+				// parse the event log and append details
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				if err != nil || evt == nil {
+					continue
+				}
+				if isEvtErrorReason(evt.Reason) && evt.Message != "" {
+					failures = append(failures, common.Failure{
+						Text:      evt.Message,
+						Sensitive: []common.Sensitive{},
+					})
+				}
+			} else if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" && containerStatus.LastTerminationState.Terminated != nil {
+				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, name),
+					Sensitive: []common.Sensitive{},
+				})
+			} else if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
+				failures = append(failures, common.Failure{
+					Text:      containerStatus.State.Waiting.Message,
+					Sensitive: []common.Sensitive{},
+				})
+			}
+		} else {
+			// when pod is Running but its ReadinessProbe fails
+			if !containerStatus.Ready && statusPhase == "Running" {
+				// parse the event log and append details
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				if err != nil || evt == nil {
+					continue
+				}
+				if evt.Reason == "Unhealthy" && evt.Message != "" {
+					failures = append(failures, common.Failure{
+						Text:      evt.Message,
+						Sensitive: []common.Sensitive{},
+					})
+				}
+			}
+		}
+	}
+
+	return failures
 }
 
 func isErrorReason(reason string) bool {

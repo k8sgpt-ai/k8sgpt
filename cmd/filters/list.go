@@ -15,6 +15,7 @@ package filters
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -40,10 +41,9 @@ var listCmd = &cobra.Command{
 		inactiveFilters := util.SliceDiff(availableFilters, activeFilters)
 		fmt.Print(color.YellowString("Active: \n"))
 		for _, filter := range activeFilters {
-
 			// if the filter is an integration, mark this differently
 			// but if the integration is inactive, remove
-			if util.SliceContainsString(integrationFilters, filter) {
+			if slices.Contains(integrationFilters, filter) {
 				fmt.Printf("> %s\n", color.BlueString("%s (integration)", filter))
 			} else {
 				// This strange bit of logic will loop through every integration via
@@ -60,13 +60,12 @@ var listCmd = &cobra.Command{
 			fmt.Print(color.YellowString("Unused: \n"))
 			for _, filter := range inactiveFilters {
 				// if the filter is an integration, mark this differently
-				if util.SliceContainsString(integrationFilters, filter) {
+				if slices.Contains(integrationFilters, filter) {
 					fmt.Printf("> %s\n", color.BlueString("%s (integration)", filter))
 				} else {
 					fmt.Printf("> %s\n", color.RedString(filter))
 				}
 			}
 		}
-
 	},
 }

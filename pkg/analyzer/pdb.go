@@ -50,6 +50,11 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, pdb := range list.Items {
 		var failures []common.Failure
+
+		// Before accessing the Conditions, check if they exist or not.
+		if len(pdb.Status.Conditions) == 0 {
+			continue
+		}
 		if pdb.Status.Conditions[0].Type == "DisruptionAllowed" && pdb.Status.Conditions[0].Status == "False" {
 			var doc string
 			if pdb.Spec.MaxUnavailable != nil {
@@ -94,8 +99,10 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.PodDisruptionBudget.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.PodDisruptionBudget.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
 
       - name: golangci-lint
-        uses: reviewdog/action-golangci-lint@f016e796a429b33094d0da6e86af3fa5479afe65 # v2
+        uses: reviewdog/action-golangci-lint@00311c26a97213f93f2fd3a3524d66762e956ae0 # v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-check
-          golangci_lint_flags: "--timeout=120s"
+          golangci_lint_flags: "--timeout=240s"
           level: warning

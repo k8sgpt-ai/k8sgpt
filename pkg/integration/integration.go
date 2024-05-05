@@ -17,7 +17,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/aws"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/keda"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/prometheus"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -47,6 +50,8 @@ type Integration struct {
 var integrations = map[string]IIntegration{
 	"trivy":      trivy.NewTrivy(),
 	"prometheus": prometheus.NewPrometheus(),
+	"aws":        aws.NewAWS(),
+	"keda":       keda.NewKeda(),
 }
 
 func NewIntegration() *Integration {

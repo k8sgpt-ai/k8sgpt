@@ -9,14 +9,13 @@ on:
       - main
 
 env:
-    GO_VERSION: "~1.21"
+  GO_VERSION: "~1.21"
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
 
       - name: Set up Go
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
@@ -24,4 +23,8 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Run test
-        run: go test ./... 
+        run: go test ./... -coverprofile=coverage.txt
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457 # v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

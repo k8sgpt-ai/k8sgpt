@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -76,6 +77,9 @@ func GetModelOrDefault(model string) string {
 // GetModelOrDefault check config region
 func GetRegionOrDefault(region string) string {
 
+	if os.Getenv("AWS_DEFAULT_REGION") != "" {
+		region = os.Getenv("AWS_DEFAULT_REGION")
+	}
 	// Check if the provided model is in the list
 	for _, m := range BEDROCKER_SUPPORTED_REGION {
 		if m == region {

@@ -16,6 +16,8 @@ package ai
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/url"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -28,6 +30,7 @@ type OpenAIClient struct {
 	client      *openai.Client
 	model       string
 	temperature float32
+	topP        float32
 }
 
 const (
@@ -35,16 +38,30 @@ const (
 	maxToken         = 2048
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
-	topP             = 1.0
 )
 
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
+	proxyEndpoint := config.GetProxyEndpoint()
 
 	baseURL := config.GetBaseURL()
 	if baseURL != "" {
 		defaultConfig.BaseURL = baseURL
+	}
+
+	if proxyEndpoint != "" {
+		proxyUrl, err := url.Parse(proxyEndpoint)
+		if err != nil {
+			return err
+		}
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+
+		defaultConfig.HTTPClient = &http.Client{
+			Transport: transport,
+		}
 	}
 
 	client := openai.NewClientWithConfig(defaultConfig)
@@ -54,6 +71,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
+	c.topP = config.GetTopP()
 	return nil
 }
 
@@ -71,7 +89,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 		MaxTokens:        maxToken,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
-		TopP:             topP,
+		TopP:             c.topP,
 	})
 	if err != nil {
 		return "", err

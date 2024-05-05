@@ -123,15 +123,15 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			AnalyzerErrorsMetric.WithLabelValues(kind, cronJob.Name, cronJob.Namespace).Set(float64(len(failures)))
 
 		}
+	}
 
-		for key, value := range preAnalysis {
-			currentAnalysis := common.Result{
-				Kind:  kind,
-				Name:  key,
-				Error: value.FailureDetails,
-			}
-			a.Results = append(a.Results, currentAnalysis)
+	for key, value := range preAnalysis {
+		currentAnalysis := common.Result{
+			Kind:  kind,
+			Name:  key,
+			Error: value.FailureDetails,
 		}
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
 	return a.Results, nil

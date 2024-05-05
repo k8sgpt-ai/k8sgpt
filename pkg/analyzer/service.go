@@ -98,15 +98,17 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						count++
 						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
 					}
-
-					doc := apiDoc.GetApiDocV2("subsets.notReadyAddresses")
-
-					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
-						KubernetesDoc: doc,
-						Sensitive:     []common.Sensitive{},
-					})
 				}
+			}
+
+			if count > 0 {
+				doc := apiDoc.GetApiDocV2("subsets.notReadyAddresses")
+
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Service has not ready endpoints, pods: %s, expected %d", pods, count),
+					KubernetesDoc: doc,
+					Sensitive:     []common.Sensitive{},
+				})
 			}
 		}
 
@@ -126,8 +128,10 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.Endpoint.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.Endpoint.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 	return a.Results, nil

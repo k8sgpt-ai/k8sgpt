@@ -27,12 +27,14 @@ import (
 
 const (
 	defaultTemperature float32 = 0.7
+	defaultTopP        float32 = 1.0
 )
 
 var (
 	port        string
 	metricsPort string
 	backend     string
+	enableHttp  bool
 )
 
 var ServeCmd = &cobra.Command{
@@ -66,23 +68,42 @@ var ServeCmd = &cobra.Command{
 				}
 				return float32(temperature)
 			}
+			topP := func() float32 {
+				env := os.Getenv("K8SGPT_TOP_P")
+				if env == "" {
+					return defaultTopP
+				}
+				topP, err := strconv.ParseFloat(env, 32)
+				if err != nil {
+					color.Red("Unable to convert topP value: %v", err)
+					os.Exit(1)
+				}
+				if topP > 1.0 || topP < 0.0 {
+					color.Red("Error: topP ranges from 0 to 1.")
+					os.Exit(1)
+				}
+				return float32(topP)
+			}
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
 			model := os.Getenv("K8SGPT_MODEL")
 			baseURL := os.Getenv("K8SGPT_BASEURL")
 			engine := os.Getenv("K8SGPT_ENGINE")
+			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:        backend,
-					Password:    password,
-					Model:       model,
-					BaseURL:     baseURL,
-					Engine:      engine,
-					Temperature: temperature(),
+					Name:          backend,
+					Password:      password,
+					Model:         model,
+					BaseURL:       baseURL,
+					Engine:        engine,
+					ProxyEndpoint: proxyEndpoint,
+					Temperature:   temperature(),
+					TopP:          topP(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
@@ -120,12 +141,18 @@ var ServeCmd = &cobra.Command{
 			color.Red("failed to create logger: %v", err)
 			os.Exit(1)
 		}
-		defer logger.Sync()
+		defer func() {
+			if err := logger.Sync(); err != nil {
+				color.Red("failed to sync logger: %v", err)
+				os.Exit(1)
+			}
+		}()
 
 		server := k8sgptserver.Config{
 			Backend:     aiProvider.Name,
 			Port:        port,
 			MetricsPort: metricsPort,
+			EnableHttp:  enableHttp,
 			Token:       aiProvider.Password,
 			Logger:      logger,
 		}
@@ -153,4 +180,5 @@ func init() {
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
 	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 }
