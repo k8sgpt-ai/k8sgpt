@@ -17,6 +17,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/magiconair/properties/assert"
@@ -26,8 +31,6 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"strings"
-	"testing"
 )
 
 // sub-function
@@ -85,6 +88,7 @@ func analysis_RunAnalysisFilterTester(t *testing.T, filterFlag string) []common.
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
+		WithDoc: true,
 	}
 	if len(filterFlag) > 0 {
 		// `--filter` is explicitly given
@@ -133,6 +137,10 @@ func TestAnalysis_RunAnalysisActiveFilter(t *testing.T) {
 	viper.SetDefault("active_filters", []string{"Ingress", "Service", "Pod"})
 	results = analysis_RunAnalysisFilterTester(t, "")
 	assert.Equal(t, len(results), 3)
+
+	// Invalid filter
+	results = analysis_RunAnalysisFilterTester(t, "invalid")
+	assert.Equal(t, len(results), 0)
 }
 
 func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
@@ -278,4 +286,121 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 	fmt.Println(expected)
 
 	require.Equal(t, got, expected)
+}
+
+func TestNewAnalysis(t *testing.T) {
+	disabledCache := cache.New("disabled-cache")
+	disabledCache.DisableCache()
+	aiClient := &ai.NoOpAIClient{}
+	results := []common.Result{
+		{
+			Kind: "VulnerabilityReport",
+			Error: []common.Failure{
+				{
+					Text:          "This is a custom failure",
+					KubernetesDoc: "test-kubernetes-doc",
+					Sensitive: []common.Sensitive{
+						{
+							Masked:   "masked-error",
+							Unmasked: "unmasked-error",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name        string
+		a           Analysis
+		output      string
+		anonymize   bool
+		expectedErr string
+	}{
+		{
+			name: "Empty results",
+			a:    Analysis{},
+		},
+		{
+			name: "cache disabled",
+			a: Analysis{
+				AIClient: aiClient,
+				Cache:    disabledCache,
+				Results:  results,
+			},
+		},
+		{
+			name: "output and anonymize both set",
+			a: Analysis{
+				AIClient: aiClient,
+				Cache:    cache.New("test-cache"),
+				Results:  results,
+			},
+			output:    "test-output",
+			anonymize: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.a.GetAIResults(tt.output, tt.anonymize)
+			if tt.expectedErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.ErrorContains(t, err, tt.expectedErr)
+			}
+		})
+	}
+}
+
+func TestGetAIResultForSanitizedFailures(t *testing.T) {
+	enabledCache := cache.New("enabled-cache")
+	disabledCache := cache.New("disabled-cache")
+	disabledCache.DisableCache()
+	aiClient := &ai.NoOpAIClient{}
+
+	tests := []struct {
+		name           string
+		a              Analysis
+		texts          []string
+		promptTmpl     string
+		expectedOutput string
+		expectedErr    string
+	}{
+		{
+			name: "Cache enabled",
+			a: Analysis{
+				AIClient: aiClient,
+				Cache:    enabledCache,
+			},
+			texts:          []string{"some-data"},
+			expectedOutput: "I am a noop response to the prompt %!(EXTRA string=, string=some-data)",
+		},
+		{
+			name: "cache disabled",
+			a: Analysis{
+				AIClient: aiClient,
+				Cache:    disabledCache,
+				Language: "English",
+			},
+			texts:          []string{"test input"},
+			promptTmpl:     "Response in %s: %s",
+			expectedOutput: "I am a noop response to the prompt Response in English: test input",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			output, err := tt.a.getAIResultForSanitizedFailures(tt.texts, tt.promptTmpl)
+			if tt.expectedErr == "" {
+				require.NoError(t, err)
+				require.Equal(t, tt.expectedOutput, output)
+			} else {
+				require.ErrorContains(t, err, tt.expectedErr)
+				require.Empty(t, output)
+			}
+		})
+	}
 }
