@@ -125,10 +125,14 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 
 	// Prepare the input data for the model invocation based on the model
 <<<<<<< HEAD
+<<<<<<< HEAD
     var request map[string]interface{}
 =======
 	var request map[string]interface{}
 >>>>>>> 32a7e6f (feat: adding support for A21 and Amazon Titan Models using a case structure to enable future flexibility)
+=======
+	var request map[string]interface{}
+>>>>>>> 95e8f2da38324eccb65f91999f11c86e2004396e
     switch a.model {
     case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
         request = map[string]interface{}{
