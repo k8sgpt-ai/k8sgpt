@@ -124,7 +124,11 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 
 	// Prepare the input data for the model invocation based on the model
+<<<<<<< HEAD
     var request map[string]interface{}
+=======
+	var request map[string]interface{}
+>>>>>>> 32a7e6f (feat: adding support for A21 and Amazon Titan Models using a case structure to enable future flexibility)
     switch a.model {
     case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
         request = map[string]interface{}{
