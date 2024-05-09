@@ -92,7 +92,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	if !skipInstall {
 		if err := integrations[name].Deploy(namespace); err != nil {
-			return err
+			return fmt.Errorf("failed to deploy %s integration: %w", name, err)
 		}
 	}
 	mergedFilters := activeFilters
@@ -127,7 +127,7 @@ func (*Integration) Deactivate(name string, namespace string) error {
 	}
 
 	if err := integrations[name].UnDeploy(namespace); err != nil {
-		return err
+		return fmt.Errorf("failed to undeploy %s integration: %w", name, err)
 	}
 
 	viper.Set("active_filters", activeFilters)
