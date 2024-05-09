@@ -22,12 +22,6 @@ type AmazonBedRockClient struct {
 	temperature float32
 }
 
-// InvokeModelResponseBody represents the response body structure from the model invocation.
-type InvokeModelResponseBody struct {
-	Completion  string `json:"completion"`
-	Stop_reason string `json:"stop_reason"`
-}
-
 // Amazon BedRock support region list US East (N. Virginia),US West (Oregon),Asia Pacific (Singapore),Asia Pacific (Tokyo),Europe (Frankfurt)
 // https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html#bedrock-regions
 const BEDROCK_DEFAULT_REGION = "us-east-1" // default use us-east-1 region
@@ -65,6 +59,8 @@ var BEDROCK_MODELS = []string{
 	ModelA21J2JumboInstruct,
 	ModelAmazonTitanExpressV1,
 }
+
+const TOPP = "0.9"
 
 // GetModelOrDefault check config model
 func GetModelOrDefault(model string) string {
@@ -122,36 +118,35 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 // GetCompletion sends a request to the model for generating completion based on the provided prompt.
 func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 
-	// Prepare the input data for the model invocation based on the model
+	// Prepare the input data for the model invocation based on the model & the Response Body per model as well.
 	var request map[string]interface{}
-
 	switch a.model {
     case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
         request = map[string]interface{}{
             "prompt":               fmt.Sprintf("\n\nHuman: %s  \n\nAssistant:", prompt),
             "max_tokens_to_sample": 1024,
             "temperature":          a.temperature,
-            "top_p":                0.9,
+            "top_p":                TOPP,
         }
-    case ModelA21J2UltraV1, ModelA21J2JumboInstruct:
+	case ModelA21J2UltraV1, ModelA21J2JumboInstruct:
         request = map[string]interface{}{
-            "prompt":    fmt.Sprintf("\n\nHuman: %s  \n\nAssistant:", prompt),
-            "maxTokens": 1024,
+            "prompt":    prompt,
+            "maxTokens": 2048,
             "temperature": a.temperature,
-            "topP":       0.9,
+            "topP":       TOPP,
         }
-    case ModelAmazonTitanExpressV1:
+	case ModelAmazonTitanExpressV1:
         request = map[string]interface{}{
-            "inputText": fmt.Sprintf("\n\nHuman: %s  \n\nAssistant:", prompt),
+            "inputText": fmt.Sprintf("\n\nUser: %s", prompt),
             "textGenerationConfig": map[string]interface{}{
-                "maxTokenCount": 1024,
+                "maxTokenCount": 8000,
                 "temperature":   a.temperature,
-                "topP":          0.9,
+                "topP":          TOPP,
             },
-        }
-    default:
+		}
+	default:
         return "", fmt.Errorf("model %s not supported", a.model)
-    }
+	}
 
 
 	body, err := json.Marshal(request)
@@ -172,15 +167,56 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	if err != nil {
 		return "", err
 	}
-	// Parse the response body
-	output := &InvokeModelResponseBody{}
-	err = json.Unmarshal(resp.Body, output)
-	if err != nil {
-		return "", err
-	}
-	return output.Completion, nil
+	
+	// Response type changes as per model 
+	switch a.model {
+	case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
+		type InvokeModelResponseBody struct {
+			Completion  string `json:"completion"`
+			Stop_reason string `json:"stop_reason"`
+		}
+		output := &InvokeModelResponseBody{}
+		err = json.Unmarshal(resp.Body, output)
+		if err != nil {
+			return "", err
+		}
+        return output.Completion, nil
+    case ModelA21J2UltraV1, ModelA21J2JumboInstruct:
+		type Data struct {
+			Text string `json:"text"`
+		}
+		type Completion struct {
+			Data Data `json:"data"`
+		}
+		type InvokeModelResponseBody struct {
+			Completions []Completion `json:"completions"`
+			}
+		output := &InvokeModelResponseBody{}
+		err = json.Unmarshal(resp.Body, output)
+		if err != nil {
+			return "", err
+		}
+        return output.Completions[0].Data.Text, nil
+    case ModelAmazonTitanExpressV1:
+		type Result struct {
+			TokenCount       int    `json:"tokenCount"`
+			OutputText       string `json:"outputText"`
+			CompletionReason string `json:"completionReason"`
+		}
+		type InvokeModelResponseBody struct {	
+			InputTextTokenCount int      `json:"inputTextTokenCount"`
+			Results             []Result `json:"results"`
+			}
+		output := &InvokeModelResponseBody{}
+		err = json.Unmarshal(resp.Body, output)
+		if err != nil {
+			return "", err
+		}
+        return output.Results[0].OutputText, nil
+	default:
+        return "", fmt.Errorf("model %s not supported", a.model)
+    }
 }
-
 // GetName returns the name of the AmazonBedRockClient.
 func (a *AmazonBedRockClient) GetName() string {
 	return amazonbedrockAIClientName
