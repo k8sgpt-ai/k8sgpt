@@ -28,6 +28,7 @@ import (
 var (
 	explain         bool
 	backend         string
+	configName      string
 	output          string
 	filters         []string
 	language        string
@@ -51,6 +52,7 @@ var AnalyzeCmd = &cobra.Command{
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
+			configName,
 			language,
 			filters,
 			namespace,
@@ -126,6 +128,8 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&explain, "explain", "e", false, "Explain the problem to me")
 	// add flag for backend
 	AnalyzeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
+	// add flag for config-name
+	AnalyzeCmd.Flags().StringVarP(&configName, "config-name", "", "", "Name of the AI provider config to use")
 	// output as json
 	AnalyzeCmd.Flags().StringVarP(&output, "output", "o", "text", "Output format (text, json)")
 	// add language options for output

@@ -48,7 +48,7 @@ var (
 type IAI interface {
 	// Configure sets up client for given configuration. This is expected to be
 	// executed once per client life-time (e.g. analysis CLI command invocation).
-	Configure(config IAIConfig) error
+	Configure(config IAIConfig, index int) error
 	// GetCompletion generates text based on prompt.
 	GetCompletion(ctx context.Context, prompt string) (string, error)
 	// GetName returns name of the backend/client.
@@ -63,17 +63,17 @@ type nopCloser struct{}
 func (nopCloser) Close() {}
 
 type IAIConfig interface {
-	GetPassword() string
-	GetModel() string
-	GetBaseURL() string
-	GetProxyEndpoint() string
-	GetEndpointName() string
-	GetEngine() string
-	GetTemperature() float32
-	GetProviderRegion() string
-	GetTopP() float32
-	GetMaxTokens() int
-	GetProviderId() string
+	GetPassword(index int) string
+	GetModel(index int) string
+	GetBaseURL(index int) string
+	GetProxyEndpoint(index int) string
+	GetEndpointName(index int) string
+	GetEngine(index int) string
+	GetTemperature(index int) float32
+	GetProviderRegion(index int) string
+	GetTopP(index int) float32
+	GetMaxTokens(index int) int
+	GetProviderId(index int) string
 }
 
 func NewClient(provider string) IAI {
@@ -92,6 +92,12 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
+	Backend       string
+	Configs       []AIProviderConfig
+	DefaultConfig int
+}
+
+type AIProviderConfig struct {
 	Name           string  `mapstructure:"name"`
 	Model          string  `mapstructure:"model"`
 	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
@@ -107,47 +113,47 @@ type AIProvider struct {
 	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 }
 
-func (p *AIProvider) GetBaseURL() string {
-	return p.BaseURL
+func (p *AIProvider) GetBaseURL(index int) string {
+	return p.Configs[index].BaseURL
 }
 
-func (p *AIProvider) GetProxyEndpoint() string {
-	return p.ProxyEndpoint
+func (p *AIProvider) GetProxyEndpoint(index int) string {
+	return p.Configs[index].ProxyEndpoint
 }
 
-func (p *AIProvider) GetEndpointName() string {
-	return p.EndpointName
+func (p *AIProvider) GetEndpointName(index int) string {
+	return p.Configs[index].EndpointName
 }
 
-func (p *AIProvider) GetTopP() float32 {
-	return p.TopP
+func (p *AIProvider) GetTopP(index int) float32 {
+	return p.Configs[index].TopP
 }
 
-func (p *AIProvider) GetMaxTokens() int {
-	return p.MaxTokens
+func (p *AIProvider) GetMaxTokens(index int) int {
+	return p.Configs[index].MaxTokens
 }
 
-func (p *AIProvider) GetPassword() string {
-	return p.Password
+func (p *AIProvider) GetPassword(index int) string {
+	return p.Configs[index].Password
 }
 
-func (p *AIProvider) GetModel() string {
-	return p.Model
+func (p *AIProvider) GetModel(index int) string {
+	return p.Configs[index].Model
 }
 
-func (p *AIProvider) GetEngine() string {
-	return p.Engine
+func (p *AIProvider) GetEngine(index int) string {
+	return p.Configs[index].Engine
 }
-func (p *AIProvider) GetTemperature() float32 {
-	return p.Temperature
-}
-
-func (p *AIProvider) GetProviderRegion() string {
-	return p.ProviderRegion
+func (p *AIProvider) GetTemperature(index int) float32 {
+	return p.Configs[index].Temperature
 }
 
-func (p *AIProvider) GetProviderId() string {
-	return p.ProviderId
+func (p *AIProvider) GetProviderRegion(index int) string {
+	return p.Configs[index].ProviderRegion
+}
+
+func (p *AIProvider) GetProviderId(index int) string {
+	return p.Configs[index].ProviderId
 }
 
 var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai"}

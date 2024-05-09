@@ -33,14 +33,14 @@ type CohereClient struct {
 	maxTokens   int
 }
 
-func (c *CohereClient) Configure(config IAIConfig) error {
-	token := config.GetPassword()
+func (c *CohereClient) Configure(config IAIConfig, index int) error {
+	token := config.GetPassword(index)
 
 	opts := []option.RequestOption{
 		cohere.WithToken(token),
 	}
 
-	baseURL := config.GetBaseURL()
+	baseURL := config.GetBaseURL(index)
 	if baseURL != "" {
 		opts = append(opts, cohere.WithBaseURL(baseURL))
 	}
@@ -51,9 +51,9 @@ func (c *CohereClient) Configure(config IAIConfig) error {
 	}
 
 	c.client = client
-	c.model = config.GetModel()
-	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
+	c.model = config.GetModel(index)
+	c.temperature = config.GetTemperature(index)
+	c.maxTokens = config.GetMaxTokens(index)
 
 	return nil
 }

@@ -40,12 +40,12 @@ const (
 	frequencyPenalty = 0.0
 )
 
-func (c *OpenAIClient) Configure(config IAIConfig) error {
-	token := config.GetPassword()
+func (c *OpenAIClient) Configure(config IAIConfig, index int) error {
+	token := config.GetPassword(index)
 	defaultConfig := openai.DefaultConfig(token)
-	proxyEndpoint := config.GetProxyEndpoint()
+	proxyEndpoint := config.GetProxyEndpoint(index)
 
-	baseURL := config.GetBaseURL()
+	baseURL := config.GetBaseURL(index)
 	if baseURL != "" {
 		defaultConfig.BaseURL = baseURL
 	}
@@ -69,9 +69,9 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 		return errors.New("error creating OpenAI client")
 	}
 	c.client = client
-	c.model = config.GetModel()
-	c.temperature = config.GetTemperature()
-	c.topP = config.GetTopP()
+	c.model = config.GetModel(index)
+	c.temperature = config.GetTemperature(index)
+	c.topP = config.GetTopP(index)
 	return nil
 }
 

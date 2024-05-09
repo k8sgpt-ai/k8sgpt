@@ -5,7 +5,9 @@ import (
 	json "encoding/json"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/spf13/viper"
 )
 
 func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
@@ -20,8 +22,22 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.MaxConcurrency = 10
 	}
 
+	var configAI ai.AIConfiguration
+	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
+		return nil, err
+	}
+
+	// TODO: Include the "ConfigName" field in the AnalyzeRequest data structure
+	configName := "default"
+	for _, provider := range configAI.Providers {
+		if i.Backend == provider.Backend {
+			configName = provider.Configs[provider.DefaultConfig].Name
+		}
+	}
+
 	config, err := analysis.NewAnalysis(
 		i.Backend,
+		configName,
 		i.Language,
 		i.Filters,
 		i.Namespace,

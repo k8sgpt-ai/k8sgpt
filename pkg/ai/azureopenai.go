@@ -19,11 +19,11 @@ type AzureAIClient struct {
 	temperature float32
 }
 
-func (c *AzureAIClient) Configure(config IAIConfig) error {
-	token := config.GetPassword()
-	baseURL := config.GetBaseURL()
-	engine := config.GetEngine()
-	proxyEndpoint := config.GetProxyEndpoint()
+func (c *AzureAIClient) Configure(config IAIConfig, index int) error {
+	token := config.GetPassword(index)
+	baseURL := config.GetBaseURL(index)
+	engine := config.GetEngine(index)
+	proxyEndpoint := config.GetProxyEndpoint(index)
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
 
 	defaultConfig.AzureModelMapperFunc = func(model string) string {
@@ -53,8 +53,8 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 		return errors.New("error creating Azure OpenAI client")
 	}
 	c.client = client
-	c.model = config.GetModel()
-	c.temperature = config.GetTemperature()
+	c.model = config.GetModel(index)
+	c.temperature = config.GetTemperature(index)
 	return nil
 }
 
