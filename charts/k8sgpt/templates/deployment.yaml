@@ -21,6 +21,9 @@ spec:
         app.kubernetes.io/name: {{ include "k8sgpt.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
       serviceAccountName: {{ template "k8sgpt.fullname" . }}
       containers:
       - name: k8sgpt-container
