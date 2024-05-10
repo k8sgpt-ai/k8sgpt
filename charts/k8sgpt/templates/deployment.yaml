@@ -22,6 +22,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "k8sgpt.fullname" . }}
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
       containers:
       - name: k8sgpt-container
         imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
