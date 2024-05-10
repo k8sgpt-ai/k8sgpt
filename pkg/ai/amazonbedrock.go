@@ -60,7 +60,7 @@ var BEDROCK_MODELS = []string{
 	ModelAmazonTitanExpressV1,
 }
 
-const TOPP = "0.9"
+const TOPP = 0.9
 
 // GetModelOrDefault check config model
 func GetModelOrDefault(model string) string {
