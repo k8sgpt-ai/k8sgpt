@@ -29,6 +29,7 @@ var (
 	providerRegion string
 	providerId     string
 	topP           float32
+	topK           int32
 	maxTokens      int
 )
 
