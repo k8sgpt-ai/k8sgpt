@@ -29,6 +29,7 @@ var (
 		&GoogleGenAIClient{},
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
+		&OCIGenAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -41,6 +42,7 @@ var (
 		noopAIClientName,
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
+		ociClientName,
 	}
 )
 
@@ -74,6 +76,7 @@ type IAIConfig interface {
 	GetTopP() float32
 	GetMaxTokens() int
 	GetProviderId() string
+	GetCompartmentId() string
 }
 
 func NewClient(provider string) IAI {
@@ -103,6 +106,7 @@ type AIProvider struct {
 	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
 	ProviderId     string  `mapstructure:"providerid" yaml:"providerid,omitempty"`
+	CompartmentId  string  `mapstructure:"compartmentid" yaml:"compartmentid,omitempty"`
 	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
 	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 }
@@ -150,7 +154,11 @@ func (p *AIProvider) GetProviderId() string {
 	return p.ProviderId
 }
 
-var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai"}
+func (p *AIProvider) GetCompartmentId() string {
+	return p.CompartmentId
+}
+
+var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {
