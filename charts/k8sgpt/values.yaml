@@ -14,7 +14,9 @@ deployment:
     requests:
       cpu: "0.2"
       memory: "156Mi"
-
+  securityContext:
+    runAsUser: 65532
+    runAsGroup: 65532
 secret:
   secretKey: "" # base64 encoded OpenAI token
 
