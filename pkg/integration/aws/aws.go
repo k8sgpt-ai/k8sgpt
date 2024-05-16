@@ -1,11 +1,12 @@
 package aws
 
 import (
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/spf13/viper"
-	"os"
 )
 
 type AWS struct {
@@ -23,16 +24,28 @@ func (a *AWS) UnDeploy(namespace string) error {
 }
 
 func (a *AWS) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
-	// Check for AWS credentials in the environment
-	// https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
-	if os.Getenv("AWS_ACCESS_KEY_ID") == "" || os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
-		panic("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in the environment")
+	// Retrieve AWS credentials from the environment
+	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsProfile := os.Getenv("AWS_PROFILE")
+
+	var sess *session.Session
+	if accessKeyID != "" && secretAccessKey != "" {
+		// Use access keys if both are provided
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Config: aws.Config{},
+		}))
+	} else {
+		// Use AWS profile, default to "default" if not set
+		if awsProfile == "" {
+			awsProfile = "default"
+		}
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			Profile:           awsProfile,
+			SharedConfigState: session.SharedConfigEnable,
+		}))
 	}
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Config:            aws.Config{},
-	}))
 	a.sess = sess
 	(*mergedMap)["EKS"] = &EKSAnalyzer{
 		session: a.sess,
