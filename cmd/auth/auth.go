@@ -30,6 +30,7 @@ var (
 	providerId     string
 	compartmentId  string
 	topP           float32
+	topK           int32
 	maxTokens      int
 )
 
