@@ -127,6 +127,7 @@ var addCmd = &cobra.Command{
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
 			ProviderId:     providerId,
+			CompartmentId:  compartmentId,
 			TopP:           topP,
 			TopK:           topK,
 			MaxTokens:      maxTokens,
@@ -173,4 +174,6 @@ func init() {
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
 	//add flag for vertexAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai backend)")
+	//add flag for OCI Compartment ID
+	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 }
