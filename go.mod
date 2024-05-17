@@ -1,6 +1,6 @@
 module github.com/k8sgpt-ai/k8sgpt
 
-go 1.21
+go 1.22
 
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
