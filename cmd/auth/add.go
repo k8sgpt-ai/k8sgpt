@@ -100,6 +100,10 @@ var addCmd = &cobra.Command{
 			color.Red("Error: topP ranges from 0 to 1.")
 			os.Exit(1)
 		}
+		if topK < 1 || topK > 100 {
+			color.Red("Error: topK ranges from 1 to 100.")
+			os.Exit(1)
+		}
 
 		if ai.NeedPassword(backend) && password == "" {
 			fmt.Printf("Enter %s Key: ", backend)
@@ -123,7 +127,9 @@ var addCmd = &cobra.Command{
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
 			ProviderId:     providerId,
+			CompartmentId:  compartmentId,
 			TopP:           topP,
+			TopK:           topK,
 			MaxTokens:      maxTokens,
 		}
 
@@ -156,6 +162,8 @@ func init() {
 	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, e.g. `endpoint-xxxxxxxxxxxx` (only for amazonbedrock, amazonsagemaker backends)")
 	// add flag for topP
 	addCmd.Flags().Float32VarP(&topP, "topp", "c", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
+	// add flag for topK
+	addCmd.Flags().Int32VarP(&topK, "topk", "c", 50, "Sampling Cutoff: Set a threshold (1-100) to restrict the sampling process to the top K most probable words at each step. Higher values lead to greater variability, lower values increases predictability.")
 	// max tokens
 	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
 	// add flag for temperature
@@ -166,4 +174,6 @@ func init() {
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
 	//add flag for vertexAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai backend)")
+	//add flag for OCI Compartment ID
+	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 }
