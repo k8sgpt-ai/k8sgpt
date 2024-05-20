@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.31...v0.3.32) (2024-05-20)
+
+
+### Bug Fixes
+
+* remove shorthand flag for topp option in add command ([#1115](https://github.com/k8sgpt-ai/k8sgpt/issues/1115)) ([e261c09](https://github.com/k8sgpt-ai/k8sgpt/commit/e261c09889359d5870acb9720ff033440f835f8f))
+
 ## [0.3.31](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.30...v0.3.31) (2024-05-16)
 
 
