@@ -18,11 +18,13 @@ import (
 	"strconv"
 
 	"github.com/fatih/color"
+	"github.com/go-logr/logr"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -137,6 +139,9 @@ var ServeCmd = &cobra.Command{
 		}
 
 		logger, err := zap.NewProduction()
+
+		log.SetLogger(logr.New(log.NullLogSink{}))
+
 		if err != nil {
 			color.Red("failed to create logger: %v", err)
 			os.Exit(1)
