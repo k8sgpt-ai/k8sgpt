@@ -28,7 +28,9 @@ var (
 	temperature    float32
 	providerRegion string
 	providerId     string
+	compartmentId  string
 	topP           float32
+	topK           int32
 	maxTokens      int
 )
 

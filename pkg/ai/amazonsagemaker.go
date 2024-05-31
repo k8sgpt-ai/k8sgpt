@@ -33,6 +33,7 @@ type SageMakerAIClient struct {
 	temperature float32
 	endpoint    string
 	topP        float32
+	topK        int32
 	maxTokens   int
 }
 
@@ -56,6 +57,7 @@ type Message struct {
 type Parameters struct {
 	MaxNewTokens int     `json:"max_new_tokens"`
 	TopP         float64 `json:"top_p"`
+	TopK         float64 `json:"top_k"`
 	Temperature  float64 `json:"temperature"`
 }
 
@@ -74,6 +76,7 @@ func (c *SageMakerAIClient) Configure(config IAIConfig) error {
 	c.temperature = config.GetTemperature()
 	c.maxTokens = config.GetMaxTokens()
 	c.topP = config.GetTopP()
+	c.topK = config.GetTopK()
 	return nil
 }
 
@@ -90,6 +93,7 @@ func (c *SageMakerAIClient) GetCompletion(_ context.Context, prompt string) (str
 		Parameters: Parameters{
 			MaxNewTokens: int(c.maxTokens),
 			TopP:         float64(c.topP),
+			TopK:         float64(c.topK),
 			Temperature:  float64(c.temperature),
 		},
 	}

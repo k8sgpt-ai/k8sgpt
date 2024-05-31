@@ -30,6 +30,7 @@ type GoogleVertexAIClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	topK        int32
 	maxTokens   int
 }
 
@@ -111,6 +112,7 @@ func (g *GoogleVertexAIClient) Configure(config IAIConfig) error {
 	g.model = GetVertexAIModelOrDefault(config.GetModel())
 	g.temperature = config.GetTemperature()
 	g.topP = config.GetTopP()
+	g.topK = config.GetTopK()
 	g.maxTokens = config.GetMaxTokens()
 
 	return nil
@@ -121,6 +123,7 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 	model := g.client.GenerativeModel(g.model)
 	model.SetTemperature(g.temperature)
 	model.SetTopP(g.topP)
+	model.SetTopK(float32(g.topK))
 	model.SetMaxOutputTokens(int32(g.maxTokens))
 
 	// Google AI SDK is capable of different inputs than just text, for now set explicit text prompt type.
