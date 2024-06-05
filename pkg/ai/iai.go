@@ -22,6 +22,7 @@ var (
 		&OpenAIClient{},
 		&AzureAIClient{},
 		&LocalAIClient{},
+		&OllamaClient{},
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
@@ -34,6 +35,7 @@ var (
 	Backends = []string{
 		openAIClientName,
 		localAIClientName,
+		ollamaClientName,
 		azureAIClientName,
 		cohereAIClientName,
 		amazonbedrockAIClientName,
