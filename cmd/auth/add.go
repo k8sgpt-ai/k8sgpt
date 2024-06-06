@@ -131,6 +131,7 @@ var addCmd = &cobra.Command{
 			TopP:           topP,
 			TopK:           topK,
 			MaxTokens:      maxTokens,
+			OrganizationId: organizationId,
 		}
 
 		if providerIndex == -1 {
@@ -176,4 +177,6 @@ func init() {
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai backend)")
 	//add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
+	// add flag for openai organization
+	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
 }
