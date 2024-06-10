@@ -30,6 +30,7 @@ import (
 const (
 	defaultTemperature float32 = 0.7
 	defaultTopP        float32 = 1.0
+	defaultTopK        int32   = 50
 )
 
 var (
@@ -86,6 +87,22 @@ var ServeCmd = &cobra.Command{
 				}
 				return float32(topP)
 			}
+			topK := func() int32 {
+				env := os.Getenv("K8SGPT_TOP_K")
+				if env == "" {
+					return defaultTopK
+				}
+				topK, err := strconv.ParseFloat(env, 32)
+				if err != nil {
+					color.Red("Unable to convert topK value: %v", err)
+					os.Exit(1)
+				}
+				if topK < 10 || topK > 100 {
+					color.Red("Error: topK ranges from 1 to 100.")
+					os.Exit(1)
+				}
+				return int32(topK)
+			}
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
@@ -106,6 +123,7 @@ var ServeCmd = &cobra.Command{
 					ProxyEndpoint: proxyEndpoint,
 					Temperature:   temperature(),
 					TopP:          topP(),
+					TopK:          topK(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
