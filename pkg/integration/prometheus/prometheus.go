@@ -53,7 +53,7 @@ func (p *Prometheus) Deploy(namespace string) error {
 	// manage Prometheus on the behalf of users.
 	podConfigs, err := findPrometheusPodConfigs(ctx, client.GetClient(), namespace)
 	if err != nil {
-		color.Red("Error discovering Prometheus worklads: %v", err)
+		color.Red("Error discovering Prometheus workloads: %v", err)
 		os.Exit(1)
 	}
 	if len(podConfigs) == 0 {
