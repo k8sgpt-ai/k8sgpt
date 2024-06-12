@@ -1,6 +1,8 @@
 module github.com/k8sgpt-ai/k8sgpt
 
-go 1.21
+go 1.22.0
+
+toolchain go1.22.4
 
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
@@ -15,9 +17,9 @@ require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.20.0
 	helm.sh/helm/v3 v3.13.3
-	k8s.io/api v0.28.4
-	k8s.io/apimachinery v0.28.4
-	k8s.io/client-go v0.28.4
+	k8s.io/api v0.30.2
+	k8s.io/apimachinery v0.30.2
+	k8s.io/client-go v0.30.2
 	k8s.io/kubectl v0.28.4 // indirect
 
 )
@@ -79,12 +81,14 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.3 // indirect
 	github.com/gookit/color v1.5.4 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lithammer/fuzzysearch v1.1.8 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
+	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/prometheus/common/sigv4 v0.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
@@ -235,18 +239,18 @@ require (
 	google.golang.org/protobuf v1.34.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	k8s.io/apiextensions-apiserver v0.28.4
-	k8s.io/apiserver v0.28.4 // indirect
+	k8s.io/apiextensions-apiserver v0.30.2
+	k8s.io/apiserver v0.30.2 // indirect
 	k8s.io/cli-runtime v0.28.4 // indirect
-	k8s.io/component-base v0.28.4 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
+	k8s.io/component-base v0.30.2 // indirect
+	k8s.io/klog/v2 v2.120.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240423183400-0849a56e8f22
 	oras.land/oras-go v1.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.15.0 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.15.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
