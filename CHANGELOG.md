@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.32...v0.3.33) (2024-06-13)
+
+
+### Features
+
+* bump golang version to 1.22 ([#1117](https://github.com/k8sgpt-ai/k8sgpt/issues/1117)) ([6652fbe](https://github.com/k8sgpt-ai/k8sgpt/commit/6652fbe7cb6e581497e1d086e13397ff9e5b11be))
+
+
+### Bug Fixes
+
+* advisory k8sgpt ghsa 85rg 8m6h 825p ([#1139](https://github.com/k8sgpt-ai/k8sgpt/issues/1139)) ([728555c](https://github.com/k8sgpt-ai/k8sgpt/commit/728555c0effbf7a56221d625bcbbf62f74d14359))
+* **deps:** typo in prometheus.go ([fad00ea](https://github.com/k8sgpt-ai/k8sgpt/commit/fad00eac4925351c4dc6fd6dd347fe2968f0b7a5))
+* **deps:** typo in prometheus.go ([#1137](https://github.com/k8sgpt-ai/k8sgpt/issues/1137)) ([fad00ea](https://github.com/k8sgpt-ai/k8sgpt/commit/fad00eac4925351c4dc6fd6dd347fe2968f0b7a5))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.53.21 ([#1106](https://github.com/k8sgpt-ai/k8sgpt/issues/1106)) ([bdd470f](https://github.com/k8sgpt-ai/k8sgpt/commit/bdd470f9cae917f965badd22da7def4a7d64d2ae))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/azidentity to v1.6.0 [security] ([#1138](https://github.com/k8sgpt-ai/k8sgpt/issues/1138)) ([3a89318](https://github.com/k8sgpt-ai/k8sgpt/commit/3a893184af50f8c822ac06ce0e20818eaec587b1))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to cdcb360 ([#1096](https://github.com/k8sgpt-ai/k8sgpt/issues/1096)) ([3452c0d](https://github.com/k8sgpt-ai/k8sgpt/commit/3452c0def68fd5352d2d09201f813f657245bd9f))
+
 ## [0.3.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.31...v0.3.32) (2024-05-20)
 
 
