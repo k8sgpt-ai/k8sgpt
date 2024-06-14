@@ -14,12 +14,13 @@ builds:
       - windows
       - darwin
     ldflags:
-          - -s -w -X main.version={{.Version}}
-          - -s -w -X main.commit={{.ShortCommit}}
-          - -s -w -X main.Date={{.CommitDate}}
+      - -s -w -X main.version={{.Version}}
+      - -s -w -X main.commit={{.ShortCommit}}
+      - -s -w -X main.Date={{.CommitDate}}
 
 nfpms:
-  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}'
+  - file_name_template: "{{ .ProjectName }}_{{ .Arch }}"
+    maintainer: "K8sGPT Maintainers <contact@k8sgpt.ai>"
     homepage: https://k8sgpt.ai
     description: >-
       K8sGPT is a tool for scanning your kubernetes clusters, diagnosing and triaging issues in simple english. It has SRE experience codified into it’s analyzers and helps to pull out the most relevant information to enrich it with AI.
@@ -51,8 +52,8 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
     # use zip for windows archives
     format_overrides:
-    - goos: windows
-      format: zip
+      - goos: windows
+        format: zip
 
 brews:
   - name: k8sgpt
@@ -62,14 +63,13 @@ brews:
       name: homebrew-k8sgpt
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
 changelog:
   skip: true
-
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
