@@ -78,6 +78,7 @@ type IAIConfig interface {
 	GetMaxTokens() int
 	GetProviderId() string
 	GetCompartmentId() string
+	GetOrganizationId() string
 }
 
 func NewClient(provider string) IAI {
@@ -111,6 +112,7 @@ type AIProvider struct {
 	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
 	TopK           int32   `mapstructure:"topk" yaml:"topk,omitempty"`
 	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+	OrganizationId string  `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -162,6 +164,10 @@ func (p *AIProvider) GetProviderId() string {
 
 func (p *AIProvider) GetCompartmentId() string {
 	return p.CompartmentId
+}
+
+func (p *AIProvider) GetOrganizationId() string {
+	return p.OrganizationId
 }
 
 var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
