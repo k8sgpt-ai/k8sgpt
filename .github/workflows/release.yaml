@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
      
-      - uses: google-github-actions/release-please-action@a37ac6e4f6449ce8b3f7607e4d97d0146028dc0b # v4.1.0
+      - uses: google-github-actions/release-please-action@e4dc86ba9405554aeba3c6bb2d169500e7d3b4ee # v4.1.1
         id: release
         with:
           command: manifest
@@ -47,7 +47,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
       - name: Download Syft
         uses: anchore/sbom-action/download-syft@7ccf588e3cf3cc2611714c2eeae48550fbc17552 # v0.15.11
       - name: Run GoReleaser
