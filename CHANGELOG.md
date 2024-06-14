@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.34...v0.3.35) (2024-06-14)
+
+
+### Features
+
+* add spec.template.spec.securityContext  ([#1109](https://github.com/k8sgpt-ai/k8sgpt/issues/1109)) ([92dd1bd](https://github.com/k8sgpt-ai/k8sgpt/commit/92dd1bd8b08c5173f72a6c333f626c63aa05a1d3))
+* support openai organization Id ([#1133](https://github.com/k8sgpt-ai/k8sgpt/issues/1133)) ([4867d39](https://github.com/k8sgpt-ai/k8sgpt/commit/4867d39c66a6c16906cd769a2055dea9f66f1ccb))
+
+
+### Other
+
+* updated goreleaser config ([#1149](https://github.com/k8sgpt-ai/k8sgpt/issues/1149)) ([c834c09](https://github.com/k8sgpt-ai/k8sgpt/commit/c834c099969f3e888f49f73fba6794387063a6fc))
+
 ## [0.3.34](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.33...v0.3.34) (2024-06-14)
 
 
