@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.34](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.33...v0.3.34) (2024-06-14)
+
+
+### Other
+
+* **deps:** update google-github-actions/release-please-action action to v4.1.1 ([#1143](https://github.com/k8sgpt-ai/k8sgpt/issues/1143)) ([63b63f7](https://github.com/k8sgpt-ai/k8sgpt/commit/63b63f7664277042188351073f269569bfec65bf))
+* **deps:** update goreleaser/goreleaser-action digest to 5742e2a ([#1142](https://github.com/k8sgpt-ai/k8sgpt/issues/1142)) ([c101e8a](https://github.com/k8sgpt-ai/k8sgpt/commit/c101e8a3ea6d911d00ca2a51986edc5425a1042a))
+
 ## [0.3.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.32...v0.3.33) (2024-06-13)
 
 
