@@ -14,7 +14,10 @@ deployment:
     requests:
       cpu: "0.2"
       memory: "156Mi"
-
+  securityContext: {}
+  # Set securityContext.runAsUser/runAsGroup if necessary. Values below were taken from https://github.com/k8sgpt-ai/k8sgpt/blob/main/container/Dockerfile
+  # runAsUser: 65532
+  # runAsGroup: 65532
 secret:
   secretKey: "" # base64 encoded OpenAI token
 
