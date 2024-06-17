@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.36...v0.3.37) (2024-06-17)
+
+
+### Other
+
+* **deps:** update reviewdog/action-golangci-lint digest to 7708105 ([#1157](https://github.com/k8sgpt-ai/k8sgpt/issues/1157)) ([7b1b633](https://github.com/k8sgpt-ai/k8sgpt/commit/7b1b63322ec7b0c0864682bc23be6e70c0ed7ec7))
+* updated the goreleaser action ([#1160](https://github.com/k8sgpt-ai/k8sgpt/issues/1160)) ([9bace02](https://github.com/k8sgpt-ai/k8sgpt/commit/9bace02a6702a8af0e6511b51ffc38378e14d3cb))
+
 ## [0.3.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.35...v0.3.36) (2024-06-17)
 
 
