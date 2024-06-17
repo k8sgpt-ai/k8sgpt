@@ -14,9 +14,10 @@ builds:
       - windows
       - darwin
     ldflags:
-      - -s -w -X main.version={{.Version}}
-      - -s -w -X main.commit={{.ShortCommit}}
-      - -s -w -X main.Date={{.CommitDate}}
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.Date={{.CommitDate}}
 
 nfpms:
   - file_name_template: "{{ .ProjectName }}_{{ .Arch }}"
