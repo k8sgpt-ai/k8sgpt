@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.36...v0.3.37) (2024-06-17)
+
+
+### Other
+
+* **deps:** update reviewdog/action-golangci-lint digest to 7708105 ([#1157](https://github.com/k8sgpt-ai/k8sgpt/issues/1157)) ([7b1b633](https://github.com/k8sgpt-ai/k8sgpt/commit/7b1b63322ec7b0c0864682bc23be6e70c0ed7ec7))
+* updated the goreleaser action ([#1160](https://github.com/k8sgpt-ai/k8sgpt/issues/1160)) ([9bace02](https://github.com/k8sgpt-ai/k8sgpt/commit/9bace02a6702a8af0e6511b51ffc38378e14d3cb))
+
+## [0.3.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.35...v0.3.36) (2024-06-17)
+
+
+### Other
+
+* **deps:** update docker/login-action digest to 0d4c9c5 ([#1141](https://github.com/k8sgpt-ai/k8sgpt/issues/1141)) ([602d111](https://github.com/k8sgpt-ai/k8sgpt/commit/602d111d8568d38cda744d2b179ee2d3eb59ba02))
+* **deps:** update goreleaser/goreleaser-action digest to 5742e2a ([#1153](https://github.com/k8sgpt-ai/k8sgpt/issues/1153)) ([55ae7c3](https://github.com/k8sgpt-ai/k8sgpt/commit/55ae7c32986100d4b0bab6dcaf7a52ac7b37aa5f))
+* fixed the goreleaser file ([#1158](https://github.com/k8sgpt-ai/k8sgpt/issues/1158)) ([2382de4](https://github.com/k8sgpt-ai/k8sgpt/commit/2382de4c6f82de535b67c2752d7c502d0a8b2b66))
+* update goreleaser ldflags ([#1154](https://github.com/k8sgpt-ai/k8sgpt/issues/1154)) ([aeae2ba](https://github.com/k8sgpt-ai/k8sgpt/commit/aeae2ba765c7db6e4953b5a93c54617f1dd85efa))
+
 ## [0.3.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.34...v0.3.35) (2024-06-14)
 
 
