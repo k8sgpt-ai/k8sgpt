@@ -30,6 +30,7 @@ var (
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
 		&OCIGenAIClient{},
+		&WatsonxAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -43,6 +44,7 @@ var (
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
 		ociClientName,
+		watsonxAIClientName,
 	}
 )
 
@@ -170,7 +172,7 @@ func (p *AIProvider) GetOrganizationId() string {
 	return p.OrganizationId
 }
 
-var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
+var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "watsonxai"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {
