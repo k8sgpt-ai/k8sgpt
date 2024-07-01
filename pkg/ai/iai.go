@@ -31,6 +31,7 @@ var (
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
 		&OCIGenAIClient{},
+		&WatsonxAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -45,6 +46,7 @@ var (
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
 		ociClientName,
+		watsonxAIClientName,
 	}
 )
 
@@ -169,7 +171,7 @@ func (p *AIProvider) GetCompartmentId() string {
 	return p.CompartmentId
 }
 
-var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "ollama"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "watsonxai","ollama"}
 
 func (p *AIProvider) GetOrganizationId() string {
 	return p.OrganizationId

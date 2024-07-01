@@ -13,7 +13,7 @@ require (
 	github.com/ollama/ollama v0.1.33
 	github.com/sashabaranov/go-openai v1.23.0
 	github.com/schollz/progressbar/v3 v3.14.2
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.21.0
@@ -35,6 +35,7 @@ require (
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
+	github.com/IBM/watsonx-go v1.0.0
 	github.com/aws/aws-sdk-go v1.53.21
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
 	github.com/google/generative-ai-go v0.11.0
