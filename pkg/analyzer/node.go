@@ -50,6 +50,9 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					break
 				}
 				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
+			// k3s `EtcdIsVoter`` should not be reported as an error
+			case v1.NodeConditionType("EtcdIsVoter"):
+				break
 			default:
 				if nodeCondition.Status != v1.ConditionFalse {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
