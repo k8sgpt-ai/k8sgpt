@@ -38,6 +38,8 @@ var (
 	withDoc         bool
 	interactiveMode bool
 	customAnalysis  bool
+	offlineMode     bool
+	rcaPath         string
 )
 
 // AnalyzeCmd represents the problems command
@@ -48,6 +50,10 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if offlineMode && rcaPath == "" {
+			color.Red("Offline mode of Analysis needs RCA path to be provided to extract the data")
+			os.Exit(1)
+		}
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -59,6 +65,8 @@ var AnalyzeCmd = &cobra.Command{
 			maxConcurrency,
 			withDoc,
 			interactiveMode,
+			offlineMode,
+			rcaPath,
 		)
 
 		if err != nil {
@@ -139,4 +147,6 @@ func init() {
 	// custom analysis flag
 	AnalyzeCmd.Flags().BoolVarP(&customAnalysis, "custom-analysis", "z", false, "Enable custom analyzers")
 
+	AnalyzeCmd.Flags().BoolVar(&offlineMode, "offline-mode", false, "Run Analyzer in Offline mode from RCA collected data")
+	AnalyzeCmd.Flags().StringVar(&rcaPath, "rca-path", "", "Path Container RCA collected from RCA Collector infra")
 }

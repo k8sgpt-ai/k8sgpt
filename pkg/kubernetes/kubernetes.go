@@ -33,6 +33,14 @@ func (c *Client) GetCtrlClient() ctrl.Client {
 	return c.CtrlClient
 }
 
+func (c *Client) SetKubernetesClient(k kubernetes.Interface) {
+	c.Client = k
+}
+
+func (c *Client) SetCtrlClient(k ctrl.Client) {
+	c.CtrlClient = k
+}
+
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	var config *rest.Config
 	config, err := rest.InClusterConfig()

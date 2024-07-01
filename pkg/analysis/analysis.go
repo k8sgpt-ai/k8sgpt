@@ -18,6 +18,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes/local"
 	"reflect"
 	"strings"
 	"sync"
@@ -79,11 +80,20 @@ func NewAnalysis(
 	maxConcurrency int,
 	withDoc bool,
 	interactiveMode bool,
+	offlineMode bool,
+	rcaPath string,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
 	kubeconfig := viper.GetString("kubeconfig")
-	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	var client *kubernetes.Client
+	var err error
+	if offlineMode {
+		client = &kubernetes.Client{}
+		client.Client, client.CtrlClient = local.GetLocalClient(rcaPath)
+	} else {
+		client, err = kubernetes.NewClient(kubecontext, kubeconfig)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("initialising kubernetes client: %w", err)
 	}
