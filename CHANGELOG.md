@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.37...v0.3.38) (2024-07-01)
+
+
+### Features
+
+* add watsonx ai provider ([#1163](https://github.com/k8sgpt-ai/k8sgpt/issues/1163)) ([ce63821](https://github.com/k8sgpt-ai/k8sgpt/commit/ce63821bebbd87b2e058f5cf58a2cdd474b8fb58))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/spf13/cobra to v1.8.1 ([#1161](https://github.com/k8sgpt-ai/k8sgpt/issues/1161)) ([a075792](https://github.com/k8sgpt-ai/k8sgpt/commit/a0757921191205398539a6ccc8dbfaa503db595f))
+
+
+### Other
+
+* update brew installation note ([#1155](https://github.com/k8sgpt-ai/k8sgpt/issues/1155)) ([ab534d1](https://github.com/k8sgpt-ai/k8sgpt/commit/ab534d184fcd538f2ba10a6b5bf3a74c28d5fee6))
+
 ## [0.3.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.36...v0.3.37) (2024-06-17)
 
 
