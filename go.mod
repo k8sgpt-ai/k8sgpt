@@ -11,7 +11,7 @@ require (
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.9
 	github.com/sashabaranov/go-openai v1.23.0
-	github.com/schollz/progressbar/v3 v3.14.2
+	github.com/schollz/progressbar/v3 v3.14.4
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
