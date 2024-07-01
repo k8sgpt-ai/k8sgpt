@@ -80,6 +80,7 @@ type IAIConfig interface {
 	GetMaxTokens() int
 	GetProviderId() string
 	GetCompartmentId() string
+	GetOrganizationId() string
 }
 
 func NewClient(provider string) IAI {
@@ -113,6 +114,7 @@ type AIProvider struct {
 	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
 	TopK           int32   `mapstructure:"topk" yaml:"topk,omitempty"`
 	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+	OrganizationId string  `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -150,6 +152,7 @@ func (p *AIProvider) GetModel() string {
 func (p *AIProvider) GetEngine() string {
 	return p.Engine
 }
+
 func (p *AIProvider) GetTemperature() float32 {
 	return p.Temperature
 }
@@ -166,7 +169,11 @@ func (p *AIProvider) GetCompartmentId() string {
 	return p.CompartmentId
 }
 
-var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "ollama"}
+
+func (p *AIProvider) GetOrganizationId() string {
+	return p.OrganizationId
+}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {

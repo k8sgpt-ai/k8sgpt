@@ -14,9 +14,10 @@ const azureAIClientName = "azureopenai"
 type AzureAIClient struct {
 	nopCloser
 
-	client      *openai.Client
-	model       string
-	temperature float32
+	client         *openai.Client
+	model          string
+	temperature    float32
+	organizationId string
 }
 
 func (c *AzureAIClient) Configure(config IAIConfig) error {
@@ -25,6 +26,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	engine := config.GetEngine()
 	proxyEndpoint := config.GetProxyEndpoint()
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
+	orgId := config.GetOrganizationId()
 
 	defaultConfig.AzureModelMapperFunc = func(model string) string {
 		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
@@ -48,6 +50,10 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 			Transport: transport,
 		}
 	}
+	if orgId != "" {
+		defaultConfig.OrgID = orgId
+	}
+
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating Azure OpenAI client")

@@ -32,6 +32,7 @@ var (
 	topP           float32
 	topK           int32
 	maxTokens      int
+	organizationId string
 )
 
 var configAI ai.AIConfiguration

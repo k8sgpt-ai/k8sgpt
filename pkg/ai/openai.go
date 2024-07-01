@@ -27,10 +27,11 @@ const openAIClientName = "openai"
 type OpenAIClient struct {
 	nopCloser
 
-	client      *openai.Client
-	model       string
-	temperature float32
-	topP        float32
+	client         *openai.Client
+	model          string
+	temperature    float32
+	topP           float32
+	organizationId string
 }
 
 const (
@@ -43,6 +44,7 @@ const (
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
+	orgId := config.GetOrganizationId()
 	proxyEndpoint := config.GetProxyEndpoint()
 
 	baseURL := config.GetBaseURL()
@@ -62,6 +64,10 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 		defaultConfig.HTTPClient = &http.Client{
 			Transport: transport,
 		}
+	}
+
+	if orgId != "" {
+		defaultConfig.OrgID = orgId
 	}
 
 	client := openai.NewClientWithConfig(defaultConfig)
