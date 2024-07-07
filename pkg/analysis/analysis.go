@@ -79,6 +79,7 @@ func NewAnalysis(
 	maxConcurrency int,
 	withDoc bool,
 	interactiveMode bool,
+	httpHeaders []string,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -146,6 +147,8 @@ func NewAnalysis(
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
+	customHeaders := util.NewHeaders(httpHeaders)
+	aiProvider.CustomHeaders = customHeaders
 	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
 	}
