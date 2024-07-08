@@ -81,7 +81,15 @@ func TestOpenAIClient_CustomHeaders(t *testing.T) {
 		assert.Equal(t, "Value1", r.Header.Get("X-Custom-Header-1"))
 		assert.ElementsMatch(t, []string{"Value2", "Value3"}, r.Header["X-Custom-Header-2"])
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"choices": [{"message": {"content": "test"}}]}`)) // Mock response for openai completion
+		// Mock response for openai completion
+		mockResponse := `{"choices": [{"message": {"content": "test"}}]}`
+		n, err := w.Write([]byte(mockResponse))
+		if err != nil {
+			t.Fatalf("error writing response: %v", err)
+		}
+		if n != len(mockResponse) {
+			t.Fatalf("expected to write %d bytes but wrote %d bytes", len(mockResponse), n)
+		}
 	}))
 	defer server.Close()
 
