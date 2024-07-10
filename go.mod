@@ -9,7 +9,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/kedacore/keda/v2 v2.11.2
 	github.com/magiconair/properties v1.8.7
-	github.com/mittwald/go-helm-client v0.12.9
+	github.com/mittwald/go-helm-client v0.12.10
 	github.com/ollama/ollama v0.1.48
 	github.com/sashabaranov/go-openai v1.23.0
 	github.com/schollz/progressbar/v3 v3.14.2
@@ -236,7 +236,7 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
