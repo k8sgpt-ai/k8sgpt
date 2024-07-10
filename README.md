@@ -299,6 +299,12 @@ _Analysis with serve mode_
 ```
 grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain": false}' localhost:8080 schema.v1.ServerService/Analyze
 ```
+
+_Analysis with custom headers_
+
+```
+k8sgpt analyze --explain --custom-headers CustomHeaderKey:CustomHeaderValue
+```
 </details>
 
 ## LLM AI Backends
