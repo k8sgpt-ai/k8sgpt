@@ -1,10 +1,9 @@
 package ai
 
 import (
-	"os"
-	"fmt"
 	"context"
 	"errors"
+	"fmt"
 
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
@@ -14,12 +13,12 @@ const watsonxAIClientName = "watsonxai"
 type WatsonxAIClient struct {
 	nopCloser
 
-	client         *wx.Client
-	model          string
-	temperature    float32
-	topP           float32
-	topK           int32
-	maxNewTokens   int
+	client       *wx.Client
+	model        string
+	temperature  float32
+	topP         float32
+	topK         int32
+	maxNewTokens int
 }
 
 const (
@@ -27,7 +26,7 @@ const (
 )
 
 func (c *WatsonxAIClient) Configure(config IAIConfig) error {
-	if(config.GetModel() == "") {
+	if config.GetModel() == "" {
 		c.model = config.GetModel()
 	} else {
 		c.model = modelMetallama
@@ -37,20 +36,19 @@ func (c *WatsonxAIClient) Configure(config IAIConfig) error {
 	c.topK = config.GetTopK()
 	c.maxNewTokens = config.GetMaxTokens()
 
-	// WatsonxAPIKeyEnvVarName    = "WATSONX_API_KEY"
-	// WatsonxProjectIDEnvVarName = "WATSONX_PROJECT_ID"
-	apiKey, projectID := os.Getenv(wx.WatsonxAPIKeyEnvVarName), os.Getenv(wx.WatsonxProjectIDEnvVarName)
-
+	apiKey := config.GetPassword()
 	if apiKey == "" {
 		return errors.New("No watsonx API key provided")
 	}
-	if projectID == "" {
+
+	projectId := config.GetProviderId()
+	if projectId == "" {
 		return errors.New("No watsonx project ID provided")
 	}
 
 	client, err := wx.NewClient(
 		wx.WithWatsonxAPIKey(apiKey),
-		wx.WithWatsonxProjectID(projectID),
+		wx.WithWatsonxProjectID(projectId),
 	)
 	if err != nil {
 		return fmt.Errorf("Failed to create client for testing. Error: %v", err)
