@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	`log`
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -21,7 +22,10 @@ const (
 
 func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
 ) {
-
+	if i == nil {
+		log.Println("Error: AddConfigRequest is nil")
+		return nil, status.Error(codes.InvalidArgument, "AddConfigRequest is nil")
+	}
 	resp, err := h.syncIntegration(ctx, i)
 	if err != nil {
 		return resp, err
