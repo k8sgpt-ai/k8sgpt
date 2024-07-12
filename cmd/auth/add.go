@@ -51,22 +51,6 @@ var addCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// get ai configuration
-		err := viper.UnmarshalKey("ai", &configAI)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		// search for provider with same name
-		providerIndex := -1
-		for i, provider := range configAI.Providers {
-			if backend == provider.Name {
-				providerIndex = i
-				break
-			}
-		}
-
 		validBackend := func(validBackends []string, backend string) bool {
 			for _, b := range validBackends {
 				if b == backend {
@@ -84,6 +68,22 @@ var addCmd = &cobra.Command{
 			if !validBackend(ai.Backends, backend) {
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
 				os.Exit(1)
+			}
+		}
+
+		// get ai configuration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+
+		// search for provider with same name
+		providerIndex := -1
+		for i, provider := range configAI.Providers {
+			if backend == provider.Name {
+				providerIndex = i
+				break
 			}
 		}
 
