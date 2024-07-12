@@ -38,6 +38,7 @@ var (
 	withDoc         bool
 	interactiveMode bool
 	customAnalysis  bool
+	customHeaders   []string
 )
 
 // AnalyzeCmd represents the problems command
@@ -59,6 +60,7 @@ var AnalyzeCmd = &cobra.Command{
 			maxConcurrency,
 			withDoc,
 			interactiveMode,
+			customHeaders,
 		)
 
 		if err != nil {
@@ -138,5 +140,6 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
 	// custom analysis flag
 	AnalyzeCmd.Flags().BoolVarP(&customAnalysis, "custom-analysis", "z", false, "Enable custom analyzers")
-
+	// add custom headers flag
+	AnalyzeCmd.Flags().StringSliceVarP(&customHeaders, "custom-headers", "r", []string{}, "Custom Headers, <key>:<value> (e.g CustomHeaderKey:CustomHeaderValue AnotherHeader:AnotherValue)")
 }

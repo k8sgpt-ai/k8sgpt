@@ -1,0 +1,110 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: gpt
+spec:
+  version: {{ .TagName }}
+  homepage: https://github.com/k8sgpt-ai/k8sgpt
+  shortDescription: "Giving Kubernetes Superpowers to everyone"
+  description: |
+    A tool for scanning your Kubernetes clusters, diagnosing, and triaging issues in simple English.
+  platforms:
+    ##########
+    # Darwin #
+    ##########
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Darwin_x86_64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: arm64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Darwin_arm64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+
+    #########
+    # Linux #
+    #########
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Linux_x86_64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+    - selector:
+        matchLabels:
+          os: linux
+          arch: arm64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Linux_arm64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+    - selector:
+        matchLabels:
+          os: linux
+          arch: "386"
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Linux_i386.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+
+    ###########
+    # Windows #
+    ###########
+    - selector:
+        matchLabels:
+          os: windows
+          arch: amd64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Windows_x86_64.zip" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+    - selector:
+        matchLabels:
+          os: windows
+          arch: arm64
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Windows_arm64.zip" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt
+    - selector:
+        matchLabels:
+          os: windows
+          arch: "386"
+      {{addURIAndSha "https://github.com/k8sgpt-ai/k8sgpt/releases/download/{{ .TagName }}/k8sgpt_Windows_i386.zip" .TagName | indent 6 }}
+      files:
+        - from: "k8sgpt"
+          to: "kubectl-gpt"
+        - from: "LICENSE"
+          to: "."
+      bin: kubectl-gpt

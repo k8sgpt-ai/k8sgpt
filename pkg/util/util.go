@@ -21,6 +21,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -260,4 +261,37 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 		}
 	}
 	return latestEvent, nil
+}
+
+// NewHeaders parses a slice of strings in the format "key:value" into []http.Header
+// It handles headers with the same key by appending values
+func NewHeaders(customHeaders []string) []http.Header {
+	headers := make(map[string][]string)
+
+	for _, header := range customHeaders {
+		vals := strings.SplitN(header, ":", 2)
+		if len(vals) != 2 {
+			//TODO: Handle error instead of ignoring it
+			continue
+		}
+		key := strings.TrimSpace(vals[0])
+		value := strings.TrimSpace(vals[1])
+
+		if _, ok := headers[key]; !ok {
+			headers[key] = []string{}
+		}
+		headers[key] = append(headers[key], value)
+	}
+
+	// Convert map to []http.Header format
+	var result []http.Header
+	for key, values := range headers {
+		header := make(http.Header)
+		for _, value := range values {
+			header.Add(key, value)
+		}
+		result = append(result, header)
+	}
+
+	return result
 }
