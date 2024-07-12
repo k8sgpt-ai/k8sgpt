@@ -15,6 +15,7 @@ package ai
 
 import (
 	"context"
+	"net/http"
 )
 
 var (
@@ -22,6 +23,7 @@ var (
 		&OpenAIClient{},
 		&AzureAIClient{},
 		&LocalAIClient{},
+		&OllamaClient{},
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
@@ -29,10 +31,13 @@ var (
 		&GoogleGenAIClient{},
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
+		&OCIGenAIClient{},
+		&WatsonxAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
 		localAIClientName,
+		ollamaClientName,
 		azureAIClientName,
 		cohereAIClientName,
 		amazonbedrockAIClientName,
@@ -41,6 +46,8 @@ var (
 		noopAIClientName,
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
+		ociClientName,
+		watsonxAIClientName,
 	}
 )
 
@@ -72,8 +79,12 @@ type IAIConfig interface {
 	GetTemperature() float32
 	GetProviderRegion() string
 	GetTopP() float32
+	GetTopK() int32
 	GetMaxTokens() int
 	GetProviderId() string
+	GetCompartmentId() string
+	GetOrganizationId() string
+	GetCustomHeaders() []http.Header
 }
 
 func NewClient(provider string) IAI {
@@ -92,19 +103,23 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
-	Name           string  `mapstructure:"name"`
-	Model          string  `mapstructure:"model"`
-	Password       string  `mapstructure:"password" yaml:"password,omitempty"`
-	BaseURL        string  `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
-	ProxyEndpoint  string  `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
-	ProxyPort      string  `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
-	EndpointName   string  `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
-	Engine         string  `mapstructure:"engine" yaml:"engine,omitempty"`
-	Temperature    float32 `mapstructure:"temperature" yaml:"temperature,omitempty"`
-	ProviderRegion string  `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
-	ProviderId     string  `mapstructure:"providerid" yaml:"providerid,omitempty"`
-	TopP           float32 `mapstructure:"topp" yaml:"topp,omitempty"`
-	MaxTokens      int     `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+	Name           string        `mapstructure:"name"`
+	Model          string        `mapstructure:"model"`
+	Password       string        `mapstructure:"password" yaml:"password,omitempty"`
+	BaseURL        string        `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	ProxyEndpoint  string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
+	ProxyPort      string        `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
+	EndpointName   string        `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
+	Engine         string        `mapstructure:"engine" yaml:"engine,omitempty"`
+	Temperature    float32       `mapstructure:"temperature" yaml:"temperature,omitempty"`
+	ProviderRegion string        `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
+	ProviderId     string        `mapstructure:"providerid" yaml:"providerid,omitempty"`
+	CompartmentId  string        `mapstructure:"compartmentid" yaml:"compartmentid,omitempty"`
+	TopP           float32       `mapstructure:"topp" yaml:"topp,omitempty"`
+	TopK           int32         `mapstructure:"topk" yaml:"topk,omitempty"`
+	MaxTokens      int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
+	CustomHeaders  []http.Header `mapstructure:"customHeaders"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -121,6 +136,10 @@ func (p *AIProvider) GetEndpointName() string {
 
 func (p *AIProvider) GetTopP() float32 {
 	return p.TopP
+}
+
+func (p *AIProvider) GetTopK() int32 {
+	return p.TopK
 }
 
 func (p *AIProvider) GetMaxTokens() int {
@@ -150,7 +169,19 @@ func (p *AIProvider) GetProviderId() string {
 	return p.ProviderId
 }
 
-var passwordlessProviders = []string{"localai", "amazonsagemaker", "amazonbedrock", "googlevertexai"}
+func (p *AIProvider) GetCompartmentId() string {
+	return p.CompartmentId
+}
+
+func (p *AIProvider) GetOrganizationId() string {
+	return p.OrganizationId
+}
+
+func (p *AIProvider) GetCustomHeaders() []http.Header {
+	return p.CustomHeaders
+}
+
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "watsonxai"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {

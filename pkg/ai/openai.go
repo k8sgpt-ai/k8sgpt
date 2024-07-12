@@ -27,10 +27,11 @@ const openAIClientName = "openai"
 type OpenAIClient struct {
 	nopCloser
 
-	client      *openai.Client
-	model       string
-	temperature float32
-	topP        float32
+	client         *openai.Client
+	model          string
+	temperature    float32
+	topP           float32
+	organizationId string
 }
 
 const (
@@ -43,6 +44,7 @@ const (
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
+	orgId := config.GetOrganizationId()
 	proxyEndpoint := config.GetProxyEndpoint()
 
 	baseURL := config.GetBaseURL()
@@ -50,18 +52,25 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 		defaultConfig.BaseURL = baseURL
 	}
 
+	transport := &http.Transport{}
 	if proxyEndpoint != "" {
 		proxyUrl, err := url.Parse(proxyEndpoint)
 		if err != nil {
 			return err
 		}
-		transport := &http.Transport{
-			Proxy: http.ProxyURL(proxyUrl),
-		}
+		transport.Proxy = http.ProxyURL(proxyUrl)
+	}
 
-		defaultConfig.HTTPClient = &http.Client{
-			Transport: transport,
-		}
+	if orgId != "" {
+		defaultConfig.OrgID = orgId
+	}
+
+	customHeaders := config.GetCustomHeaders()
+	defaultConfig.HTTPClient = &http.Client{
+		Transport: &OpenAIHeaderTransport{
+			Origin:  transport,
+			Headers: customHeaders,
+		},
 	}
 
 	client := openai.NewClientWithConfig(defaultConfig)
@@ -99,4 +108,26 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 
 func (c *OpenAIClient) GetName() string {
 	return openAIClientName
+}
+
+// OpenAIHeaderTransport is an http.RoundTripper that adds the given headers to each request.
+type OpenAIHeaderTransport struct {
+	Origin  http.RoundTripper
+	Headers []http.Header
+}
+
+// RoundTrip implements the http.RoundTripper interface.
+func (t *OpenAIHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Clone the request to avoid modifying the original request
+	clonedReq := req.Clone(req.Context())
+	for _, header := range t.Headers {
+		for key, values := range header {
+			// Possible values per header:  RFC 2616
+			for _, value := range values {
+				clonedReq.Header.Add(key, value)
+			}
+		}
+	}
+
+	return t.Origin.RoundTrip(clonedReq)
 }
