@@ -20,6 +20,8 @@ type AmazonBedRockClient struct {
 	client      *bedrockruntime.BedrockRuntime
 	model       string
 	temperature float32
+	topP		float32
+	maxTokens	int
 }
 
 // Amazon BedRock support region list US East (N. Virginia),US West (Oregon),Asia Pacific (Singapore),Asia Pacific (Tokyo),Europe (Frankfurt)
@@ -60,7 +62,7 @@ var BEDROCK_MODELS = []string{
 	ModelAmazonTitanExpressV1,
 }
 
-const TOPP = 0.9
+//const TOPP = 0.9 moved to config
 
 // GetModelOrDefault check config model
 func GetModelOrDefault(model string) string {
@@ -111,6 +113,8 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	a.client = bedrockruntime.New(sess)
 	a.model = GetModelOrDefault(config.GetModel())
 	a.temperature = config.GetTemperature()
+	a.topP = config.GetTopP()
+	a.maxTokens = config.GetMaxTokens()
 
 	return nil
 }
@@ -124,24 +128,24 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
     case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
         request = map[string]interface{}{
             "prompt":               fmt.Sprintf("\n\nHuman: %s  \n\nAssistant:", prompt),
-            "max_tokens_to_sample": 1024,
+            "max_tokens_to_sample": a.maxTokens,
             "temperature":          a.temperature,
-            "top_p":                TOPP,
+            "top_p":                a.topP,
         }
 	case ModelA21J2UltraV1, ModelA21J2JumboInstruct:
         request = map[string]interface{}{
             "prompt":    prompt,
-            "maxTokens": 2048,
+            "maxTokens": a.maxTokens,
             "temperature": a.temperature,
-            "topP":       TOPP,
+            "topP":       a.topP,
         }
 	case ModelAmazonTitanExpressV1:
         request = map[string]interface{}{
             "inputText": fmt.Sprintf("\n\nUser: %s", prompt),
             "textGenerationConfig": map[string]interface{}{
-                "maxTokenCount": 8000,
+                "maxTokenCount": a.maxTokens,
                 "temperature":   a.temperature,
-                "topP":          TOPP,
+                "topP":          a.topP,
             },
 		}
 	default:
