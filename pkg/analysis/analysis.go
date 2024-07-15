@@ -173,6 +173,8 @@ func (a *Analysis) RunCustomAnalysis() {
 
 		result, err := canClient.Run()
 		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+		} else {
 			a.Results = append(a.Results, result)
 		}
 	}
