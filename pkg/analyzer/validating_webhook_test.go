@@ -138,3 +138,61 @@ func TestValidatingWebhookAnalyzer(t *testing.T) {
 	resultsLen := 3
 	require.Equal(t, resultsLen, len(results))
 }
+
+func TestValidatingWebhookAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&admissionregistrationv1.ValidatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-validating-webhook-config1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "validating-webhook",
+						},
+					},
+					Webhooks: []admissionregistrationv1.ValidatingWebhook{
+						{
+							// Failure: Pointing to an inactive receiver pod
+							Name: "webhook1",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "test-service1",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+				&admissionregistrationv1.ValidatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-validating-webhook-config2",
+						Namespace: "default",
+					},
+					Webhooks: []admissionregistrationv1.ValidatingWebhook{
+						{
+							// Failure: Pointing to an inactive receiver pod
+							Name: "webhook1",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "test-service1",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=validating-webhook",
+	}
+
+	vwAnalyzer := ValidatingWebhookAnalyzer{}
+	results, err := vwAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	require.Equal(t, 1, len(results))
+}

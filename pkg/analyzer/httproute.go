@@ -15,11 +15,13 @@ package analyzer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -42,7 +44,15 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := client.List(a.Context, routeList, &ctrl.ListOptions{}); err != nil {
+	labelSelectorMap := make(map[string]string)
+	for _, s := range strings.Split(a.LabelSelector, ",") {
+		parts := strings.SplitN(s, "=", 2)
+		if len(parts) == 2 {
+			labelSelectorMap[parts[0]] = parts[1]
+		}
+	}
+	labelSelector := labels.SelectorFromSet(labels.Set(labelSelectorMap))
+	if err := client.List(a.Context, routeList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}

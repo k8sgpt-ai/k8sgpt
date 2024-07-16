@@ -165,3 +165,88 @@ func TestServiceAnalyzer(t *testing.T) {
 		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }
+
+func TestServiceAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&v1.Endpoints{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Endpoint1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "service",
+						},
+					},
+					// Endpoint with non-zero subsets.
+					Subsets: []v1.EndpointSubset{
+						{
+							// These not ready end points will contribute to failures.
+							NotReadyAddresses: []v1.EndpointAddress{
+								{
+									TargetRef: &v1.ObjectReference{
+										Kind: "test-reference",
+										Name: "reference1",
+									},
+								},
+								{
+									TargetRef: &v1.ObjectReference{
+										Kind: "test-reference",
+										Name: "reference2",
+									},
+								},
+							},
+						},
+						{
+							// These not ready end points will contribute to failures.
+							NotReadyAddresses: []v1.EndpointAddress{
+								{
+									TargetRef: &v1.ObjectReference{
+										Kind: "test-reference",
+										Name: "reference3",
+									},
+								},
+							},
+						},
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Service1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "service",
+						},
+					},
+					Spec: v1.ServiceSpec{
+						Selector: map[string]string{
+							"app1": "test-app1",
+							"app2": "test-app2",
+						},
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Service2",
+						Namespace: "default",
+					},
+					Spec: v1.ServiceSpec{
+						Selector: map[string]string{
+							"app1": "test-app1",
+							"app2": "test-app2",
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=service",
+	}
+
+	sAnalyzer := ServiceAnalyzer{}
+	results, err := sAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/Endpoint1", results[0].Name)
+}
