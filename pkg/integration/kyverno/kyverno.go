@@ -100,7 +100,6 @@ func (k *Kyverno) IsActivate() bool {
 	} else {
 		return false
 	}
-	return true
 }
 
 func (k *Kyverno) AddAnalyzer(mergedMap *map[string]common.IAnalyzer) {
