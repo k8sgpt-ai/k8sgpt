@@ -29,8 +29,8 @@ require github.com/adrg/xdg v0.4.0
 
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.20.0-20240406062209-1cc152efbf5c.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.4.0-20240715142657-3785f0a44aae.2
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240715142657-3785f0a44aae.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240406062209-1cc152efbf5c.3
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240717144446-c4efcc29ff16.2
 	cloud.google.com/go/storage v1.40.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
