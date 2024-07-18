@@ -166,21 +166,36 @@ func (a *Analysis) RunCustomAnalysis() {
 		a.Errors = append(a.Errors, err.Error())
 	}
 
+	semaphore := make(chan struct{}, a.MaxConcurrency)
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	for _, cAnalyzer := range customAnalyzers {
+		wg.Add(1)
+		semaphore <- struct{}{}
+		go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
+			defer wg.Done()
+			canClient, err := custom.NewClient(cAnalyzer.Connection)
+			if err != nil {
+				mutex.Lock()
+				a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+				mutex.Unlock()
+				return
+			}
 
-		canClient, err := custom.NewClient(cAnalyzer.Connection)
-		if err != nil {
-			a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
-			continue
-		}
-
-		result, err := canClient.Run()
-		if err != nil {
-			a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
-		} else {
-			a.Results = append(a.Results, result)
-		}
+			result, err := canClient.Run()
+			if err != nil {
+				mutex.Lock()
+				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+				mutex.Unlock()
+			} else {
+				mutex.Lock()
+				a.Results = append(a.Results, result)
+				mutex.Unlock()
+			}
+			<-semaphore
+		}(cAnalyzer, &wg, semaphore)
 	}
+	wg.Wait()
 }
 
 func (a *Analysis) RunAnalysis() {
