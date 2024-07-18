@@ -28,6 +28,7 @@ var updateCmd = &cobra.Command{
 	Long:  "The command to update an AI backend provider",
 	// Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
+		_ = cmd.MarkFlagRequired("backend")
 		backend, _ := cmd.Flags().GetString("backend")
 		if strings.ToLower(backend) == "azureopenai" {
 			_ = cmd.MarkFlagRequired("engine")
