@@ -25,10 +25,13 @@ func BuildGatewayClass(name string) gtwapi.GatewayClass {
 	return GatewayClass
 }
 
-func BuildGateway(className gtwapi.ObjectName, status metav1.ConditionStatus) gtwapi.Gateway {
+func BuildGateway(className gtwapi.ObjectName, status metav1.ConditionStatus, labels map[string]string) gtwapi.Gateway {
 	Gateway := gtwapi.Gateway{}
 	Gateway.Name = "foobar"
 	Gateway.Namespace = "default"
+	if labels != nil {
+		Gateway.Labels = labels
+	}
 	Gateway.Spec.GatewayClassName = className
 	Gateway.Spec.Listeners = []gtwapi.Listener{
 		{
@@ -53,7 +56,7 @@ func TestGatewayAnalyzer(t *testing.T) {
 	AcceptedStatus := metav1.ConditionTrue
 	GatewayClass := BuildGatewayClass(string(ClassName))
 
-	Gateway := BuildGateway(ClassName, AcceptedStatus)
+	Gateway := BuildGateway(ClassName, AcceptedStatus, nil)
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
 
@@ -91,7 +94,7 @@ func TestGatewayAnalyzer(t *testing.T) {
 func TestMissingClassGatewayAnalyzer(t *testing.T) {
 	ClassName := gtwapi.ObjectName("non-existed")
 	AcceptedStatus := metav1.ConditionTrue
-	Gateway := BuildGateway(ClassName, AcceptedStatus)
+	Gateway := BuildGateway(ClassName, AcceptedStatus, nil)
 
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
@@ -130,7 +133,7 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 	AcceptedStatus := metav1.ConditionUnknown
 	GatewayClass := BuildGatewayClass(string(ClassName))
 
-	Gateway := BuildGateway(ClassName, AcceptedStatus)
+	Gateway := BuildGateway(ClassName, AcceptedStatus, nil)
 
 	// Create a Gateway Analyzer instance with the fake client
 	scheme := scheme.Scheme
@@ -177,4 +180,71 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 	if !errorFound {
 		t.Errorf("Expected message, <%v> , not found in Gateway's analysis results", want)
 	}
+}
+
+func TestGatewayAnalyzerLabelSelectorFiltering(t *testing.T) {
+	ClassName := gtwapi.ObjectName("non-existed")
+	AcceptedStatus := metav1.ConditionTrue
+
+	Gateway := BuildGateway(ClassName, AcceptedStatus, map[string]string{"app": "gateway"})
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&Gateway,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := GatewayAnalyzer{}
+	// without label selector should return 1 result
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+
+	// with label selector should return 1 result
+	config = common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=gateway",
+	}
+	analysisResults, err = analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+
+	// with wrong label selector should return 0 result
+	config = common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=wrong",
+	}
+	analysisResults, err = analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+
 }

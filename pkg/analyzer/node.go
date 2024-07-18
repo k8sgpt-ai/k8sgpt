@@ -33,7 +33,7 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +50,9 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					break
 				}
 				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
+			// k3s `EtcdIsVoter`` should not be reported as an error
+			case v1.NodeConditionType("EtcdIsVoter"):
+				break
 			default:
 				if nodeCondition.Status != v1.ConditionFalse {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)

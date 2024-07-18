@@ -44,6 +44,7 @@ type Analysis struct {
 	Results            []common.Result
 	Errors             []string
 	Namespace          string
+	LabelSelector      string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -74,6 +75,7 @@ func NewAnalysis(
 	language string,
 	filters []string,
 	namespace string,
+	labelSelector string,
 	noCache bool,
 	explain bool,
 	maxConcurrency int,
@@ -105,6 +107,7 @@ func NewAnalysis(
 		Client:         client,
 		Language:       language,
 		Namespace:      namespace,
+		LabelSelector:  labelSelector,
 		Cache:          cache,
 		Explain:        explain,
 		MaxConcurrency: maxConcurrency,
@@ -173,6 +176,8 @@ func (a *Analysis) RunCustomAnalysis() {
 
 		result, err := canClient.Run()
 		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+		} else {
 			a.Results = append(a.Results, result)
 		}
 	}
@@ -198,6 +203,7 @@ func (a *Analysis) RunAnalysis() {
 		Client:        a.Client,
 		Context:       a.Context,
 		Namespace:     a.Namespace,
+		LabelSelector: a.LabelSelector,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
