@@ -39,7 +39,9 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	if err != nil {
 		return nil, err
 	}
-	if err := client.List(a.Context, gcList, &ctrl.ListOptions{}); err != nil {
+
+	labelSelector := util.LabelStrToSelector(a.LabelSelector)
+	if err := client.List(a.Context, gcList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
