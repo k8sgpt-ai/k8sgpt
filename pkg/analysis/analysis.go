@@ -209,10 +209,10 @@ func (a *Analysis) RunAnalysis() {
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		for _, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
 			semaphore <- struct{}{}
@@ -234,11 +234,8 @@ func (a *Analysis) RunAnalysis() {
 		wg.Wait()
 		return
 	}
-	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		for _, filter := range a.Filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
@@ -264,9 +261,6 @@ func (a *Analysis) RunAnalysis() {
 		return
 	}
 
-	var wg sync.WaitGroup
-	var mutex sync.Mutex
-	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
