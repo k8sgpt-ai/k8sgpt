@@ -21,6 +21,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	keda "github.com/kedacore/keda/v2/apis/keda/v1alpha1"
+	kyverno "github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 	regv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autov1 "k8s.io/api/autoscaling/v1"
@@ -63,9 +64,11 @@ type PreAnalysis struct {
 	Gateway                  gtwapi.Gateway
 	HTTPRoute                gtwapi.HTTPRoute
 	// Integrations
-	ScaledObject             keda.ScaledObject
-	TrivyVulnerabilityReport trivy.VulnerabilityReport
-	TrivyConfigAuditReport   trivy.ConfigAuditReport
+	ScaledObject               keda.ScaledObject
+	TrivyVulnerabilityReport   trivy.VulnerabilityReport
+	TrivyConfigAuditReport     trivy.ConfigAuditReport
+	KyvernoPolicyReport        kyverno.PolicyReport
+	KyvernoClusterPolicyReport kyverno.ClusterPolicyReport
 }
 
 type Result struct {

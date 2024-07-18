@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/aws"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/kyverno"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/keda"
@@ -52,6 +53,7 @@ var integrations = map[string]IIntegration{
 	"prometheus": prometheus.NewPrometheus(),
 	"aws":        aws.NewAWS(),
 	"keda":       keda.NewKeda(),
+	"kyverno":    kyverno.NewKyverno(),
 }
 
 func NewIntegration() *Integration {
