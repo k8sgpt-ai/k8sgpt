@@ -15,12 +15,10 @@ package analyzer
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -41,14 +39,8 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	if err != nil {
 		return nil, err
 	}
-	labelSelectorMap := make(map[string]string)
-	for _, s := range strings.Split(a.LabelSelector, ",") {
-		parts := strings.SplitN(s, "=", 2)
-		if len(parts) == 2 {
-			labelSelectorMap[parts[0]] = parts[1]
-		}
-	}
-	labelSelector := labels.SelectorFromSet(labels.Set(labelSelectorMap))
+
+	labelSelector := util.LabelStrToSelector(a.LabelSelector)
 	if err := client.List(a.Context, gcList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
 		return nil, err
 	}
