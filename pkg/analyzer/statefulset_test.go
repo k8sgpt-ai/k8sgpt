@@ -190,25 +190,27 @@ func TestStatefulSetAnalyzerNamespaceFiltering(t *testing.T) {
 }
 
 func TestStatefulSetAnalyzerLabelSelectorFiltering(t *testing.T) {
+	clientSet := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example1",
+				Namespace: "default",
+				Labels: map[string]string{
+					"app":     "statefulset",
+					"part-of": "test",
+				},
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example2",
+				Namespace: "default",
+			},
+		},
+	)
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
-			Client: fake.NewSimpleClientset(
-				&appsv1.StatefulSet{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "example1",
-						Namespace: "default",
-						Labels: map[string]string{
-							"app": "statefulset",
-						},
-					},
-				},
-				&appsv1.StatefulSet{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "example2",
-						Namespace: "default",
-					},
-				},
-			),
+			Client: clientSet,
 		},
 		Context:       context.Background(),
 		Namespace:     "default",
@@ -216,6 +218,22 @@ func TestStatefulSetAnalyzerLabelSelectorFiltering(t *testing.T) {
 	}
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
 	results, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, 1, len(results))
+	assert.Equal(t, "default/example1", results[0].Name)
+
+	config = common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=statefulset,part-of=test",
+	}
+	statefulSetAnalyzer = StatefulSetAnalyzer{}
+	results, err = statefulSetAnalyzer.Analyze(config)
 	if err != nil {
 		t.Error(err)
 	}
