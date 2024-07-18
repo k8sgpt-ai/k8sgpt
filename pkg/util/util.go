@@ -26,6 +26,8 @@ import (
 	"regexp"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/labels"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -294,4 +296,18 @@ func NewHeaders(customHeaders []string) []http.Header {
 	}
 
 	return result
+}
+
+func LabelStrToSelector(labelStr string) labels.Selector {
+	if labelStr == "" {
+		return nil
+	}
+	labelSelectorMap := make(map[string]string)
+	for _, s := range strings.Split(labelStr, ",") {
+		parts := strings.SplitN(s, "=", 2)
+		if len(parts) == 2 {
+			labelSelectorMap[parts[0]] = parts[1]
+		}
+	}
+	return labels.SelectorFromSet(labels.Set(labelSelectorMap))
 }

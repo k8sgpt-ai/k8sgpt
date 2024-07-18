@@ -25,6 +25,7 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Language,
 		i.Filters,
 		i.Namespace,
+		i.LabelSelector,
 		i.Nocache,
 		i.Explain,
 		int(i.MaxConcurrency),

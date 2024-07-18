@@ -39,6 +39,7 @@ type Analyzer struct {
 	Client        *kubernetes.Client
 	Context       context.Context
 	Namespace     string
+	LabelSelector string
 	AIClient      ai.IAI
 	PreAnalysis   map[string]PreAnalysis
 	Results       []Result
