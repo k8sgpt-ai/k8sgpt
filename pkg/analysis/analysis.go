@@ -164,6 +164,7 @@ func (a *Analysis) RunCustomAnalysis() {
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
+		return
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
