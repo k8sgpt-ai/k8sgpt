@@ -48,6 +48,16 @@ const (
 	  - Containers:
 	    - {list of container names}
 	`
+
+	kyverno_prompt = `Simplify the following Kyverno warnings message delimited by triple dashes written in --- %s --- language; --- %s ---.
+	Provide the most probable solution as a kubectl command. 
+
+	Write the output in the following format, for the solution, only show the kubectl command:
+	
+	Error: {Explain error here}
+
+	Solution: {kubectl command}
+	`
 )
 
 var PromptMap = map[string]string{
@@ -56,4 +66,6 @@ var PromptMap = map[string]string{
 	"ConfigAuditReport":             trivy_conf_prompt,
 	"PrometheusConfigValidate":      prom_conf_prompt,
 	"PrometheusConfigRelabelReport": prom_relabel_prompt,
+	"PolicyReport":                  kyverno_prompt,
+	"ClusterPolicyReport":           kyverno_prompt,
 }

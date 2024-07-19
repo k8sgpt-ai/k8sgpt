@@ -118,3 +118,56 @@ func TestLogAnalyzer(t *testing.T) {
 		}
 	}
 }
+
+func TestLogAnalyzerLabelSelectorFiltering(t *testing.T) {
+	oldPattern := errorPattern
+	errorPattern = regexp.MustCompile(`(fake logs)`)
+	t.Cleanup(func() {
+		errorPattern = oldPattern
+	})
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Pod1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "log",
+						},
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name: "test-container1",
+							},
+						},
+					},
+				},
+				&v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Pod2",
+						Namespace: "default",
+					},
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{
+							{
+								Name: "test-container2",
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=log",
+	}
+
+	logAnalyzer := LogAnalyzer{}
+	results, err := logAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/Pod1/test-container1", results[0].Name)
+}

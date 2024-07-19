@@ -25,11 +25,13 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Language,
 		i.Filters,
 		i.Namespace,
+		i.LabelSelector,
 		i.Nocache,
 		i.Explain,
 		int(i.MaxConcurrency),
-		false, // Kubernetes Doc disabled in server mode
-		false, // Interactive mode disabled in server mode
+		false,      // Kubernetes Doc disabled in server mode
+		false,      // Interactive mode disabled in server mode
+		[]string{}, //TODO: add custom http headers in server mode
 	)
 	config.Context = ctx // Replace context for correct timeouts.
 	if err != nil {

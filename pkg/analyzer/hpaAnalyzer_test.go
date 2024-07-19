@@ -532,6 +532,7 @@ func TestHPAAnalyzerNamespaceFiltering(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 }
 
+<<<<<<< HEAD
 func TestHPAAnalyzerStatusFieldAbleToScale(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{
@@ -639,19 +640,46 @@ func TestHPAAnalyzerStatusFieldScalingLimited(t *testing.T) {
 				},
 			},
 		})
+=======
+func TestHPAAnalyzerLabelSelectorFiltering(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+				Labels: map[string]string{
+					"app": "hpa",
+				},
+			},
+		},
+		&autoscalingv1.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example2",
+				Namespace: "default",
+			},
+		},
+	)
+>>>>>>> upstream/main
 	hpaAnalyzer := HpaAnalyzer{}
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
 			Client: clientset,
 		},
+<<<<<<< HEAD
 		Context:   context.Background(),
 		Namespace: "default",
+=======
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=hpa",
+>>>>>>> upstream/main
 	}
 	analysisResults, err := hpaAnalyzer.Analyze(config)
 	if err != nil {
 		t.Error(err)
 	}
 	assert.Equal(t, len(analysisResults), 1)
+<<<<<<< HEAD
 
 }
 
@@ -705,3 +733,6 @@ func TestHPAAnalyzerStatusField(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 0)
 
 }
+=======
+}
+>>>>>>> upstream/main
