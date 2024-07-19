@@ -534,7 +534,7 @@ func TestHPAAnalyzerNamespaceFiltering(t *testing.T) {
 
 func TestHPAAnalyzerLabelSelectorFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
-		&autoscalingv1.HorizontalPodAutoscaler{
+		&autoscalingv2.HorizontalPodAutoscaler{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
 				Namespace: "default",
@@ -543,7 +543,7 @@ func TestHPAAnalyzerLabelSelectorFiltering(t *testing.T) {
 				},
 			},
 		},
-		&autoscalingv1.HorizontalPodAutoscaler{
+		&autoscalingv2.HorizontalPodAutoscaler{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example2",
 				Namespace: "default",
