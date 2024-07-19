@@ -547,7 +547,7 @@ func TestHPAAnalyzerStatusFieldAbleToScale(t *testing.T) {
 				},
 			},
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
-				Conditions: []metav1.Condition{
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
 						Type:   "AbleToScale",
 						Status: "False",
@@ -588,10 +588,10 @@ func TestHPAAnalyzerStatusFieldScalingActive(t *testing.T) {
 				},
 			},
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
-				Conditions: []metav1.Condition{
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   "ScalingActive",
-						Status: "False"
+						Type:   autoscalingv2.ScalingActive,
+						Status: "False",
 						Message: "test reason",
 					},
 				},
@@ -630,10 +630,10 @@ func TestHPAAnalyzerStatusFieldScalingLimited(t *testing.T) {
 				},
 			},
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
-				Conditions: []metav1.Condition{
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   "ScalingLimited",
-						Status: "False"
+						Type:   autoscalingv2.ScalingLimited,
+						Status: "False",
 						Message: "test reason",
 					},
 				},
@@ -671,21 +671,20 @@ func TestHPAAnalyzerStatusField(t *testing.T) {
 				},
 			},
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
-				Conditions: []metav1.Condition{
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   "AbleToScale",
-						Status: "True"
+						Type:   autoscalingv2.AbleToScale,
+						Status: "True",
 						Message: "recommended size matches current size",
 					},
 					{
-						Type:   "ScalingActive",
-						Status: "True"
-						Message: "the HPA was able to successfully calculate a replica count from cpu resource
-						utilization",
+						Type:   autoscalingv2.ScalingActive,
+						Status: "True",
+						Message: "the HPA was able to successfully calculate a replica count",
 					},
 					{
-						Type:   "ScalingLimited",
-						Status: "True"
+						Type:   autoscalingv2.ScalingLimited,
+						Status: "True",
 						Message: "the desired replica count is less than the minimum replica count",
 					},
 				},
