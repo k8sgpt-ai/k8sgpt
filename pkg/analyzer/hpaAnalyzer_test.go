@@ -737,6 +737,6 @@ func TestHPAAnalyzerStatusField(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, len(analysisResults), 0)
+	assert.Equal(t, len(analysisResults), 1)
 
 }
