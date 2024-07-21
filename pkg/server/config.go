@@ -69,6 +69,11 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 					})
 				}
 			}
+			// save the config
+			viper.Set("custom_analyzers", customAnalyzers)
+			if err := viper.WriteConfig(); err != nil {
+				return resp, err
+			}
 		}
 	}
 	if i.Cache != nil {
