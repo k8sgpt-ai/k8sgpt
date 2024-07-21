@@ -9,8 +9,9 @@ import (
 )
 
 type CustomAnalyzerConfiguration struct {
-	Name       string     `mapstructure:"name"`
-	Connection Connection `mapstructure:"connection"`
+	Name        string     `mapstructure:"name"`
+	Connection  Connection `mapstructure:"connection"`
+	InstallType string     `mapstructure:"installtype,omitempty"`
 }
 
 type Connection struct {
@@ -55,4 +56,22 @@ func (*CustomAnalyzer) Check(actualConfig []CustomAnalyzerConfiguration, name, u
 	}
 
 	return nil
+}
+
+func (ca *CustomAnalyzer) UnDeploy(analyzer CustomAnalyzerConfiguration) error {
+	if analyzer.InstallType != "" {
+		// Try to undeploy if install-type is set
+		install, err := ca.GetInstallType(analyzer.InstallType)
+		if err != nil {
+			return err
+		}
+
+		err = install.UnDeploy(analyzer.Name)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }

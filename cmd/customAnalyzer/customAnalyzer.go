@@ -35,5 +35,7 @@ var CustomAnalyzerCmd = &cobra.Command{
 
 func init() {
 	// add subcommand to add custom analyzer
-	CustomAnalyzerCmd.AddCommand(AddCmd)
+	CustomAnalyzerCmd.AddCommand(addCmd)
+	// remove subcomment to remove custom analyzer
+	CustomAnalyzerCmd.AddCommand(removeCmd)
 }

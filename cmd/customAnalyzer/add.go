@@ -32,7 +32,7 @@ var (
 	port        int
 )
 
-var AddCmd = &cobra.Command{
+var addCmd = &cobra.Command{
 	Use:     "add",
 	Aliases: []string{"add"},
 	Short:   "This command will add a custom analyzer from source",
@@ -80,6 +80,7 @@ var AddCmd = &cobra.Command{
 				Url:  url,
 				Port: port,
 			},
+			InstallType: installType,
 		})
 
 		viper.Set("custom_analyzers", configCustomAnalyzer)
@@ -93,10 +94,10 @@ var AddCmd = &cobra.Command{
 }
 
 func init() {
-	AddCmd.Flags().StringVarP(&installType, "install-type", "t", "docker", "Specify the installation type (e.g., docker, kubernetes).")
-	AddCmd.Flags().BoolVarP(&install, "install", "i", false, "Flag to indicate whether to install the custom analyzer after adding.")
-	AddCmd.Flags().StringVarP(&packageUrl, "package", "p", "", "URL of the custom analyzer package.")
-	AddCmd.Flags().StringVarP(&name, "name", "n", "my-custom-analyzer", "Name of the custom analyzer.")
-	AddCmd.Flags().StringVarP(&url, "url", "u", "localhost", "URL for the custom analyzer connection.")
-	AddCmd.Flags().IntVarP(&port, "port", "r", 8085, "Port for the custom analyzer connection.")
+	addCmd.Flags().StringVarP(&installType, "install-type", "t", "docker", "Specify the installation type (e.g., docker, kubernetes).")
+	addCmd.Flags().BoolVarP(&install, "install", "i", false, "Flag to indicate whether to install the custom analyzer after adding.")
+	addCmd.Flags().StringVarP(&packageUrl, "package", "p", "", "URL of the custom analyzer package.")
+	addCmd.Flags().StringVarP(&name, "name", "n", "my-custom-analyzer", "Name of the custom analyzer.")
+	addCmd.Flags().StringVarP(&url, "url", "u", "localhost", "URL for the custom analyzer connection.")
+	addCmd.Flags().IntVarP(&port, "port", "r", 8085, "Port for the custom analyzer connection.")
 }
