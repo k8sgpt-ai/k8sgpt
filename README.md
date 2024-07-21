@@ -504,6 +504,26 @@ This now gives the ability to pass through hostOS information ( from this analyz
 
 _See the docs on how to write a custom analyzer_
 
+_Listing custom analyzers configured_
+```
+k8sgpt custom-analyzer list
+```
+
+_Adding custom analyzer without install_
+```
+k8sgpt custom-analyzer add --name my-custom-analyzer --port 8085
+```
+
+_Adding custom analyzer from docker image_
+```
+k8sgpt custom-analyzer add --install --install-type docker --name my-custom-analyzer --package $MY_DOCKER_IMAGE --port 8085
+```
+
+_Removing custom analyzer_
+```
+k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
+```
+
 </details>
 
 ## Documentation
