@@ -38,4 +38,6 @@ func init() {
 	CustomAnalyzerCmd.AddCommand(addCmd)
 	// remove subcomment to remove custom analyzer
 	CustomAnalyzerCmd.AddCommand(removeCmd)
+	// list subcomment to list custom analyzer
+	CustomAnalyzerCmd.AddCommand(listCmd)
 }
