@@ -24,7 +24,7 @@ import (
 	kyverno "github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 	regv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
-	autov1 "k8s.io/api/autoscaling/v1"
+	autov2 "k8s.io/api/autoscaling/v2"
 	v1 "k8s.io/api/core/v1"
 	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
@@ -54,7 +54,7 @@ type PreAnalysis struct {
 	PersistentVolumeClaim    v1.PersistentVolumeClaim
 	Endpoint                 v1.Endpoints
 	Ingress                  networkv1.Ingress
-	HorizontalPodAutoscalers autov1.HorizontalPodAutoscaler
+	HorizontalPodAutoscalers autov2.HorizontalPodAutoscaler
 	PodDisruptionBudget      policyv1.PodDisruptionBudget
 	StatefulSet              appsv1.StatefulSet
 	NetworkPolicy            networkv1.NetworkPolicy
