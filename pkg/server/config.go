@@ -30,25 +30,9 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 	if i.CustomAnalyzers != nil {
 		// We need to add the custom analyzers to the viper config and save them
-		var customAnalyzers []custom.CustomAnalyzer
+		var customAnalyzers = make([]custom.CustomAnalyzer, 0)
 		if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
-			// If there is an error unmarshalling the custom analyzers, we will create a new slice
-			customAnalyzers = make([]custom.CustomAnalyzer, 0)
-			// populate the slice from the request
-			for _, ca := range i.CustomAnalyzers {
-				customAnalyzers = append(customAnalyzers, custom.CustomAnalyzer{
-					Name: ca.Name,
-					Connection: custom.Connection{
-						Url:  ca.Connection.Url,
-						Port: ca.Connection.Port,
-					},
-				})
-			}
-			// save the config
-			viper.Set("custom_analyzers", customAnalyzers)
-			if err := viper.WriteConfig(); err != nil {
-				return resp, err
-			}
+			return resp, err
 		} else {
 			// If there are analyzers are already in the config we will append the ones with new names
 			for _, ca := range i.CustomAnalyzers {

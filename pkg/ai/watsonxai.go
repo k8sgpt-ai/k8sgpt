@@ -1,10 +1,10 @@
 package ai
 
 import (
-	"os"
-	"fmt"
 	"context"
 	"errors"
+	"fmt"
+	"os"
 
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
@@ -14,12 +14,12 @@ const watsonxAIClientName = "watsonxai"
 type WatsonxAIClient struct {
 	nopCloser
 
-	client         *wx.Client
-	model          string
-	temperature    float32
-	topP           float32
-	topK           int32
-	maxNewTokens   int
+	client       *wx.Client
+	model        string
+	temperature  float32
+	topP         float32
+	topK         int32
+	maxNewTokens int
 }
 
 const (
@@ -27,7 +27,7 @@ const (
 )
 
 func (c *WatsonxAIClient) Configure(config IAIConfig) error {
-	if(config.GetModel() == "") {
+	if config.GetModel() == "" {
 		c.model = config.GetModel()
 	} else {
 		c.model = modelMetallama
