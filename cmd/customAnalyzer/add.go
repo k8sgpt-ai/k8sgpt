@@ -29,6 +29,8 @@ var (
 	packageUrl  string
 	name        string
 	url         string
+	username    string
+	password    string
 	port        int
 )
 
@@ -67,7 +69,7 @@ var addCmd = &cobra.Command{
 			}
 
 			// create a pod in-cluster with custom analyzer
-			err = install.Deploy(packageUrl, name, url, port)
+			err = install.Deploy(packageUrl, name, url, username, password, port)
 			if err != nil {
 				color.Red("Error installing custom analyzer: %s", err.Error())
 				os.Exit(1)
@@ -97,6 +99,8 @@ func init() {
 	addCmd.Flags().StringVarP(&installType, "install-type", "t", "docker", "Specify the installation type (e.g., docker, kubernetes).")
 	addCmd.Flags().BoolVarP(&install, "install", "i", false, "Flag to indicate whether to install the custom analyzer after adding.")
 	addCmd.Flags().StringVarP(&packageUrl, "package", "p", "", "URL of the custom analyzer package.")
+	addCmd.Flags().StringVarP(&username, "username", "s", "", "Username used for pulling package.")
+	addCmd.Flags().StringVarP(&password, "password", "w", "", "Password used for pulling package.")
 	addCmd.Flags().StringVarP(&name, "name", "n", "my-custom-analyzer", "Name of the custom analyzer.")
 	addCmd.Flags().StringVarP(&url, "url", "u", "localhost", "URL for the custom analyzer connection.")
 	addCmd.Flags().IntVarP(&port, "port", "r", 8085, "Port for the custom analyzer connection.")

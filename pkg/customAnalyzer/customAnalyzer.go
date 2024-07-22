@@ -20,7 +20,7 @@ type Connection struct {
 }
 
 type ICustomAnalyzer interface {
-	Deploy(packageUrl, name, url string, port int) error
+	Deploy(packageUrl, name, url, username, password string, port int) error
 	UnDeploy(name string) error
 }
 

@@ -2,11 +2,15 @@ package docker
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 )
@@ -28,7 +32,31 @@ func NewDocker() *Docker {
 	}
 }
 
-func (d *Docker) Deploy(packageUrl, name, url string, port int) error {
+func (d *Docker) pullImage(imageRef, username, password string) error {
+	authConfig := registry.AuthConfig{
+		Username: username,
+		Password: password,
+	}
+	encodedJSON, err := json.Marshal(authConfig)
+	if err != nil {
+		panic(err)
+	}
+	authStr := base64.URLEncoding.EncodeToString(encodedJSON)
+
+	_, _, err = d.client.ImageInspectWithRaw(d.ctx, imageRef)
+	if err != nil {
+		out, err := d.client.ImagePull(d.ctx, imageRef, image.PullOptions{RegistryAuth: authStr})
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+	}
+
+	return nil
+
+}
+
+func (d *Docker) Deploy(packageUrl, name, url, username, password string, port int) error {
 	portStr := strconv.Itoa(port)
 	containerPort := fmt.Sprintf("%s/tcp", portStr)
 
@@ -48,6 +76,11 @@ func (d *Docker) Deploy(packageUrl, name, url string, port int) error {
 				},
 			},
 		},
+	}
+
+	err := d.pullImage(packageUrl, username, password)
+	if err != nil {
+		return err
 	}
 
 	resp, err := d.client.ContainerCreate(d.ctx, config, hostConfig, nil, nil, name)
