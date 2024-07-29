@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server-service/schemav1gateway"
-	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
+	gw "buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc-ecosystem/gateway/v2/schema/v1/schemav1gateway"
+	rpc "buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc/go/schema/v1/schemav1grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"

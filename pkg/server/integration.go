@@ -1,9 +1,10 @@
 package server
 
 import (
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"context"
 	"fmt"
+
+	schemav1 "buf.build/gen/go/ronaldpetty/ronk8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"github.com/spf13/viper"
@@ -12,7 +13,8 @@ import (
 )
 
 const (
-	trivyName = "trivy"
+	trivyName   = "trivy"
+	kyvernoName = "kyverno"
 )
 
 // syncIntegration is aware of the following events
@@ -111,11 +113,36 @@ func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrat
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "trivy integration")
 	}
+
+	// TODO: RP kyverno for operator
+	kyverno, err := integrationProvider.Get(kyvernoName)
+	kyvernoActive := kyverno.IsActivate()
+
+	var kyvernoNamespace string = ""
+	if kyvernoActive {
+		kyvernoNamespace, err = kyverno.GetNamespace()
+		if err != nil {
+			return nil, status.Error(codes.NotFound, "namespace not found")
+		}
+		if kyvernoNamespace == "" {
+			skipInstall = true
+		}
+	}
+
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "kyverno integration")
+	}
+
 	resp := &schemav1.ListIntegrationsResponse{
 		Trivy: &schemav1.Trivy{
 			Enabled:     active,
 			Namespace:   namespace,
 			SkipInstall: skipInstall,
+		},
+		Kyverno: &schemav1.Kyverno{
+			Enabled:     kyvernoActive,
+			Namespace:   kyvernoNamespace,
+			SkipInstall: true,
 		},
 	}
 
