@@ -295,9 +295,10 @@ func (a *Analysis) RunAnalysis() {
 				mutex.Unlock()
 				<-semaphore
 			}(analyzer, filter)
+			wg.Wait()
 		}
 	}
-	wg.Wait()
+
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
