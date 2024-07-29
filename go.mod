@@ -25,17 +25,16 @@ require (
 
 )
 
-require github.com/adrg/xdg v0.4.0
-
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.20.0-20240406062209-1cc152efbf5c.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240406062209-1cc152efbf5c.3
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240717144446-c4efcc29ff16.2
+	buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc-ecosystem/gateway/v2 v2.20.0-20240727213336-017f305e80df.3
+	buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc/go v1.4.0-20240727213336-017f305e80df.2
+	buf.build/gen/go/ronaldpetty/ronk8sgpt/protocolbuffers/go v1.34.2-20240727213336-017f305e80df.2
 	cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
 	github.com/IBM/watsonx-go v1.0.1
+	github.com/adrg/xdg v0.5.0
 	github.com/aws/aws-sdk-go v1.53.21
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
 	github.com/google/generative-ai-go v0.11.0
@@ -113,6 +112,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240624140628-dc46fd24d27d // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gotest.tools/v3 v3.5.1 // indirect
 	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
 )
 
@@ -235,7 +235,7 @@ require (
 	golang.org/x/net v0.26.0
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
