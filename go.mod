@@ -12,11 +12,11 @@ require (
 	github.com/mittwald/go-helm-client v0.12.10
 	github.com/ollama/ollama v0.1.48
 	github.com/sashabaranov/go-openai v1.23.0
-	github.com/schollz/progressbar/v3 v3.14.2
+	github.com/schollz/progressbar/v3 v3.14.5
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/term v0.21.0
+	golang.org/x/term v0.22.0
 	helm.sh/helm/v3 v3.15.2
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
