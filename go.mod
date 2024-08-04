@@ -29,8 +29,8 @@ require github.com/adrg/xdg v0.4.0
 
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.20.0-20240406062209-1cc152efbf5c.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240406062209-1cc152efbf5c.3
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240717144446-c4efcc29ff16.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.4.0-20240720172138-1b9bcd834f17.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240720172138-1b9bcd834f17.2
 	cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
@@ -261,3 +261,4 @@ require (
 // v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
 // v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
 //replace oras.land/oras-go => oras.land/oras-go v1.2.4
+replace github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
