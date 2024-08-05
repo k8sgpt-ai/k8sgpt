@@ -17,7 +17,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	customanalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/customAnalyzer"
+	customAnalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/custom_analyzer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,18 +39,18 @@ var addCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		customAnalyzer := customanalyzer.NewCustomAnalyzer()
+		analyzer := customAnalyzer.NewCustomAnalyzer()
 
 		// Check if configuration is valid
-		err = customAnalyzer.Check(configCustomAnalyzer, name, url, port)
+		err = analyzer.Check(configCustomAnalyzer, name, url, port)
 		if err != nil {
 			color.Red("Error adding custom analyzer: %s", err.Error())
 			os.Exit(1)
 		}
 
-		configCustomAnalyzer = append(configCustomAnalyzer, customanalyzer.CustomAnalyzerConfiguration{
+		configCustomAnalyzer = append(configCustomAnalyzer, customAnalyzer.CustomAnalyzerConfiguration{
 			Name: name,
-			Connection: customanalyzer.Connection{
+			Connection: customAnalyzer.Connection{
 				Url:  url,
 				Port: port,
 			},

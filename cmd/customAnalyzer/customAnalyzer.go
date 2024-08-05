@@ -14,11 +14,11 @@ limitations under the License.
 package customanalyzer
 
 import (
-	customanalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/customAnalyzer"
+	customAnalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/custom_analyzer"
 	"github.com/spf13/cobra"
 )
 
-var configCustomAnalyzer []customanalyzer.CustomAnalyzerConfiguration
+var configCustomAnalyzer []customAnalyzer.CustomAnalyzerConfiguration
 
 // authCmd represents the auth command
 var CustomAnalyzerCmd = &cobra.Command{

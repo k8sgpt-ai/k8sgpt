@@ -18,7 +18,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	customanalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/customAnalyzer"
+	customAnalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/custom_analyzer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -53,7 +53,7 @@ func init() {
 	listCmd.Flags().BoolVar(&details, "details", false, "Print custom analyzers configuration details")
 }
 
-func printDetails(analyzer customanalyzer.CustomAnalyzerConfiguration) {
+func printDetails(analyzer customAnalyzer.CustomAnalyzerConfiguration) {
 	fmt.Printf("   - Url: %s\n", analyzer.Connection.Url)
 	fmt.Printf("   - Port: %d\n", analyzer.Connection.Port)
 

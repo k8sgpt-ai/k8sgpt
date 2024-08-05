@@ -1,4 +1,4 @@
-package customanalyzer
+package custom_analyzer
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func (*CustomAnalyzer) Check(actualConfig []CustomAnalyzerConfiguration, name, u
 	if !validName.MatchString(name) {
 		return fmt.Errorf("invalid name format. Must match %s", validNameRegex)
 	}
-	
+
 	for _, analyzer := range actualConfig {
 		if analyzer.Name == name {
 			return fmt.Errorf("custom analyzer with the name '%s' already exists. Please use a different name", name)
