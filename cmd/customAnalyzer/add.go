@@ -32,7 +32,7 @@ var addCmd = &cobra.Command{
 	Use:     "add",
 	Aliases: []string{"add"},
 	Short:   "This command will add a custom analyzer from source",
-	Long:    "This command allows you to add a custom analyzer from a specified source and optionally install it.",
+	Long:    "This command allows you to add/remote/list an existing custom analyzer.",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := viper.UnmarshalKey("custom_analyzers", &configCustomAnalyzer)
 		if err != nil {
