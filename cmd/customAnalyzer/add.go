@@ -23,10 +23,9 @@ import (
 )
 
 var (
-	packageUrl string
-	name       string
-	url        string
-	port       int
+	name string
+	url  string
+	port int
 )
 
 var addCmd = &cobra.Command{
