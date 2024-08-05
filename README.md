@@ -514,11 +514,6 @@ _Adding custom analyzer without install_
 k8sgpt custom-analyzer add --name my-custom-analyzer --port 8085
 ```
 
-_Adding custom analyzer from docker image with auth_
-```
-k8sgpt custom-analyzer add --install --install-type docker --name my-custom-analyzer --package $MY_PRIVATE_DOCKER_IMAGE --port 8085 --username $MY_USERNAME --pasword $MY_PASSWORD
-```
-
 _Removing custom analyzer_
 ```
 k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"

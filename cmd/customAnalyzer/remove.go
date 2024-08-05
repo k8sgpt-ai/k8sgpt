@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	customanalyzer "github.com/k8sgpt-ai/k8sgpt/pkg/customAnalyzer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -60,14 +59,6 @@ var removeCmd = &cobra.Command{
 			for i, analyzer := range configCustomAnalyzer {
 				if analyzer.Name == inputAnalyzer {
 					foundAnalyzer = true
-
-					// Attempt to undeploy the analyzer if install-type is set
-					customAnalyzer := customanalyzer.NewCustomAnalyzer()
-					err := customAnalyzer.UnDeploy(analyzer)
-					if err != nil {
-						// Warn if undeployment fails, but continue to remove the entry
-						color.Yellow("Warning: Unable to undeploy custom analyzer. Proceeding with orphan mode.")
-					}
 
 					// Remove the analyzer from the configuration list
 					configCustomAnalyzer = append(configCustomAnalyzer[:i], configCustomAnalyzer[i+1:]...)

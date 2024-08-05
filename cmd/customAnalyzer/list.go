@@ -54,9 +54,6 @@ func init() {
 }
 
 func printDetails(analyzer customanalyzer.CustomAnalyzerConfiguration) {
-	if analyzer.InstallType != "" {
-		fmt.Printf("   - InstallType: %s\n", analyzer.InstallType)
-	}
 	fmt.Printf("   - Url: %s\n", analyzer.Connection.Url)
 	fmt.Printf("   - Port: %d\n", analyzer.Connection.Port)
 
