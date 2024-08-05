@@ -12,11 +12,11 @@ require (
 	github.com/mittwald/go-helm-client v0.12.10
 	github.com/ollama/ollama v0.1.48
 	github.com/sashabaranov/go-openai v1.23.0
-	github.com/schollz/progressbar/v3 v3.14.2
+	github.com/schollz/progressbar/v3 v3.14.5
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/term v0.21.0
+	golang.org/x/term v0.22.0
 	helm.sh/helm/v3 v3.15.2
 	k8s.io/api v0.30.2
 	k8s.io/apimachinery v0.30.2
@@ -29,8 +29,8 @@ require github.com/adrg/xdg v0.4.0
 
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.20.0-20240406062209-1cc152efbf5c.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.3.0-20240406062209-1cc152efbf5c.3
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240717144446-c4efcc29ff16.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.4.0-20240720172138-1b9bcd834f17.2
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240720172138-1b9bcd834f17.2
 	cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
@@ -238,7 +238,7 @@ require (
 	golang.org/x/net v0.26.0
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
@@ -264,3 +264,4 @@ require (
 // v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
 // v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
 //replace oras.land/oras-go => oras.land/oras-go v1.2.4
+replace github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
