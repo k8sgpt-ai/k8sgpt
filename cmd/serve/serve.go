@@ -149,7 +149,7 @@ var ServeCmd = &cobra.Command{
 			}
 		}
 
-		if aiProvider.Name == "" {
+		if aiProvider == nil || aiProvider.Name == "" {
 			color.Red("Error: AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
 			os.Exit(1)
 		}
