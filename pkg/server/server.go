@@ -17,15 +17,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/analyze"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
-	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server-service/schemav1gateway"
+	gw2 "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_analyzer_service/schemav1gateway"
+	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_config_service/schemav1gateway"
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
@@ -37,17 +40,18 @@ import (
 )
 
 type Config struct {
-	Port          string
-	MetricsPort   string
-	Backend       string
-	Key           string
-	Token         string
-	Output        string
-	Handler       *handler
-	Logger        *zap.Logger
-	metricsServer *http.Server
-	listener      net.Listener
-	EnableHttp    bool
+	Port           string
+	MetricsPort    string
+	Backend        string
+	Key            string
+	Token          string
+	Output         string
+	ConfigHandler  *config.Handler
+	AnalyzeHandler *analyze.Handler
+	Logger         *zap.Logger
+	metricsServer  *http.Server
+	listener       net.Listener
+	EnableHttp     bool
 }
 
 type Health struct {
@@ -88,17 +92,26 @@ func (s *Config) Serve() error {
 		return err
 	}
 
+	s.ConfigHandler = &config.Handler{}
+	s.AnalyzeHandler = &analyze.Handler{}
 	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
-	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(logInterceptor(s.Logger))
+	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(LogInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)
 	reflection.Register(grpcServer)
-	rpc.RegisterServerServiceServer(grpcServer, s.Handler)
+	rpc.RegisterServerConfigServiceServer(grpcServer, s.ConfigHandler)
+	rpc.RegisterServerAnalyzerServiceServer(grpcServer, s.AnalyzeHandler)
 
 	if s.EnableHttp {
 		s.Logger.Info("enabling rest/http api")
 		gwmux := runtime.NewServeMux()
-		err = gw.RegisterServerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port), []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		err = gw.RegisterServerConfigServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port),
+			[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		if err != nil {
+			log.Fatalln("Failed to register gateway:", err)
+		}
+		err = gw2.RegisterServerAnalyzerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port),
+			[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 		if err != nil {
 			log.Fatalln("Failed to register gateway:", err)
 		}
