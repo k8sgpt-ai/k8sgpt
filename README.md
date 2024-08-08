@@ -27,7 +27,6 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 
 # CLI Installation
 
-
 ### Linux/Mac via brew
 
 ```sh
@@ -44,41 +43,52 @@ brew install k8sgpt
 <details>
   <summary>RPM-based installation (RedHat/CentOS/Fedora)</summary>
 
-  **32 bit:**
+**32 bit:**
+
   <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
-  sudo rpm -ivh k8sgpt_386.rpm
-  ```
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
+sudo rpm -ivh k8sgpt_386.rpm
+```
+
   <!---x-release-please-end-->
 
-  **64 bit:**
+**64 bit:**
 
   <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
-  sudo rpm -ivh -i k8sgpt_amd64.rpm
-  ```
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
+sudo rpm -ivh -i k8sgpt_amd64.rpm
+```
+
   <!---x-release-please-end-->
 </details>
 
 <details>
   <summary>DEB-based installation (Ubuntu/Debian)</summary>
 
-  **32 bit:**
-  <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.deb
-  sudo dpkg -i k8sgpt_386.deb
-  ```
-  <!---x-release-please-end-->
-  **64 bit:**
+**32 bit:**
 
   <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.deb
-  sudo dpkg -i k8sgpt_amd64.deb
-  ```
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.deb
+sudo dpkg -i k8sgpt_386.deb
+```
+
+  <!---x-release-please-end-->
+
+**64 bit:**
+
+  <!---x-release-please-start-version-->
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.deb
+sudo dpkg -i k8sgpt_amd64.deb
+```
+
   <!---x-release-please-end-->
 </details>
 
@@ -86,19 +96,26 @@ brew install k8sgpt
 
   <summary>APK-based installation (Alpine)</summary>
 
-  **32 bit:**
+**32 bit:**
+
   <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
-  apk add k8sgpt_386.apk
-  ```
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
+apk add k8sgpt_386.apk
+```
+
   <!---x-release-please-end-->
-  **64 bit:**
+
+**64 bit:**
+
   <!---x-release-please-start-version-->
-  ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
-  apk add k8sgpt_amd64.apk
-  ```
+
+```
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
+apk add k8sgpt_amd64.apk
+```
+
   <!---x-release-please-end-->x
 </details>
 
@@ -106,24 +123,25 @@ brew install k8sgpt
   <summary>Failing Installation on WSL or Linux (missing gcc)</summary>
   When installing Homebrew on WSL or Linux, you may encounter the following error:
 
-  ```
-  ==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from a bottle and must be
-  built from the source. k8sgpt Install Clang or run brew install gcc.
-  ```
+```
+==> Installing k8sgpt from k8sgpt-ai/k8sgpt Error: The following formula cannot be installed from a bottle and must be
+built from the source. k8sgpt Install Clang or run brew install gcc.
+```
 
 If you install gcc as suggested, the problem will persist. Therefore, you need to install the build-essential package.
-  ```
-     sudo apt-get update
-     sudo apt-get install build-essential
-  ```
-</details>
 
+```
+   sudo apt-get update
+   sudo apt-get install build-essential
+```
+
+</details>
 
 ### Windows
 
-* Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
+- Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
   tab based on your system architecture.
-* Extract the downloaded package to your desired location. Configure the system *path* variable with the binary location
+- Extract the downloaded package to your desired location. Configure the system _path_ variable with the binary location
 
 ## Operator Installation
 
@@ -131,17 +149,16 @@ To install within a Kubernetes cluster please use our `k8sgpt-operator` with ins
 
 _This mode of operation is ideal for continuous monitoring of your cluster and can integrate with your existing monitoring such as Prometheus and Alertmanager._
 
-
 ## Quick Start
 
-* Currently, the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
-  * You can do this by running `k8sgpt generate` to open a browser link to generate it
-* Run `k8sgpt auth add` to set it in k8sgpt.
-  * You can provide the password directly using the `--password` flag.
-* Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
-* Run `k8sgpt analyze` to run a scan.
-* And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
-* You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
+- Currently, the default AI provider is OpenAI, you will need to generate an API key from [OpenAI](https://openai.com)
+  - You can do this by running `k8sgpt generate` to open a browser link to generate it
+- Run `k8sgpt auth add` to set it in k8sgpt.
+  - You can provide the password directly using the `--password` flag.
+- Run `k8sgpt filters` to manage the active filters used by the analyzer. By default, all filters are executed during analysis.
+- Run `k8sgpt analyze` to run a scan.
+- And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
+- You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
 
 ## Analyzers
 
@@ -193,6 +210,7 @@ k8sgpt analyze --explain --filter=Service
 ```
 
 _Filter by namespace_
+
 ```
 k8sgpt analyze --explain --filter=Pod --namespace=default
 ```
@@ -297,7 +315,10 @@ k8sgpt serve
 _Analysis with serve mode_
 
 ```
-grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain": false}' localhost:8080 schema.v1.ServerService/Analyze
+grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:8080 schema.v1.ServerAnalyzerService/Analyze
+{
+  "status": "OK"
+}
 ```
 
 _Analysis with custom headers_
@@ -305,6 +326,7 @@ _Analysis with custom headers_
 ```
 k8sgpt analyze --explain --custom-headers CustomHeaderKey:CustomHeaderValue
 ```
+
 </details>
 
 ## LLM AI Backends
@@ -350,21 +372,25 @@ With this option, the data is anonymized before being sent to the AI Backend. Du
 <summary> Anonymization </summary>
 
 1. Error reported during analysis:
+
 ```bash
 Error: HorizontalPodAutoscaler uses StatefulSet/fake-deployment as ScaleTargetRef which does not exist.
 ```
 
 2. Payload sent to the AI backend:
+
 ```bash
 Error: HorizontalPodAutoscaler uses StatefulSet/tGLcCRcHa1Ce5Rs as ScaleTargetRef which does not exist.
 ```
 
 3. Payload returned by the AI:
+
 ```bash
 The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
 
 4. Payload returned to the user:
+
 ```bash
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
@@ -375,7 +401,7 @@ Note: **Anonymization does not currently apply to events.**
 
 **Anonymization does not currently apply to events.**
 
-*In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**.*
+_In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**._
 
 - The following is the list of analysers in which data is **being masked**:-
 
@@ -395,11 +421,12 @@ Note: **Anonymization does not currently apply to events.**
   - PersistentVolumeClaim
   - Pod
   - Log
-  - **_*Events_**
+  - **_\*Events_**
 
-***Note**:
-  - k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
-  - Masking for **Events** analyzer is scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560). _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
+**\*Note**:
+
+- k8gpt will not mask the above analysers because they do not send any identifying information except **Events** analyser.
+- Masking for **Events** analyzer is scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560). _Further research has to be made to understand the patterns and be able to mask the sensitive parts of an event like pod name, namespace etc._
 
 - The following is the list of fields which are not **being masked**:-
 
@@ -407,18 +434,18 @@ Note: **Anonymization does not currently apply to events.**
   - ObjectStatus
   - Replicas
   - ContainerStatus
-  - **_*Event Message_**
+  - **_\*Event Message_**
   - ReplicaStatus
   - Count (Pod)
 
-***Note**:
-  - It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560))_.
+**\*Note**:
+
+- It is quite possible the payload of the event message might have something like "super-secret-project-pod-X crashed" which we don't currently redact _(scheduled in the near future as seen in this [issue](https://github.com/k8sgpt-ai/k8sgpt/issues/560))_.
 
 ### Proceed with care
 
-  - The K8gpt team recommends using an entirely different backend **(a local model) in critical production environments**. By using a local model, you can rest assured that everything stays within your DMZ, and nothing is leaked.
-  - If there is any uncertainty about the possibility of sending data to a public LLM (open AI, Azure AI) and it poses a risk to business-critical operations, then, in such cases, the use of public LLM should be avoided based on personal assessment and the jurisdiction of risks involved.
-
+- The K8gpt team recommends using an entirely different backend **(a local model) in critical production environments**. By using a local model, you can rest assured that everything stays within your DMZ, and nothing is leaked.
+- If there is any uncertainty about the possibility of sending data to a public LLM (open AI, Azure AI) and it poses a risk to business-critical operations, then, in such cases, the use of public LLM should be avoided based on personal assessment and the jurisdiction of risks involved.
 
 </details>
 
@@ -428,11 +455,12 @@ Note: **Anonymization does not currently apply to events.**
 `k8sgpt` stores config data in the `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` file. The data is stored in plain text, including your OpenAI key.
 
 Config file locations:
-| OS      | Path                                             |
+| OS | Path |
 | ------- | ------------------------------------------------ |
-| MacOS   | ~/Library/Application Support/k8sgpt/k8sgpt.yaml |
-| Linux   | ~/.config/k8sgpt/k8sgpt.yaml                     |
-| Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml                |
+| MacOS | ~/Library/Application Support/k8sgpt/k8sgpt.yaml |
+| Linux | ~/.config/k8sgpt/k8sgpt.yaml |
+| Windows | %LOCALAPPDATA%/k8sgpt/k8sgpt.yaml |
+
 </details>
 
 <details>
@@ -444,38 +472,42 @@ In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
 _Adding a remote cache_
 
- * AWS S3
-   *  _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
-   * Configuration, ``` k8sgpt cache add s3 --region <aws region> --bucket <name> ```
-   * Minio Configuration with HTTP endpoint ``` k8sgpt cache add s3 --bucket <name> --endpoint <http://localhost:9000>```
-   * Minio Configuration with HTTPs endpoint, skipping TLS verification ``` k8sgpt cache add s3 --bucket <name> --endpoint <https://localhost:9000> --insecure```
-     * K8sGPT will create the bucket if it does not exist
- * Azure Storage
-   * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
-   * Configuration, ``` k8sgpt cache add azure --storageacc <storage account name> --container <container name> ```
-     * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
-     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)
-  * Google Cloud Storage
-    * _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
-    * Configuration, ``` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>```
-      * K8sGPT will create the bucket if it does not exist
+- AWS S3
+  - _As a prerequisite `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required as environmental variables._
+  - Configuration, `k8sgpt cache add s3 --region <aws region> --bucket <name>`
+  - Minio Configuration with HTTP endpoint ` k8sgpt cache add s3 --bucket <name> --endpoint <http://localhost:9000>`
+  - Minio Configuration with HTTPs endpoint, skipping TLS verification ` k8sgpt cache add s3 --bucket <name> --endpoint <https://localhost:9000> --insecure`
+    - K8sGPT will create the bucket if it does not exist
+- Azure Storage
+  - We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
+  - Configuration, `k8sgpt cache add azure --storageacc <storage account name> --container <container name>`
+    - K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
+    - It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)
+- Google Cloud Storage
+  - _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
+  - Configuration, ` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>`
+    - K8sGPT will create the bucket if it does not exist
 
 _Listing cache items_
+
 ```
 k8sgpt cache list
 ```
 
 _Purging an object from the cache_
 Note: purging an object using this command will delete upstream files, so it requires appropriate permissions.
+
 ```
 k8sgpt cache purge $OBJECT_NAME
 ```
 
 _Removing the remote cache_
 Note: this will not delete the upstream S3 bucket or Azure storage container
+
 ```
 k8sgpt cache remove
 ```
+
 </details>
 
 <details>
@@ -485,6 +517,7 @@ There may be scenarios where you wish to write your own analyzer in a language o
 K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
 To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
 In addition to this you will need to enable the following flag on analysis:
+
 ```
 k8sgpt analyze --custom-analysis
 ```
@@ -510,17 +543,18 @@ _See the docs on how to write a custom analyzer_
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)
 
-
 ## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
+
 ## Community
+
 Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-276pa9uyq-pxAUr4TCVHubFxEvLZuT1Q)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
 </a>
 
-
 ## License
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_large)
