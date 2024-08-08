@@ -14,12 +14,12 @@ limitations under the License.
 package serve
 
 import (
+	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"os"
 	"strconv"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
-	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"

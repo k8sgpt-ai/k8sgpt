@@ -1,4 +1,4 @@
-package server
+package analyze
 
 import (
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
@@ -7,7 +7,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 )
 
-func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
+func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	*schemav1.AnalyzeResponse,
 	error,
 ) {
