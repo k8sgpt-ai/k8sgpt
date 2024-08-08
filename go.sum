@@ -2118,6 +2118,8 @@ github.com/opencontainers/image-spec v1.1.0 h1:8SG7/vwALn54lVB/0yZ/MMwhFrPYtpEHQ
 github.com/opencontainers/image-spec v1.1.0/go.mod h1:W4s4sFTMaBeK1BQLXbG4AdM2szdn85PY75RI83NrTrM=
 github.com/oracle/oci-go-sdk/v65 v65.65.1 h1:sv7uD844tJGa2Vc+2KaByoXQ0FllZDGV/2+9MdxN6nA=
 github.com/oracle/oci-go-sdk/v65 v65.65.1/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
+github.com/oracle/oci-go-sdk/v65 v65.71.0 h1:eEnFD/CzcoqdAA0xu+EmK32kJL3jfV0oLYNWVzoKNyo=
+github.com/oracle/oci-go-sdk/v65 v65.71.0/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
 github.com/ovh/go-ovh v1.5.1 h1:P8O+7H+NQuFK9P/j4sFW5C0fvSS2DnHYGPwdVCp45wI=
 github.com/ovh/go-ovh v1.5.1/go.mod h1:cTVDnl94z4tl8pP1uZ/8jlVxntjSIf09bNcQ5TJSC7c=
 github.com/owenrumney/squealer v1.2.1 h1:4ryMMT59aaz8VMsqsD+FDkarADJz0F1dcq2fd0DRR+c=

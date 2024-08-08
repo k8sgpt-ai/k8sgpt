@@ -44,7 +44,7 @@ require (
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.3
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/oracle/oci-go-sdk/v65 v65.65.1
+	github.com/oracle/oci-go-sdk/v65 v65.71.0
 	github.com/prometheus/prometheus v0.53.1
 	github.com/pterm/pterm v0.12.79
 	google.golang.org/api v0.187.0
