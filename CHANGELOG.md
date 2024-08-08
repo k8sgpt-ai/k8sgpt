@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.40...v0.3.41) (2024-08-08)
+
+
+### Bug Fixes
+
+* segmentation violation during serve ([#1215](https://github.com/k8sgpt-ai/k8sgpt/issues/1215)) ([b7e5394](https://github.com/k8sgpt-ai/k8sgpt/commit/b7e5394caaabb43e01161618f7a6e9f4aa8f7408))
+* set logger for controller-runtime ([#1211](https://github.com/k8sgpt-ai/k8sgpt/issues/1211)) ([8e37369](https://github.com/k8sgpt-ai/k8sgpt/commit/8e37369e5c6c96096b66179f22a27b2c0018c43a))
+
+
+### Other
+
+* **deps:** update actions/upload-artifact digest to 834a144 ([#1214](https://github.com/k8sgpt-ai/k8sgpt/issues/1214)) ([2a8a9b4](https://github.com/k8sgpt-ai/k8sgpt/commit/2a8a9b486714d780c0df3ecae8757534249731dc))
+
+
+### Docs
+
+* update "CLI Installation" section in README.md ([#1126](https://github.com/k8sgpt-ai/k8sgpt/issues/1126)) ([#1127](https://github.com/k8sgpt-ai/k8sgpt/issues/1127)) ([b2b8682](https://github.com/k8sgpt-ai/k8sgpt/commit/b2b86826e55984c2b6aed6554869d7ce66a5f854))
+
 ## [0.3.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.39...v0.3.40) (2024-08-04)
 
 
