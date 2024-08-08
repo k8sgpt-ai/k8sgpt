@@ -23,13 +23,15 @@ import (
 	"strings"
 	"time"
 
-	gw "buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc-ecosystem/gateway/v2/schema/v1/schemav1gateway"
-	rpc "buf.build/gen/go/ronaldpetty/ronk8sgpt/grpc/go/schema/v1/schemav1grpc"
+	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server-service/schemav1gateway"
+	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
+	"github.com/go-logr/zapr"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -80,6 +82,8 @@ func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Ha
 }
 
 func (s *Config) Serve() error {
+	ctrl.SetLogger(zapr.NewLogger(s.Logger))
+
 	var lis net.Listener
 	var err error
 	address := fmt.Sprintf(":%s", s.Port)
