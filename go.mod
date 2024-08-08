@@ -7,7 +7,7 @@ toolchain go1.22.4
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
 	github.com/fatih/color v1.17.0
-	github.com/kedacore/keda/v2 v2.11.2
+	github.com/kedacore/keda/v2 v2.15.0
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.10
 	github.com/ollama/ollama v0.1.48
@@ -33,7 +33,7 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.34.2-20240720172138-1b9bcd834f17.2
 	cloud.google.com/go/storage v1.43.0
 	cloud.google.com/go/vertexai v0.7.1
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.7.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
 	github.com/IBM/watsonx-go v1.0.1
 	github.com/aws/aws-sdk-go v1.53.21
@@ -77,6 +77,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
+	github.com/expr-lang/expr v1.16.5 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
@@ -114,7 +115,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240624140628-dc46fd24d27d // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
+	knative.dev/pkg v0.0.0-20240423132823-3c6badc82748 // indirect
 )
 
 require (
@@ -214,7 +215,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rubenv/sql-migrate v1.6.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/samber/lo v1.38.1 // indirect
+	github.com/samber/lo v1.39.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spdx/tools-golang v0.5.3 // indirect
