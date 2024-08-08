@@ -167,3 +167,51 @@ func TestNodeAnalyzer(t *testing.T) {
 		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }
+
+func TestNodeAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "Node1",
+					Namespace: "default",
+					Labels: map[string]string{
+						"app": "node",
+					},
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionFalse,
+						},
+					},
+				},
+			},
+				&v1.Node{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Node2",
+						Namespace: "default",
+					},
+					Status: v1.NodeStatus{
+						Conditions: []v1.NodeCondition{
+							{
+								Type:   v1.NodeReady,
+								Status: v1.ConditionFalse,
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=node",
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Node1", results[0].Name)
+}

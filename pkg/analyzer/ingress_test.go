@@ -201,3 +201,40 @@ func TestIngressAnalyzer(t *testing.T) {
 		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }
+
+func TestIngressAnalyzerLabelSelectorFiltering(t *testing.T) {
+	validIgClassName := new(string)
+	*validIgClassName = "valid-ingress-class"
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "ingress",
+						},
+					},
+				},
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress2",
+						Namespace: "default",
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=ingress",
+	}
+
+	igAnalyzer := IngressAnalyzer{}
+	results, err := igAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/Ingress1", results[0].Name)
+
+}
