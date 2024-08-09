@@ -47,8 +47,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
-  sudo rpm -ivh k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -56,8 +55,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
-  sudo rpm -ivh -i k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -89,17 +87,17 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
-  apk add k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
+  apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
-  apk add k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
+  apk add --allow-untrusted k8sgpt_amd64.apk
   ```
-  <!---x-release-please-end-->x
+  <!---x-release-please-end-->
 </details>
 
 <details>
