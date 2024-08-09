@@ -22,6 +22,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/cache"
+	customanalyzer "github.com/k8sgpt-ai/k8sgpt/cmd/customAnalyzer"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
@@ -74,6 +75,7 @@ func init() {
 	rootCmd.AddCommand(integration.IntegrationCmd)
 	rootCmd.AddCommand(serve.ServeCmd)
 	rootCmd.AddCommand(cache.CacheCmd)
+	rootCmd.AddCommand(customanalyzer.CustomAnalyzerCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/k8sgpt/k8sgpt.yaml)", xdg.ConfigHome))
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
