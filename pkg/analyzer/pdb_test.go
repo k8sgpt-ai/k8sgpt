@@ -115,3 +115,94 @@ func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "test/PDB3", results[0].Name)
 }
+
+func TestPodDisruptionBudgetAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "PDB1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "pdb",
+						},
+					},
+					// Status conditions are nil.
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "test reason",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MaxUnavailable: &intstr.IntOrString{
+							Type:   0,
+							IntVal: 17,
+							StrVal: "17",
+						},
+						MinAvailable: &intstr.IntOrString{
+							Type:   0,
+							IntVal: 7,
+							StrVal: "7",
+						},
+						// MatchLabels specified.
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{
+								"label1": "test1",
+								"label2": "test2",
+							},
+						},
+					},
+				},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "PDB2",
+						Namespace: "default",
+					},
+					// Status conditions are empty.
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "test reason",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MaxUnavailable: &intstr.IntOrString{
+							Type:   0,
+							IntVal: 17,
+							StrVal: "17",
+						},
+						MinAvailable: &intstr.IntOrString{
+							Type:   0,
+							IntVal: 7,
+							StrVal: "7",
+						},
+						// MatchLabels specified.
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{
+								"label1": "test1",
+								"label2": "test2",
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=pdb",
+	}
+
+	pdbAnalyzer := PdbAnalyzer{}
+	results, err := pdbAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/PDB1", results[0].Name)
+}

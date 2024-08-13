@@ -8,12 +8,12 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/k8sgpt-ai/k8sgpt/release.yaml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7272/badge)](https://bestpractices.coreinfrastructure.org/projects/7272)
-[![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)  
+[![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_shield)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go version](https://img.shields.io/github/go-mod/go-version/k8sgpt-ai/k8sgpt.svg)](https://github.com/k8sgpt-ai/k8sgpt)
 [![codecov](https://codecov.io/github/k8sgpt-ai/k8sgpt/graph/badge.svg?token=ZLR7NG8URE)](https://codecov.io/github/k8sgpt-ai/k8sgpt)
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/k8sgpt-ai/k8sgpt/main)  
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/k8sgpt-ai/k8sgpt/main)
 
 `k8sgpt` is a tool for scanning your Kubernetes clusters, diagnosing, and triaging issues in simple English.
 
@@ -30,7 +30,13 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 
 ### Linux/Mac via brew
 
+```sh
+$ brew install k8sgpt
 ```
+
+or
+
+```sh
 brew tap k8sgpt-ai/k8sgpt
 brew install k8sgpt
 ```
@@ -41,8 +47,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_386.rpm
-  sudo rpm -ivh k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -50,8 +55,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_amd64.rpm
-  sudo rpm -ivh -i k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -62,7 +66,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -70,7 +74,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -83,17 +87,17 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_386.apk
-  apk add k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
+  apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.35/k8sgpt_amd64.apk
-  apk add k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
+  apk add --allow-untrusted k8sgpt_amd64.apk
   ```
-  <!---x-release-please-end-->x
+  <!---x-release-please-end-->
 </details>
 
 <details>
@@ -293,6 +297,12 @@ _Analysis with serve mode_
 ```
 grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain": false}' localhost:8080 schema.v1.ServerService/Analyze
 ```
+
+_Analysis with custom headers_
+
+```
+k8sgpt analyze --explain --custom-headers CustomHeaderKey:CustomHeaderValue
+```
 </details>
 
 ## LLM AI Backends
@@ -302,12 +312,13 @@ K8sGPT uses the chosen LLM, generative AI provider when you want to explain the 
 You can list available providers using `k8sgpt auth list`:
 
 ```
-Default: 
+Default:
 > openai
-Active: 
-Unused: 
+Active:
+Unused:
 > openai
 > localai
+> ollama
 > azureopenai
 > cohere
 > amazonbedrock
@@ -316,6 +327,7 @@ Unused:
 > huggingface
 > noopai
 > googlevertexai
+> watsonxai
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
@@ -425,7 +437,7 @@ Config file locations:
 There may be scenarios where caching remotely is preferred.
 In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
-<summary> Remote caching </summary>  
+<summary> Remote caching </summary>
 <em>Note: You can only configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
@@ -440,11 +452,11 @@ _Adding a remote cache_
    * We support a number of [techniques](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication?tabs=bash#2-authenticate-with-azure) to authenticate against Azure
    * Configuration, ``` k8sgpt cache add azure --storageacc <storage account name> --container <container name> ```
      * K8sGPT assumes that the storage account already exist and it will create the container if it does not exist
-     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor) 
+     * It is the **user** responsibility have to grant specific permissions to their identity in order to be able to upload blob files and create SA containers (e.g Storage Blob Data Contributor)
   * Google Cloud Storage
     * _As a prerequisite `GOOGLE_APPLICATION_CREDENTIALS` are required as environmental variables._
     * Configuration, ``` k8sgpt cache add gcs --region <gcp region> --bucket <name> --projectid <project id>```
-      * K8sGPT will create the bucket if it does not exist   
+      * K8sGPT will create the bucket if it does not exist
 
 _Listing cache items_
 ```
@@ -489,6 +501,21 @@ custom_analyzers:
 This now gives the ability to pass through hostOS information ( from this analyzer example ) to K8sGPT to use as context with normal analysis.
 
 _See the docs on how to write a custom analyzer_
+
+_Listing custom analyzers configured_
+```
+k8sgpt custom-analyzer list
+```
+
+_Adding custom analyzer without install_
+```
+k8sgpt custom-analyzer add --name my-custom-analyzer --port 8085
+```
+
+_Removing custom analyzer_
+```
+k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
+```
 
 </details>
 

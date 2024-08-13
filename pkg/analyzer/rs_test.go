@@ -144,3 +144,58 @@ func TestReplicaSetAnalyzer(t *testing.T) {
 		require.Equal(t, expectations[i].failuresCount, len(result.Error))
 	}
 }
+
+func TestReplicaSetAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&appsv1.ReplicaSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ReplicaSet1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "replicaset",
+						},
+					},
+					Status: appsv1.ReplicaSetStatus{
+						Replicas: 0,
+						Conditions: []appsv1.ReplicaSetCondition{
+							{
+								// Should contribute to failures.
+								Type:    appsv1.ReplicaSetReplicaFailure,
+								Reason:  "FailedCreate",
+								Message: "failed to create test replica set 1",
+							},
+						},
+					},
+				},
+				&appsv1.ReplicaSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ReplicaSet2",
+						Namespace: "default",
+					},
+					Status: appsv1.ReplicaSetStatus{
+						Replicas: 0,
+						Conditions: []appsv1.ReplicaSetCondition{
+							{
+								// Should contribute to failures.
+								Type:    appsv1.ReplicaSetReplicaFailure,
+								Reason:  "FailedCreate",
+								Message: "failed to create test replica set 1",
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=replicaset",
+	}
+
+	rsAnalyzer := ReplicaSetAnalyzer{}
+	results, err := rsAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/ReplicaSet1", results[0].Name)
+}

@@ -33,11 +33,13 @@ var (
 	language        string
 	nocache         bool
 	namespace       string
+	labelSelector   string
 	anonymize       bool
 	maxConcurrency  int
 	withDoc         bool
 	interactiveMode bool
 	customAnalysis  bool
+	customHeaders   []string
 )
 
 // AnalyzeCmd represents the problems command
@@ -54,11 +56,13 @@ var AnalyzeCmd = &cobra.Command{
 			language,
 			filters,
 			namespace,
+			labelSelector,
 			nocache,
 			explain,
 			maxConcurrency,
 			withDoc,
 			interactiveMode,
+			customHeaders,
 		)
 
 		if err != nil {
@@ -138,5 +142,8 @@ func init() {
 	AnalyzeCmd.Flags().BoolVarP(&interactiveMode, "interactive", "i", false, "Enable interactive mode that allows further conversation with LLM about the problem. Works only with --explain flag")
 	// custom analysis flag
 	AnalyzeCmd.Flags().BoolVarP(&customAnalysis, "custom-analysis", "z", false, "Enable custom analyzers")
-
+	// add custom headers flag
+	AnalyzeCmd.Flags().StringSliceVarP(&customHeaders, "custom-headers", "r", []string{}, "Custom Headers, <key>:<value> (e.g CustomHeaderKey:CustomHeaderValue AnotherHeader:AnotherValue)")
+	// label selector flag
+	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
 }
