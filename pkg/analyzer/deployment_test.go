@@ -151,3 +151,55 @@ func TestDeploymentAnalyzerNamespaceFiltering(t *testing.T) {
 	assert.Equal(t, analysisResults[0].Kind, "Deployment")
 	assert.Equal(t, analysisResults[0].Name, "default/example")
 }
+
+func TestDeploymentAnalyzerLabelSelectorFiltering(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+				Labels: map[string]string{
+					"app": "deployment",
+				},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: func() *int32 { i := int32(3); return &i }(),
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{},
+					},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example2",
+				Namespace: "default",
+			},
+			Spec: appsv1.DeploymentSpec{
+				Replicas: func() *int32 { i := int32(3); return &i }(),
+				Template: v1.PodTemplateSpec{
+					Spec: v1.PodSpec{
+						Containers: []v1.Container{},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=deployment",
+	}
+
+	deploymentAnalyzer := DeploymentAnalyzer{}
+	analysisResults, err := deploymentAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}
