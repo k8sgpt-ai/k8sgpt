@@ -30,16 +30,16 @@ type TrivyAnalyzer struct {
 	configAuditReportAnalysis   bool
 }
 
-var l sync.RWMutex
+var rwMutex sync.RWMutex
 
 func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Result, error) {
 	// Get all trivy VulnerabilityReports
 	result := &v1alpha1.VulnerabilityReportList{}
 
 	client := a.Client.CtrlClient
-	l.Lock()
+	rwMutex.Lock()
 	err := v1alpha1.AddToScheme(client.Scheme())
-	l.Unlock()
+	rwMutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +94,9 @@ func (t TrivyAnalyzer) analyzeConfigAuditReports(a common.Analyzer) ([]common.Re
 	result := &v1alpha1.ConfigAuditReportList{}
 
 	client := a.Client.CtrlClient
-	l.Lock()
+	rwMutex.Lock()
 	err := v1alpha1.AddToScheme(client.Scheme())
-	l.Unlock()
+	rwMutex.Unlock()
 	if err != nil {
 		return nil, err
 	}
