@@ -44,6 +44,7 @@ type Analysis struct {
 	Results            []common.Result
 	Errors             []string
 	Namespace          string
+	LabelSelector      string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -74,6 +75,7 @@ func NewAnalysis(
 	language string,
 	filters []string,
 	namespace string,
+	labelSelector string,
 	noCache bool,
 	explain bool,
 	maxConcurrency int,
@@ -105,6 +107,7 @@ func NewAnalysis(
 		Client:         client,
 		Language:       language,
 		Namespace:      namespace,
+		LabelSelector:  labelSelector,
 		Cache:          cache,
 		Explain:        explain,
 		MaxConcurrency: maxConcurrency,
@@ -157,25 +160,57 @@ func NewAnalysis(
 	return a, nil
 }
 
+func (a *Analysis) CustomAnalyzersAreAvailable() bool {
+	var customAnalyzers []custom.CustomAnalyzer
+	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
+		return false
+	}
+	return len(customAnalyzers) > 0
+}
+
 func (a *Analysis) RunCustomAnalysis() {
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
+		return
 	}
 
+	semaphore := make(chan struct{}, a.MaxConcurrency)
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	for _, cAnalyzer := range customAnalyzers {
+		wg.Add(1)
+		semaphore <- struct{}{}
+		go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
+			defer wg.Done()
+			canClient, err := custom.NewClient(cAnalyzer.Connection)
+			if err != nil {
+				mutex.Lock()
+				a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+				mutex.Unlock()
+				return
+			}
 
-		canClient, err := custom.NewClient(cAnalyzer.Connection)
-		if err != nil {
-			a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
-			continue
-		}
-
-		result, err := canClient.Run()
-		if err != nil {
-			a.Results = append(a.Results, result)
-		}
+			result, err := canClient.Run()
+			if result.Kind == "" {
+				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
+				//and must start and end with an alphanumeric character (e.g. 'example.com',
+				//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+				result.Kind = cAnalyzer.Name
+			}
+			if err != nil {
+				mutex.Lock()
+				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+				mutex.Unlock()
+			} else {
+				mutex.Lock()
+				a.Results = append(a.Results, result)
+				mutex.Unlock()
+			}
+			<-semaphore
+		}(cAnalyzer, &wg, semaphore)
 	}
+	wg.Wait()
 }
 
 func (a *Analysis) RunAnalysis() {
@@ -198,15 +233,16 @@ func (a *Analysis) RunAnalysis() {
 		Client:        a.Client,
 		Context:       a.Context,
 		Namespace:     a.Namespace,
+		LabelSelector: a.LabelSelector,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
 
 	semaphore := make(chan struct{}, a.MaxConcurrency)
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		for _, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
 			semaphore <- struct{}{}
@@ -228,11 +264,8 @@ func (a *Analysis) RunAnalysis() {
 		wg.Wait()
 		return
 	}
-	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
-		var wg sync.WaitGroup
-		var mutex sync.Mutex
 		for _, filter := range a.Filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
@@ -258,9 +291,6 @@ func (a *Analysis) RunAnalysis() {
 		return
 	}
 
-	var wg sync.WaitGroup
-	var mutex sync.Mutex
-	semaphore = make(chan struct{}, a.MaxConcurrency)
 	// use active_filters
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {

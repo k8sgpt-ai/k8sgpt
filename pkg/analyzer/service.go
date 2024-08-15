@@ -45,7 +45,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,22 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				})
 			}
 		}
+		// fetch event
+		events, err := a.Client.GetClient().CoreV1().Events(a.Namespace).List(a.Context,
+			metav1.ListOptions{
+				FieldSelector: "involvedObject.name=" + ep.Name,
+			})
 
+		if err != nil {
+			return nil, err
+		}
+		for _, event := range events.Items {
+			if event.Type != "Normal" {
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf("Service %s/%s has event %s", ep.Namespace, ep.Name, event.Message),
+				})
+			}
+		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", ep.Namespace, ep.Name)] = common.PreAnalysis{
 				Endpoint:       ep,

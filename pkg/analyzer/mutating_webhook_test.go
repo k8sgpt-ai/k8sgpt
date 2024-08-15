@@ -138,3 +138,78 @@ func TestMutatingWebhookAnalyzer(t *testing.T) {
 	resultsLen := 3
 	require.Equal(t, resultsLen, len(results))
 }
+
+func TestMutatingWebhookAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&v1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Pod1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "mutating-webhook",
+						},
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-service1",
+						Namespace: "default",
+					},
+					Spec: v1.ServiceSpec{
+						Selector: map[string]string{
+							"app": "mutating-webhook",
+						},
+					},
+				},
+				&admissionregistrationv1.MutatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-mutating-webhook-config",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "mutating-webhook",
+						},
+					},
+					Webhooks: []admissionregistrationv1.MutatingWebhook{
+						{
+							Name: "webhook1",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "test-service1",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+				&admissionregistrationv1.MutatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-mutating-webhook-config2",
+						Namespace: "default",
+					},
+					Webhooks: []admissionregistrationv1.MutatingWebhook{
+						{
+							Name: "webhook2",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "test-service1",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=mutating-webhook",
+	}
+
+	mwAnalyzer := MutatingWebhookAnalyzer{}
+	results, err := mwAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/webhook1", results[0].Name)
+}

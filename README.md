@@ -47,8 +47,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_386.rpm
-  sudo rpm -ivh k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -56,8 +55,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_amd64.rpm
-  sudo rpm -ivh -i k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -68,7 +66,7 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_386.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.deb
   sudo dpkg -i k8sgpt_386.deb
   ```
   <!---x-release-please-end-->
@@ -76,7 +74,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_amd64.deb
+  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.deb
   sudo dpkg -i k8sgpt_amd64.deb
   ```
   <!---x-release-please-end-->
@@ -89,17 +87,17 @@ brew install k8sgpt
   **32 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_386.apk
-  apk add k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_386.apk
+  apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
   **64 bit:**
   <!---x-release-please-start-version-->
   ```
-  curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.38/k8sgpt_amd64.apk
-  apk add k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.40/k8sgpt_amd64.apk
+  apk add --allow-untrusted k8sgpt_amd64.apk
   ```
-  <!---x-release-please-end-->x
+  <!---x-release-please-end-->
 </details>
 
 <details>
@@ -503,6 +501,21 @@ custom_analyzers:
 This now gives the ability to pass through hostOS information ( from this analyzer example ) to K8sGPT to use as context with normal analysis.
 
 _See the docs on how to write a custom analyzer_
+
+_Listing custom analyzers configured_
+```
+k8sgpt custom-analyzer list
+```
+
+_Adding custom analyzer without install_
+```
+k8sgpt custom-analyzer add --name my-custom-analyzer --port 8085
+```
+
+_Removing custom analyzer_
+```
+k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
+```
 
 </details>
 
