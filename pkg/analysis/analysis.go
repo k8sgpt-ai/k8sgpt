@@ -397,6 +397,9 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
+	if a.AIClient.GetName() == ai.CustomRestClientName {
+		prompt = fmt.Sprintf(ai.PromptMap["raw"], a.Language, inputKey, prompt)
+	}
 	response, err := a.AIClient.GetCompletion(a.Context, prompt)
 	if err != nil {
 		return "", err

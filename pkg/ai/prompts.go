@@ -58,9 +58,11 @@ const (
 
 	Solution: {kubectl command}
 	`
+	raw_promt = `{"language": "%s","message": "%s","prompt": "%s"}`
 )
 
 var PromptMap = map[string]string{
+	"raw":                           raw_promt,
 	"default":                       default_prompt,
 	"VulnerabilityReport":           trivy_vuln_prompt, // for Trivy integration, the key should match `Result.Kind` in pkg/common/types.go
 	"ConfigAuditReport":             trivy_conf_prompt,

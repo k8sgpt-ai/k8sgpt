@@ -33,6 +33,7 @@ var (
 		&GoogleVertexAIClient{},
 		&OCIGenAIClient{},
 		&WatsonxAIClient{},
+		&CustomRestClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -48,6 +49,7 @@ var (
 		googleVertexAIClientName,
 		ociClientName,
 		watsonxAIClientName,
+		CustomRestClientName,
 	}
 )
 
@@ -181,7 +183,7 @@ func (p *AIProvider) GetCustomHeaders() []http.Header {
 	return p.CustomHeaders
 }
 
-var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "customrest"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {
