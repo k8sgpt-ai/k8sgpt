@@ -1276,8 +1276,8 @@ github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RR
 github.com/mitchellh/reflectwalk v1.0.0/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zxSIeXaQ=
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
-github.com/mittwald/go-helm-client v0.12.10 h1:NvDXzBM0enPtrAHirZQ0D9Zx80yp2cGWcR19i0CleZY=
-github.com/mittwald/go-helm-client v0.12.10/go.mod h1:HA3eMOaUhqa4EXUfj94f6L0v4aUEKHuVV977hVl1KWU=
+github.com/mittwald/go-helm-client v0.12.12 h1:56eYOEOLguP34c3MIZi3JdkpdgGO1Tjp3Cb6NmmJNlU=
+github.com/mittwald/go-helm-client v0.12.12/go.mod h1:4Fb6Ryix9NRJJyYMg1RtVNx4EJz1incsyGFn+Yno2U4=
 github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3Nl2EsFP0=
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
 github.com/moby/locker v1.0.1 h1:fOXqR41zeveg4fFODix+1Ch4mj/gT0NE1XJbp/epuBg=
