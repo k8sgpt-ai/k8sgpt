@@ -1,4 +1,4 @@
-package server
+package config
 
 import (
 	`log`
@@ -21,7 +21,7 @@ const (
 	notUsedInsecure      = false
 )
 
-func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
+func (h *Handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
 ) {
 	if i == nil {
 		log.Println("Error: AddConfigRequest is nil")
@@ -91,7 +91,7 @@ func (h *handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 	return resp, nil
 }
 
-func (h *handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequest) (*schemav1.RemoveConfigResponse, error,
+func (h *Handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequest) (*schemav1.RemoveConfigResponse, error,
 ) {
 	err := cache.RemoveRemoteCache()
 	if err != nil {
