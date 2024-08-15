@@ -1,4 +1,4 @@
-package server
+package analyze
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 )
 
-func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
+func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	*schemav1.AnalyzeResponse,
 	error,
 ) {
