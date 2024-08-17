@@ -17,14 +17,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/server/analyze"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/analyze"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 
 	gw2 "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_analyzer_service/schemav1gateway"
 	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_config_service/schemav1gateway"
