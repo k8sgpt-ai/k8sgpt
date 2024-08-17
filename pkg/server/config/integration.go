@@ -1,4 +1,4 @@
-package server
+package config
 
 import (
 	"context"
@@ -20,7 +20,7 @@ const (
 // syncIntegration is aware of the following events
 // A new integration added
 // An integration removed from the Integration block
-func (h *handler) syncIntegration(ctx context.Context,
+func (h *Handler) syncIntegration(ctx context.Context,
 	i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error,
 ) {
 	response := &schemav1.AddConfigResponse{}
@@ -92,7 +92,7 @@ func (h *handler) syncIntegration(ctx context.Context,
 	return response, err
 }
 
-func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrationsRequest) (*schemav1.ListIntegrationsResponse, error) {
+func (*Handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrationsRequest) (*schemav1.ListIntegrationsResponse, error) {
 
 	integrationProvider := integration.NewIntegration()
 	// Update the requester with the status of Trivy
@@ -149,7 +149,7 @@ func (*handler) ListIntegrations(ctx context.Context, req *schemav1.ListIntegrat
 	return resp, nil
 }
 
-func (*handler) deactivateAllIntegrations(integrationProvider *integration.Integration) error {
+func (*Handler) deactivateAllIntegrations(integrationProvider *integration.Integration) error {
 	integrations := integrationProvider.List()
 	for _, i := range integrations {
 		b, _ := integrationProvider.IsActivate(i)
