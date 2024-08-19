@@ -330,6 +330,7 @@ Unused:
 > noopai
 > googlevertexai
 > watsonxai
+> alicloud
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).

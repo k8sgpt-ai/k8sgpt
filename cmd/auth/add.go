@@ -48,6 +48,9 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrock" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "alicloud" {
+			_ = cmd.MarkFlagRequired("model")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
