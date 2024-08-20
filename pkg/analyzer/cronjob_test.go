@@ -156,3 +156,45 @@ func TestCronJobAnalyzer(t *testing.T) {
 		require.Equal(t, expectations[i], result.Name)
 	}
 }
+
+func TestCronJobAnalyzerLabelSelectorFiltering(t *testing.T) {
+	suspend := new(bool)
+	*suspend = true
+
+	invalidStartingDeadline := new(int64)
+	*invalidStartingDeadline = -7
+
+	validStartingDeadline := new(int64)
+	*validStartingDeadline = 7
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&batchv1.CronJob{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "CJ1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "cronjob",
+						},
+					},
+				},
+				&batchv1.CronJob{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "CJ2",
+						Namespace: "default",
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=cronjob",
+	}
+
+	cjAnalyzer := CronJobAnalyzer{}
+	results, err := cjAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/CJ1", results[0].Name)
+}

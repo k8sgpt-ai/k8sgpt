@@ -1,5 +1,53 @@
 # Changelog
 
+## [0.3.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.39...v0.3.40) (2024-08-04)
+
+
+### Features
+
+* custom analysis paralelism ([#1203](https://github.com/k8sgpt-ai/k8sgpt/issues/1203)) ([f1b7b37](https://github.com/k8sgpt-ai/k8sgpt/commit/f1b7b37fb83937d5fad90d7b6b52f4a38823da9e))
+* getting the error from status field for HPA analyzer ([#1164](https://github.com/k8sgpt-ai/k8sgpt/issues/1164)) ([a068310](https://github.com/k8sgpt-ai/k8sgpt/commit/a068310731d775beecede03a1709e541ffd68142))
+* initial custom analysis server mode ([#1205](https://github.com/k8sgpt-ai/k8sgpt/issues/1205)) ([16d57e5](https://github.com/k8sgpt-ai/k8sgpt/commit/16d57e5a55c2084bf1580377ae52e2961cc84922))
+
+
+### Bug Fixes
+
+* add default maxToken value of watsonxai backend ([#1209](https://github.com/k8sgpt-ai/k8sgpt/issues/1209)) ([d43fd87](https://github.com/k8sgpt-ai/k8sgpt/commit/d43fd878ba04fec8ac8afe4a1c15272b7f21c951))
+* auth update throw out exception ([#1193](https://github.com/k8sgpt-ai/k8sgpt/issues/1193)) ([391a3cd](https://github.com/k8sgpt-ai/k8sgpt/commit/391a3cd5adcbd90f37922332b4fad5ba5d813e5f))
+* **deps:** update module cloud.google.com/go/storage to v1.43.0 ([#1198](https://github.com/k8sgpt-ai/k8sgpt/issues/1198)) ([8949f5b](https://github.com/k8sgpt-ai/k8sgpt/commit/8949f5bac3c69130e30103511fdb5ece66e1619f))
+* **deps:** update module github.com/schollz/progressbar/v3 to v3.14.5 ([#1145](https://github.com/k8sgpt-ai/k8sgpt/issues/1145)) ([3547c48](https://github.com/k8sgpt-ai/k8sgpt/commit/3547c4808a846eb4392996afa20a84bdddf8e24f))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.17.0 ([#1197](https://github.com/k8sgpt-ai/k8sgpt/issues/1197)) ([407c855](https://github.com/k8sgpt-ai/k8sgpt/commit/407c855e147b73739e800310c926826344d36323))
+
+## [0.3.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.38...v0.3.39) (2024-07-18)
+
+
+### Features
+
+* add label selector ([#1201](https://github.com/k8sgpt-ai/k8sgpt/issues/1201)) ([eb3b81f](https://github.com/k8sgpt-ai/k8sgpt/commit/eb3b81f1767c589474864992ae78001ab1b376a1))
+* fix the custom-analysis printing ([#1195](https://github.com/k8sgpt-ai/k8sgpt/issues/1195)) ([b6dd2a1](https://github.com/k8sgpt-ai/k8sgpt/commit/b6dd2a1181b478a4fb8543ab7529ce595fa7d4a8))
+* initial kyverno support ([#1200](https://github.com/k8sgpt-ai/k8sgpt/issues/1200)) ([5176759](https://github.com/k8sgpt-ai/k8sgpt/commit/5176759bd0fad8671164f9e75b31dec19f02bd54))
+* skip k3s node type EtcdIsVoter ([#1167](https://github.com/k8sgpt-ai/k8sgpt/issues/1167)) ([4366ad9](https://github.com/k8sgpt-ai/k8sgpt/commit/4366ad97b80d2df0400e06e4b892fadab3939dc7))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 18e509b ([#1183](https://github.com/k8sgpt-ai/k8sgpt/issues/1183)) ([0b90651](https://github.com/k8sgpt-ai/k8sgpt/commit/0b906511d5a9837c9a67cf819754c610b1becc5c))
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go to v1.4.0-20240715142657-3785f0a44aae.2 ([#1196](https://github.com/k8sgpt-ai/k8sgpt/issues/1196)) ([f9edbf3](https://github.com/k8sgpt-ai/k8sgpt/commit/f9edbf34f3eb3e90528d04b1c470fd6ef15293ec))
+* **deps:** update module github.com/ibm/watsonx-go to v1.0.1 ([#1187](https://github.com/k8sgpt-ai/k8sgpt/issues/1187)) ([34b6de3](https://github.com/k8sgpt-ai/k8sgpt/commit/34b6de34041ce253c1c680a7f5fe535b03a50da5))
+* **deps:** update module github.com/prometheus/prometheus to v0.53.1 ([#1035](https://github.com/k8sgpt-ai/k8sgpt/issues/1035)) ([de9ef85](https://github.com/k8sgpt-ai/k8sgpt/commit/de9ef8587822814542661e0039b47ef65d902abb))
+
+
+### Other
+
+* **deps:** pin goreleaser/goreleaser-action action to 286f3b1 ([#1171](https://github.com/k8sgpt-ai/k8sgpt/issues/1171)) ([1a00aaf](https://github.com/k8sgpt-ai/k8sgpt/commit/1a00aafbb2f6f1482dfb3da7e96954b12ad5a4fd))
+* **deps:** update actions/setup-go digest to 0a12ed9 ([#1182](https://github.com/k8sgpt-ai/k8sgpt/issues/1182)) ([593139c](https://github.com/k8sgpt-ai/k8sgpt/commit/593139cffb1982fe45ccc9403acc893f51064271))
+* **deps:** update actions/upload-artifact digest to 0b2256b ([#1175](https://github.com/k8sgpt-ai/k8sgpt/issues/1175)) ([4b13727](https://github.com/k8sgpt-ai/k8sgpt/commit/4b13727ef579240adc2777d1126544fafb23b993))
+* **deps:** update anchore/sbom-action action to v0.16.1 ([#1179](https://github.com/k8sgpt-ai/k8sgpt/issues/1179)) ([3e93409](https://github.com/k8sgpt-ai/k8sgpt/commit/3e9340925c3d59861b1a95d5c1bc08c19ec26e4a))
+
 ## [0.3.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.37...v0.3.38) (2024-07-10)
 
 

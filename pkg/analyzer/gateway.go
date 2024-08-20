@@ -41,7 +41,9 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := client.List(a.Context, gtwList, &ctrl.ListOptions{}); err != nil {
+
+	labelSelector := util.LabelStrToSelector(a.LabelSelector)
+	if err := client.List(a.Context, gtwList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
 		return nil, err
 	}
 

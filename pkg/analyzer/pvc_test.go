@@ -228,3 +228,53 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 		})
 	}
 }
+
+func TestPvcAnalyzerLabelSelectorFiltering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&appsv1.Event{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Event1",
+						Namespace: "default",
+					},
+					LastTimestamp: metav1.Time{
+						Time: time.Date(2024, 3, 15, 10, 0, 0, 0, time.UTC),
+					},
+					Reason:  "ProvisioningFailed",
+					Message: "PVC Event1 provisioning failed",
+				},
+				&appsv1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "PVC1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "pvc",
+						},
+					},
+					Status: appsv1.PersistentVolumeClaimStatus{
+						Phase: appsv1.ClaimPending,
+					},
+				},
+				&appsv1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "PVC2",
+						Namespace: "default",
+					},
+					Status: appsv1.PersistentVolumeClaimStatus{
+						Phase: appsv1.ClaimPending,
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=pvc",
+	}
+
+	pvcAnalyzer := PvcAnalyzer{}
+	results, err := pvcAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/PVC1", results[0].Name)
+}

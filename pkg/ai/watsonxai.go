@@ -1,11 +1,9 @@
 package ai
 
 import (
-	"os"
-	"fmt"
 	"context"
 	"errors"
-
+	"fmt"
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
 
@@ -14,43 +12,47 @@ const watsonxAIClientName = "watsonxai"
 type WatsonxAIClient struct {
 	nopCloser
 
-	client         *wx.Client
-	model          string
-	temperature    float32
-	topP           float32
-	topK           int32
-	maxNewTokens   int
+	client       *wx.Client
+	model        string
+	temperature  float32
+	topP         float32
+	topK         int32
+	maxNewTokens int
 }
 
 const (
 	modelMetallama = "ibm/granite-13b-chat-v2"
+	maxTokens      = 2048
 )
 
 func (c *WatsonxAIClient) Configure(config IAIConfig) error {
-	if(config.GetModel() == "") {
-		c.model = config.GetModel()
-	} else {
+	if config.GetModel() == "" {
 		c.model = modelMetallama
+	} else {
+		c.model = config.GetModel()
+	}
+	if config.GetMaxTokens() == 0 {
+		c.maxNewTokens = maxTokens
+	} else {
+		c.maxNewTokens = config.GetMaxTokens()
 	}
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
-	c.maxNewTokens = config.GetMaxTokens()
 
-	// WatsonxAPIKeyEnvVarName    = "WATSONX_API_KEY"
-	// WatsonxProjectIDEnvVarName = "WATSONX_PROJECT_ID"
-	apiKey, projectID := os.Getenv(wx.WatsonxAPIKeyEnvVarName), os.Getenv(wx.WatsonxProjectIDEnvVarName)
-
+	apiKey := config.GetPassword()
 	if apiKey == "" {
 		return errors.New("No watsonx API key provided")
 	}
-	if projectID == "" {
+
+	projectId := config.GetProviderId()
+	if projectId == "" {
 		return errors.New("No watsonx project ID provided")
 	}
 
 	client, err := wx.NewClient(
 		wx.WithWatsonxAPIKey(apiKey),
-		wx.WithWatsonxProjectID(projectID),
+		wx.WithWatsonxProjectID(projectId),
 	)
 	if err != nil {
 		return fmt.Errorf("Failed to create client for testing. Error: %v", err)
@@ -75,7 +77,6 @@ func (c *WatsonxAIClient) GetCompletion(ctx context.Context, prompt string) (str
 	if result.Text == "" {
 		return "", errors.New("Expected a result, but got an empty string")
 	}
-
 	return result.Text, nil
 }
 
