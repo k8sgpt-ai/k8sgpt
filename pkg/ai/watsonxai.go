@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
 
@@ -42,20 +40,19 @@ func (c *WatsonxAIClient) Configure(config IAIConfig) error {
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
 
-	// WatsonxAPIKeyEnvVarName    = "WATSONX_API_KEY"
-	// WatsonxProjectIDEnvVarName = "WATSONX_PROJECT_ID"
-	apiKey, projectID := os.Getenv(wx.WatsonxAPIKeyEnvVarName), os.Getenv(wx.WatsonxProjectIDEnvVarName)
-
+	apiKey := config.GetPassword()
 	if apiKey == "" {
 		return errors.New("No watsonx API key provided")
 	}
-	if projectID == "" {
+
+	projectId := config.GetProviderId()
+	if projectId == "" {
 		return errors.New("No watsonx project ID provided")
 	}
 
 	client, err := wx.NewClient(
 		wx.WithWatsonxAPIKey(apiKey),
-		wx.WithWatsonxProjectID(projectID),
+		wx.WithWatsonxProjectID(projectId),
 	)
 	if err != nil {
 		return fmt.Errorf("Failed to create client for testing. Error: %v", err)
