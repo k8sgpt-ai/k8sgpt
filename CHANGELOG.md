@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.39...v0.3.40) (2024-08-04)
+
+
+### Features
+
+* custom analysis paralelism ([#1203](https://github.com/k8sgpt-ai/k8sgpt/issues/1203)) ([f1b7b37](https://github.com/k8sgpt-ai/k8sgpt/commit/f1b7b37fb83937d5fad90d7b6b52f4a38823da9e))
+* getting the error from status field for HPA analyzer ([#1164](https://github.com/k8sgpt-ai/k8sgpt/issues/1164)) ([a068310](https://github.com/k8sgpt-ai/k8sgpt/commit/a068310731d775beecede03a1709e541ffd68142))
+* initial custom analysis server mode ([#1205](https://github.com/k8sgpt-ai/k8sgpt/issues/1205)) ([16d57e5](https://github.com/k8sgpt-ai/k8sgpt/commit/16d57e5a55c2084bf1580377ae52e2961cc84922))
+
+
+### Bug Fixes
+
+* add default maxToken value of watsonxai backend ([#1209](https://github.com/k8sgpt-ai/k8sgpt/issues/1209)) ([d43fd87](https://github.com/k8sgpt-ai/k8sgpt/commit/d43fd878ba04fec8ac8afe4a1c15272b7f21c951))
+* auth update throw out exception ([#1193](https://github.com/k8sgpt-ai/k8sgpt/issues/1193)) ([391a3cd](https://github.com/k8sgpt-ai/k8sgpt/commit/391a3cd5adcbd90f37922332b4fad5ba5d813e5f))
+* **deps:** update module cloud.google.com/go/storage to v1.43.0 ([#1198](https://github.com/k8sgpt-ai/k8sgpt/issues/1198)) ([8949f5b](https://github.com/k8sgpt-ai/k8sgpt/commit/8949f5bac3c69130e30103511fdb5ece66e1619f))
+* **deps:** update module github.com/schollz/progressbar/v3 to v3.14.5 ([#1145](https://github.com/k8sgpt-ai/k8sgpt/issues/1145)) ([3547c48](https://github.com/k8sgpt-ai/k8sgpt/commit/3547c4808a846eb4392996afa20a84bdddf8e24f))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.17.0 ([#1197](https://github.com/k8sgpt-ai/k8sgpt/issues/1197)) ([407c855](https://github.com/k8sgpt-ai/k8sgpt/commit/407c855e147b73739e800310c926826344d36323))
+
 ## [0.3.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.38...v0.3.39) (2024-07-18)
 
 
