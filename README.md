@@ -318,6 +318,22 @@ _Analysis with custom headers_
 k8sgpt analyze --explain --custom-headers CustomHeaderKey:CustomHeaderValue
 ```
 
+_Print analysis stats_
+
+```
+k8sgpt analyze -s
+The stats mode allows for debugging and understanding the time taken by an analysis by displaying the statistics of each analyzer.
+- Analyzer Ingress took 47.125583ms 
+- Analyzer PersistentVolumeClaim took 53.009167ms 
+- Analyzer CronJob took 57.517792ms 
+- Analyzer Deployment took 156.6205ms 
+- Analyzer Node took 160.109833ms 
+- Analyzer ReplicaSet took 245.938333ms 
+- Analyzer StatefulSet took 448.0455ms 
+- Analyzer Pod took 5.662594708s 
+- Analyzer Service took 38.583359166s
+```
+
 </details>
 
 ## LLM AI Backends
