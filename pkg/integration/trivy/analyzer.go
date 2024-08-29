@@ -54,15 +54,20 @@ func (TrivyAnalyzer) analyzeVulnerabilityReports(a common.Analyzer) ([]common.Re
 
 		// For each pod there may be multiple vulnerabilities
 		var failures []common.Failure
+		distinctFailures := make(map[string]common.Failure)
 		for _, vuln := range report.Report.Vulnerabilities {
 			if vuln.Severity == "CRITICAL" {
 				// get the vulnerability ID
 				// get the vulnerability description
-				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.VulnerabilityID, vuln.PrimaryLink),
+				text := fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.VulnerabilityID, vuln.PrimaryLink)
+				distinctFailures[text] = common.Failure{
+					Text:      text,
 					Sensitive: []common.Sensitive{},
-				})
+				}
 			}
+		}
+		for _, v := range distinctFailures {
+			failures = append(failures, v)
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", report.Namespace,
