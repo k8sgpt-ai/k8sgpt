@@ -48,24 +48,11 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrock" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "watsonxai" {
+			_ = cmd.MarkFlagRequired("providerId")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// get ai configuration
-		err := viper.UnmarshalKey("ai", &configAI)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		// search for provider with same name
-		providerIndex := -1
-		for i, provider := range configAI.Providers {
-			if backend == provider.Name {
-				providerIndex = i
-				break
-			}
-		}
 
 		validBackend := func(validBackends []string, backend string) bool {
 			for _, b := range validBackends {
@@ -85,6 +72,28 @@ var addCmd = &cobra.Command{
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
 				os.Exit(1)
 			}
+		}
+
+		// get ai configuration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+
+		// search for provider with same name
+		providerIndex := -1
+		for i, provider := range configAI.Providers {
+			if backend == provider.Name {
+				providerIndex = i
+				break
+			}
+		}
+
+		if providerIndex != -1 {
+			// provider with same name exists, update provider info
+			color.Yellow("Provider with same name already exists.")
+			os.Exit(1)
 		}
 
 		// check if model is not empty
@@ -143,9 +152,6 @@ var addCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			color.Green("%s added to the AI backend provider list", backend)
-		} else {
-			// provider with same name exists, update provider info
-			color.Yellow("Provider with same name already exists.")
 		}
 	},
 }
@@ -173,8 +179,8 @@ func init() {
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
-	//add flag for vertexAI Project ID
-	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai backend)")
+	//add flag for vertexAI/WatsonxAI Project ID
+	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/watsonxai backend)")
 	//add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
