@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/aws"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/cilium"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/kyverno"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -54,6 +55,7 @@ var integrations = map[string]IIntegration{
 	"aws":        aws.NewAWS(),
 	"keda":       keda.NewKeda(),
 	"kyverno":    kyverno.NewKyverno(),
+	"cilium":     cilium.NewCilium(),
 }
 
 func NewIntegration() *Integration {

@@ -58,6 +58,14 @@ const (
 
 	Solution: {kubectl command}
 	`
+
+	cilium_prompt = `Simplify the following Cilium error messages delimited by triple dashes written in --- %s --- language; --- %s ---.
+	These errors come from running Cilium status checks in the kubernetes cluster.
+	Provide step by step instructions to fix, with suggestions, referencing Cilium documentation if relevant.
+	Write the output in the following format in no more than 300 characters:
+	Error: {Explain error here}
+	Solution: {Step by step solution here}
+	`
 )
 
 var PromptMap = map[string]string{
@@ -68,4 +76,5 @@ var PromptMap = map[string]string{
 	"PrometheusConfigRelabelReport": prom_relabel_prompt,
 	"PolicyReport":                  kyverno_prompt,
 	"ClusterPolicyReport":           kyverno_prompt,
+	"CiliumStatus":                  cilium_prompt,
 }
