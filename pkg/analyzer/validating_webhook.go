@@ -28,7 +28,7 @@ type ValidatingWebhookAnalyzer struct{}
 
 func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
-	kind := "ValidatingWebhookConfgiguration"
+	kind := "ValidatingWebhookConfiguration"
 	apiDoc := kubernetes.K8sApiReference{
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
