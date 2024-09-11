@@ -44,7 +44,7 @@ BUILDFILE = "./main.go"
 BUILDAPP = "$(OUTPUT_DIR)/k8sgpt"
 
 .PHONY: all
-all: tidy add-copyright lint cover build
+all: tidy lint cover build
 
 # ==============================================================================
 # Targets

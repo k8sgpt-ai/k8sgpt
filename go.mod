@@ -25,8 +25,6 @@ require (
 
 )
 
-require github.com/adrg/xdg v0.4.0
-
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.21.0-20240807134501-ea98c104104d.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20240807134501-ea98c104104d.1
@@ -36,6 +34,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.6.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
 	github.com/IBM/watsonx-go v1.0.1
+	github.com/adrg/xdg v0.5.0
 	github.com/aws/aws-sdk-go v1.53.21
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
 	github.com/go-logr/zapr v1.3.0
@@ -115,6 +114,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240723171418-e6d459c13d2a // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gotest.tools/v3 v3.5.1 // indirect
 	knative.dev/pkg v0.0.0-20230616134650-eb63a40adfb0 // indirect
 )
 
