@@ -2,7 +2,7 @@ module github.com/k8sgpt-ai/k8sgpt
 
 go 1.22.1
 
-toolchain go1.22.5
+toolchain go1.23.1
 
 require (
 	github.com/aquasecurity/trivy-operator v0.17.1
