@@ -24,7 +24,7 @@ spec:
       {{- if .Values.deployment.securityContext }}
       securityContext:
         {{- toYaml .Values.deployment.securityContext | nindent 8 }}
-      {{ end -}}
+      {{- end }}
       serviceAccountName: {{ template "k8sgpt.fullname" . }}
       containers:
       - name: k8sgpt-container
