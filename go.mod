@@ -9,7 +9,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/kedacore/keda/v2 v2.11.2
 	github.com/magiconair/properties v1.8.7
-	github.com/mittwald/go-helm-client v0.12.12
+	github.com/mittwald/go-helm-client v0.12.13
 	github.com/ollama/ollama v0.1.48
 	github.com/sashabaranov/go-openai v1.23.0
 	github.com/schollz/progressbar/v3 v3.15.0
@@ -17,11 +17,11 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.24.0
-	helm.sh/helm/v3 v3.15.2
-	k8s.io/api v0.30.2
-	k8s.io/apimachinery v0.30.2
-	k8s.io/client-go v0.30.2
-	k8s.io/kubectl v0.30.2 // indirect
+	helm.sh/helm/v3 v3.15.4
+	k8s.io/api v0.30.3
+	k8s.io/apimachinery v0.30.3
+	k8s.io/client-go v0.30.3
+	k8s.io/kubectl v0.30.3 // indirect
 
 )
 
@@ -245,10 +245,10 @@ require (
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	k8s.io/apiextensions-apiserver v0.30.2
-	k8s.io/apiserver v0.30.2 // indirect
-	k8s.io/cli-runtime v0.30.2 // indirect
-	k8s.io/component-base v0.30.2 // indirect
+	k8s.io/apiextensions-apiserver v0.30.3
+	k8s.io/apiserver v0.30.3 // indirect
+	k8s.io/cli-runtime v0.30.3 // indirect
+	k8s.io/component-base v0.30.3 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240521193020-835d969ad83a // indirect
 	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3
