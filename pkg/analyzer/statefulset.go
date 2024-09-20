@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -90,6 +91,41 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							},
 						})
 					}
+				}
+			}
+		}
+		if sts.Spec.Replicas != nil && *(sts.Spec.Replicas) != sts.Status.AvailableReplicas {
+			for i := int32(0); i < *(sts.Spec.Replicas); i++ {
+				podName := sts.Name + "-" + fmt.Sprint(i)
+				pod, err := a.Client.GetClient().CoreV1().Pods(sts.Namespace).Get(a.Context, podName, metav1.GetOptions{})
+				if err != nil {
+					if errors.IsNotFound(err) && i == 0 {
+						evt, err := util.FetchLatestEvent(a.Context, a.Client, sts.Namespace, sts.Name)
+						if err != nil || evt == nil || evt.Type == "Normal" {
+							break
+						}
+						failures = append(failures, common.Failure{
+							Text:      evt.Message,
+							Sensitive: []common.Sensitive{},
+						})
+					}
+					break
+				}
+				if pod.Status.Phase != "Running" {
+					failures = append(failures, common.Failure{
+						Text: fmt.Sprintf("Statefulset pod %s in the namespace %s is not in running state.", pod.Name, pod.Namespace),
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: sts.Namespace,
+								Masked:   util.MaskString(pod.Name),
+							},
+							{
+								Unmasked: serviceName,
+								Masked:   util.MaskString(pod.Namespace),
+							},
+						},
+					})
+					break
 				}
 			}
 		}

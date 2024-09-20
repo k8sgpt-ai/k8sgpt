@@ -240,3 +240,164 @@ func TestStatefulSetAnalyzerLabelSelectorFiltering(t *testing.T) {
 	assert.Equal(t, 1, len(results))
 	assert.Equal(t, "default/example1", results[0].Name)
 }
+
+func TestStatefulSetAnalyzerReplica(t *testing.T) {
+	replicas := int32(3)
+	pods := []*corev1.Pod{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-0",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodRunning,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-1",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodRunning,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-2",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodRunning,
+			},
+		},
+	}
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Replicas: &replicas,
+			},
+			Status: appsv1.StatefulSetStatus{
+				AvailableReplicas: 3,
+			},
+		},
+		pods[0], pods[1], pods[2],
+	)
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}
+
+func TestStatefulSetAnalyzerUnavailableReplicas(t *testing.T) {
+	replicas := int32(3)
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Replicas: &replicas,
+			},
+			Status: appsv1.StatefulSetStatus{
+				AvailableReplicas: 0,
+			},
+		})
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}
+
+func TestStatefulSetAnalyzerUnavailableReplicaWithPodInitialized(t *testing.T) {
+	replicas := int32(3)
+	pods := []*corev1.Pod{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-0",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodRunning,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-1",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodPending,
+			},
+		},
+	}
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Replicas: &replicas,
+			},
+			Status: appsv1.StatefulSetStatus{
+				AvailableReplicas: 1,
+			},
+		},
+		pods[0], pods[1],
+	)
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	var errorFound bool
+	want := "Statefulset pod example-1 in the namespace default is not in running state."
+
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			if want == got.Text {
+				errorFound = true
+			}
+		}
+		if errorFound {
+			break
+		}
+	}
+	if !errorFound {
+		t.Errorf("Error expected: '%v', not found in StatefulSet's analysis results", want)
+	}
+}
