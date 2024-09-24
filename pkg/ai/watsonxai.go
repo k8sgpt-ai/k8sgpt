@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	wx "github.com/IBM/watsonx-go/pkg/models"
 )
 
-const watsonxAIClientName = "watsonxai"
+const ibmWatsonxAIClientName = "ibmwatsonxai"
 
-type WatsonxAIClient struct {
+type IBMWatsonxAIClient struct {
 	nopCloser
 
 	client       *wx.Client
@@ -25,7 +26,7 @@ const (
 	maxTokens      = 2048
 )
 
-func (c *WatsonxAIClient) Configure(config IAIConfig) error {
+func (c *IBMWatsonxAIClient) Configure(config IAIConfig) error {
 	if config.GetModel() == "" {
 		c.model = modelMetallama
 	} else {
@@ -62,7 +63,7 @@ func (c *WatsonxAIClient) Configure(config IAIConfig) error {
 	return nil
 }
 
-func (c *WatsonxAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+func (c *IBMWatsonxAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	result, err := c.client.GenerateText(
 		c.model,
 		prompt,
@@ -80,6 +81,6 @@ func (c *WatsonxAIClient) GetCompletion(ctx context.Context, prompt string) (str
 	return result.Text, nil
 }
 
-func (c *WatsonxAIClient) GetName() string {
-	return watsonxAIClientName
+func (c *IBMWatsonxAIClient) GetName() string {
+	return ibmWatsonxAIClientName
 }
