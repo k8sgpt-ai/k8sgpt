@@ -20,6 +20,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/server/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/query"
 	"log"
 	"net"
 	"net/http"
@@ -50,6 +51,7 @@ type Config struct {
 	Output         string
 	ConfigHandler  *config.Handler
 	AnalyzeHandler *analyze.Handler
+	QueryHandler   *query.Handler
 	Logger         *zap.Logger
 	metricsServer  *http.Server
 	listener       net.Listener
@@ -98,6 +100,7 @@ func (s *Config) Serve() error {
 
 	s.ConfigHandler = &config.Handler{}
 	s.AnalyzeHandler = &analyze.Handler{}
+	s.QueryHandler = &query.Handler{}
 	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
 	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(LogInterceptor(s.Logger))
@@ -105,7 +108,7 @@ func (s *Config) Serve() error {
 	reflection.Register(grpcServer)
 	rpc.RegisterServerConfigServiceServer(grpcServer, s.ConfigHandler)
 	rpc.RegisterServerAnalyzerServiceServer(grpcServer, s.AnalyzeHandler)
-
+	rpc.RegisterServerQueryServiceServer(grpcServer, s.QueryHandler)
 	if s.EnableHttp {
 		s.Logger.Info("enabling rest/http api")
 		gwmux := runtime.NewServeMux()
