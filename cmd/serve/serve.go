@@ -14,9 +14,10 @@ limitations under the License.
 package serve
 
 import (
-	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"os"
 	"strconv"
+
+	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -108,6 +109,7 @@ var ServeCmd = &cobra.Command{
 			baseURL := os.Getenv("K8SGPT_BASEURL")
 			engine := os.Getenv("K8SGPT_ENGINE")
 			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
+			providerId := os.Getenv("K8SGPT_PROVIDER_ID")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
 			envIsSet := backend != "" || password != "" || model != ""
@@ -119,6 +121,7 @@ var ServeCmd = &cobra.Command{
 					BaseURL:       baseURL,
 					Engine:        engine,
 					ProxyEndpoint: proxyEndpoint,
+					ProviderId:    providerId,
 					Temperature:   temperature(),
 					TopP:          topP(),
 					TopK:          topK(),
