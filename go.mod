@@ -57,7 +57,6 @@ require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/connectrpc/go v1.17.0-20240920204244-7a91c8620515.1 // indirect
 	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/ai v0.3.5-0.20240409161017-ce55ad694f21 // indirect
 	cloud.google.com/go/aiplatform v1.68.0 // indirect
@@ -252,7 +251,7 @@ require (
 	k8s.io/component-base v0.30.3 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240521193020-835d969ad83a // indirect
-	k8s.io/utils v0.0.0-20240902221715-702e33fdd3c3
+	k8s.io/utils v0.0.0-20240921022957-49e7df575cb6
 	oras.land/oras-go v1.2.5 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.17.2 // indirect
