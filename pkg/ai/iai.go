@@ -32,7 +32,7 @@ var (
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
 		&OCIGenAIClient{},
-		&WatsonxAIClient{},
+		&IBMWatsonxAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -47,7 +47,7 @@ var (
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
 		ociClientName,
-		watsonxAIClientName,
+		ibmWatsonxAIClientName,
 	}
 )
 
