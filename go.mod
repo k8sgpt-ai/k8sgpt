@@ -136,6 +136,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/moby/buildkit v0.13.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
+	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/open-policy-agent/opa v0.65.0 // indirect
@@ -320,4 +321,4 @@ require (
 // v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
 // v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
 //replace oras.land/oras-go => oras.land/oras-go v1.2.4
-replace github.com/docker/docker => github.com/docker/docker v27.1.1+incompatible
+replace github.com/docker/docker => github.com/docker/docker v27.3.1+incompatible
