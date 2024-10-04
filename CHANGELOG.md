@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.3.42](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.41...v0.3.42) (2024-10-04)
+
+
+### Features
+
+* error from events for STS analyzer ([#1256](https://github.com/k8sgpt-ai/k8sgpt/issues/1256)) ([d8fad95](https://github.com/k8sgpt-ai/k8sgpt/commit/d8fad956f45a4dd668647379bb0295e169faeac6))
+
+
+### Bug Fixes
+
+* add providerId to serve mode ([#1260](https://github.com/k8sgpt-ai/k8sgpt/issues/1260)) ([da0764d](https://github.com/k8sgpt-ai/k8sgpt/commit/da0764d951ca76cb7007c412f8efa794619c20ba))
+* **deps:** update k8s.io/utils digest to 49e7df5 ([#1259](https://github.com/k8sgpt-ai/k8sgpt/issues/1259)) ([7785dd1](https://github.com/k8sgpt-ai/k8sgpt/commit/7785dd12a0245a33af25dedd2fbb5f4178b5cda9))
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.22.0 ([#1034](https://github.com/k8sgpt-ai/k8sgpt/issues/1034)) ([037e745](https://github.com/k8sgpt-ai/k8sgpt/commit/037e745c6f667830f0e1d531ce4bbd07083ef972))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.55.5 ([#1263](https://github.com/k8sgpt-ai/k8sgpt/issues/1263)) ([0148a5b](https://github.com/k8sgpt-ai/k8sgpt/commit/0148a5b3549cbdb6c6e5832dc01aab044b90ddc9))
+* rename watsonxai to ibmwatsonxai ([#1234](https://github.com/k8sgpt-ai/k8sgpt/issues/1234)) ([5ff6dc9](https://github.com/k8sgpt-ai/k8sgpt/commit/5ff6dc9be5218e47839c4ac5e8f3458b40eb9c88))
+
+
+### Other
+
+* **deps:** update anchore/sbom-action action to v0.17.2 ([#1248](https://github.com/k8sgpt-ai/k8sgpt/issues/1248)) ([04582d8](https://github.com/k8sgpt-ai/k8sgpt/commit/04582d85160055da30e4e00fd3c6ca69d1decd1a))
+* **deps:** update golang docker tag to v1.23 ([#1254](https://github.com/k8sgpt-ai/k8sgpt/issues/1254)) ([b62b7db](https://github.com/k8sgpt-ai/k8sgpt/commit/b62b7dbe3c9cd02b81f6a0111bca939034c5cc9f))
+* **deps:** update module github.com/docker/docker to v27.3.1+incompatible ([#1225](https://github.com/k8sgpt-ai/k8sgpt/issues/1225)) ([9c1927b](https://github.com/k8sgpt-ai/k8sgpt/commit/9c1927b4975fa8132fbc24dd96a5737819855544))
+
 ## [0.3.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.40...v0.3.41) (2024-09-22)
 
 
