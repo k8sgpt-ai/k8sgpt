@@ -25,7 +25,7 @@ require (
 
 )
 
-require github.com/adrg/xdg v0.4.0
+require github.com/adrg/xdg v0.5.0
 
 require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.22.0-20240920204244-7a91c8620515.1
