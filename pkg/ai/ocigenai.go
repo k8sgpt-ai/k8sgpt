@@ -16,21 +16,33 @@ package ai
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/generativeai"
 	"github.com/oracle/oci-go-sdk/v65/generativeaiinference"
+	"reflect"
 	"strings"
 )
 
 const ociClientName = "oci"
 
+type ociModelVendor string
+
+const (
+	vendorCohere = "cohere"
+	vendorMeta   = "meta"
+)
+
 type OCIGenAIClient struct {
 	nopCloser
 
 	client        *generativeaiinference.GenerativeAiInferenceClient
-	model         string
+	model         *generativeai.Model
+	modelId       string
 	compartmentId string
 	temperature   float32
 	topP          float32
+	topK          int32
 	maxTokens     int
 }
 
@@ -40,9 +52,10 @@ func (c *OCIGenAIClient) GetName() string {
 
 func (c *OCIGenAIClient) Configure(config IAIConfig) error {
 	config.GetEndpointName()
-	c.model = config.GetModel()
+	c.modelId = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.topK = config.GetTopK()
 	c.maxTokens = config.GetMaxTokens()
 	c.compartmentId = config.GetCompartmentId()
 	provider := common.DefaultConfigProvider()
@@ -51,6 +64,12 @@ func (c *OCIGenAIClient) Configure(config IAIConfig) error {
 		return err
 	}
 	c.client = &client
+	model, err := c.getModel(provider)
+	if err != nil {
+		return err
+	}
+	c.model = model
+
 	return nil
 }
 
@@ -60,38 +79,96 @@ func (c *OCIGenAIClient) GetCompletion(ctx context.Context, prompt string) (stri
 	if err != nil {
 		return "", err
 	}
-	return extractGeneratedText(generateTextResponse.InferenceResponse)
+	return c.extractGeneratedText(generateTextResponse.InferenceResponse)
 }
 
 func (c *OCIGenAIClient) newGenerateTextRequest(prompt string) generativeaiinference.GenerateTextRequest {
-	temperatureF64 := float64(c.temperature)
-	topPF64 := float64(c.topP)
 	return generativeaiinference.GenerateTextRequest{
 		GenerateTextDetails: generativeaiinference.GenerateTextDetails{
-			CompartmentId: &c.compartmentId,
-			ServingMode: generativeaiinference.OnDemandServingMode{
-				ModelId: &c.model,
-			},
-			InferenceRequest: generativeaiinference.CohereLlmInferenceRequest{
-				Prompt:      &prompt,
-				MaxTokens:   &c.maxTokens,
-				Temperature: &temperatureF64,
-				TopP:        &topPF64,
-			},
+			CompartmentId:    &c.compartmentId,
+			ServingMode:      c.getServingMode(),
+			InferenceRequest: c.getInferenceRequest(prompt),
 		},
 	}
 }
 
-func extractGeneratedText(llmInferenceResponse generativeaiinference.LlmInferenceResponse) (string, error) {
-	response, ok := llmInferenceResponse.(generativeaiinference.CohereLlmInferenceResponse)
-	if !ok {
-		return "", errors.New("failed to extract generated text from backed response")
-	}
-	sb := strings.Builder{}
-	for _, text := range response.GeneratedTexts {
-		if text.Text != nil {
-			sb.WriteString(*text.Text)
+func (c *OCIGenAIClient) getServingMode() generativeaiinference.ServingMode {
+	if c.isBaseModel() {
+		return generativeaiinference.OnDemandServingMode{
+			ModelId: &c.modelId,
 		}
 	}
-	return sb.String(), nil
+	return generativeaiinference.DedicatedServingMode{
+		EndpointId: &c.modelId,
+	}
+}
+
+func (c *OCIGenAIClient) getInferenceRequest(prompt string) generativeaiinference.LlmInferenceRequest {
+	temperatureF64 := float64(c.temperature)
+	topPF64 := float64(c.topP)
+	topK := int(c.topP)
+
+	switch c.getVendor() {
+	case vendorMeta:
+		return generativeaiinference.LlamaLlmInferenceRequest{
+			Prompt:      &prompt,
+			MaxTokens:   &c.maxTokens,
+			Temperature: &temperatureF64,
+			TopK:        &topK,
+			TopP:        &topPF64,
+		}
+	default: // Default to cohere
+		return generativeaiinference.CohereLlmInferenceRequest{
+			Prompt:      &prompt,
+			MaxTokens:   &c.maxTokens,
+			Temperature: &temperatureF64,
+			TopK:        &topK,
+			TopP:        &topPF64,
+		}
+	}
+}
+
+func (c *OCIGenAIClient) getModel(provider common.ConfigurationProvider) (*generativeai.Model, error) {
+	client, err := generativeai.NewGenerativeAiClientWithConfigurationProvider(provider)
+	if err != nil {
+		return nil, err
+	}
+	response, err := client.GetModel(context.Background(), generativeai.GetModelRequest{
+		ModelId: &c.modelId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &response.Model, nil
+}
+
+func (c *OCIGenAIClient) isBaseModel() bool {
+	return c.model != nil && c.model.Type == generativeai.ModelTypeBase
+}
+
+func (c *OCIGenAIClient) getVendor() ociModelVendor {
+	if c.model == nil || c.model.Vendor == nil {
+		return ""
+	}
+	return ociModelVendor(*c.model.Vendor)
+}
+
+func (c *OCIGenAIClient) extractGeneratedText(llmInferenceResponse generativeaiinference.LlmInferenceResponse) (string, error) {
+	switch response := llmInferenceResponse.(type) {
+	case generativeaiinference.LlamaLlmInferenceResponse:
+		if len(response.Choices) > 0 && response.Choices[0].Text != nil {
+			return *response.Choices[0].Text, nil
+		}
+		return "", errors.New("no text found in oci response")
+	case generativeaiinference.CohereLlmInferenceResponse:
+		sb := strings.Builder{}
+		for _, text := range response.GeneratedTexts {
+			if text.Text != nil {
+				sb.WriteString(*text.Text)
+			}
+		}
+		return sb.String(), nil
+	default:
+		return "", fmt.Errorf("unknown oci response type: %s", reflect.TypeOf(llmInferenceResponse).Name())
+	}
 }
