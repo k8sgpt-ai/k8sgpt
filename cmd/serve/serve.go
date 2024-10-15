@@ -139,6 +139,17 @@ var ServeCmd = &cobra.Command{
 				os.Exit(1)
 			}
 		}
+
+		// Backend string will have high priority than a default provider
+		// Hence, use the default provider only if the backend is not specified by the user.
+		if configAI.DefaultProvider != "" && backend == "" {
+			backend = configAI.DefaultProvider
+		}
+		// Using default provider openai
+		if backend == "" {
+			backend = "openai"
+		}
+
 		if aiProvider == nil {
 			for _, provider := range configAI.Providers {
 				if backend == provider.Name {
@@ -200,6 +211,6 @@ func init() {
 	// add flag for backend
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
 	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
-	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
+	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "", "Backend AI provider")
 	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 }
