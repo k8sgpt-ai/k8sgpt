@@ -55,6 +55,18 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 	return output, nil
 }
 
+func (a *Analysis) PrintStats() []byte {
+	var output strings.Builder
+
+	output.WriteString(color.YellowString("The stats mode allows for debugging and understanding the time taken by an analysis by displaying the statistics of each analyzer.\n"))
+
+	for _, stat := range a.Stats {
+		output.WriteString(fmt.Sprintf("- Analyzer %s took %s \n", color.YellowString(stat.Analyzer), stat.DurationTime))
+	}
+
+	return []byte(output.String())
+}
+
 func (a *Analysis) textOutput() ([]byte, error) {
 	var output strings.Builder
 
