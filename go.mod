@@ -34,7 +34,7 @@ require (
 	cloud.google.com/go/storage v1.44.0
 	cloud.google.com/go/vertexai v0.7.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
 	github.com/IBM/watsonx-go v1.0.1
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
