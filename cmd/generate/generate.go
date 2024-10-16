@@ -20,13 +20,23 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
 	backend     string
-	backendType string
 )
+
+var apiKeysURLs = map[string]string{
+	"openai":          "https://beta.openai.com/account/api-keys",
+	"cohere":          "https://dashboard.cohere.ai/api-keys",
+	"azureopenai":     "https://portal.azure.com/#create/Microsoft.CognitiveServicesOpenAI",
+	"google":          "https://makersuite.google.com/app/apikey",
+	"amazonsagemaker": "https://console.aws.amazon.com/bedrock/home",
+	"amazonbedrock":   "https://console.aws.amazon.com/sagemaker/home",
+	"huggingface":     "https://huggingface.co/settings/tokens",
+	"localai":         "https://localai.io/basics/getting_started/",
+	"noopai":          "https://docs.k8sgpt.ai/reference/providers/backend/#FakeAI",
+}
 
 // generateCmd represents the auth command
 var GenerateCmd = &cobra.Command{
@@ -34,18 +44,10 @@ var GenerateCmd = &cobra.Command{
 	Short: "Generate Key for your chosen backend (opens browser)",
 	Long:  `Opens your browser to generate a key for your chosen backend.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		backendType = viper.GetString("backend_type")
-		if backendType == "" {
-			// Set the default backend
+		if backend == "" {
 			backend = "openai"
 		}
-		// override the default backend if a flag is provided
-		if backend != "" {
-			backendType = backend
-		}
-		fmt.Println("")
-		openbrowser("https://beta.openai.com/account/api-keys")
+		openbrowser(apiKeysURLs[backend])
 	},
 }
 
@@ -72,19 +74,19 @@ func openbrowser(url string) {
 	default:
 		err = fmt.Errorf("unsupported platform")
 	}
-	printInstructions(isGui, backend)
+	printInstructions(isGui, backend, url)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func printInstructions(isGui bool, backendType string) {
+func printInstructions(isGui bool, backendType string, url string) {
 	fmt.Println("")
 	if isGui {
-		color.Green("Opening: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		color.Green("Opening: %s to generate a key for %s", url, backendType)
 		fmt.Println("")
 	} else {
-		color.Green("Please open: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		color.Green("Please open: %s to generate a key for %s", url, backendType)
 		fmt.Println("")
 	}
 	color.Green("Please copy the generated key and run `k8sgpt auth add` to add it to your config file")
