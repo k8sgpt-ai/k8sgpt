@@ -32,7 +32,7 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20240920204244-7a91c8620515.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.35.1-20240920204244-7a91c8620515.1
 	cloud.google.com/go/storage v1.44.0
-	cloud.google.com/go/vertexai v0.7.1
+	cloud.google.com/go/vertexai v0.13.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
 	github.com/IBM/watsonx-go v1.0.1
