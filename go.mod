@@ -39,7 +39,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cohere-ai/cohere-go/v2 v2.7.3
 	github.com/go-logr/zapr v1.3.0
-	github.com/google/generative-ai-go v0.11.0
+	github.com/google/generative-ai-go v0.18.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.3
@@ -59,7 +59,7 @@ require (
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cel.dev/expr v0.16.1 // indirect
 	cloud.google.com/go v0.115.1 // indirect
-	cloud.google.com/go/ai v0.3.5-0.20240409161017-ce55ad694f21 // indirect
+	cloud.google.com/go/ai v0.8.0 // indirect
 	cloud.google.com/go/aiplatform v1.68.0 // indirect
 	cloud.google.com/go/auth v0.9.3 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.4 // indirect
