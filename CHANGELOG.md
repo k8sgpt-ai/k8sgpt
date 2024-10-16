@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.3.42](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.41...v0.3.42) (2024-10-16)
+
+
+### Features
+
+* error from events for STS analyzer ([#1256](https://github.com/k8sgpt-ai/k8sgpt/issues/1256)) ([d8fad95](https://github.com/k8sgpt-ai/k8sgpt/commit/d8fad956f45a4dd668647379bb0295e169faeac6))
+
+
+### Bug Fixes
+
+* add providerId to serve mode ([#1260](https://github.com/k8sgpt-ai/k8sgpt/issues/1260)) ([da0764d](https://github.com/k8sgpt-ai/k8sgpt/commit/da0764d951ca76cb7007c412f8efa794619c20ba))
+* **deps:** update k8s.io/utils digest to 49e7df5 ([#1259](https://github.com/k8sgpt-ai/k8sgpt/issues/1259)) ([7785dd1](https://github.com/k8sgpt-ai/k8sgpt/commit/7785dd12a0245a33af25dedd2fbb5f4178b5cda9))
+* **deps:** update module buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go to v1.35.1-20240920204244-7a91c8620515.1 ([#1274](https://github.com/k8sgpt-ai/k8sgpt/issues/1274)) ([9f39abf](https://github.com/k8sgpt-ai/k8sgpt/commit/9f39abf89e4e92009f5e138d9b01d11c60ac135c))
+* **deps:** update module cloud.google.com/go/storage to v1.44.0 ([#1265](https://github.com/k8sgpt-ai/k8sgpt/issues/1265)) ([4143e9f](https://github.com/k8sgpt-ai/k8sgpt/commit/4143e9fd524bed3179524d949b7b0f92c02ecd11))
+* **deps:** update module github.com/adrg/xdg to v0.5.0 ([#1262](https://github.com/k8sgpt-ai/k8sgpt/issues/1262)) ([98237b6](https://github.com/k8sgpt-ai/k8sgpt/commit/98237b6408521ee7afc05fcaed2f78ba79e77144))
+* **deps:** update module github.com/aquasecurity/trivy-operator to v0.22.0 ([#1034](https://github.com/k8sgpt-ai/k8sgpt/issues/1034)) ([037e745](https://github.com/k8sgpt-ai/k8sgpt/commit/037e745c6f667830f0e1d531ce4bbd07083ef972))
+* **deps:** update module github.com/aws/aws-sdk-go to v1.55.5 ([#1263](https://github.com/k8sgpt-ai/k8sgpt/issues/1263)) ([0148a5b](https://github.com/k8sgpt-ai/k8sgpt/commit/0148a5b3549cbdb6c6e5832dc01aab044b90ddc9))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/azidentity to v1.8.0 ([#1264](https://github.com/k8sgpt-ai/k8sgpt/issues/1264)) ([3613585](https://github.com/k8sgpt-ai/k8sgpt/commit/36135857ac55e126b3a6c4533a000cb0b7f32c6b))
+* **deps:** update module github.com/azure/azure-sdk-for-go/sdk/storage/azblob to v1.4.1 ([#1275](https://github.com/k8sgpt-ai/k8sgpt/issues/1275)) ([c9b11b6](https://github.com/k8sgpt-ai/k8sgpt/commit/c9b11b6eee00d0269a4d48ad2e4be5458436b51d))
+* rename watsonxai to ibmwatsonxai ([#1234](https://github.com/k8sgpt-ai/k8sgpt/issues/1234)) ([5ff6dc9](https://github.com/k8sgpt-ai/k8sgpt/commit/5ff6dc9be5218e47839c4ac5e8f3458b40eb9c88))
+
+
+### Other
+
+* **deps:** update actions/checkout digest to eef6144 ([#1270](https://github.com/k8sgpt-ai/k8sgpt/issues/1270)) ([72eb815](https://github.com/k8sgpt-ai/k8sgpt/commit/72eb8159fb4a2284cf43eb6a5f3de7bed10c6224))
+* **deps:** update anchore/sbom-action action to v0.17.2 ([#1248](https://github.com/k8sgpt-ai/k8sgpt/issues/1248)) ([04582d8](https://github.com/k8sgpt-ai/k8sgpt/commit/04582d85160055da30e4e00fd3c6ca69d1decd1a))
+* **deps:** update anchore/sbom-action action to v0.17.4 ([#1273](https://github.com/k8sgpt-ai/k8sgpt/issues/1273)) ([c128bf7](https://github.com/k8sgpt-ai/k8sgpt/commit/c128bf7942e380fcab5e9771f405471198e388fe))
+* **deps:** update golang docker tag to v1.23 ([#1254](https://github.com/k8sgpt-ai/k8sgpt/issues/1254)) ([b62b7db](https://github.com/k8sgpt-ai/k8sgpt/commit/b62b7dbe3c9cd02b81f6a0111bca939034c5cc9f))
+* **deps:** update module github.com/docker/docker to v27.3.1+incompatible ([#1225](https://github.com/k8sgpt-ai/k8sgpt/issues/1225)) ([9c1927b](https://github.com/k8sgpt-ai/k8sgpt/commit/9c1927b4975fa8132fbc24dd96a5737819855544))
+
 ## [0.3.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.40...v0.3.41) (2024-09-22)
 
 
