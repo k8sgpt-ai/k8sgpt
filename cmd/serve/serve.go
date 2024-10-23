@@ -30,6 +30,7 @@ const (
 	defaultTemperature float32 = 0.7
 	defaultTopP        float32 = 1.0
 	defaultTopK        int32   = 50
+	defaultMaxTokens   int     = 2048
 )
 
 var (
@@ -102,6 +103,18 @@ var ServeCmd = &cobra.Command{
 				}
 				return int32(topK)
 			}
+			maxTokens := func() int {
+				env := os.Getenv("K8SGPT_MAX_TOKENS")
+				if env == "" {
+					return defaultMaxTokens
+				}
+				maxTokens, err := strconv.ParseInt(env, 10, 32)
+				if err != nil {
+					color.Red("Unable to convert maxTokens value: %v", err)
+					os.Exit(1)
+				}
+				return int(maxTokens)
+			}
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
@@ -125,6 +138,7 @@ var ServeCmd = &cobra.Command{
 					Temperature:   temperature(),
 					TopP:          topP(),
 					TopK:          topK(),
+					MaxTokens:     maxTokens(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
