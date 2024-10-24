@@ -160,6 +160,14 @@ func NewAnalysis(
 	return a, nil
 }
 
+func (a *Analysis) CustomAnalyzersAreAvailable() bool {
+	var customAnalyzers []custom.CustomAnalyzer
+	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
+		return false
+	}
+	return len(customAnalyzers) > 0
+}
+
 func (a *Analysis) RunCustomAnalysis() {
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
@@ -184,6 +192,12 @@ func (a *Analysis) RunCustomAnalysis() {
 			}
 
 			result, err := canClient.Run()
+			if result.Kind == "" {
+				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
+				//and must start and end with an alphanumeric character (e.g. 'example.com',
+				//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+				result.Kind = cAnalyzer.Name
+			}
 			if err != nil {
 				mutex.Lock()
 				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
