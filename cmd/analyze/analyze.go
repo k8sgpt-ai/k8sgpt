@@ -40,6 +40,7 @@ var (
 	interactiveMode bool
 	customAnalysis  bool
 	customHeaders   []string
+	stats           bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -75,6 +76,12 @@ var AnalyzeCmd = &cobra.Command{
 			config.RunCustomAnalysis()
 		}
 		config.RunAnalysis()
+
+		if stats {
+			statsData := config.PrintStats()
+			fmt.Println(string(statsData))
+			os.Exit(0)
+		}
 
 		if explain {
 			if err := config.GetAIResults(output, anonymize); err != nil {
@@ -146,4 +153,6 @@ func init() {
 	AnalyzeCmd.Flags().StringSliceVarP(&customHeaders, "custom-headers", "r", []string{}, "Custom Headers, <key>:<value> (e.g CustomHeaderKey:CustomHeaderValue AnotherHeader:AnotherValue)")
 	// label selector flag
 	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
+	// print stats
+	AnalyzeCmd.Flags().BoolVarP(&stats, "stats", "s", false, "Print analysis stats. This option disables errors display.")
 }

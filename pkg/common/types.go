@@ -15,6 +15,7 @@ package common
 
 import (
 	"context"
+	"time"
 
 	trivy "github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
@@ -78,6 +79,11 @@ type Result struct {
 	Error        []Failure `json:"error"`
 	Details      string    `json:"details"`
 	ParentObject string    `json:"parentObject"`
+}
+
+type AnalysisStats struct {
+	Analyzer     string        `json:"analyzer"`
+	DurationTime time.Duration `json:"durationTime"`
 }
 
 type Failure struct {
