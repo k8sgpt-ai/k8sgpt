@@ -1,9 +1,10 @@
 package analyze
 
 import (
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"context"
 	json "encoding/json"
+
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 )
 
@@ -31,6 +32,7 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		false,      // Kubernetes Doc disabled in server mode
 		false,      // Interactive mode disabled in server mode
 		[]string{}, //TODO: add custom http headers in server mode
+		false,      // with stats disable
 	)
 	config.Context = ctx // Replace context for correct timeouts.
 	if err != nil {

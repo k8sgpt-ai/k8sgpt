@@ -40,7 +40,7 @@ var (
 	interactiveMode bool
 	customAnalysis  bool
 	customHeaders   []string
-	stats           bool
+	withStats       bool
 )
 
 // AnalyzeCmd represents the problems command
@@ -64,6 +64,7 @@ var AnalyzeCmd = &cobra.Command{
 			withDoc,
 			interactiveMode,
 			customHeaders,
+			withStats,
 		)
 
 		if err != nil {
@@ -77,12 +78,6 @@ var AnalyzeCmd = &cobra.Command{
 		}
 		config.RunAnalysis()
 
-		if stats {
-			statsData := config.PrintStats()
-			fmt.Println(string(statsData))
-			os.Exit(0)
-		}
-
 		if explain {
 			if err := config.GetAIResults(output, anonymize); err != nil {
 				color.Red("Error: %v", err)
@@ -95,6 +90,12 @@ var AnalyzeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+
+		if withStats {
+			statsData := config.PrintStats()
+			fmt.Println(string(statsData))
+		}
+
 		fmt.Println(string(output_data))
 
 		if interactiveMode && explain {
@@ -154,5 +155,5 @@ func init() {
 	// label selector flag
 	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
 	// print stats
-	AnalyzeCmd.Flags().BoolVarP(&stats, "stats", "s", false, "Print analysis stats. This option disables errors display.")
+	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats. This option disables errors display.")
 }

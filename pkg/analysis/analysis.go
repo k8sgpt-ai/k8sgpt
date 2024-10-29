@@ -50,6 +50,7 @@ type Analysis struct {
 	MaxConcurrency     int
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
 	WithDoc            bool
+	WithStats          bool
 	Stats              []common.AnalysisStats
 }
 
@@ -83,6 +84,7 @@ func NewAnalysis(
 	withDoc bool,
 	interactiveMode bool,
 	httpHeaders []string,
+	withStats bool,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -113,6 +115,7 @@ func NewAnalysis(
 		Explain:        explain,
 		MaxConcurrency: maxConcurrency,
 		WithDoc:        withDoc,
+		WithStats:      withStats,
 	}
 	if !explain {
 		// Return early if AI use was not requested.
@@ -282,14 +285,21 @@ func (a *Analysis) RunAnalysis() {
 func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, analyzerConfig common.Analyzer, semaphore chan struct{}, wg *sync.WaitGroup, mutex *sync.Mutex) {
 	defer wg.Done()
 
+	var startTime time.Time
+	var elapsedTime time.Duration
+
 	// Start the timer
-	startTime := time.Now()
+	if a.WithStats {
+		startTime = time.Now()
+	}
 
 	// Run the analyzer
 	results, err := analyzer.Analyze(analyzerConfig)
 
 	// Measure the time taken
-	elapsedTime := time.Since(startTime)
+	if a.WithStats {
+		elapsedTime = time.Since(startTime)
+	}
 	stat := common.AnalysisStats{
 		Analyzer:     filter,
 		DurationTime: elapsedTime,
@@ -299,10 +309,14 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	defer mutex.Unlock()
 
 	if err != nil {
-		a.Stats = append(a.Stats, stat)
+		if a.WithStats {
+			a.Stats = append(a.Stats, stat)
+		}
 		a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
 	} else {
-		a.Stats = append(a.Stats, stat)
+		if a.WithStats {
+			a.Stats = append(a.Stats, stat)
+		}
 		a.Results = append(a.Results, results...)
 	}
 	<-semaphore
