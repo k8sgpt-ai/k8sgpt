@@ -26,8 +26,9 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
+	//nolint:staticcheck // Ignoring SA1019 for compatibility reasons
 	gw2 "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_analyzer_service/schemav1gateway"
+	//nolint:staticcheck // Ignoring SA1019 for compatibility reasons
 	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_config_service/schemav1gateway"
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
 	"github.com/go-logr/zapr"
