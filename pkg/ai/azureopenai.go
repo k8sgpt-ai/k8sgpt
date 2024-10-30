@@ -17,7 +17,7 @@ type AzureAIClient struct {
 	client         *openai.Client
 	model          string
 	temperature    float32
-	organizationId string
+	// organizationId string
 }
 
 func (c *AzureAIClient) Configure(config IAIConfig) error {

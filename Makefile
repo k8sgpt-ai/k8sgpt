@@ -98,7 +98,7 @@ vet:
 ## lint: Run go lint against code.
 .PHONY: lint
 lint:
-	@golangci-lint run -v ./...
+	@golangci-lint run -v --timeout=5m ./...
 
 ## style: Code style -> fmt,vet,lint
 .PHONY: style
