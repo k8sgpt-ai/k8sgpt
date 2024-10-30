@@ -31,7 +31,7 @@ type OpenAIClient struct {
 	model          string
 	temperature    float32
 	topP           float32
-	organizationId string
+	// organizationId string
 }
 
 const (
