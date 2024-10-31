@@ -6,7 +6,7 @@ toolchain go1.23.2
 
 require (
 	github.com/aquasecurity/trivy-operator v0.22.0
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/kedacore/keda/v2 v2.11.2
 	github.com/magiconair/properties v1.8.7
 	github.com/mittwald/go-helm-client v0.12.13
