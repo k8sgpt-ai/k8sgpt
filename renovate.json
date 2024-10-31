@@ -3,7 +3,8 @@
   "extends": [
     "config:base",
     "helpers:pinGitHubActionDigests",
-    ":gitSignOff"
+    ":gitSignOff",
+    "group:allNonMajor",
   ],
   "addLabels": ["dependencies"],
   "postUpdateOptions": [
