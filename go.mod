@@ -37,7 +37,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
 	github.com/IBM/watsonx-go v1.0.1
 	github.com/aws/aws-sdk-go v1.55.5
-	github.com/cohere-ai/cohere-go/v2 v2.7.3
+	github.com/cohere-ai/cohere-go/v2 v2.12.0
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/generative-ai-go v0.18.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
@@ -86,8 +86,9 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/aquasecurity/go-version v0.0.0-20240603093900-cf8a8d29271d // indirect
 	github.com/aquasecurity/trivy-checks v0.13.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.30.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.55.1 // indirect
-	github.com/aws/smithy-go v1.20.2 // indirect
+	github.com/aws/smithy-go v1.20.3 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
