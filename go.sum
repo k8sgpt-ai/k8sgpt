@@ -1412,6 +1412,8 @@ github.com/linode/linodego v1.35.0 h1:rIhUeCHBLEDlkoRnOTwzSGzljQ3ksXwLxacmXnrV+D
 github.com/linode/linodego v1.35.0/go.mod h1:JxuhOEAMfSxun6RU5/MgTKH2GGTmFrhKRj3wL1NFin0=
 github.com/lithammer/fuzzysearch v1.1.8 h1:/HIuJnjHuXS8bKaiTMeeDlW2/AyIWk2brx1V8LFgLN4=
 github.com/lithammer/fuzzysearch v1.1.8/go.mod h1:IdqeyBClc3FFqSzYq/MXESsS4S0FsZ5ajtkr5xPLts4=
+github.com/liushuangls/go-anthropic/v2 v2.9.1 h1:95Ff9/AVkgJii+cSS2bxqrBev3v1vOro0K8bl5m/2Lo=
+github.com/liushuangls/go-anthropic/v2 v2.9.1/go.mod h1:8BKv/fkeTaL5R9R9bGkaknYBueyw2WxY20o7bImbOek=
 github.com/lufia/plan9stats v0.0.0-20240226150601-1dcf7310316a h1:3Bm7EwfUQUvhNeKIkUct/gl9eod1TcXuj8stxvi/GoI=
 github.com/lufia/plan9stats v0.0.0-20240226150601-1dcf7310316a/go.mod h1:ilwx/Dta8jXAgpFYFvSWEMwxmbWXyiUHkd5FwyKhb5k=
 github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40 h1:EnfXoSqDfSNJv0VBNqY/88RNnhSGYkrHaO0mmFGbVsc=
