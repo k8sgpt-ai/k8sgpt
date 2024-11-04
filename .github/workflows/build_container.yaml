@@ -22,7 +22,7 @@ defaults:
 jobs:
   prepare_ci_run:
     name: Prepare CI Run
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       GIT_SHA: ${{ steps.extract_branch.outputs.GIT_SHA }}
       BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
@@ -61,7 +61,7 @@ jobs:
   build_image:
     name: Build Container Image
     needs: prepare_ci_run
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
@@ -105,7 +105,7 @@ jobs:
     name: Upload images to ghcr registry
     needs: [ prepare_ci_run, build_image ]
     if: github.event_name == 'push' && needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' # only run on push to main/maintenance branches
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
       BUILD_TIME: ${{ needs.prepare_ci_run.outputs.BUILD_TIME }}

@@ -10,7 +10,7 @@ defaults:
     shell: bash
 jobs:
   validate:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: read # Needed for checking out the repository
       pull-requests: read # Needed for reading prs
