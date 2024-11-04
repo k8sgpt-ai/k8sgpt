@@ -49,6 +49,7 @@ require (
 	github.com/pterm/pterm v0.12.79
 	google.golang.org/api v0.204.0
 	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/controller-runtime v0.19.1
 	sigs.k8s.io/gateway-api v1.2.0
 )
@@ -191,7 +192,6 @@ require (
 	google.golang.org/grpc/stats/opentelemetry v0.0.0-20240907200651-3ffb98b2c93a // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	knative.dev/pkg v0.0.0-20240805063731-c88d5dad9653 // indirect
 	mvdan.cc/sh/v3 v3.8.0 // indirect
 )
