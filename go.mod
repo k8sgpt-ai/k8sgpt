@@ -28,7 +28,7 @@ require (
 require github.com/adrg/xdg v0.5.3
 
 require (
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.22.0-20240920204244-7a91c8620515.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.23.0-20240920204244-7a91c8620515.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20240920204244-7a91c8620515.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.35.1-20240920204244-7a91c8620515.1
 	cloud.google.com/go/storage v1.46.0
@@ -45,7 +45,7 @@ require (
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/oracle/oci-go-sdk/v65 v65.78.0
-	github.com/prometheus/prometheus v0.55.0
+	github.com/prometheus/prometheus v0.55.1
 	github.com/pterm/pterm v0.12.79
 	google.golang.org/api v0.204.0
 	gopkg.in/yaml.v2 v2.4.0
