@@ -590,8 +590,8 @@ cloud.google.com/go/translate v1.4.0/go.mod h1:06Dn/ppvLD6WvA5Rhdp029IX2Mi3Mn7fp
 cloud.google.com/go/translate v1.5.0/go.mod h1:29YDSYveqqpA1CQFD7NQuP49xymq17RXNaUDdc0mNu0=
 cloud.google.com/go/translate v1.6.0/go.mod h1:lMGRudH1pu7I3n3PETiOB2507gf3HnfLV8qlkHZEyos=
 cloud.google.com/go/translate v1.7.0/go.mod h1:lMGRudH1pu7I3n3PETiOB2507gf3HnfLV8qlkHZEyos=
-cloud.google.com/go/vertexai v0.13.1 h1:E6I+eA6vNQxz7/rb0wdILdKg4hFmMNWZLp+dSy9DnEo=
-cloud.google.com/go/vertexai v0.13.1/go.mod h1:25DzKFzP9JByYxcNjJefu/px2dRjcRpCDSdULYL2avI=
+cloud.google.com/go/vertexai v0.13.2 h1:dOnvkMDZy3GdKAz8Isd2d6KV3jQpk6CKvYao1SIupuk=
+cloud.google.com/go/vertexai v0.13.2/go.mod h1:+nmz1z8AeYILA5QM2yii3CED1PqGknZH1CUNDVatIg4=
 cloud.google.com/go/video v1.8.0/go.mod h1:sTzKFc0bUSByE8Yoh8X0mn8bMymItVGPfTuUBUyRgxk=
 cloud.google.com/go/video v1.9.0/go.mod h1:0RhNKFRF5v92f8dQt0yhaHrEuH95m068JYOvLZYnJSw=
 cloud.google.com/go/video v1.12.0/go.mod h1:MLQew95eTuaNDEGriQdcYn0dTwf9oWiA4uYebxM5kdg=
@@ -1525,8 +1525,8 @@ github.com/opencontainers/image-spec v1.1.0 h1:8SG7/vwALn54lVB/0yZ/MMwhFrPYtpEHQ
 github.com/opencontainers/image-spec v1.1.0/go.mod h1:W4s4sFTMaBeK1BQLXbG4AdM2szdn85PY75RI83NrTrM=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=
-github.com/oracle/oci-go-sdk/v65 v65.77.1 h1:gqjTXIUWvTihkn470AclxSAMcR1JecqjD2IUtp+sDIU=
-github.com/oracle/oci-go-sdk/v65 v65.77.1/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
+github.com/oracle/oci-go-sdk/v65 v65.78.0 h1:iM7lFFA7cJkUD4tmrlsAHWgL3HuTuF9mdvTAliMkcFA=
+github.com/oracle/oci-go-sdk/v65 v65.78.0/go.mod h1:IBEV9l1qBzUpo7zgGaRUhbB05BVfcDGYRFBCPlTcPp0=
 github.com/ovh/go-ovh v1.6.0 h1:ixLOwxQdzYDx296sXcgS35TOPEahJkpjMGtzPadCjQI=
 github.com/ovh/go-ovh v1.6.0/go.mod h1:cTVDnl94z4tl8pP1uZ/8jlVxntjSIf09bNcQ5TJSC7c=
 github.com/owenrumney/squealer v1.2.2 h1:zsnZSwkWi8Y2lgwmg77b565vlHQovlvBrSBzmAs3oiE=

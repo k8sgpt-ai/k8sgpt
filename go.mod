@@ -32,7 +32,7 @@ require (
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20240920204244-7a91c8620515.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.35.1-20240920204244-7a91c8620515.1
 	cloud.google.com/go/storage v1.46.0
-	cloud.google.com/go/vertexai v0.13.1
+	cloud.google.com/go/vertexai v0.13.2
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.4.1
 	github.com/IBM/watsonx-go v1.0.1
@@ -44,12 +44,11 @@ require (
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/oracle/oci-go-sdk/v65 v65.77.1
+	github.com/oracle/oci-go-sdk/v65 v65.78.0
 	github.com/prometheus/prometheus v0.55.0
 	github.com/pterm/pterm v0.12.79
 	google.golang.org/api v0.204.0
 	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/controller-runtime v0.19.1
 	sigs.k8s.io/gateway-api v1.2.0
 )
@@ -192,6 +191,7 @@ require (
 	google.golang.org/grpc/stats/opentelemetry v0.0.0-20240907200651-3ffb98b2c93a // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	knative.dev/pkg v0.0.0-20240805063731-c88d5dad9653 // indirect
 	mvdan.cc/sh/v3 v3.8.0 // indirect
 )
