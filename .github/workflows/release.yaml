@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -38,7 +38,7 @@ jobs:
       contents: write
     needs:
       - release-please
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -66,7 +66,7 @@ jobs:
     if: needs.release-please.outputs.releases_created == 'true'
     needs:
       - release-please
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
