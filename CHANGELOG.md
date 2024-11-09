@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.44](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.43...v0.3.44) (2024-11-09)
+
+
+### Features
+
+* test revert runner on release job ([#1310](https://github.com/k8sgpt-ai/k8sgpt/issues/1310)) ([cc9b3ea](https://github.com/k8sgpt-ai/k8sgpt/commit/cc9b3ea6579c6190629e0fac48e37e0eba650158))
+
 ## [0.3.43](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.42...v0.3.43) (2024-11-05)
 
 
