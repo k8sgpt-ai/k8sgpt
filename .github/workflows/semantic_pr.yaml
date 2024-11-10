@@ -11,7 +11,7 @@ defaults:
 jobs:
   validate:
     runs-on:
-      group: "Default"
+      group: "cncf/Default"
     permissions:
       contents: read # Needed for checking out the repository
       pull-requests: read # Needed for reading prs
