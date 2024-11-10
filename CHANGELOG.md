@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.45](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.44...v0.3.45) (2024-11-10)
+
+
+### Features
+
+* free disk ([#1313](https://github.com/k8sgpt-ai/k8sgpt/issues/1313)) ([783cd1c](https://github.com/k8sgpt-ai/k8sgpt/commit/783cd1cfc66f8e4489e5006529745d8caf38cfd4))
+
+## [0.3.44](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.43...v0.3.44) (2024-11-09)
+
+
+### Features
+
+* test revert runner on release job ([#1310](https://github.com/k8sgpt-ai/k8sgpt/issues/1310)) ([cc9b3ea](https://github.com/k8sgpt-ai/k8sgpt/commit/cc9b3ea6579c6190629e0fac48e37e0eba650158))
+
+## [0.3.43](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.42...v0.3.43) (2024-11-05)
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1296](https://github.com/k8sgpt-ai/k8sgpt/issues/1296)) ([2f75986](https://github.com/k8sgpt-ai/k8sgpt/commit/2f759865b6fc5ae143c8f5e89a306abc89d4de27))
+
+
+### Other
+
+* **deps:** update dependency ubuntu to v24 ([#1293](https://github.com/k8sgpt-ai/k8sgpt/issues/1293)) ([c67add3](https://github.com/k8sgpt-ai/k8sgpt/commit/c67add30c64257ac6258dec93193e3201ba8c4ab))
+
 ## [0.3.42](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.41...v0.3.42) (2024-11-04)
 
 
