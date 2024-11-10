@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.46](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.45...v0.3.46) (2024-11-10)
+
+
+### Features
+
+* reverting the cncf runners ([#1319](https://github.com/k8sgpt-ai/k8sgpt/issues/1319)) ([ad86e7a](https://github.com/k8sgpt-ai/k8sgpt/commit/ad86e7aa39995c492437627dbd9f89f152f11f2c))
+* switching to higher spec runners ([#1312](https://github.com/k8sgpt-ai/k8sgpt/issues/1312)) ([5f7d9de](https://github.com/k8sgpt-ai/k8sgpt/commit/5f7d9de46a521463cedc901b729fe27f8d86f381))
+* testupdate ([#1315](https://github.com/k8sgpt-ai/k8sgpt/issues/1315)) ([7dcdfc8](https://github.com/k8sgpt-ai/k8sgpt/commit/7dcdfc83d2461e4342ded5fa80493936b70f64a1))
+* updated runners to enterprise ([#1318](https://github.com/k8sgpt-ai/k8sgpt/issues/1318)) ([1ae70e8](https://github.com/k8sgpt-ai/k8sgpt/commit/1ae70e806e2609c8fb964f0a577304d07b365cae))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 41dfa10 ([#1284](https://github.com/k8sgpt-ai/k8sgpt/issues/1284)) ([2ce8450](https://github.com/k8sgpt-ai/k8sgpt/commit/2ce8450e03986904a7ffe7afac4b5ba777c67c57))
+* **deps:** update softprops/action-gh-release action to v2 ([#1295](https://github.com/k8sgpt-ai/k8sgpt/issues/1295)) ([b6b3d0c](https://github.com/k8sgpt-ai/k8sgpt/commit/b6b3d0c8566b0dbd9cb0e5f59c8493e4343e0106))
+
 ## [0.3.45](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.44...v0.3.45) (2024-11-10)
 
 
