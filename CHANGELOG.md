@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.45](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.44...v0.3.45) (2024-11-10)
+
+
+### Features
+
+* free disk ([#1313](https://github.com/k8sgpt-ai/k8sgpt/issues/1313)) ([783cd1c](https://github.com/k8sgpt-ai/k8sgpt/commit/783cd1cfc66f8e4489e5006529745d8caf38cfd4))
+
 ## [0.3.44](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.43...v0.3.44) (2024-11-09)
 
 
