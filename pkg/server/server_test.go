@@ -24,6 +24,7 @@ func TestServe(t *testing.T) {
 
 	go func() {
 		err := s.Serve()
+		time.Sleep(time.Second * 2)
 		assert.NoError(t, err, "Serve should not return an error")
 	}()
 
