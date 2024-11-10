@@ -16,7 +16,8 @@ jobs:
     permissions:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
-    runs-on: equinix-32cpu-256gb
+    runs-on:
+      group: "Default Larger Runners"
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -38,7 +39,8 @@ jobs:
       contents: write
     needs:
       - release-please
-    runs-on: equinix-32cpu-256gb
+    runs-on:
+      group: "Default Larger Runners"
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -80,7 +82,8 @@ jobs:
     if: needs.release-please.outputs.releases_created == 'true'
     needs:
       - release-please
-    runs-on: equinix-32cpu-256gb
+    runs-on:
+      group: "Default Larger Runners"
     permissions:
       contents: write
       packages: write

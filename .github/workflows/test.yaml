@@ -13,7 +13,8 @@ env:
 
 jobs:
   build:
-    runs-on: equinix-32cpu-256gb
+    runs-on:
+      group: "Default Larger Runners"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
