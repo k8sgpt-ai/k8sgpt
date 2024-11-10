@@ -17,7 +17,7 @@ jobs:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
     runs-on:
-      group: "Default Larger Runners"
+      group: "Default"
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -40,7 +40,7 @@ jobs:
     needs:
       - release-please
     runs-on:
-      group: "Default Larger Runners"
+      group: "Default"
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -83,7 +83,7 @@ jobs:
     needs:
       - release-please
     runs-on:
-      group: "Default Larger Runners"
+      group: "Default"
     permissions:
       contents: write
       packages: write
