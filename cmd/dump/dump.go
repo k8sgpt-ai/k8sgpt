@@ -36,8 +36,8 @@ type DumpOut struct {
 
 var DumpCmd = &cobra.Command{
 	Use:   "dump",
-	Short: "Creates a dump for debugging",
-	Long:  ``,
+	Short: "Creates a dumpfile for debugging issues with K8sGPT",
+	Long:  `The dump command will create a dump.*.json which will contain K8sGPT non-sensitive configuration information.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Fetch the configuration object(s)
