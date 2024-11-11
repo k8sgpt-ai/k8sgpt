@@ -1,0 +1,53 @@
+{
+ "AIConfiguration": {
+  "Providers": [
+   {
+    "Name": "openai",
+    "Model": "gpt-3.5-turbo",
+    "Password": "sk-p***",
+    "BaseURL": "",
+    "ProxyEndpoint": "",
+    "ProxyPort": "",
+    "EndpointName": "",
+    "Engine": "",
+    "Temperature": 0.7,
+    "ProviderRegion": "",
+    "ProviderId": "",
+    "CompartmentId": "",
+    "TopP": 0.5,
+    "TopK": 50,
+    "MaxTokens": 2048,
+    "OrganizationId": "",
+    "CustomHeaders": []
+   }
+  ],
+  "DefaultProvider": ""
+ },
+ "ActiveFilters": [
+  "Deployment",
+  "StatefulSet",
+  "ReplicaSet",
+  "Ingress",
+  "ValidatingWebhookConfiguration",
+  "PersistentVolumeClaim",
+  "CronJob",
+  "MutatingWebhookConfiguration",
+  "Gateway"
+ ],
+ "KubenetesServerVersion": {
+  "major": "1",
+  "minor": "31",
+  "gitVersion": "v1.31.0",
+  "gitCommit": "9edcffcde5595e8a5b1a35f88c421764e575afce",
+  "gitTreeState": "clean",
+  "buildDate": "2024-08-13T07:28:49Z",
+  "goVersion": "go1.22.5",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+ },
+ "K8sGPTInfo": {
+  "Version": "dev",
+  "Commit": "HEAD",
+  "Date": "unknown"
+ }
+}

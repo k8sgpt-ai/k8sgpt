@@ -28,10 +28,16 @@ import (
 	"k8s.io/apimachinery/pkg/version"
 )
 
+type K8sGPTInfo struct {
+	Version string
+	Commit  string
+	Date    string
+}
 type DumpOut struct {
 	AIConfiguration        ai.AIConfiguration
 	ActiveFilters          []string
 	KubenetesServerVersion *version.Info
+	K8sGPTInfo             K8sGPTInfo
 }
 
 var DumpCmd = &cobra.Command{
@@ -71,14 +77,19 @@ var DumpCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-		version, err := client.Client.Discovery().ServerVersion()
+		v, err := client.Client.Discovery().ServerVersion()
 		if err != nil {
 			color.Yellow("Could not find kubernetes server version")
 		}
 		var dumpOut DumpOut = DumpOut{
 			AIConfiguration:        configAI,
 			ActiveFilters:          activeFilters,
-			KubenetesServerVersion: version,
+			KubenetesServerVersion: v,
+			K8sGPTInfo: K8sGPTInfo{
+				Version: viper.GetString("Version"),
+				Commit:  viper.GetString("Commit"),
+				Date:    viper.GetString("Date"),
+			},
 		}
 		// Serialize dumpOut to JSON
 		jsonData, err := json.MarshalIndent(dumpOut, "", " ")

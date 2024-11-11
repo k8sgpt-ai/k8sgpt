@@ -58,6 +58,9 @@ func Execute(v string, c string, d string) {
 	Version = v
 	Commit = c
 	Date = d
+	viper.Set("Version", Version)
+	viper.Set("Commit", Commit)
+	viper.Set("Date", Date)
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
