@@ -58,7 +58,10 @@ var DumpCmd = &cobra.Command{
 		kubecontext := viper.GetString("kubecontext")
 		kubeconfig := viper.GetString("kubeconfig")
 		client, err := kubernetes.NewClient(kubecontext, kubeconfig)
-
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
 		version, err := client.Client.Discovery().ServerVersion()
 		if err != nil {
 			color.Yellow("Could not find kubernetes server version")
@@ -68,14 +71,12 @@ var DumpCmd = &cobra.Command{
 			ActiveFilters:          activeFilters,
 			KubenetesServerVersion: version,
 		}
-
 		// Serialize dumpOut to JSON
 		jsonData, err := json.MarshalIndent(dumpOut, "", " ")
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
-
 		// Write JSON data to file
 		f := fmt.Sprintf("dump_%s.json", time.Now().Format("20060102150405"))
 		err = os.WriteFile(f, jsonData, 0644)

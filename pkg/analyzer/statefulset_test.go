@@ -384,7 +384,7 @@ func TestStatefulSetAnalyzerUnavailableReplicaWithPodInitialized(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	var errorFound bool
 	want := "Statefulset pod example-1 in the namespace default is not in running state."
 
