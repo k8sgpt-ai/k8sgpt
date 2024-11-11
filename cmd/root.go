@@ -23,6 +23,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/cache"
 	customanalyzer "github.com/k8sgpt-ai/k8sgpt/cmd/customAnalyzer"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/dump"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
@@ -70,6 +71,7 @@ func init() {
 
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(analyze.AnalyzeCmd)
+	rootCmd.AddCommand(dump.DumpCmd)
 	rootCmd.AddCommand(filters.FiltersCmd)
 	rootCmd.AddCommand(generate.GenerateCmd)
 	rootCmd.AddCommand(integration.IntegrationCmd)
