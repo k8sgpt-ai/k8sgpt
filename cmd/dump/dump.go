@@ -16,6 +16,7 @@ package dump
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -48,13 +49,21 @@ var DumpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		var newProvider []ai.AIProvider
 		for _, config := range configAI.Providers {
+			// we blank out the custom headers for data protection reasons
+			config.CustomHeaders = make([]http.Header, 0)
 			// blank out the password
-			config.Password = ""
+			if len(config.Password) > 4 {
+				config.Password = config.Password[:4] + "***"
+			} else {
+				// If the password is shorter than 4 characters
+				config.Password = "***"
+			}
+			newProvider = append(newProvider, config)
 		}
-
+		configAI.Providers = newProvider
 		activeFilters := viper.GetStringSlice("active_filters")
-		// Get Kubernetes server data
 		kubecontext := viper.GetString("kubecontext")
 		kubeconfig := viper.GetString("kubeconfig")
 		client, err := kubernetes.NewClient(kubecontext, kubeconfig)
