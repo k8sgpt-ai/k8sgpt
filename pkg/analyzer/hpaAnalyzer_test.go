@@ -566,7 +566,6 @@ func TestHPAAnalyzerLabelSelectorFiltering(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 }
 
-
 func TestHPAAnalyzerStatusFieldAbleToScale(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{
@@ -584,8 +583,8 @@ func TestHPAAnalyzerStatusFieldAbleToScale(t *testing.T) {
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   "AbleToScale",
-						Status: "False",
+						Type:    "AbleToScale",
+						Status:  "False",
 						Message: "test reason",
 					},
 				},
@@ -606,7 +605,6 @@ func TestHPAAnalyzerStatusFieldAbleToScale(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 
 }
-
 
 func TestHPAAnalyzerStatusFieldScalingActive(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
@@ -625,8 +623,8 @@ func TestHPAAnalyzerStatusFieldScalingActive(t *testing.T) {
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   autoscalingv2.ScalingActive,
-						Status: "False",
+						Type:    autoscalingv2.ScalingActive,
+						Status:  "False",
 						Message: "test reason",
 					},
 				},
@@ -647,8 +645,6 @@ func TestHPAAnalyzerStatusFieldScalingActive(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 
 }
-
-
 
 func TestHPAAnalyzerStatusFieldScalingLimited(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
@@ -667,8 +663,8 @@ func TestHPAAnalyzerStatusFieldScalingLimited(t *testing.T) {
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   autoscalingv2.ScalingLimited,
-						Status: "False",
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  "False",
 						Message: "test reason",
 					},
 				},
@@ -690,7 +686,6 @@ func TestHPAAnalyzerStatusFieldScalingLimited(t *testing.T) {
 
 }
 
-
 func TestHPAAnalyzerStatusField(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{
@@ -708,18 +703,18 @@ func TestHPAAnalyzerStatusField(t *testing.T) {
 			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
 				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
 					{
-						Type:   autoscalingv2.AbleToScale,
-						Status: "True",
+						Type:    autoscalingv2.AbleToScale,
+						Status:  "True",
 						Message: "recommended size matches current size",
 					},
 					{
-						Type:   autoscalingv2.ScalingActive,
-						Status: "True",
+						Type:    autoscalingv2.ScalingActive,
+						Status:  "True",
 						Message: "the HPA was able to successfully calculate a replica count",
 					},
 					{
-						Type:   autoscalingv2.ScalingLimited,
-						Status: "True",
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  "True",
 						Message: "the desired replica count is less than the minimum replica count",
 					},
 				},

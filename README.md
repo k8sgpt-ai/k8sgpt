@@ -335,6 +335,13 @@ The stats mode allows for debugging and understanding the time taken by an analy
 - Analyzer Service took 38.583359166s
 ```
 
+_Diagnostic information_
+
+To collect diagnostic information use the following command to create a `dump_<timestamp>_json` in your local directory.
+```
+k8sgpt dump
+```
+
 </details>
 
 ## LLM AI Backends
