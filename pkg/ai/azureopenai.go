@@ -14,9 +14,9 @@ const azureAIClientName = "azureopenai"
 type AzureAIClient struct {
 	nopCloser
 
-	client         *openai.Client
-	model          string
-	temperature    float32
+	client      *openai.Client
+	model       string
+	temperature float32
 	// organizationId string
 }
 

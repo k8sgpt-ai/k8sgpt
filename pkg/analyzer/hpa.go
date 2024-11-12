@@ -53,7 +53,6 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, hpa := range list.Items {
 		var failures []common.Failure
 
-	
 		//check the error from status field
 		conditions := hpa.Status.Conditions
 		for _, condition := range conditions {
