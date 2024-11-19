@@ -42,7 +42,8 @@ var addCmd = &cobra.Command{
 	The supported cache types are:
 	- Azure Blob storage
 	- Google Cloud storage
-	- S3`,
+	- S3
+	- Interplex`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			color.Red("Error: Please provide a value for cache types. Run k8sgpt cache add --help")

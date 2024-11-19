@@ -56,6 +56,9 @@ require (
 	atomicgo.dev/cursor v0.2.0 // indirect
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
+	buf.build/gen/go/interplex-ai/schemas/connectrpc/go v1.17.0-20241021105030-466c70d726a9.1 // indirect
+	buf.build/gen/go/interplex-ai/schemas/grpc/go v1.5.1-20241021105030-466c70d726a9.1 // indirect
+	buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go v1.35.1-20241021105030-466c70d726a9.1 // indirect
 	cel.dev/expr v0.16.1 // indirect
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/ai v0.8.0 // indirect
