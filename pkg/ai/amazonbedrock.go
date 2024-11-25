@@ -45,12 +45,14 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 }
 
 const (
-	ModelAnthropicClaudeV2        = "anthropic.claude-v2"
-	ModelAnthropicClaudeV1        = "anthropic.claude-v1"
-	ModelAnthropicClaudeInstantV1 = "anthropic.claude-instant-v1"
-	ModelA21J2UltraV1             = "ai21.j2-ultra-v1"
-	ModelA21J2JumboInstruct       = "ai21.j2-jumbo-instruct"
-	ModelAmazonTitanExpressV1     = "amazon.titan-text-express-v1"
+	ModelAnthropicClaudeSonnetV3_5    = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+	ModelAnthropicClaudeSonnetV3_5_V2 = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+	ModelAnthropicClaudeV2            = "anthropic.claude-v2"
+	ModelAnthropicClaudeV1            = "anthropic.claude-v1"
+	ModelAnthropicClaudeInstantV1     = "anthropic.claude-instant-v1"
+	ModelA21J2UltraV1                 = "ai21.j2-ultra-v1"
+	ModelA21J2JumboInstruct           = "ai21.j2-jumbo-instruct"
+	ModelAmazonTitanExpressV1         = "amazon.titan-text-express-v1"
 )
 
 var BEDROCK_MODELS = []string{
@@ -125,7 +127,7 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	// Prepare the input data for the model invocation based on the model & the Response Body per model as well.
 	var request map[string]interface{}
 	switch a.model {
-	case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
+	case ModelAnthropicClaudeSonnetV3_5, ModelAnthropicClaudeSonnetV3_5_V2, ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
 		request = map[string]interface{}{
 			"prompt":               fmt.Sprintf("\n\nHuman: %s  \n\nAssistant:", prompt),
 			"max_tokens_to_sample": a.maxTokens,
@@ -173,7 +175,7 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 
 	// Response type changes as per model
 	switch a.model {
-	case ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
+	case ModelAnthropicClaudeSonnetV3_5, ModelAnthropicClaudeSonnetV3_5_V2, ModelAnthropicClaudeV2, ModelAnthropicClaudeV1, ModelAnthropicClaudeInstantV1:
 		type InvokeModelResponseBody struct {
 			Completion  string `json:"completion"`
 			Stop_reason string `json:"stop_reason"`
