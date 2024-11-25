@@ -45,7 +45,7 @@ var GenerateCmd = &cobra.Command{
 			backendType = backend
 		}
 		fmt.Println("")
-		openbrowser("https://beta.openai.com/account/api-keys")
+		openbrowser("https://platform.openai.com/api-keys")
 	},
 }
 
@@ -81,10 +81,10 @@ func openbrowser(url string) {
 func printInstructions(isGui bool, backendType string) {
 	fmt.Println("")
 	if isGui {
-		color.Green("Opening: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		color.Green("Opening: https://platform.openai.com/api-keys to generate a key for %s", backendType)
 		fmt.Println("")
 	} else {
-		color.Green("Please open: https://beta.openai.com/account/api-keys to generate a key for %s", backendType)
+		color.Green("Please open: https://platform.openai.com/api-keys to generate a key for %s", backendType)
 		fmt.Println("")
 	}
 	color.Green("Please copy the generated key and run `k8sgpt auth add` to add it to your config file")
