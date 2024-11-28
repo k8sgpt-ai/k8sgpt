@@ -17,6 +17,7 @@ package cache
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -51,7 +52,7 @@ var addCmd = &cobra.Command{
 		}
 		fmt.Println(color.YellowString("Adding remote based cache"))
 		cacheType := args[0]
-		remoteCache, err := cache.NewCacheProvider(cacheType, bucketName, region, endpoint, storageAccount, containerName, projectId, insecure)
+		remoteCache, err := cache.NewCacheProvider(strings.ToLower(cacheType), bucketName, region, endpoint, storageAccount, containerName, projectId, insecure)
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
