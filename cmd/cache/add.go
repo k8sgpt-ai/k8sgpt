@@ -41,10 +41,10 @@ var addCmd = &cobra.Command{
 	Short: "Add a remote cache",
 	Long: `This command allows you to add a remote cache to store the results of an analysis.
 	The supported cache types are:
-	- Azure Blob storage
-	- Google Cloud storage
-	- S3
-	- Interplex`,
+	- Azure Blob storage (e.g., k8sgpt cache add azure)
+	- Google Cloud storage (e.g., k8sgpt cache add gcs)
+	- S3 (e.g., k8sgpt cache add s3)
+	- Interplex (e.g., k8sgpt cache add interplex)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			color.Red("Error: Please provide a value for cache types. Run k8sgpt cache add --help")
