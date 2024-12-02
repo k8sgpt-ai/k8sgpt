@@ -26,6 +26,8 @@ require (
 require github.com/adrg/xdg v0.5.3
 
 require (
+	buf.build/gen/go/interplex-ai/schemas/grpc/go v1.5.1-20241021105030-466c70d726a9.1
+	buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go v1.35.1-20241021105030-466c70d726a9.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.24.0-20241118152629-1379a5a1889d.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20241118152629-1379a5a1889d.1
 	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.35.2-20241118152629-1379a5a1889d.1

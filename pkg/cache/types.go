@@ -3,9 +3,11 @@ package cache
 import "time"
 
 type CacheProvider struct {
-	GCS   GCSCacheConfiguration   `mapstructucre:"gcs" yaml:"gcs,omitempty"`
-	Azure AzureCacheConfiguration `mapstructucre:"azure" yaml:"azure,omitempty"`
-	S3    S3CacheConfiguration    `mapstructucre:"s3" yaml:"s3,omitempty"`
+	CurrentCacheType string                      `mapstructure:"currentCacheType" yaml:"currentCacheType"`
+	GCS              GCSCacheConfiguration       `mapstructure:"gcs" yaml:"gcs,omitempty"`
+	Azure            AzureCacheConfiguration     `mapstructure:"azure" yaml:"azure,omitempty"`
+	S3               S3CacheConfiguration        `mapstructure:"s3" yaml:"s3,omitempty"`
+	Interplex        InterplexCacheConfiguration `mapstructure:"interplex" yaml:"interplex,omitempty"`
 }
 
 type CacheObjectDetails struct {

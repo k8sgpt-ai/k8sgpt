@@ -71,6 +71,7 @@ func (h *Handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 			remoteCache, err = cache.NewCacheProvider("s3", i.Cache.GetS3Cache().BucketName, i.Cache.GetS3Cache().Region, i.Cache.GetS3Cache().Endpoint, notUsedStorageAcc, notUsedContainerName, notUsedProjectId, i.Cache.GetS3Cache().Insecure)
 		case *schemav1.Cache_GcsCache:
 			remoteCache, err = cache.NewCacheProvider("gcs", i.Cache.GetGcsCache().BucketName, i.Cache.GetGcsCache().Region, notUsedEndpoint, notUsedStorageAcc, notUsedContainerName, i.Cache.GetGcsCache().GetProjectId(), notUsedInsecure)
+
 		default:
 			return resp, status.Error(codes.InvalidArgument, "Invalid cache configuration")
 		}
