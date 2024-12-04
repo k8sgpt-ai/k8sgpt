@@ -119,7 +119,7 @@ type AIProvider struct {
 	TopK           int32         `mapstructure:"topk" yaml:"topk,omitempty"`
 	MaxTokens      int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
-	CustomHeaders  []http.Header `mapstructure:"customHeaders"`
+	CustomHeaders  []http.Header `mapstructure:"customHeaders" yaml:"customHeaders,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
