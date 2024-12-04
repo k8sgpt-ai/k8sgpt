@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"google.golang.org/grpc"
+	"os"
 )
 
 var _ ICache = (*InterplexCache)(nil)
@@ -34,6 +35,10 @@ func (c *InterplexCache) Configure(cacheInfo CacheProvider) error {
 }
 
 func (c *InterplexCache) Store(key string, data string) error {
+
+	if os.Getenv("INTERPLEX_LOCAL_MODE") != "" {
+		c.configuration.ConnectionString = "localhost:8084"
+	}
 
 	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
 	defer conn.Close()
