@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.48](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.47...v0.3.48) (2024-12-04)
+
+
+### Features
+
+* fixed missing cache params ([#1340](https://github.com/k8sgpt-ai/k8sgpt/issues/1340)) ([1363219](https://github.com/k8sgpt-ai/k8sgpt/commit/1363219b1b94e157ef03c53eba8838b7cef559b4))
+
 ## [0.3.47](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.46...v0.3.47) (2024-12-02)
 
 
