@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.49](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.48...v0.3.49) (2024-12-10)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1335](https://github.com/k8sgpt-ai/k8sgpt/issues/1335)) ([8cd3b29](https://github.com/k8sgpt-ai/k8sgpt/commit/8cd3b2985e4cd61711497fb0436e72b6b8aa3162))
+
 ## [0.3.48](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.47...v0.3.48) (2024-12-04)
 
 
