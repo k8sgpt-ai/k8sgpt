@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.49](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.48...v0.3.49) (2025-01-13)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1335](https://github.com/k8sgpt-ai/k8sgpt/issues/1335)) ([8cd3b29](https://github.com/k8sgpt-ai/k8sgpt/commit/8cd3b2985e4cd61711497fb0436e72b6b8aa3162))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1336](https://github.com/k8sgpt-ai/k8sgpt/issues/1336)) ([19abbef](https://github.com/k8sgpt-ai/k8sgpt/commit/19abbef9a3112ceb060ac3fd772e2e4f62f19f84))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 3041bf5 ([#1347](https://github.com/k8sgpt-ai/k8sgpt/issues/1347)) ([939e067](https://github.com/k8sgpt-ai/k8sgpt/commit/939e0672aaaa5538cd58bb171f1e5d1c07831651))
+
 ## [0.3.48](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.47...v0.3.48) (2024-12-04)
 
 
