@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultBackend = "openai"
-	defaultModel   = "gpt-3.5-turbo"
+	defaultModel   = "gpt-4o"
 )
 
 var addCmd = &cobra.Command{
