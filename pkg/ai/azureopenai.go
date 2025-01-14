@@ -14,10 +14,10 @@ const azureAIClientName = "azureopenai"
 type AzureAIClient struct {
 	nopCloser
 
-	client         *openai.Client
-	model          string
-	temperature    float32
-	organizationId string
+	client      *openai.Client
+	model       string
+	temperature float32
+	// organizationId string
 }
 
 func (c *AzureAIClient) Configure(config IAIConfig) error {

@@ -14,9 +14,10 @@ limitations under the License.
 package serve
 
 import (
-	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 	"os"
 	"strconv"
+
+	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -29,6 +30,7 @@ const (
 	defaultTemperature float32 = 0.7
 	defaultTopP        float32 = 1.0
 	defaultTopK        int32   = 50
+	defaultMaxTokens   int     = 2048
 )
 
 var (
@@ -101,6 +103,18 @@ var ServeCmd = &cobra.Command{
 				}
 				return int32(topK)
 			}
+			maxTokens := func() int {
+				env := os.Getenv("K8SGPT_MAX_TOKENS")
+				if env == "" {
+					return defaultMaxTokens
+				}
+				maxTokens, err := strconv.ParseInt(env, 10, 32)
+				if err != nil {
+					color.Red("Unable to convert maxTokens value: %v", err)
+					os.Exit(1)
+				}
+				return int(maxTokens)
+			}
 			// Check for env injection
 			backend = os.Getenv("K8SGPT_BACKEND")
 			password := os.Getenv("K8SGPT_PASSWORD")
@@ -108,6 +122,7 @@ var ServeCmd = &cobra.Command{
 			baseURL := os.Getenv("K8SGPT_BASEURL")
 			engine := os.Getenv("K8SGPT_ENGINE")
 			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
+			providerId := os.Getenv("K8SGPT_PROVIDER_ID")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
 			envIsSet := backend != "" || password != "" || model != ""
@@ -119,9 +134,11 @@ var ServeCmd = &cobra.Command{
 					BaseURL:       baseURL,
 					Engine:        engine,
 					ProxyEndpoint: proxyEndpoint,
+					ProviderId:    providerId,
 					Temperature:   temperature(),
 					TopP:          topP(),
 					TopK:          topK(),
+					MaxTokens:     maxTokens(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)

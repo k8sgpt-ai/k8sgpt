@@ -17,6 +17,7 @@ type Client struct {
 
 func NewClient(c Connection) (*Client, error) {
 
+	//nolint:staticcheck // Ignoring SA1019 for compatibility reasons
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%s", c.Url, c.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {

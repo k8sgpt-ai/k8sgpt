@@ -27,11 +27,11 @@ const openAIClientName = "openai"
 type OpenAIClient struct {
 	nopCloser
 
-	client         *openai.Client
-	model          string
-	temperature    float32
-	topP           float32
-	organizationId string
+	client      *openai.Client
+	model       string
+	temperature float32
+	topP        float32
+	// organizationId string
 }
 
 const (

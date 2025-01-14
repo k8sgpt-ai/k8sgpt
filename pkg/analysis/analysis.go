@@ -18,9 +18,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
@@ -50,6 +50,8 @@ type Analysis struct {
 	MaxConcurrency     int
 	AnalysisAIProvider string // The name of the AI Provider used for this analysis
 	WithDoc            bool
+	WithStats          bool
+	Stats              []common.AnalysisStats
 }
 
 type (
@@ -82,6 +84,7 @@ func NewAnalysis(
 	withDoc bool,
 	interactiveMode bool,
 	httpHeaders []string,
+	withStats bool,
 ) (*Analysis, error) {
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
@@ -112,6 +115,7 @@ func NewAnalysis(
 		Explain:        explain,
 		MaxConcurrency: maxConcurrency,
 		WithDoc:        withDoc,
+		WithStats:      withStats,
 	}
 	if !explain {
 		// Return early if AI use was not requested.
@@ -243,22 +247,10 @@ func (a *Analysis) RunAnalysis() {
 	var mutex sync.Mutex
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
-		for _, analyzer := range coreAnalyzerMap {
+		for name, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
 			semaphore <- struct{}{}
-			go func(analyzer common.IAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
-				defer wg.Done()
-				results, err := analyzer.Analyze(analyzerConfig)
-				if err != nil {
-					mutex.Lock()
-					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", reflect.TypeOf(analyzer).Name(), err))
-					mutex.Unlock()
-				}
-				mutex.Lock()
-				a.Results = append(a.Results, results...)
-				mutex.Unlock()
-				<-semaphore
-			}(analyzer, &wg, semaphore)
+			go a.executeAnalyzer(analyzer, name, analyzerConfig, semaphore, &wg, &mutex)
 
 		}
 		wg.Wait()
@@ -270,19 +262,7 @@ func (a *Analysis) RunAnalysis() {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
 				wg.Add(1)
-				go func(analyzer common.IAnalyzer, filter string) {
-					defer wg.Done()
-					results, err := analyzer.Analyze(analyzerConfig)
-					if err != nil {
-						mutex.Lock()
-						a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
-						mutex.Unlock()
-					}
-					mutex.Lock()
-					a.Results = append(a.Results, results...)
-					mutex.Unlock()
-					<-semaphore
-				}(analyzer, filter)
+				go a.executeAnalyzer(analyzer, filter, analyzerConfig, semaphore, &wg, &mutex)
 			} else {
 				a.Errors = append(a.Errors, fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
 			}
@@ -296,22 +276,50 @@ func (a *Analysis) RunAnalysis() {
 		if analyzer, ok := analyzerMap[filter]; ok {
 			semaphore <- struct{}{}
 			wg.Add(1)
-			go func(analyzer common.IAnalyzer, filter string) {
-				defer wg.Done()
-				results, err := analyzer.Analyze(analyzerConfig)
-				if err != nil {
-					mutex.Lock()
-					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
-					mutex.Unlock()
-				}
-				mutex.Lock()
-				a.Results = append(a.Results, results...)
-				mutex.Unlock()
-				<-semaphore
-			}(analyzer, filter)
+			go a.executeAnalyzer(analyzer, filter, analyzerConfig, semaphore, &wg, &mutex)
 		}
 	}
 	wg.Wait()
+}
+
+func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, analyzerConfig common.Analyzer, semaphore chan struct{}, wg *sync.WaitGroup, mutex *sync.Mutex) {
+	defer wg.Done()
+
+	var startTime time.Time
+	var elapsedTime time.Duration
+
+	// Start the timer
+	if a.WithStats {
+		startTime = time.Now()
+	}
+
+	// Run the analyzer
+	results, err := analyzer.Analyze(analyzerConfig)
+
+	// Measure the time taken
+	if a.WithStats {
+		elapsedTime = time.Since(startTime)
+	}
+	stat := common.AnalysisStats{
+		Analyzer:     filter,
+		DurationTime: elapsedTime,
+	}
+
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	if err != nil {
+		if a.WithStats {
+			a.Stats = append(a.Stats, stat)
+		}
+		a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
+	} else {
+		if a.WithStats {
+			a.Stats = append(a.Stats, stat)
+		}
+		a.Results = append(a.Results, results...)
+	}
+	<-semaphore
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
