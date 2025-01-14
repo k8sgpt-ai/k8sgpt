@@ -422,3 +422,57 @@ func (a *Analysis) Close() {
 	}
 	a.AIClient.Close()
 }
+
+func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerStatus, name string, namespace string, statusPhase string) []common.Failure {
+	var failures []common.Failure
+
+	// Check through container status to check for crashes or unready
+	for _, containerStatus := range statuses {
+		if containerStatus.State.Waiting != nil {
+			if containerStatus.State.Waiting.Reason == "ContainerCreating" && statusPhase == "Pending" {
+				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
+				// parse the event log and append details
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				if err != nil || evt == nil {
+					continue
+				}
+				if isEvtErrorReason(evt.Event.Reason) && evt.Event.Message != "" {
+					failures = append(failures, common.Failure{
+						Text:      evt.Event.Message,
+						Sensitive: []common.Sensitive{},
+						Timestamp: evt.Timestamp.Time,
+					})
+				}
+			} else if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" && containerStatus.LastTerminationState.Terminated != nil {
+				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, name),
+					Sensitive: []common.Sensitive{},
+				})
+			} else if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
+				failures = append(failures, common.Failure{
+					Text:      containerStatus.State.Waiting.Message,
+					Sensitive: []common.Sensitive{},
+				})
+			}
+		} else {
+			// when pod is Running but its ReadinessProbe fails
+			if !containerStatus.Ready && statusPhase == "Running" {
+				// parse the event log and append details
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				if err != nil || evt == nil {
+					continue
+				}
+				if evt.Event.Reason == "Unhealthy" && evt.Event.Message != "" {
+					failures = append(failures, common.Failure{
+						Text:      evt.Event.Message,
+						Sensitive: []common.Sensitive{},
+						Timestamp: evt.Timestamp.Time,
+					})
+				}
+			}
+		}
+	}
+
+	return failures
+}

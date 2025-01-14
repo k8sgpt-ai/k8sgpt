@@ -90,6 +90,7 @@ type Failure struct {
 	Text          string
 	KubernetesDoc string
 	Sensitive     []Sensitive
+	Timestamp     time.Time
 }
 
 type Sensitive struct {
