@@ -38,6 +38,7 @@ type DumpOut struct {
 	ActiveFilters          []string
 	KubenetesServerVersion *version.Info
 	K8sGPTInfo             K8sGPTInfo
+	EventTimestamps        map[string]time.Time
 }
 
 var DumpCmd = &cobra.Command{
@@ -81,6 +82,15 @@ var DumpCmd = &cobra.Command{
 		if err != nil {
 			color.Yellow("Could not find kubernetes server version")
 		}
+
+		eventTimestamps := make(map[string]time.Time)
+		events, err := client.Client.CoreV1().Events("").List(cmd.Context(), metav1.ListOptions{})
+		if err == nil {
+			for _, event := range events.Items {
+				eventTimestamps[event.Name] = event.LastTimestamp.Time
+			}
+		}
+
 		var dumpOut DumpOut = DumpOut{
 			AIConfiguration:        configAI,
 			ActiveFilters:          activeFilters,
@@ -90,6 +100,7 @@ var DumpCmd = &cobra.Command{
 				Commit:  viper.GetString("Commit"),
 				Date:    viper.GetString("Date"),
 			},
+			EventTimestamps: eventTimestamps,
 		}
 		// Serialize dumpOut to JSON
 		jsonData, err := json.MarshalIndent(dumpOut, "", " ")

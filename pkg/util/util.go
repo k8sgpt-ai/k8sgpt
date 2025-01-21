@@ -237,7 +237,12 @@ func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
 	return false
 }
 
-func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
+type EventDetails struct {
+	Event     *v1.Event
+	Timestamp metav1.Time
+}
+
+func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*EventDetails, error) {
 
 	// get the list of events
 	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
@@ -262,7 +267,13 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 			latestEvent = &e
 		}
 	}
-	return latestEvent, nil
+	if latestEvent == nil {
+		return nil, nil
+	}
+	return &EventDetails{
+		Event:     latestEvent,
+		Timestamp: latestEvent.LastTimestamp,
+	}, nil
 }
 
 // NewHeaders parses a slice of strings in the format "key:value" into []http.Header

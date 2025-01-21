@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -305,6 +306,7 @@ func TestNewAnalysis(t *testing.T) {
 							Unmasked: "unmasked-error",
 						},
 					},
+					Timestamp: time.Now(),
 				},
 			},
 		},
