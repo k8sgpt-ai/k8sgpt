@@ -25,6 +25,6 @@ jobs:
       - name: Run test
         run: go test ./... -coverprofile=coverage.txt
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5
+        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
