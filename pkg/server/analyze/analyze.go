@@ -34,10 +34,10 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		[]string{}, //TODO: add custom http headers in server mode
 		false,      // with stats disable
 	)
-	config.Context = ctx // Replace context for correct timeouts.
 	if err != nil {
 		return &schemav1.AnalyzeResponse{}, err
 	}
+	config.Context = ctx // Replace context for correct timeouts.
 	defer config.Close()
 
 	if config.CustomAnalyzersAreAvailable() {
