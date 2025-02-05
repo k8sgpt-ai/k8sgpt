@@ -45,8 +45,59 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 }
 
 const (
+	ModelAI21Jamba15Large             = "ai21.jamba-1-5-large-v1:0"
+	ModelAI21Jamba15Mini              = "ai21.jamba-1-5-mini-v1:0"
+	ModelAI21JambaInstruct            = "ai21.jamba-instruct-v1:0"
+	ModelAmazonNovaCanvas             = "amazon.nova-canvas-v1:0"
+	ModelAmazonNovaLite               = "amazon.nova-lite-v1:0"
+	ModelAmazonNovaMicro              = "amazon.nova-micro-v1:0"
+	ModelAmazonNovaPro                = "amazon.nova-pro-v1:0"
+	ModelAmazonNovaReel               = "amazon.nova-reel-v1:0"
+	ModelAmazonRerank10               = "amazon.rerank-v1:0"
+	ModelAmazonTitanEmbedTextV1       = "amazon.titan-embed-text-v1"
+	ModelAmazonTitanImageGenV2        = "amazon.titan-image-generator-v2:0"
+	ModelAmazonTitanImageGenV1        = "amazon.titan-image-generator-v1"
+	ModelAmazonTitanMultimodal        = "amazon.titan-embed-image-v1"
+	ModelAmazonTitanEmbedTextV2       = "amazon.titan-embed-text-v2:0"
+	ModelAmazonTitanTextExpress       = "amazon.titan-text-express-v1"
+	ModelAmazonTitanTextLite          = "amazon.titan-text-lite-v1"
+	ModelAmazonTitanTextPremier       = "amazon.titan-text-premier-v1:0"
+	ModelAnthropicClaude3Haiku        = "anthropic.claude-3-haiku-20240307-v1:0"
+	ModelAnthropicClaude3Opus         = "anthropic.claude-3-opus-20240229-v1:0"
+	ModelAnthropicClaude3Sonnet       = "anthropic.claude-3-sonnet-20240229-v1:0"
+	ModelAnthropicClaude35Haiku       = "anthropic.claude-3-5-haiku-20241022-v1:0"
+	ModelAnthropicClaudeSonnetV3_5_V2 = "anthropic.claude-3-5-sonnet-20241022-v2:0"
+	ModelAnthropicClaude35Sonnet      = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+	ModelCohereCommandLight           = "cohere.command-light-text-v14"
+	ModelCohereCommandRPlus           = "cohere.command-r-plus-v1:0"
+	ModelCohereCommandR               = "cohere.command-r-v1:0"
+	ModelCohereCommand                = "cohere.command-text-v14"
+	ModelCohereEmbedEnglish           = "cohere.embed-english-v3"
+	ModelCohereEmbedMultilingual      = "cohere.embed-multilingual-v3"
+	ModelCohereRerank35               = "cohere.rerank-v3-5:0"
+	ModelLumaAIRayV2                  = "luma.ray-v2:0"
+	ModelMetaLlama38BInstruct         = "meta.llama3-8b-instruct-v1:0"
+	ModelMetaLlama370BInstruct        = "meta.llama3-70b-instruct-v1:0"
+	ModelMetaLlama318BInstruct        = "meta.llama3-1-8b-instruct-v1:0"
+	ModelMetaLlama3170BInstruct       = "meta.llama3-1-70b-instruct-v1:0"
+	ModelMetaLlama31405BInstruct      = "meta.llama3-1-405b-instruct-v1:0"
+	ModelMetaLlama321BInstruct        = "meta.llama3-2-1b-instruct-v1:0"
+	ModelMetaLlama323BInstruct        = "meta.llama3-2-3b-instruct-v1:0"
+	ModelMetaLlama3211BInstruct       = "meta.llama3-2-11b-instruct-v1:0"
+	ModelMetaLlama3290BInstruct       = "meta.llama3-2-90b-instruct-v1:0"
+	ModelMetaLlama3370BInstruct       = "meta.llama3-3-70b-instruct-v1:0"
+	ModelMistral7BInstruct            = "mistral.mistral-7b-instruct-v0:2"
+	ModelMistralLarge2402             = "mistral.mistral-large-2402-v1:0"
+	ModelMistralLarge2407             = "mistral.mistral-large-2407-v1:0"
+	ModelMistralSmall2402             = "mistral.mistral-small-2402-v1:0"
+	ModelMistralMixtral8x7B           = "mistral.mixtral-8x7b-instruct-v0:1"
+	ModelStabilitySD3Large            = "stability.sd3-large-v1:0"
+	ModelStabilitySD35Large           = "stability.sd3-5-large-v1:0"
+	ModelStabilityImageCore10         = "stability.stable-image-core-v1:0"
+	ModelStabilityImageCore11         = "stability.stable-image-core-v1:1"
+	ModelStabilityImageUltra10        = "stability.stable-image-ultra-v1:0"
+	ModelStabilityImageUltra11        = "stability.stable-image-ultra-v1:1"
 	ModelAnthropicClaudeSonnetV3_5    = "anthropic.claude-3-5-sonnet-20240620-v1:0"
-	ModelAnthropicClaudeSonnetV3_5_V2 = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
 	ModelAnthropicClaudeV2            = "anthropic.claude-v2"
 	ModelAnthropicClaudeV1            = "anthropic.claude-v1"
 	ModelAnthropicClaudeInstantV1     = "anthropic.claude-instant-v1"
@@ -56,6 +107,58 @@ const (
 )
 
 var BEDROCK_MODELS = []string{
+	ModelAI21Jamba15Large,
+	ModelAI21Jamba15Mini,
+	ModelAI21JambaInstruct,
+	ModelAmazonNovaCanvas,
+	ModelAmazonNovaLite,
+	ModelAmazonNovaMicro,
+	ModelAmazonNovaPro,
+	ModelAmazonNovaReel,
+	ModelAmazonRerank10,
+	ModelAmazonTitanEmbedTextV1,
+	ModelAmazonTitanImageGenV2,
+	ModelAmazonTitanImageGenV1,
+	ModelAmazonTitanMultimodal,
+	ModelAmazonTitanEmbedTextV2,
+	ModelAmazonTitanTextExpress,
+	ModelAmazonTitanTextLite,
+	ModelAmazonTitanTextPremier,
+	ModelAnthropicClaude3Haiku,
+	ModelAnthropicClaude3Opus,
+	ModelAnthropicClaude3Sonnet,
+	ModelAnthropicClaude35Haiku,
+	ModelAnthropicClaudeSonnetV3_5_V2, // Already in your example
+	ModelAnthropicClaude35Sonnet,
+	ModelCohereCommandLight,
+	ModelCohereCommandRPlus,
+	ModelCohereCommandR,
+	ModelCohereCommand,
+	ModelCohereEmbedEnglish,
+	ModelCohereEmbedMultilingual,
+	ModelCohereRerank35,
+	ModelLumaAIRayV2,
+	ModelMetaLlama38BInstruct,
+	ModelMetaLlama370BInstruct,
+	ModelMetaLlama318BInstruct,
+	ModelMetaLlama3170BInstruct,
+	ModelMetaLlama31405BInstruct,
+	ModelMetaLlama321BInstruct,
+	ModelMetaLlama323BInstruct,
+	ModelMetaLlama3211BInstruct,
+	ModelMetaLlama3290BInstruct,
+	ModelMetaLlama3370BInstruct,
+	ModelMistral7BInstruct,
+	ModelMistralLarge2402,
+	ModelMistralLarge2407,
+	ModelMistralSmall2402,
+	ModelMistralMixtral8x7B,
+	ModelStabilitySD3Large,
+	ModelStabilitySD35Large,
+	ModelStabilityImageCore10,
+	ModelStabilityImageCore11,
+	ModelStabilityImageUltra10,
+	ModelStabilityImageUltra11,
 	ModelAnthropicClaudeV2,
 	ModelAnthropicClaudeV1,
 	ModelAnthropicClaudeInstantV1,
@@ -151,7 +254,12 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 			},
 		}
 	default:
-		return "", fmt.Errorf("model %s not supported", a.model)
+		request = map[string]interface{}{
+			"prompt":      prompt,
+			"maxTokens":   a.maxTokens,
+			"temperature": a.temperature,
+			"topP":        a.topP,
+		}
 	}
 
 	body, err := json.Marshal(request)
