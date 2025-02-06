@@ -137,7 +137,7 @@ var (
 		{
 			Name:       "amazon.titan-text-express-v1",
 			Completion: &bedrock_support.AmazonCompletion{},
-			Response:   &bedrock_support.AI21Response{},
+			Response:   &bedrock_support.AmazonResponse{},
 			Config: bedrock_support.BedrockModelConfig{
 				// sensible defaults
 				MaxTokens:   100,
