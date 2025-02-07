@@ -529,7 +529,7 @@ k8sgpt cache remove
 <summary> Custom Analyzers</summary>
 
 There may be scenarios where you wish to write your own analyzer in a language of your choice.
-K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
+K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/custom_analyzer.proto) and serving the analyzer for consumption.
 To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
 In addition to this you will need to enable the following flag on analysis:
 
