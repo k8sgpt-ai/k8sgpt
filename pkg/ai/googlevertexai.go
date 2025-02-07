@@ -139,10 +139,10 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 				if !r.Blocked {
 					continue
 				}
-				return "", fmt.Errorf("complection blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
+				return "", fmt.Errorf("completion blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
 			}
 		}
-		return "", errors.New("no complection returned; unknown reason")
+		return "", errors.New("no completion returned; unknown reason")
 	}
 
 	// Format output.
