@@ -75,8 +75,9 @@ var AnalyzeCmd = &cobra.Command{
 
 		if customAnalysis {
 			config.RunCustomAnalysis()
+		} else {
+			config.RunAnalysis()
 		}
-		config.RunAnalysis()
 
 		if explain {
 			if err := config.GetAIResults(output, anonymize); err != nil {
