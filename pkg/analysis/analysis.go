@@ -21,7 +21,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	"github.com/fatih/color"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
