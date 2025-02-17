@@ -1,8 +1,7 @@
 package custom
 
 import (
-	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
+	rpc "github.com/naveenthangaraj03/k8sgpt-custom/proto/schema1/v1"
 	"context"
 	"fmt"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -30,9 +29,11 @@ func NewClient(c Connection) (*Client, error) {
 	}, nil
 }
 
-func (cli *Client) Run() (common.Result, error) {
+func (cli *Client) Run(filter string) (common.Result, error) {
 	var result common.Result
-	req := &schemav1.RunRequest{}
+	req := &rpc.RunRequest{
+		Filter: filter,
+	}
 	res, err := cli.analyzerClient.Run(context.Background(), req)
 	if err != nil {
 		return result, err
