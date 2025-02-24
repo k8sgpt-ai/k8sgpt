@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.50](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.49...v0.3.50) (2025-02-24)
+
+
+### Features
+
+* rework to how bedrock data models are structured and accessed ([#1369](https://github.com/k8sgpt-ai/k8sgpt/issues/1369)) ([7dadea2](https://github.com/k8sgpt-ai/k8sgpt/commit/7dadea257007df64148f1e47f7960d1d30df67b2))
+
 ## [0.3.49](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.48...v0.3.49) (2025-02-20)
 
 
