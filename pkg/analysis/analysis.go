@@ -182,39 +182,64 @@ func (a *Analysis) RunCustomAnalysis() {
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
-	for _, cAnalyzer := range customAnalyzers {
-		wg.Add(1)
-		semaphore <- struct{}{}
-		go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
-			defer wg.Done()
-			canClient, err := custom.NewClient(cAnalyzer.Connection)
-			if err != nil {
-				mutex.Lock()
-				a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
-				mutex.Unlock()
-				return
-			}
+	if len(a.Filters) != 0 {
+		for _, filter := range a.Filters {
+			for _, cAnalyzer := range customAnalyzers {
+				if cAnalyzer.Name == filter {
+					canClient, err := custom.NewClient(cAnalyzer.Connection)
+					if err != nil {
+						a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+						return
+					}
 
-			result, err := canClient.Run()
-			if result.Kind == "" {
-				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
-				//and must start and end with an alphanumeric character (e.g. 'example.com',
-				//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
-				result.Kind = cAnalyzer.Name
+					result, err := canClient.Run(filter)
+					if result.Kind == "" {
+						result.Kind = cAnalyzer.Name
+					}
+					if err != nil {
+						a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+					} else {
+						a.Results = append(a.Results, result)
+					}
+				}
 			}
-			if err != nil {
-				mutex.Lock()
-				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
-				mutex.Unlock()
-			} else {
-				mutex.Lock()
-				a.Results = append(a.Results, result)
-				mutex.Unlock()
-			}
-			<-semaphore
-		}(cAnalyzer, &wg, semaphore)
+		}
+        }
+	if len(a.Filters) == 0 {
+		for _, cAnalyzer := range customAnalyzers {
+			wg.Add(1)
+			semaphore <- struct{}{}
+			go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
+				defer wg.Done()
+				canClient, err := custom.NewClient(cAnalyzer.Connection)
+				if err != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+					mutex.Unlock()
+					return
+				}
+
+				result, err := canClient.Run(cAnalyzer.Name)
+				if result.Kind == "" {
+					// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
+					//and must start and end with an alphanumeric character (e.g. 'example.com',
+					//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+					result.Kind = cAnalyzer.Name
+				}
+				if err != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+					mutex.Unlock()
+				} else {
+					mutex.Lock()
+					a.Results = append(a.Results, result)
+					mutex.Unlock()
+				}
+				<-semaphore
+			}(cAnalyzer, &wg, semaphore)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 }
 
 func (a *Analysis) RunAnalysis() {
