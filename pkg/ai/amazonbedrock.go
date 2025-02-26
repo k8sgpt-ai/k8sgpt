@@ -3,8 +3,9 @@ package ai
 import (
 	"context"
 	"errors"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
 	"os"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -141,6 +142,29 @@ var (
 			Config: bedrock_support.BedrockModelConfig{
 				// sensible defaults
 				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+			},
+		},
+		{
+			Name:       "amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.AmazonResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+			},
+		},
+		{
+			Name:       "amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.AmazonResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
 				Temperature: 0.5,
 				TopP:        0.9,
 			},
