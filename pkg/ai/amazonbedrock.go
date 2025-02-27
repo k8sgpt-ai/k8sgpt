@@ -56,6 +56,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "anthropic.claude-3-5-sonnet-20240620-v1:0",
 			},
 		},
 		{
@@ -67,17 +68,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
-			},
-		},
-		{
-			Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
+				ModelName:   "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
 			},
 		},
 		{
@@ -89,6 +80,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "anthropic.claude-v2",
 			},
 		},
 		{
@@ -100,6 +92,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "anthropic.claude-v1",
 			},
 		},
 		{
@@ -111,6 +104,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "anthropic.claude-instant-v1",
 			},
 		},
 		{
@@ -122,6 +116,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "ai21.j2-ultra-v1",
 			},
 		},
 		{
@@ -133,6 +128,7 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "ai21.j2-jumbo-instruct",
 			},
 		},
 		{
@@ -144,29 +140,32 @@ var (
 				MaxTokens:   100,
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "amazon.titan-text-express-v1",
 			},
 		},
 		{
 			Name:       "amazon.nova-pro-v1:0",
 			Completion: &bedrock_support.AmazonCompletion{},
-			Response:   &bedrock_support.AmazonResponse{},
+			Response:   &bedrock_support.NovaResponse{},
 			Config: bedrock_support.BedrockModelConfig{
 				// sensible defaults
 				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
 				MaxTokens:   100, // max of 300k tokens
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "amazon.nova-pro-v1:0",
 			},
 		},
 		{
 			Name:       "amazon.nova-lite-v1:0",
 			Completion: &bedrock_support.AmazonCompletion{},
-			Response:   &bedrock_support.AmazonResponse{},
+			Response:   &bedrock_support.NovaResponse{},
 			Config: bedrock_support.BedrockModelConfig{
 				// sensible defaults
 				MaxTokens:   100, // max of 300k tokens
 				Temperature: 0.5,
 				TopP:        0.9,
+				ModelName:   "amazon.nova-lite-v1:0",
 			},
 		},
 	}
@@ -222,6 +221,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
 	a.model = foundModel
+	a.model.Config.ModelName = foundModel.Name
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
 	a.maxTokens = config.GetMaxTokens()
