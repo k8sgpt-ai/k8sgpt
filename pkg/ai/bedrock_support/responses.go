@@ -2,7 +2,6 @@ package bedrock_support
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type IResponse interface {
@@ -78,9 +77,6 @@ func (a *AmazonResponse) ParseResponse(rawResponse []byte) (string, error) {
 }
 
 func (a *NovaResponse) ParseResponse(rawResponse []byte) (string, error) {
-
-	fmt.Printf("Nova Response\n")
-
 	type Content struct {
 		Text string `json:"text"`
 	}
