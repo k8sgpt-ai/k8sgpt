@@ -108,7 +108,6 @@ func (a *NovaResponse) ParseResponse(rawResponse []byte) (string, error) {
 		return "", err
 	}
 
-	// Assuming you want to return the text content of the message
 	if len(response.Output.Message.Content) > 0 {
 		return response.Output.Message.Content[0].Text, nil
 	}
