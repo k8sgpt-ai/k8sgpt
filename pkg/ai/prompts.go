@@ -56,9 +56,11 @@ const (
 
 	Solution: {kubectl command}
 	`
+	raw_promt = `{"language": "%s","message": "%s","prompt": "%s"}`
 )
 
 var PromptMap = map[string]string{
+	"raw":                           raw_promt,
 	"default":                       default_prompt,
 	"PrometheusConfigValidate":      prom_conf_prompt,
 	"PrometheusConfigRelabelReport": prom_relabel_prompt,
