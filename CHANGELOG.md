@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.0...v0.4.1) (2025-03-07)
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to f111f33 ([#1364](https://github.com/k8sgpt-ai/k8sgpt/issues/1364)) ([f2fdfd8](https://github.com/k8sgpt-ai/k8sgpt/commit/f2fdfd8dcaae6f57378d50396c4746d738d38bf2))
+
 ## [0.4.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.50...v0.4.0) (2025-03-06)
 
 
