@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.4.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.50...v0.4.0) (2025-03-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386))
+
+### Features
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386)) ([d1b2227](https://github.com/k8sgpt-ai/k8sgpt/commit/d1b2227ff9a8ef42bf63c83e289fbd801706821e))
+
+
+### Bug Fixes
+
+* [Bug] Filter PolicyReport ignores namespace flag ([#1355](https://github.com/k8sgpt-ai/k8sgpt/issues/1355)) ([9dcb21e](https://github.com/k8sgpt-ai/k8sgpt/commit/9dcb21e160233eb120ccf50f9b9b80c145d0e01a))
+
+
+### Other
+
+* Adding region ([#1388](https://github.com/k8sgpt-ai/k8sgpt/issues/1388)) ([4f4f4f1](https://github.com/k8sgpt-ai/k8sgpt/commit/4f4f4f13a065ca7add283088c93777f78dcea228))
+* **deps:** update actions/upload-artifact digest to 4cec3d8 ([#1378](https://github.com/k8sgpt-ai/k8sgpt/issues/1378)) ([093975e](https://github.com/k8sgpt-ai/k8sgpt/commit/093975e50ddadeab70a7c4f544df8351ac9758a2))
+* **deps:** update codecov/codecov-action digest to 0565863 ([#1387](https://github.com/k8sgpt-ai/k8sgpt/issues/1387)) ([2a6f485](https://github.com/k8sgpt-ai/k8sgpt/commit/2a6f48500c4567519453fc51ea070f5e407d3cfb))
+* **deps:** update docker/build-push-action digest to 471d1dc ([#1358](https://github.com/k8sgpt-ai/k8sgpt/issues/1358)) ([f2e3b9a](https://github.com/k8sgpt-ai/k8sgpt/commit/f2e3b9a8a72c4df32713197e50756e37e1302ff9))
+* remediating security issue ([#1381](https://github.com/k8sgpt-ai/k8sgpt/issues/1381)) ([1f95358](https://github.com/k8sgpt-ai/k8sgpt/commit/1f953585c91f8a208db3b37440e4d458b8d821eb))
+
 ## [0.3.50](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.49...v0.3.50) (2025-02-24)
 
 
