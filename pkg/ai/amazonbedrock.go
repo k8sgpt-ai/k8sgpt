@@ -159,6 +159,32 @@ var (
 			},
 		},
 		{
+			Name:       "eu.amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "eu.amazon.nova-pro-v1:0",
+			},
+		},
+		{
+			Name:       "us.amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "us.amazon.nova-pro-v1:0",
+			},
+		},
+		{
 			Name:       "amazon.nova-lite-v1:0",
 			Completion: &bedrock_support.AmazonCompletion{},
 			Response:   &bedrock_support.NovaResponse{},
@@ -168,6 +194,30 @@ var (
 				Temperature: 0.5,
 				TopP:        0.9,
 				ModelName:   "amazon.nova-lite-v1:0",
+			},
+		},
+		{
+			Name:       "eu.amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "eu.amazon.nova-lite-v1:0",
+			},
+		},
+		{
+			Name:       "us.amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "us.amazon.nova-lite-v1:0",
 			},
 		},
 	}

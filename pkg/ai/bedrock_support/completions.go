@@ -17,7 +17,7 @@ var SUPPPORTED_BEDROCK_MODELS = []string{
 	"ai21.j2-jumbo-instruct",
 	"amazon.titan-text-express-v1",
 	"amazon.nova-pro-v1:0",
-	"amazon.nova-lite-v1:0",
+	"eu.amazon.nova-lite-v1:0",
 }
 
 type ICompletion interface {
@@ -75,7 +75,7 @@ func isModelSupported(modelName string) bool {
 
 func (a *AmazonCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
 	if !isModelSupported(modelConfig.ModelName) {
-		return nil, fmt.Errorf("Model %s is not supported", modelConfig.ModelName)
+		return nil, fmt.Errorf("model %s is not supported", modelConfig.ModelName)
 	}
 	if strings.Contains(modelConfig.ModelName, "nova") {
 		return a.GetNovaCompletion(ctx, prompt, modelConfig)
