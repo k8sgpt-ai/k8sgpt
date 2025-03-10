@@ -35,6 +35,7 @@ const (
 	AP_Southeast_1 = "ap-southeast-1"
 	AP_Northeast_1 = "ap-northeast-1"
 	EU_Central_1   = "eu-central-1"
+	AP_South_1     = "ap-south-1"
 )
 
 var BEDROCKER_SUPPORTED_REGION = []string{
@@ -43,6 +44,7 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 	AP_Southeast_1,
 	AP_Northeast_1,
 	EU_Central_1,
+	AP_South_1,
 }
 
 var (
