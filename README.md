@@ -366,6 +366,8 @@ Unused:
 > huggingface
 > noopai
 > googlevertexai
+> watsonxai
+> customrest
 > ibmwatsonxai
 ```
 
