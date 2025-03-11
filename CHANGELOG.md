@@ -1,5 +1,62 @@
 # Changelog
 
+## [0.4.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.50...v0.4.0) (2025-03-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386))
+
+### Features
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386)) ([d1b2227](https://github.com/k8sgpt-ai/k8sgpt/commit/d1b2227ff9a8ef42bf63c83e289fbd801706821e))
+
+
+### Bug Fixes
+
+* [Bug] Filter PolicyReport ignores namespace flag ([#1355](https://github.com/k8sgpt-ai/k8sgpt/issues/1355)) ([9dcb21e](https://github.com/k8sgpt-ai/k8sgpt/commit/9dcb21e160233eb120ccf50f9b9b80c145d0e01a))
+
+
+### Other
+
+* Adding region ([#1388](https://github.com/k8sgpt-ai/k8sgpt/issues/1388)) ([4f4f4f1](https://github.com/k8sgpt-ai/k8sgpt/commit/4f4f4f13a065ca7add283088c93777f78dcea228))
+* **deps:** update actions/upload-artifact digest to 4cec3d8 ([#1378](https://github.com/k8sgpt-ai/k8sgpt/issues/1378)) ([093975e](https://github.com/k8sgpt-ai/k8sgpt/commit/093975e50ddadeab70a7c4f544df8351ac9758a2))
+* **deps:** update codecov/codecov-action digest to 0565863 ([#1387](https://github.com/k8sgpt-ai/k8sgpt/issues/1387)) ([2a6f485](https://github.com/k8sgpt-ai/k8sgpt/commit/2a6f48500c4567519453fc51ea070f5e407d3cfb))
+* **deps:** update docker/build-push-action digest to 471d1dc ([#1358](https://github.com/k8sgpt-ai/k8sgpt/issues/1358)) ([f2e3b9a](https://github.com/k8sgpt-ai/k8sgpt/commit/f2e3b9a8a72c4df32713197e50756e37e1302ff9))
+* remediating security issue ([#1381](https://github.com/k8sgpt-ai/k8sgpt/issues/1381)) ([1f95358](https://github.com/k8sgpt-ai/k8sgpt/commit/1f953585c91f8a208db3b37440e4d458b8d821eb))
+
+## [0.3.50](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.49...v0.3.50) (2025-02-24)
+
+
+### Features
+
+* rework to how bedrock data models are structured and accessed ([#1369](https://github.com/k8sgpt-ai/k8sgpt/issues/1369)) ([7dadea2](https://github.com/k8sgpt-ai/k8sgpt/commit/7dadea257007df64148f1e47f7960d1d30df67b2))
+
+## [0.3.49](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.48...v0.3.49) (2025-02-20)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1335](https://github.com/k8sgpt-ai/k8sgpt/issues/1335)) ([8cd3b29](https://github.com/k8sgpt-ai/k8sgpt/commit/8cd3b2985e4cd61711497fb0436e72b6b8aa3162))
+* **deps:** update k8s.io/utils digest to 24370be ([#1344](https://github.com/k8sgpt-ai/k8sgpt/issues/1344)) ([fcc8563](https://github.com/k8sgpt-ai/k8sgpt/commit/fcc8563e4eba9bf45d49901b7287d311b93372c2))
+* **deps:** update module golang.org/x/net to v0.33.0 [security] ([#1354](https://github.com/k8sgpt-ai/k8sgpt/issues/1354)) ([5de4f77](https://github.com/k8sgpt-ai/k8sgpt/commit/5de4f7704a856fd7db7b2f800bda40c5beb9333b))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1336](https://github.com/k8sgpt-ai/k8sgpt/issues/1336)) ([19abbef](https://github.com/k8sgpt-ai/k8sgpt/commit/19abbef9a3112ceb060ac3fd772e2e4f62f19f84))
+* prevent npe by handling checking error in NewAnalysis call ([#1365](https://github.com/k8sgpt-ai/k8sgpt/issues/1365)) ([83672fa](https://github.com/k8sgpt-ai/k8sgpt/commit/83672fa768887dd1c6f4dc12a92c3444f100c4f6))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 3041bf5 ([#1347](https://github.com/k8sgpt-ai/k8sgpt/issues/1347)) ([939e067](https://github.com/k8sgpt-ai/k8sgpt/commit/939e0672aaaa5538cd58bb171f1e5d1c07831651))
+* **deps:** update actions/upload-artifact digest to 65c4c4a ([#1350](https://github.com/k8sgpt-ai/k8sgpt/issues/1350)) ([c506a4b](https://github.com/k8sgpt-ai/k8sgpt/commit/c506a4b441e24052398c00c93d96806cec1b9f75))
+* **deps:** update codecov/codecov-action digest to 13ce06b ([#1342](https://github.com/k8sgpt-ai/k8sgpt/issues/1342)) ([990d723](https://github.com/k8sgpt-ai/k8sgpt/commit/990d7239091b368178e06af60e4dc0e897fc8236))
+* **deps:** update docker/setup-buildx-action digest to 6524bf6 ([#1349](https://github.com/k8sgpt-ai/k8sgpt/issues/1349)) ([2918556](https://github.com/k8sgpt-ai/k8sgpt/commit/2918556793316ea4f5a319c9aa51c1fec12ede85))
+* fix typo in "completion" ([#1362](https://github.com/k8sgpt-ai/k8sgpt/issues/1362)) ([06b8f78](https://github.com/k8sgpt-ai/k8sgpt/commit/06b8f78150308c1f6023747fa34826e038d6bc3a))
+
+
+### Docs
+
+* fix broken schema link in README.md ([#1373](https://github.com/k8sgpt-ai/k8sgpt/issues/1373)) ([076ca2f](https://github.com/k8sgpt-ai/k8sgpt/commit/076ca2f14832cf83e43c465c377ef21825218b2f))
+
 ## [0.3.48](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.47...v0.3.48) (2024-12-04)
 
 

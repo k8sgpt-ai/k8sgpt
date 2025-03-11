@@ -24,7 +24,7 @@ var deactivateCmd = &cobra.Command{
 	Use:   "deactivate [integration]",
 	Short: "Deactivate an integration",
 	Args:  cobra.ExactArgs(1),
-	Long:  `For example e.g. k8sgpt integration deactivate trivy`,
+	Long:  `For example e.g. k8sgpt integration deactivate prometheus`,
 	Run: func(cmd *cobra.Command, args []string) {
 		integrationName := args[0]
 
