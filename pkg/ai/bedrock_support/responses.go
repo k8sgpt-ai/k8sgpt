@@ -1,6 +1,8 @@
 package bedrock_support
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type IResponse interface {
 	ParseResponse(rawResponse []byte) (string, error)
@@ -49,6 +51,13 @@ type AmazonResponse struct {
 	response IResponse
 }
 
+type NovaResponse struct {
+	response NResponse
+}
+type NResponse interface {
+	ParseResponse(rawResponse []byte) (string, error)
+}
+
 func (a *AmazonResponse) ParseResponse(rawResponse []byte) (string, error) {
 	type Result struct {
 		TokenCount       int    `json:"tokenCount"`
@@ -65,4 +74,43 @@ func (a *AmazonResponse) ParseResponse(rawResponse []byte) (string, error) {
 		return "", err
 	}
 	return output.Results[0].OutputText, nil
+}
+
+func (a *NovaResponse) ParseResponse(rawResponse []byte) (string, error) {
+	type Content struct {
+		Text string `json:"text"`
+	}
+
+	type Message struct {
+		Role    string    `json:"role"`
+		Content []Content `json:"content"`
+	}
+
+	type UsageDetails struct {
+		InputTokens               int `json:"inputTokens"`
+		OutputTokens              int `json:"outputTokens"`
+		TotalTokens               int `json:"totalTokens"`
+		CacheReadInputTokenCount  int `json:"cacheReadInputTokenCount"`
+		CacheWriteInputTokenCount int `json:"cacheWriteInputTokenCount,omitempty"`
+	}
+
+	type AmazonNovaResponse struct {
+		Output struct {
+			Message Message `json:"message"`
+		} `json:"output"`
+		StopReason string       `json:"stopReason"`
+		Usage      UsageDetails `json:"usage"`
+	}
+
+	response := &AmazonNovaResponse{}
+	err := json.Unmarshal(rawResponse, response)
+	if err != nil {
+		return "", err
+	}
+
+	if len(response.Output.Message.Content) > 0 {
+		return response.Output.Message.Content[0].Text, nil
+	}
+
+	return "", nil
 }
