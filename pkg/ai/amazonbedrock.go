@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go/service/bedrockruntime/bedrockruntimeiface"
 	"os"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
@@ -18,7 +19,7 @@ const amazonbedrockAIClientName = "amazonbedrock"
 type AmazonBedRockClient struct {
 	nopCloser
 
-	client      *bedrockruntime.BedrockRuntime
+	client      bedrockruntimeiface.BedrockRuntimeAPI
 	model       *bedrock_support.BedrockModel
 	temperature float32
 	topP        float32
@@ -168,7 +169,7 @@ var (
 				MaxTokens:   100, // max of 300k tokens
 				Temperature: 0.5,
 				TopP:        0.9,
-				ModelName:   "eu.amazon.nova-pro-v1:0",
+				ModelName:   "eu.wamazon.nova-pro-v1:0",
 			},
 		},
 		{
