@@ -221,6 +221,17 @@ var (
 				ModelName:   "us.amazon.nova-lite-v1:0",
 			},
 		},
+		{
+			Name:       "anthropic.claude-3-haiku-20240307-v1:0",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+			},
+		},
 	}
 )
 
