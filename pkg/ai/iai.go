@@ -32,7 +32,6 @@ var (
 		&HuggingfaceClient{},
 		&GoogleVertexAIClient{},
 		&OCIGenAIClient{},
-		&WatsonxAIClient{},
 		&CustomRestClient{},
 		&IBMWatsonxAIClient{},
 	}
@@ -49,7 +48,6 @@ var (
 		huggingfaceAIClientName,
 		googleVertexAIClientName,
 		ociClientName,
-		watsonxAIClientName,
 		CustomRestClientName,
 		ibmWatsonxAIClientName,
 	}
