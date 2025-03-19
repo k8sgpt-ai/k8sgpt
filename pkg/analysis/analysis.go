@@ -320,7 +320,9 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 
 	// Run the analyzer
 	results, err := analyzer.Analyze(analyzerConfig)
-
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Measure the time taken
 	if a.WithStats {
 		elapsedTime = time.Since(startTime)
