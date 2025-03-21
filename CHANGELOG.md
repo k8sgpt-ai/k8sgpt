@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.1...v0.4.2) (2025-03-21)
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 0aaccfd ([#1401](https://github.com/k8sgpt-ai/k8sgpt/issues/1401)) ([81d4aaf](https://github.com/k8sgpt-ai/k8sgpt/commit/81d4aaf402647bf4bcbc618fd82f9518cf3a5b4d))
+* **deps:** update actions/upload-artifact digest to ea165f8 ([#1402](https://github.com/k8sgpt-ai/k8sgpt/issues/1402)) ([eb381b8](https://github.com/k8sgpt-ai/k8sgpt/commit/eb381b8087bbb3216d9bcdcc88a71fbad9e31e41))
+* **deps:** update docker/login-action digest to 74a5d14 ([#1397](https://github.com/k8sgpt-ai/k8sgpt/issues/1397)) ([fdf8e7a](https://github.com/k8sgpt-ai/k8sgpt/commit/fdf8e7a95a6667b782e1e347a3b1d2fb0f2aafde))
+* fix error ([#1403](https://github.com/k8sgpt-ai/k8sgpt/issues/1403)) ([288ca86](https://github.com/k8sgpt-ai/k8sgpt/commit/288ca862b3aaf942e58aa0dad0e15e2fda84780f))
+
 ## [0.4.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.0...v0.4.1) (2025-03-17)
 
 
