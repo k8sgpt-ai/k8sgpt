@@ -16,6 +16,7 @@ package filters
 import (
 	"fmt"
 	"slices"
+	"sort"
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
@@ -38,7 +39,12 @@ var listCmd = &cobra.Command{
 		if len(activeFilters) == 0 {
 			activeFilters = coreFilters
 		}
+
 		inactiveFilters := util.SliceDiff(availableFilters, activeFilters)
+
+		// Sort the filters list to make the output consistent for each call.
+		sort.Strings(activeFilters)
+		sort.Strings(inactiveFilters)
 		fmt.Print(color.YellowString("Active: \n"))
 		for _, filter := range activeFilters {
 			// if the filter is an integration, mark this differently
