@@ -54,22 +54,41 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
-		if *deployment.Spec.Replicas != deployment.Status.Replicas {
-			doc := apiDoc.GetApiDocV2("spec.replicas")
+		if *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
+			if  deployment.Status.Replicas > *deployment.Spec.Replicas {
+				doc := apiDoc.GetApiDocV2("spec.replicas")
 
-			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas),
-				KubernetesDoc: doc,
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: deployment.Namespace,
-						Masked:   util.MaskString(deployment.Namespace),
-					},
-					{
-						Unmasked: deployment.Name,
-						Masked:   util.MaskString(deployment.Name),
-					},
-				}})
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas in spec but %d replicas in status due to status field is not updated yet due to scale down the replica and the %d are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas, deployment.Status.ReadyReplicas),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: deployment.Namespace,
+							Masked:   util.MaskString(deployment.Namespace),
+						},
+						{
+							Unmasked: deployment.Name,
+							Masked:   util.MaskString(deployment.Name),
+						},
+					}})
+
+			} else {
+				doc := apiDoc.GetApiDocV2("spec.replicas")
+
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: deployment.Namespace,
+							Masked:   util.MaskString(deployment.Namespace),
+						},
+						{
+							Unmasked: deployment.Name,
+							Masked:   util.MaskString(deployment.Name),
+						},
+					}})
+				}
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{
