@@ -59,7 +59,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				doc := apiDoc.GetApiDocV2("spec.replicas")
 
 				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas in spec but %d replicas in status due to status field is not updated yet due to scale down the replica and the %d are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas, deployment.Status.ReadyReplicas),
+					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas in spec but %d replicas in status because status field is not updated yet after scaling and %d replicas are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas, deployment.Status.ReadyReplicas),
 					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
