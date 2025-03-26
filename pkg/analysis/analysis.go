@@ -155,7 +155,7 @@ func NewAnalysis(
 
 	aiClient := ai.NewClient(aiProvider.Name)
 	customHeaders := util.NewHeaders(httpHeaders)
-	aiProvider.CustomHeaders = customHeaders
+	aiProvider.CustomHeaders = append(aiProvider.CustomHeaders, customHeaders...)
 	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
 	}
