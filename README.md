@@ -31,7 +31,7 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 ### Linux/Mac via brew
 
 ```sh
-$ brew install k8sgpt
+brew install k8sgpt
 ```
 
 or
