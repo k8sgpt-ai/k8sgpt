@@ -8,6 +8,45 @@ type IResponse interface {
 	ParseResponse(rawResponse []byte) (string, error)
 }
 
+type CohereMessagesResponse struct {
+	response IResponse
+}
+
+func (a *CohereMessagesResponse) ParseResponse(rawResponse []byte) (string, error) {
+	type InvokeModelResponseBody struct {
+		ID      string `json:"id"`
+		Type    string `json:"type"`
+		Role    string `json:"role"`
+		Model   string `json:"model"`
+		Content []struct {
+			Type string `json:"type"`
+			Text string `json:"text"`
+		} `json:"content"`
+		StopReason   string      `json:"stop_reason"`
+		StopSequence interface{} `json:"stop_sequence"` // Could be null
+		Usage        struct {
+			InputTokens  int `json:"input_tokens"`
+			OutputTokens int `json:"output_tokens"`
+		} `json:"usage"`
+	}
+
+	output := &InvokeModelResponseBody{}
+	err := json.Unmarshal(rawResponse, output)
+	if err != nil {
+		return "", err
+	}
+
+	// Extract the text content from the Content array
+	var resultText string
+	for _, content := range output.Content {
+		if content.Type == "text" {
+			resultText += content.Text
+		}
+	}
+
+	return resultText, nil
+}
+
 type CohereResponse struct {
 	response IResponse
 }
