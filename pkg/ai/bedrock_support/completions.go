@@ -42,6 +42,31 @@ func (a *CohereCompletion) GetCompletion(ctx context.Context, prompt string, mod
 	return body, nil
 }
 
+type CohereMessagesCompletion struct {
+	completion ICompletion
+}
+
+func (a *CohereMessagesCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
+	request := map[string]interface{}{
+		"max_tokens":        modelConfig.MaxTokens,
+		"temperature":       modelConfig.Temperature,
+		"top_p":             modelConfig.TopP,
+		"anthropic_version": "bedrock-2023-05-31", // Or another valid version
+		"messages": []map[string]interface{}{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+	}
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		return []byte{}, err
+	}
+	return body, nil
+}
+
 type AI21 struct {
 	completion ICompletion
 }
