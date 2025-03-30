@@ -53,6 +53,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"GatewayClass":            GatewayClassAnalyzer{},
 	"Gateway":                 GatewayAnalyzer{},
 	"HTTPRoute":               HTTPRouteAnalyzer{},
+	"Crd":                     CrdAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
