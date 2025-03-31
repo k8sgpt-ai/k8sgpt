@@ -138,6 +138,19 @@ func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
+				Name:      "policy-without-podselector-match-labels",
+				Namespace: "default",
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{
+					// len(MatchLabels) == 0 should trigger a failure.
+					// Allowing traffic to all pods.
+					MatchLabels: map[string]string{},
+				},
+			},
+		},
+		&networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
 				Namespace: "default",
 			},
@@ -203,7 +216,50 @@ func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 		t.Error(err)
 	}
 
-	assert.Equal(t, len(results), 1)
+	assert.Equal(t, len(results), 2)
 	assert.Equal(t, results[0].Kind, "NetworkPolicy")
 
+}
+
+func TestNetpolLabelSelectorFiltering(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example1",
+				Namespace: "default",
+				Labels: map[string]string{
+					"app": "netpol",
+				},
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": "netpol",
+					},
+				},
+			},
+		},
+		&networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example2",
+				Namespace: "default",
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=netpol",
+	}
+
+	analyzer := NetworkPolicyAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(results), 1)
 }

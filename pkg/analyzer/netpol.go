@@ -43,7 +43,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 	// get all network policies in the namespace
 	policies, err := a.Client.GetClient().NetworkingV1().
-		NetworkPolicies(a.Namespace).List(a.Context, metav1.ListOptions{})
+		NetworkPolicies(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}

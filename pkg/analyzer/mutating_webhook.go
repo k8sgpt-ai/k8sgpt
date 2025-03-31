@@ -42,7 +42,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		"analyzer_name": kind,
 	})
 
-	mutatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().List(context.Background(), v1.ListOptions{})
+	mutatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +75,11 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 						},
 					},
 				})
+				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+					MutatingWebhook: webhookConfig,
+					FailureDetails:  failures,
+				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
 				continue
 			}
 
@@ -146,8 +151,10 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.MutatingWebhook.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.MutatingWebhook.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

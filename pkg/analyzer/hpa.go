@@ -43,7 +43,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().AutoscalingV1().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetClient().AutoscalingV2().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +52,17 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, hpa := range list.Items {
 		var failures []common.Failure
+
+		//check the error from status field
+		conditions := hpa.Status.Conditions
+		for _, condition := range conditions {
+			if condition.Status != "True" {
+				failures = append(failures, common.Failure{
+					Text:      condition.Message,
+					Sensitive: []common.Sensitive{},
+				})
+			}
+		}
 
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
@@ -140,8 +151,10 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.HorizontalPodAutoscalers.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.HorizontalPodAutoscalers.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

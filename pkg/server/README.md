@@ -7,24 +7,24 @@ The grpc interface that is served is hosted on [buf](https://buf.build/k8sgpt-ai
 
 ## grpcurl
 
-A fantastic tool for local debugging and development is `grpcurl` 
+A fantastic tool for local debugging and development is `grpcurl`
 It allows you to form curl like requests that are http2
-e.g. 
+e.g.
 
 ```
-grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:8080 schema.v1.ServerService/Analyze
+grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:8080 schema.v1.ServiceAnalyzeService/Analyze
 ```
 
 ```
-grpcurl -plaintext  localhost:8080 schema.v1.ServerService/ListIntegrations 
+grpcurl -plaintext  localhost:8080 schema.v1.ServiceConfigService/ListIntegrations
 {
   "integrations": [
-    "trivy"
+    "prometheus"
   ]
 }
 
 ```
 
 ```
-grpcurl -plaintext -d '{"integrations":{"trivy":{"enabled":"true","namespace":"default","skipInstall":"false"}}}' localhost:8080 schema.v1.ServerService/AddConfig
+grpcurl -plaintext -d '{"integrations":{"prometheus":{"enabled":"true","namespace":"default","skipInstall":"false"}}}' localhost:8080 schema.v1.ServiceConfigService/AddConfig
 ```

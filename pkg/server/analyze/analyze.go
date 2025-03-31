@@ -1,4 +1,4 @@
-package server
+package analyze
 
 import (
 	"context"
@@ -8,16 +8,12 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 )
 
-func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
+func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	*schemav1.AnalyzeResponse,
 	error,
 ) {
 	if i.Output == "" {
 		i.Output = "json"
-	}
-
-	if i.Backend == "" {
-		i.Backend = "openai"
 	}
 
 	if int(i.MaxConcurrency) == 0 {
@@ -29,18 +25,24 @@ func (h *handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		i.Language,
 		i.Filters,
 		i.Namespace,
+		i.LabelSelector,
 		i.Nocache,
 		i.Explain,
 		int(i.MaxConcurrency),
-		false, // Kubernetes Doc disabled in server mode
-		false, // Interactive mode disabled in server mode
+		false,      // Kubernetes Doc disabled in server mode
+		false,      // Interactive mode disabled in server mode
+		[]string{}, //TODO: add custom http headers in server mode
+		false,      // with stats disable
 	)
-	config.Context = ctx // Replace context for correct timeouts.
 	if err != nil {
 		return &schemav1.AnalyzeResponse{}, err
 	}
+	config.Context = ctx // Replace context for correct timeouts.
 	defer config.Close()
 
+	if config.CustomAnalyzersAreAvailable() {
+		config.RunCustomAnalysis()
+	}
 	config.RunAnalysis()
 
 	if i.Explain {

@@ -28,7 +28,7 @@ type ValidatingWebhookAnalyzer struct{}
 
 func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
-	kind := "ValidatingWebhookConfgiguration"
+	kind := "ValidatingWebhookConfiguration"
 	apiDoc := kubernetes.K8sApiReference{
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
@@ -42,7 +42,7 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 		"analyzer_name": kind,
 	})
 
-	validatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().List(context.Background(), v1.ListOptions{})
+	validatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +73,11 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 						},
 					},
 				})
+				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+					ValidatingWebhook: webhookConfig,
+					FailureDetails:    failures,
+				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, webhook.Name, webhookConfig.Namespace).Set(float64(len(failures)))
 				continue
 			}
 
@@ -144,8 +149,10 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.ValidatingWebhook.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.ValidatingWebhook.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

@@ -15,146 +15,226 @@ package analyzer
 
 import (
 	"context"
-	"strings"
+	"sort"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/require"
+	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
-	clientset := fake.NewSimpleClientset(
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example",
-				Namespace:   "default",
-				Annotations: map[string]string{},
+	validIgClassName := new(string)
+	*validIgClassName = "valid-ingress-class"
+
+	var igRule networkingv1.IngressRule
+
+	httpRule := networkingv1.HTTPIngressRuleValue{
+		Paths: []networkingv1.HTTPIngressPath{
+			{
+				Path: "/",
+				Backend: networkingv1.IngressBackend{
+					Service: &networkingv1.IngressServiceBackend{
+						// This service exists.
+						Name: "Service1",
+					},
+				},
 			},
-		})
-	ingressAnalyzer := IngressAnalyzer{}
+			{
+				Path: "/test1",
+				Backend: networkingv1.IngressBackend{
+					Service: &networkingv1.IngressServiceBackend{
+						// This service is in the test namespace
+						// Hence, it won't be discovered.
+						Name: "Service2",
+					},
+				},
+			},
+			{
+				Path: "/test2",
+				Backend: networkingv1.IngressBackend{
+					Service: &networkingv1.IngressServiceBackend{
+						// This service doesn't exist.
+						Name: "Service3",
+					},
+				},
+			},
+		},
+	}
+	igRule.IngressRuleValue.HTTP = &httpRule
 
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
-			Client: clientset,
+			Client: fake.NewSimpleClientset(
+				&networkingv1.Ingress{
+					// Doesn't specify an ingress class.
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress1",
+						Namespace: "default",
+					},
+				},
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress2",
+						Namespace: "default",
+						// Specify an invalid ingress class name using annotations.
+						Annotations: map[string]string{
+							"kubernetes.io/ingress.class": "invalid-class",
+						},
+					},
+				},
+				&networkingv1.Ingress{
+					// Namespace filtering.
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress3",
+						Namespace: "test",
+					},
+				},
+				&networkingv1.IngressClass{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: *validIgClassName,
+					},
+				},
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress4",
+						Namespace: "default",
+						// Specify valid ingress class name using annotations.
+						Annotations: map[string]string{
+							"kubernetes.io/ingress.class": *validIgClassName,
+						},
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Service1",
+						Namespace: "default",
+					},
+				},
+				&v1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						// Namespace filtering.
+						Name:      "Service2",
+						Namespace: "test",
+					},
+				},
+				&v1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Secret1",
+						Namespace: "default",
+					},
+				},
+				&v1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Secret2",
+						Namespace: "test",
+					},
+				},
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress5",
+						Namespace: "default",
+					},
+
+					// Specify valid ingress class name in spec.
+					Spec: networkingv1.IngressSpec{
+						IngressClassName: validIgClassName,
+						Rules: []networkingv1.IngressRule{
+							igRule,
+						},
+						TLS: []networkingv1.IngressTLS{
+							{
+								// This won't contribute to any failures.
+								SecretName: "Secret1",
+							},
+							{
+								// This secret won't be discovered because of namespace filtering.
+								SecretName: "Secret2",
+							},
+							{
+								// This secret doesn't exist.
+								SecretName: "Secret3",
+							},
+						},
+					},
+				},
+			),
 		},
 		Context:   context.Background(),
 		Namespace: "default",
 	}
-	analysisResults, err := ingressAnalyzer.Analyze(config)
-	if err != nil {
-		t.Error(err)
+
+	igAnalyzer := IngressAnalyzer{}
+	results, err := igAnalyzer.Analyze(config)
+	require.NoError(t, err)
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Name < results[j].Name
+	})
+
+	expectations := []struct {
+		name          string
+		failuresCount int
+	}{
+		{
+			name:          "default/Ingress1",
+			failuresCount: 1,
+		},
+		{
+			name:          "default/Ingress2",
+			failuresCount: 1,
+		},
+		{
+			name:          "default/Ingress5",
+			failuresCount: 4,
+		},
 	}
-	assert.Equal(t, len(analysisResults), 1)
+
+	require.Equal(t, len(expectations), len(results))
+
+	for i, result := range results {
+		require.Equal(t, expectations[i].name, result.Name)
+		require.Equal(t, expectations[i].failuresCount, len(result.Error))
+	}
 }
 
-func TestIngressAnalyzerWithMultipleIngresses(t *testing.T) {
-	clientset := fake.NewSimpleClientset(
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example",
-				Namespace:   "default",
-				Annotations: map[string]string{},
-			},
-		},
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example-2",
-				Namespace:   "default",
-				Annotations: map[string]string{},
-			},
-		},
-	)
-	ingressAnalyzer := IngressAnalyzer{}
+func TestIngressAnalyzerLabelSelectorFiltering(t *testing.T) {
+	validIgClassName := new(string)
+	*validIgClassName = "valid-ingress-class"
 
 	config := common.Analyzer{
 		Client: &kubernetes.Client{
-			Client: clientset,
+			Client: fake.NewSimpleClientset(
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress1",
+						Namespace: "default",
+						Labels: map[string]string{
+							"app": "ingress",
+						},
+					},
+				},
+				&networkingv1.Ingress{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Ingress2",
+						Namespace: "default",
+					},
+				},
+			),
 		},
-		Context:   context.Background(),
-		Namespace: "default",
+		Context:       context.Background(),
+		Namespace:     "default",
+		LabelSelector: "app=ingress",
 	}
 
-	analysisResults, err := ingressAnalyzer.Analyze(config)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, len(analysisResults), 2)
-}
+	igAnalyzer := IngressAnalyzer{}
+	results, err := igAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/Ingress1", results[0].Name)
 
-func TestIngressAnalyzerWithoutIngressClassAnnotation(t *testing.T) {
-
-	clientset := fake.NewSimpleClientset(
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example",
-				Namespace:   "default",
-				Annotations: map[string]string{},
-			},
-		})
-	ingressAnalyzer := IngressAnalyzer{}
-
-	config := common.Analyzer{
-		Client: &kubernetes.Client{
-			Client: clientset,
-		},
-		Context:   context.Background(),
-		Namespace: "default",
-	}
-
-	analysisResults, err := ingressAnalyzer.Analyze(config)
-	if err != nil {
-		t.Error(err)
-	}
-
-	var errorFound bool
-	for _, analysis := range analysisResults {
-		for _, err := range analysis.Error {
-			if strings.Contains(err.Text, "does not specify an Ingress class") {
-				errorFound = true
-				break
-			}
-		}
-		if errorFound {
-			break
-		}
-	}
-	if !errorFound {
-		t.Error("expected error 'does not specify an Ingress class' not found in analysis results")
-	}
-}
-
-func TestIngressAnalyzerNamespaceFiltering(t *testing.T) {
-	clientset := fake.NewSimpleClientset(
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example",
-				Namespace:   "default",
-				Annotations: map[string]string{},
-			},
-		},
-		&networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "example",
-				Namespace:   "other-namespace",
-				Annotations: map[string]string{},
-			},
-		})
-	ingressAnalyzer := IngressAnalyzer{}
-
-	config := common.Analyzer{
-		Client: &kubernetes.Client{
-			Client: clientset,
-		},
-		Context:   context.Background(),
-		Namespace: "default",
-	}
-	analysisResults, err := ingressAnalyzer.Analyze(config)
-	if err != nil {
-		t.Error(err)
-	}
-	assert.Equal(t, len(analysisResults), 1)
 }

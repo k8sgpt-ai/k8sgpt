@@ -3,6 +3,8 @@ package ai
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/url"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -15,13 +17,16 @@ type AzureAIClient struct {
 	client      *openai.Client
 	model       string
 	temperature float32
+	// organizationId string
 }
 
 func (c *AzureAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	baseURL := config.GetBaseURL()
 	engine := config.GetEngine()
+	proxyEndpoint := config.GetProxyEndpoint()
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
+	orgId := config.GetOrganizationId()
 
 	defaultConfig.AzureModelMapperFunc = func(model string) string {
 		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
@@ -31,6 +36,24 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 		return azureModelMapping[model]
 
 	}
+
+	if proxyEndpoint != "" {
+		proxyUrl, err := url.Parse(proxyEndpoint)
+		if err != nil {
+			return err
+		}
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}
+
+		defaultConfig.HTTPClient = &http.Client{
+			Transport: transport,
+		}
+	}
+	if orgId != "" {
+		defaultConfig.OrgID = orgId
+	}
+
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
 		return errors.New("error creating Azure OpenAI client")

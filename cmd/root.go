@@ -22,6 +22,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/cmd/analyze"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/auth"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/cache"
+	customanalyzer "github.com/k8sgpt-ai/k8sgpt/cmd/customAnalyzer"
+	"github.com/k8sgpt-ai/k8sgpt/cmd/dump"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/filters"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/generate"
 	"github.com/k8sgpt-ai/k8sgpt/cmd/integration"
@@ -56,6 +58,9 @@ func Execute(v string, c string, d string) {
 	Version = v
 	Commit = c
 	Date = d
+	viper.Set("Version", Version)
+	viper.Set("Commit", Commit)
+	viper.Set("Date", Date)
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -69,11 +74,13 @@ func init() {
 
 	rootCmd.AddCommand(auth.AuthCmd)
 	rootCmd.AddCommand(analyze.AnalyzeCmd)
+	rootCmd.AddCommand(dump.DumpCmd)
 	rootCmd.AddCommand(filters.FiltersCmd)
 	rootCmd.AddCommand(generate.GenerateCmd)
 	rootCmd.AddCommand(integration.IntegrationCmd)
 	rootCmd.AddCommand(serve.ServeCmd)
 	rootCmd.AddCommand(cache.CacheCmd)
+	rootCmd.AddCommand(customanalyzer.CustomAnalyzerCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/k8sgpt/k8sgpt.yaml)", xdg.ConfigHome))
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")

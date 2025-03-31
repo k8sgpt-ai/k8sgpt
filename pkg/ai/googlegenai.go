@@ -31,6 +31,7 @@ type GoogleGenAIClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	topK        int32
 	maxTokens   int
 }
 
@@ -53,6 +54,7 @@ func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.topK = config.GetTopK()
 	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
@@ -62,6 +64,7 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 	model := c.client.GenerativeModel(c.model)
 	model.SetTemperature(c.temperature)
 	model.SetTopP(c.topP)
+	model.SetTopK(c.topK)
 	model.SetMaxOutputTokens(int32(c.maxTokens))
 
 	// Google AI SDK is capable of different inputs than just text, for now set explicit text prompt type.
@@ -77,10 +80,10 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 				if !r.Blocked {
 					continue
 				}
-				return "", fmt.Errorf("complection blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
+				return "", fmt.Errorf("completion blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
 			}
 		}
-		return "", errors.New("no complection returned; unknown reason")
+		return "", errors.New("no completion returned; unknown reason")
 	}
 
 	// Format output.

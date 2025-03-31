@@ -43,7 +43,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		"analyzer_name": kind,
 	})
 
-	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{})
+	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -123,15 +123,15 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			AnalyzerErrorsMetric.WithLabelValues(kind, cronJob.Name, cronJob.Namespace).Set(float64(len(failures)))
 
 		}
+	}
 
-		for key, value := range preAnalysis {
-			currentAnalysis := common.Result{
-				Kind:  kind,
-				Name:  key,
-				Error: value.FailureDetails,
-			}
-			a.Results = append(a.Results, currentAnalysis)
+	for key, value := range preAnalysis {
+		currentAnalysis := common.Result{
+			Kind:  kind,
+			Name:  key,
+			Error: value.FailureDetails,
 		}
+		a.Results = append(a.Results, currentAnalysis)
 	}
 
 	return a.Results, nil

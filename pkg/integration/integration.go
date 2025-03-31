@@ -17,9 +17,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/aws"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/kyverno"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/keda"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/prometheus"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/integration/trivy"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/spf13/viper"
 )
@@ -45,8 +48,10 @@ type Integration struct {
 }
 
 var integrations = map[string]IIntegration{
-	"trivy":      trivy.NewTrivy(),
 	"prometheus": prometheus.NewPrometheus(),
+	"aws":        aws.NewAWS(),
+	"keda":       keda.NewKeda(),
+	"kyverno":    kyverno.NewKyverno(),
 }
 
 func NewIntegration() *Integration {
@@ -87,7 +92,7 @@ func (*Integration) Activate(name string, namespace string, activeFilters []stri
 
 	if !skipInstall {
 		if err := integrations[name].Deploy(namespace); err != nil {
-			return err
+			return fmt.Errorf("failed to deploy %s integration: %w", name, err)
 		}
 	}
 	mergedFilters := activeFilters
@@ -122,7 +127,7 @@ func (*Integration) Deactivate(name string, namespace string) error {
 	}
 
 	if err := integrations[name].UnDeploy(namespace); err != nil {
-		return err
+		return fmt.Errorf("failed to undeploy %s integration: %w", name, err)
 	}
 
 	viper.Set("active_filters", activeFilters)

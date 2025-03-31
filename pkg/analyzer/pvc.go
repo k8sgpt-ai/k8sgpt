@@ -18,6 +18,7 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	appsv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,7 +33,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +44,10 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 
 		// Check for empty rs
-		if pvc.Status.Phase == "Pending" {
+		if pvc.Status.Phase == appsv1.ClaimPending {
 
 			// parse the event log and append details
-			evt, err := FetchLatestEvent(a.Context, a.Client, pvc.Namespace, pvc.Name)
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, pvc.Namespace, pvc.Name)
 			if err != nil || evt == nil {
 				continue
 			}
@@ -73,8 +74,10 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			Error: value.FailureDetails,
 		}
 
-		parent, _ := util.GetParent(a.Client, value.PersistentVolumeClaim.ObjectMeta)
-		currentAnalysis.ParentObject = parent
+		parent, found := util.GetParent(a.Client, value.PersistentVolumeClaim.ObjectMeta)
+		if found {
+			currentAnalysis.ParentObject = parent
+		}
 		a.Results = append(a.Results, currentAnalysis)
 	}
 

@@ -14,31 +14,49 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/analyze"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/query"
+	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
-
+	//nolint:staticcheck // Ignoring SA1019 for compatibility reasons
+	gw2 "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_analyzer_service/schemav1gateway"
+	//nolint:staticcheck // Ignoring SA1019 for compatibility reasons
+	gw "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2/schema/v1/server_config_service/schemav1gateway"
 	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
+	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+	ctrl "sigs.k8s.io/controller-runtime"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
-	Port          string
-	MetricsPort   string
-	Backend       string
-	Key           string
-	Token         string
-	Output        string
-	Handler       *handler
-	Logger        *zap.Logger
-	metricsServer *http.Server
-	listener      net.Listener
+	Port           string
+	MetricsPort    string
+	Backend        string
+	Key            string
+	Token          string
+	Output         string
+	ConfigHandler  *config.Handler
+	AnalyzeHandler *analyze.Handler
+	QueryHandler   *query.Handler
+	Logger         *zap.Logger
+	metricsServer  *http.Server
+	listener       net.Listener
+	EnableHttp     bool
 }
 
 type Health struct {
@@ -58,7 +76,20 @@ func (s *Config) Shutdown() error {
 	return s.listener.Close()
 }
 
+// grpcHandlerFunc returns an http.Handler that delegates to grpcServer on incoming gRPC
+// connections or otherHandler otherwise.
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	})
+}
+
 func (s *Config) Serve() error {
+	ctrl.SetLogger(zapr.NewLogger(s.Logger))
 
 	var lis net.Listener
 	var err error
@@ -67,16 +98,46 @@ func (s *Config) Serve() error {
 	if err != nil {
 		return err
 	}
+
+	s.ConfigHandler = &config.Handler{}
+	s.AnalyzeHandler = &analyze.Handler{}
+	s.QueryHandler = &query.Handler{}
 	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
-	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(logInterceptor(s.Logger))
+	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(LogInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)
 	reflection.Register(grpcServer)
-	rpc.RegisterServerServiceServer(grpcServer, s.Handler)
-	if err := grpcServer.Serve(
-		lis,
-	); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return err
+	rpc.RegisterServerConfigServiceServer(grpcServer, s.ConfigHandler)
+	rpc.RegisterServerAnalyzerServiceServer(grpcServer, s.AnalyzeHandler)
+	rpc.RegisterServerQueryServiceServer(grpcServer, s.QueryHandler)
+	if s.EnableHttp {
+		s.Logger.Info("enabling rest/http api")
+		gwmux := runtime.NewServeMux()
+		err = gw.RegisterServerConfigServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port),
+			[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		if err != nil {
+			log.Fatalln("Failed to register gateway:", err)
+		}
+		err = gw2.RegisterServerAnalyzerServiceHandlerFromEndpoint(context.Background(), gwmux, fmt.Sprintf("localhost:%s", s.Port),
+			[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+		if err != nil {
+			log.Fatalln("Failed to register gateway:", err)
+		}
+
+		srv := &http.Server{
+			Addr:    address,
+			Handler: h2c.NewHandler(grpcHandlerFunc(grpcServer, gwmux), &http2.Server{}),
+		}
+
+		if err := srv.Serve(lis); err != nil {
+			return err
+		}
+	} else {
+		if err := grpcServer.Serve(
+			lis,
+		); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
 	}
 
 	return nil

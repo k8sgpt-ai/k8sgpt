@@ -21,8 +21,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"regexp"
+	"strings"
+
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
@@ -31,15 +35,6 @@ import (
 )
 
 var anonymizePattern = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;':\",./<>?")
-
-func SliceContainsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
 
 func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool) {
 	if meta.OwnerReferences != nil {
@@ -53,7 +48,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if rs.OwnerReferences != nil {
 					return GetParent(client, rs.ObjectMeta)
 				}
-				return "ReplicaSet/" + rs.Name, false
+				return "ReplicaSet/" + rs.Name, true
 
 			case "Deployment":
 				dep, err := client.GetClient().AppsV1().Deployments(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -63,7 +58,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if dep.OwnerReferences != nil {
 					return GetParent(client, dep.ObjectMeta)
 				}
-				return "Deployment/" + dep.Name, false
+				return "Deployment/" + dep.Name, true
 
 			case "StatefulSet":
 				sts, err := client.GetClient().AppsV1().StatefulSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -73,7 +68,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if sts.OwnerReferences != nil {
 					return GetParent(client, sts.ObjectMeta)
 				}
-				return "StatefulSet/" + sts.Name, false
+				return "StatefulSet/" + sts.Name, true
 
 			case "DaemonSet":
 				ds, err := client.GetClient().AppsV1().DaemonSets(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -83,7 +78,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if ds.OwnerReferences != nil {
 					return GetParent(client, ds.ObjectMeta)
 				}
-				return "DaemonSet/" + ds.Name, false
+				return "DaemonSet/" + ds.Name, true
 
 			case "Ingress":
 				ds, err := client.GetClient().NetworkingV1().Ingresses(meta.Namespace).Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -93,7 +88,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if ds.OwnerReferences != nil {
 					return GetParent(client, ds.ObjectMeta)
 				}
-				return "Ingress/" + ds.Name, false
+				return "Ingress/" + ds.Name, true
 
 			case "MutatingWebhookConfiguration":
 				mw, err := client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -103,7 +98,7 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if mw.OwnerReferences != nil {
 					return GetParent(client, mw.ObjectMeta)
 				}
-				return "MutatingWebhook/" + mw.Name, false
+				return "MutatingWebhook/" + mw.Name, true
 
 			case "ValidatingWebhookConfiguration":
 				vw, err := client.GetClient().AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(context.Background(), owner.Name, metav1.GetOptions{})
@@ -113,11 +108,11 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if vw.OwnerReferences != nil {
 					return GetParent(client, vw.ObjectMeta)
 				}
-				return "ValidatingWebhook/" + vw.Name, false
+				return "ValidatingWebhook/" + vw.Name, true
 			}
 		}
 	}
-	return meta.Name, false
+	return "", false
 }
 
 func RemoveDuplicates(slice []string) ([]string, []string) {
@@ -182,7 +177,8 @@ func GetCacheKey(provider string, language string, sEnc string) string {
 
 func GetPodListByLabels(client k.Interface,
 	namespace string,
-	labels map[string]string) (*v1.PodList, error) {
+	labels map[string]string,
+) (*v1.PodList, error) {
 	pods, err := client.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{
 			MatchLabels: labels,
@@ -206,7 +202,7 @@ func FileExists(path string) (bool, error) {
 }
 
 func EnsureDirExists(dir string) error {
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0o755)
 
 	if errors.Is(err, os.ErrExist) {
 		return nil
@@ -216,11 +212,18 @@ func EnsureDirExists(dir string) error {
 }
 
 func MapToString(m map[string]string) string {
-	var result string
-	for k, v := range m {
-		result += fmt.Sprintf("%s=%s,", k, v)
+	// Handle empty map case
+	if len(m) == 0 {
+		return ""
 	}
-	return result[:len(result)-1]
+
+	var pairs []string
+	for k, v := range m {
+		pairs = append(pairs, fmt.Sprintf("%s=%s", k, v))
+	}
+
+	// Efficient string joining
+	return strings.Join(pairs, ",")
 }
 
 func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
@@ -232,4 +235,79 @@ func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
 	}
 
 	return false
+}
+
+func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
+
+	// get the list of events
+	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
+		metav1.ListOptions{
+			FieldSelector: "involvedObject.name=" + name,
+		})
+
+	if err != nil {
+		return nil, err
+	}
+	// find most recent event
+	var latestEvent *v1.Event
+	for _, event := range events.Items {
+		if latestEvent == nil {
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
+		}
+		if event.LastTimestamp.After(latestEvent.LastTimestamp.Time) {
+			// this is required, as a pointer to a loop variable would always yield the latest value in the range
+			e := event
+			latestEvent = &e
+		}
+	}
+	return latestEvent, nil
+}
+
+// NewHeaders parses a slice of strings in the format "key:value" into []http.Header
+// It handles headers with the same key by appending values
+func NewHeaders(customHeaders []string) []http.Header {
+	headers := make(map[string][]string)
+
+	for _, header := range customHeaders {
+		vals := strings.SplitN(header, ":", 2)
+		if len(vals) != 2 {
+			//TODO: Handle error instead of ignoring it
+			continue
+		}
+		key := strings.TrimSpace(vals[0])
+		value := strings.TrimSpace(vals[1])
+
+		if _, ok := headers[key]; !ok {
+			headers[key] = []string{}
+		}
+		headers[key] = append(headers[key], value)
+	}
+
+	// Convert map to []http.Header format
+	var result []http.Header
+	for key, values := range headers {
+		header := make(http.Header)
+		for _, value := range values {
+			header.Add(key, value)
+		}
+		result = append(result, header)
+	}
+
+	return result
+}
+
+func LabelStrToSelector(labelStr string) labels.Selector {
+	if labelStr == "" {
+		return nil
+	}
+	labelSelectorMap := make(map[string]string)
+	for _, s := range strings.Split(labelStr, ",") {
+		parts := strings.SplitN(s, "=", 2)
+		if len(parts) == 2 {
+			labelSelectorMap[parts[0]] = parts[1]
+		}
+	}
+	return labels.SelectorFromSet(labels.Set(labelSelectorMap))
 }

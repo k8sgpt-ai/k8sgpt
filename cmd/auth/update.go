@@ -26,12 +26,20 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update a backend provider",
 	Long:  "The command to update an AI backend provider",
-	Args:  cobra.ExactArgs(1),
+	// Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
+		_ = cmd.MarkFlagRequired("backend")
 		backend, _ := cmd.Flags().GetString("backend")
 		if strings.ToLower(backend) == "azureopenai" {
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
+		}
+		organizationId, _ := cmd.Flags().GetString("organizationId")
+		if strings.ToLower(backend) != "azureopenai" && strings.ToLower(backend) != "openai" {
+			if organizationId != "" {
+				color.Red("Error: organizationId must be empty for backends other than azureopenai or openai.")
+				os.Exit(1)
+			}
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -43,50 +51,47 @@ var updateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		inputBackends := strings.Split(args[0], ",")
+		backend, _ := cmd.Flags().GetString("backend")
 
-		if len(inputBackends) == 0 {
-			color.Red("Error: backend must be set.")
-			os.Exit(1)
-		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
 			os.Exit(1)
 		}
 
-		for _, b := range inputBackends {
-			foundBackend := false
-			for i, provider := range configAI.Providers {
-				if b == provider.Name {
-					foundBackend = true
-					if backend != "" {
-						configAI.Providers[i].Name = backend
-						color.Blue("Backend name updated successfully")
-					}
-					if model != "" {
-						configAI.Providers[i].Model = model
-						color.Blue("Model updated successfully")
-					}
-					if password != "" {
-						configAI.Providers[i].Password = password
-						color.Blue("Password updated successfully")
-					}
-					if baseURL != "" {
-						configAI.Providers[i].BaseURL = baseURL
-						color.Blue("Base URL updated successfully")
-					}
-					if engine != "" {
-						configAI.Providers[i].Engine = engine
-					}
-					configAI.Providers[i].Temperature = temperature
-					color.Green("%s updated in the AI backend provider list", b)
+		foundBackend := false
+		for i, provider := range configAI.Providers {
+			if backend == provider.Name {
+				foundBackend = true
+				if backend != "" {
+					configAI.Providers[i].Name = backend
+					color.Blue("Backend name updated successfully")
 				}
+				if model != "" {
+					configAI.Providers[i].Model = model
+					color.Blue("Model updated successfully")
+				}
+				if password != "" {
+					configAI.Providers[i].Password = password
+					color.Blue("Password updated successfully")
+				}
+				if baseURL != "" {
+					configAI.Providers[i].BaseURL = baseURL
+					color.Blue("Base URL updated successfully")
+				}
+				if engine != "" {
+					configAI.Providers[i].Engine = engine
+				}
+				if organizationId != "" {
+					configAI.Providers[i].OrganizationId = organizationId
+					color.Blue("Organization Id updated successfully")
+				}
+				configAI.Providers[i].Temperature = temperature
+				color.Green("%s updated in the AI backend provider list", backend)
 			}
-			if !foundBackend {
-				color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", args[0])
-				os.Exit(1)
-			}
-
+		}
+		if !foundBackend {
+			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", args[0])
+			os.Exit(1)
 		}
 
 		viper.Set("ai", configAI)
@@ -110,4 +115,6 @@ func init() {
 	updateCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// update flag for azure open ai engine/deployment name
 	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
+	// update flag for organizationId
+	updateCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "Update OpenAI or Azure organization Id")
 }

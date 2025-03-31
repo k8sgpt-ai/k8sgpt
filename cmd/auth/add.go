@@ -28,7 +28,7 @@ import (
 
 const (
 	defaultBackend = "openai"
-	defaultModel   = "gpt-3.5-turbo"
+	defaultModel   = "gpt-4o"
 )
 
 var addCmd = &cobra.Command{
@@ -45,24 +45,14 @@ var addCmd = &cobra.Command{
 			_ = cmd.MarkFlagRequired("endpointname")
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "amazonbedrock" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
+		if strings.ToLower(backend) == "ibmwatsonxai" {
+			_ = cmd.MarkFlagRequired("providerId")
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-
-		// get ai configuration
-		err := viper.UnmarshalKey("ai", &configAI)
-		if err != nil {
-			color.Red("Error: %v", err)
-			os.Exit(1)
-		}
-
-		// search for provider with same name
-		providerIndex := -1
-		for i, provider := range configAI.Providers {
-			if backend == provider.Name {
-				providerIndex = i
-				break
-			}
-		}
 
 		validBackend := func(validBackends []string, backend string) bool {
 			for _, b := range validBackends {
@@ -84,6 +74,28 @@ var addCmd = &cobra.Command{
 			}
 		}
 
+		// get ai configuration
+		err := viper.UnmarshalKey("ai", &configAI)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+
+		// search for provider with same name
+		providerIndex := -1
+		for i, provider := range configAI.Providers {
+			if backend == provider.Name {
+				providerIndex = i
+				break
+			}
+		}
+
+		if providerIndex != -1 {
+			// provider with same name exists, update provider info
+			color.Yellow("Provider with same name already exists.")
+			os.Exit(1)
+		}
+
 		// check if model is not empty
 		if model == "" {
 			model = defaultModel
@@ -95,6 +107,10 @@ var addCmd = &cobra.Command{
 		}
 		if topP > 1.0 || topP < 0.0 {
 			color.Red("Error: topP ranges from 0 to 1.")
+			os.Exit(1)
+		}
+		if topK < 1 || topK > 100 {
+			color.Red("Error: topK ranges from 1 to 100.")
 			os.Exit(1)
 		}
 
@@ -119,8 +135,12 @@ var addCmd = &cobra.Command{
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
+			ProviderId:     providerId,
+			CompartmentId:  compartmentId,
 			TopP:           topP,
+			TopK:           topK,
 			MaxTokens:      maxTokens,
+			OrganizationId: organizationId,
 		}
 
 		if providerIndex == -1 {
@@ -132,9 +152,6 @@ var addCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			color.Green("%s added to the AI backend provider list", backend)
-		} else {
-			// provider with same name exists, update provider info
-			color.Yellow("Provider with same name already exists.")
 		}
 	},
 }
@@ -151,7 +168,9 @@ func init() {
 	// add flag for endpointName
 	addCmd.Flags().StringVarP(&endpointName, "endpointname", "n", "", "Endpoint Name, e.g. `endpoint-xxxxxxxxxxxx` (only for amazonbedrock, amazonsagemaker backends)")
 	// add flag for topP
-	addCmd.Flags().Float32VarP(&topP, "topp", "c", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
+	addCmd.Flags().Float32VarP(&topP, "topp", "", 0.5, "Probability Cutoff: Set a threshold (0.0-1.0) to limit word choices. Higher values add randomness, lower values increase predictability.")
+	// add flag for topK
+	addCmd.Flags().Int32VarP(&topK, "topk", "c", 50, "Sampling Cutoff: Set a threshold (1-100) to restrict the sampling process to the top K most probable words at each step. Higher values lead to greater variability, lower values increases predictability.")
 	// max tokens
 	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
 	// add flag for temperature
@@ -159,5 +178,11 @@ func init() {
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock backend)")
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
+	//add flag for vertexAI/WatsonxAI Project ID
+	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
+	//add flag for OCI Compartment ID
+	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
+	// add flag for openai organization
+	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
 }
