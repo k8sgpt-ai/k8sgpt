@@ -31,7 +31,7 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 ### Linux/Mac via brew
 
 ```sh
-$ brew install k8sgpt
+brew install k8sgpt
 ```
 
 or
@@ -49,7 +49,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -57,7 +57,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -70,7 +70,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -81,7 +81,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -96,7 +96,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -105,7 +105,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.0/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -366,6 +366,8 @@ Unused:
 > huggingface
 > noopai
 > googlevertexai
+> watsonxai
+> customrest
 > ibmwatsonxai
 ```
 

@@ -295,7 +295,9 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 
 	// Run the analyzer
 	results, err := analyzer.Analyze(analyzerConfig)
-
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Measure the time taken
 	if a.WithStats {
 		elapsedTime = time.Since(startTime)
@@ -405,6 +407,9 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
+	if a.AIClient.GetName() == ai.CustomRestClientName {
+		prompt = fmt.Sprintf(ai.PromptMap["raw"], a.Language, inputKey, prompt)
+	}
 	response, err := a.AIClient.GetCompletion(a.Context, prompt)
 	if err != nil {
 		return "", err

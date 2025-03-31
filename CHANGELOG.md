@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.4.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.1...v0.4.2) (2025-03-28)
+
+
+### Features
+
+* old sonnet ([#1408](https://github.com/k8sgpt-ai/k8sgpt/issues/1408)) ([e5817f9](https://github.com/k8sgpt-ai/k8sgpt/commit/e5817f9e557f4f97b016a0a7b7674342c3a1773e))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 1f6e0b7 ([#1405](https://github.com/k8sgpt-ai/k8sgpt/issues/1405)) ([f5eaf81](https://github.com/k8sgpt-ai/k8sgpt/commit/f5eaf817f0cf2b732013e67e94c758a225c35ba6))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 0aaccfd ([#1401](https://github.com/k8sgpt-ai/k8sgpt/issues/1401)) ([81d4aaf](https://github.com/k8sgpt-ai/k8sgpt/commit/81d4aaf402647bf4bcbc618fd82f9518cf3a5b4d))
+* **deps:** update actions/upload-artifact digest to ea165f8 ([#1402](https://github.com/k8sgpt-ai/k8sgpt/issues/1402)) ([eb381b8](https://github.com/k8sgpt-ai/k8sgpt/commit/eb381b8087bbb3216d9bcdcc88a71fbad9e31e41))
+* **deps:** update docker/login-action digest to 74a5d14 ([#1397](https://github.com/k8sgpt-ai/k8sgpt/issues/1397)) ([fdf8e7a](https://github.com/k8sgpt-ai/k8sgpt/commit/fdf8e7a95a6667b782e1e347a3b1d2fb0f2aafde))
+* fix error ([#1403](https://github.com/k8sgpt-ai/k8sgpt/issues/1403)) ([288ca86](https://github.com/k8sgpt-ai/k8sgpt/commit/288ca862b3aaf942e58aa0dad0e15e2fda84780f))
+
+## [0.4.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.0...v0.4.1) (2025-03-17)
+
+
+### Features
+
+* add amazon bedrock nova pro and nova lite models ([#1383](https://github.com/k8sgpt-ai/k8sgpt/issues/1383)) ([aa1e237](https://github.com/k8sgpt-ai/k8sgpt/commit/aa1e237ebb8c816383561c9b3e6a1ca0ddea8f78))
+* add custom restful backend for complex scenarios (e.g, rag) ([#1228](https://github.com/k8sgpt-ai/k8sgpt/issues/1228)) ([7540e00](https://github.com/k8sgpt-ai/k8sgpt/commit/7540e0084e0c0c44fc52ed9a906b76f9f2e6a981))
+
+
+### Bug Fixes
+
+* **deps:** update default model to gpt-4o for improved performance and cost efficiency ([#1332](https://github.com/k8sgpt-ai/k8sgpt/issues/1332)) ([4e39cb6](https://github.com/k8sgpt-ai/k8sgpt/commit/4e39cb65b3a7fc0d1c057c647794346e072d3fd0))
+* **deps:** update module golang.org/x/net to v0.36.0 [security] ([#1395](https://github.com/k8sgpt-ai/k8sgpt/issues/1395)) ([eb7b36a](https://github.com/k8sgpt-ai/k8sgpt/commit/eb7b36aa2764bc460ffc29a0aee18abe3631c2ed))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to f111f33 ([#1364](https://github.com/k8sgpt-ai/k8sgpt/issues/1364)) ([f2fdfd8](https://github.com/k8sgpt-ai/k8sgpt/commit/f2fdfd8dcaae6f57378d50396c4746d738d38bf2))
+* **deps:** update goreleaser/goreleaser-action digest to 90a3faa ([#1308](https://github.com/k8sgpt-ai/k8sgpt/issues/1308)) ([d6d2e3b](https://github.com/k8sgpt-ai/k8sgpt/commit/d6d2e3bc4254877c8af61aba7386706e942e3fe9))
+* **deps:** update softprops/action-gh-release digest to c95fe14 ([#1359](https://github.com/k8sgpt-ai/k8sgpt/issues/1359)) ([db5e517](https://github.com/k8sgpt-ai/k8sgpt/commit/db5e517dbb23a4cb0f203427744f4007d6e9faa8))
+
 ## [0.4.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.50...v0.4.0) (2025-03-06)
 
 
