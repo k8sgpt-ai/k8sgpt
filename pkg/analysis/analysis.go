@@ -356,7 +356,7 @@ func (a *Analysis) RunAnalysis() {
 
 	// use active_filters
 	if len(activeFilters) > 0 && verbose {
-		fmt.Printf("Debug: Found active filters %v, run selected core analyzers.", activeFilters)
+		fmt.Printf("Debug: Found active filters %v, run selected core analyzers.\n", activeFilters)
 	}
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
