@@ -37,6 +37,7 @@ var (
 	cfgFile     string
 	kubecontext string
 	kubeconfig  string
+	verbose     bool
 	Version     string
 	Commit      string
 	Date        string
@@ -84,6 +85,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("Default config file (%s/k8sgpt/k8sgpt.yaml)", xdg.ConfigHome))
 	rootCmd.PersistentFlags().StringVar(&kubecontext, "kubecontext", "", "Kubernetes context to use. Only required if out-of-cluster.")
 	rootCmd.PersistentFlags().StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show detailed tool actions (e.g., API calls, checks).")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -104,6 +106,7 @@ func initConfig() {
 
 	viper.Set("kubecontext", kubecontext)
 	viper.Set("kubeconfig", kubeconfig)
+	viper.Set("verbose", verbose)
 
 	viper.SetEnvPrefix("K8SGPT")
 	viper.AutomaticEnv() // read in environment variables that match

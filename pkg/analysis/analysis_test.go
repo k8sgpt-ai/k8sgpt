@@ -14,9 +14,11 @@ limitations under the License.
 package analysis
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -32,6 +34,25 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
+
+// helper function to capture stdout
+func captureOutput(f func()) string {
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+	var buf bytes.Buffer
+	_, _ = buf.ReadFrom(r)
+	os.Stdout = old
+	return buf.String()
+}
+
+func contains(s, substr string) bool {
+	return bytes.Contains([]byte(s), []byte(substr))
+}
 
 // sub-function
 func analysis_RunAnalysisFilterTester(t *testing.T, filterFlag string) []common.Result {
@@ -402,5 +423,85 @@ func TestGetAIResultForSanitizedFailures(t *testing.T) {
 				require.Empty(t, output)
 			}
 		})
+	}
+}
+
+// Test: Verbose output in RunAnalysis with filter flag
+func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
+	viper.Set("verbose", true)
+	// Run analysis with a filter flag ("Pod") to trigger debug output.
+	output := captureOutput(func() {
+		_ = analysis_RunAnalysisFilterTester(t, "Pod")
+	})
+	if !contains(output, "Debug: Filter flags [Pod] specified, run selected core analyzers.") {
+		t.Errorf("Expected debug output indicating filter flags [Pod] specified, but got: %s", output)
+	}
+	if !contains(output, "Debug: PodAnalyzer launched.") {
+		t.Errorf("Expected debug output indicating PodAnalyzer launch, but got: %s", output)
+	}
+	if !contains(output, "Debug: PodAnalyzer completed without errors.") {
+		t.Errorf("Expected debug output indicating PodAnalyzer completion without errors, but got: %s", output)
+	}
+}
+
+// Test: Verbose output in RunAnalysis with active filter
+func TestVerbose_RunAnalysisActiveFilter(t *testing.T) {
+	viper.Set("verbose", true)
+	viper.SetDefault("active_filters", "Ingress")
+	output := captureOutput(func() {
+		_ = analysis_RunAnalysisFilterTester(t, "")
+	})
+	if !contains(output, "Debug: Found active filters [Ingress], run selected core analyzers.") {
+		t.Errorf("Expected debug output indicating active filters [Ingress] found, but got: %s", output)
+	}
+	if !contains(output, "Debug: IngressAnalyzer launched.") {
+		t.Errorf("Expected debug output indicating IngressAnalyzer launch, but got: %s", output)
+	}
+	if !contains(output, "Debug: IngressAnalyzer completed without errors.") {
+		t.Errorf("Expected debug output indicating IngressAnalyzer completion without errors, but got: %s", output)
+	}
+}
+
+// Test: Verbose output in GetAIResults
+func TestVerbose_GetAIResults(t *testing.T) {
+	viper.Set("verbose", true)
+	disabledCache := cache.New("disabled-cache")
+	disabledCache.DisableCache()
+	aiClient := &ai.NoOpAIClient{}
+	analysisObj := Analysis{
+		AIClient: aiClient,
+		Cache:    disabledCache,
+		Results: []common.Result{
+			{
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []common.Failure{{Text: "test-problem", Sensitive: []common.Sensitive{}}},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
+		},
+		Namespace: "default",
+	}
+	output := captureOutput(func() {
+		_ = analysisObj.GetAIResults("json", false)
+	})
+	if !contains(output, "Debug: Generating AI analysis.") {
+		t.Errorf("Expected debug output indicating AI analysis generation, but got: %s", output)
+	}
+}
+
+// Test: Verbose output in RunCustomAnalysis
+func TestVerbose_RunCustomAnalysis(t *testing.T) {
+	viper.Set("verbose", true)
+	// Set custom_analyzers to empty array to trigger "No custom analyzers" debug message.
+	viper.Set("custom_analyzers", []interface{}{})
+	analysisObj := &Analysis{
+		MaxConcurrency: 1,
+	}
+	output := captureOutput(func() {
+		analysisObj.RunCustomAnalysis()
+	})
+	if !contains(output, "Debug: No custom analyzers found.") {
+		t.Errorf("Expected debug output indicating no custom analyzers found, but got: %s", output)
 	}
 }
