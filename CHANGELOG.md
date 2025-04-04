@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.2...v0.4.3) (2025-04-04)
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1363](https://github.com/k8sgpt-ai/k8sgpt/issues/1363)) ([e4861e9](https://github.com/k8sgpt-ai/k8sgpt/commit/e4861e9e2d631652b82768567afb9ba174114134))
+* prometheus UTF8Validation ([#1404](https://github.com/k8sgpt-ai/k8sgpt/issues/1404)) ([3c353b0](https://github.com/k8sgpt-ai/k8sgpt/commit/3c353b0e931028f3be3b229518cf86d24422a29d))
+
+
+### Other
+
+* added new AmazonBedrock model  ([#1390](https://github.com/k8sgpt-ai/k8sgpt/issues/1390)) ([ad2c90a](https://github.com/k8sgpt-ai/k8sgpt/commit/ad2c90a129074a13dac4fdd8e918d8e26159c7a1))
+* **deps:** pin golangci/golangci-lint-action action to 1481404 ([#1415](https://github.com/k8sgpt-ai/k8sgpt/issues/1415)) ([e231032](https://github.com/k8sgpt-ai/k8sgpt/commit/e231032e1bec1d2d25cb03b35e701aa86a61d5ee))
+* **deps:** update goreleaser/goreleaser-action digest to 9c156ee ([#1411](https://github.com/k8sgpt-ai/k8sgpt/issues/1411)) ([c823de1](https://github.com/k8sgpt-ai/k8sgpt/commit/c823de12e6b6efcf9f5639665aac602ed85ae31d))
+* linter ([#1414](https://github.com/k8sgpt-ai/k8sgpt/issues/1414)) ([f0b18cf](https://github.com/k8sgpt-ai/k8sgpt/commit/f0b18cfb1cd418b94b448d3b9de43f03841c92bb))
+
+
+### Docs
+
+* add table of contents and cleanup ([#1413](https://github.com/k8sgpt-ai/k8sgpt/issues/1413)) ([a31d07c](https://github.com/k8sgpt-ai/k8sgpt/commit/a31d07c802694d3455b665382ff12a2abc3e0ef7))
+* remove extra dollar sign in README.md ([#1410](https://github.com/k8sgpt-ai/k8sgpt/issues/1410)) ([a962741](https://github.com/k8sgpt-ai/k8sgpt/commit/a962741220bf98e159f14895d01cd596a7691f87))
+
 ## [0.4.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.1...v0.4.2) (2025-03-28)
 
 
