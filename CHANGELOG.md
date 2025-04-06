@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.3...v0.4.4) (2025-04-06)
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to b5ca514 ([#1371](https://github.com/k8sgpt-ai/k8sgpt/issues/1371)) ([d4de5d9](https://github.com/k8sgpt-ai/k8sgpt/commit/d4de5d9e3fdd1cc4c7d6fc067a7426fef1d32c1d))
+* **deps:** update module github.com/docker/docker to v28 ([#1376](https://github.com/k8sgpt-ai/k8sgpt/issues/1376)) ([68ddac0](https://github.com/k8sgpt-ai/k8sgpt/commit/68ddac008955933ffa27c2c4e46d286d9a26e100))
+* updating deps ([#1422](https://github.com/k8sgpt-ai/k8sgpt/issues/1422)) ([5b7fb7e](https://github.com/k8sgpt-ai/k8sgpt/commit/5b7fb7e6199635e109c1bf7355bc11ff6f60071b))
+
 ## [0.4.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.2...v0.4.3) (2025-04-04)
 
 
