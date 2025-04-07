@@ -124,7 +124,7 @@ jobs:
 
   merge:
     name: Create and Push Manifest List
-    needs: build
+    needs: [build, prepare_ci_run]
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
