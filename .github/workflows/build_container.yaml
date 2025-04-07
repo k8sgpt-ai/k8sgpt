@@ -104,6 +104,7 @@ jobs:
 
       - name: Build and push the image
         id: build
+        if: ${{ needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' }}
         uses: docker/build-push-action@v6
         with:
           context: .
