@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.5...v0.4.6) (2025-04-07)
+
+
+### Other
+
+* **deps:** pin docker/build-push-action action to 471d1dc ([#1428](https://github.com/k8sgpt-ai/k8sgpt/issues/1428)) ([5086ccd](https://github.com/k8sgpt-ai/k8sgpt/commit/5086ccd65942ebb9a37bd2c3a48d16c4be99e8c1))
+* fixing docker build push action ([#1426](https://github.com/k8sgpt-ai/k8sgpt/issues/1426)) ([1681aad](https://github.com/k8sgpt-ai/k8sgpt/commit/1681aadac106c608de9774ebfd7ea9df20eed482))
+* updated actor for login ([#1430](https://github.com/k8sgpt-ai/k8sgpt/issues/1430)) ([b626102](https://github.com/k8sgpt-ai/k8sgpt/commit/b6261026f8b41e505359a52c18bebec7ef5079f9))
+
 ## [0.4.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.4...v0.4.5) (2025-04-07)
 
 
