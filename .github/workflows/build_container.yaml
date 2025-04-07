@@ -110,7 +110,10 @@ jobs:
             GIT_HASH=${{ env.GIT_SHA }}
             RELEASE_VERSION=dev-${{ env.DATETIME }}
             BUILD_TIME=${{ env.BUILD_TIME }}
-          tags: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:latest
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}
+          
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
 
