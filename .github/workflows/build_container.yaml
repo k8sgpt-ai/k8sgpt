@@ -117,6 +117,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}
           labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}
           outputs: type=image,push=true
 
   merge:
