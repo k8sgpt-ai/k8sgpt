@@ -105,7 +105,7 @@ jobs:
   upload_images:
     name: Upload images to ghcr registry
     needs: [ prepare_ci_run, build_image ]
-    if: github.event_name == 'push' && needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' # only run on push to main/maintenance branches
+    # if: github.event_name == 'push' && needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' # only run on push to main/maintenance branches
     runs-on: ubuntu-latest
     env:
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
