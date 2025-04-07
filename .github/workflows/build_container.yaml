@@ -90,7 +90,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.K8SGPT_BOT_SECRET }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -131,7 +131,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.K8SGPT_BOT_SECRET }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
