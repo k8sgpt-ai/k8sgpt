@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.7...v0.4.8) (2025-04-07)
+
+
+### Other
+
+* removed krew release ([#1434](https://github.com/k8sgpt-ai/k8sgpt/issues/1434)) ([39ae2aa](https://github.com/k8sgpt-ai/k8sgpt/commit/39ae2aa6351d6a77e0b45ad15b0d10b86a33f3be))
+
 ## [0.4.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.6...v0.4.7) (2025-04-07)
 
 
