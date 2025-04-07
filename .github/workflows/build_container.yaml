@@ -85,6 +85,8 @@ jobs:
           target: production
           tags: |
             ${{ env.RELEASE_REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}
           build-args: |
             GIT_HASH=${{ env.GIT_SHA }}
             RELEASE_VERSION=dev-${{ env.DATETIME }}
@@ -137,6 +139,8 @@ jobs:
           target: production
           tags: |
             ghcr.io/k8sgpt-ai/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}
           build-args: |
             GIT_HASH=${{ env.GIT_SHA }}
             RELEASE_VERSION=dev-${{ env.DATETIME }}
