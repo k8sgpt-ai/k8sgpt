@@ -158,9 +158,11 @@ jobs:
         run: |
           docker manifest create ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }} \
             ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}-amd64
-
+      - name: Annotate manifest
+        run: |
           docker manifest annotate ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }} \
             ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}-amd64 \
             --arch amd64
-          
+      - name: Push manifest
+        run: |
           docker manifest push ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}
