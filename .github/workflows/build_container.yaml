@@ -65,7 +65,7 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm64
+#          - linux/arm64
     env:
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
       BUILD_TIME: ${{ needs.prepare_ci_run.outputs.BUILD_TIME }}
@@ -153,6 +153,5 @@ jobs:
       - name: Create manifest list and push
         run: |
           docker manifest create ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }} \
-            ${{ env.REGISTRY_IMAGE }}:latest \
             ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}
           docker manifest push ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}
