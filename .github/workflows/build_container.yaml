@@ -14,7 +14,7 @@ on:
       - "**.md"
 
 env:
-  GO_VERSION: "~1.22"
+  GO_VERSION: "~1.23"
   IMAGE_NAME: "k8sgpt"
   REGISTRY_IMAGE: ghcr.io/k8sgpt-ai/k8sgpt
 
@@ -97,6 +97,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Debug image tags
+        run: |
+          echo "Pushing tag: ${{ env.REGISTRY_IMAGE }}:${{ needs.prepare_ci_run.outputs.DATETIME }}"
 
       - name: Build and push the image
         id: build
