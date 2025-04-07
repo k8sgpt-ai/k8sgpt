@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.4...v0.4.5) (2025-04-07)
+
+
+### Other
+
+* fix workflows ([#1423](https://github.com/k8sgpt-ai/k8sgpt/issues/1423)) ([3dbc9e1](https://github.com/k8sgpt-ai/k8sgpt/commit/3dbc9e1a20a3a55971733d990ecd39e798a804e9))
+
 ## [0.4.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.3...v0.4.4) (2025-04-06)
 
 
