@@ -136,7 +136,8 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+      - name: Debug DATETIME
+        run: echo "DATETIME=${{ needs.prepare_ci_run.outputs.DATETIME }}"
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
