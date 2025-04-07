@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.6...v0.4.7) (2025-04-07)
+
+
+### Other
+
+* **deps:** update actions/upload-artifact digest to ea165f8 ([#1425](https://github.com/k8sgpt-ai/k8sgpt/issues/1425)) ([9bffc7c](https://github.com/k8sgpt-ai/k8sgpt/commit/9bffc7cff776733f6d05669e6c02f594ee2db261))
+* fixing build ([#1431](https://github.com/k8sgpt-ai/k8sgpt/issues/1431)) ([c5fe2c6](https://github.com/k8sgpt-ai/k8sgpt/commit/c5fe2c68d18d4fd713b3e638066327ad586d1871))
+
 ## [0.4.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.5...v0.4.6) (2025-04-07)
 
 
