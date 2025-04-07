@@ -115,6 +115,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_TAG }}
           builder: ${{ steps.buildx.outputs.name }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}
           push: true
           cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
           cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_TAG }}
