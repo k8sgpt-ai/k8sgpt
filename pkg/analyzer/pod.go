@@ -123,6 +123,20 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 					Sensitive: []common.Sensitive{},
 				})
 			}
+		} else if containerStatus.State.Terminated != nil {
+			if containerStatus.State.Terminated.ExitCode != 0 {
+				// This represents a container that is terminated abnormally
+				// https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-state-terminated
+				exitCode := containerStatus.State.Terminated.ExitCode
+				reason := containerStatus.State.Terminated.Reason
+				if reason == "" {
+					reason = "Unknown"
+				}
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("the termination reason is %s exitCode=%d container=%s pod=%s", reason, exitCode, containerStatus.Name, name),
+					Sensitive: []common.Sensitive{},
+				})
+			}
 		} else {
 			// when pod is Running but its ReadinessProbe fails
 			if !containerStatus.Ready && statusPhase == "Running" {
