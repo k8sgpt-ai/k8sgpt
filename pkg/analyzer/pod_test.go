@@ -343,6 +343,57 @@ func TestPodAnalyzer(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Terminated container with non-zero exit code",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "Pod1",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Phase: v1.PodFailed,
+								ContainerStatuses: []v1.ContainerStatus{
+									{
+										Name:  "Container1",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 1,
+												Reason:   "Error",
+											},
+										},
+									},
+									{
+										Name:  "Container2",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 2,
+												Reason:   "",
+											},
+										},
+									},
+								},
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/Pod1",
+					failuresCount: 2,
+				},
+			},
+		},
 	}
 
 	podAnalyzer := PodAnalyzer{}
