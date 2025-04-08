@@ -735,3 +735,87 @@ func TestHPAAnalyzerStatusField(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 
 }
+
+func TestHPAAnalyzerStatusScalingLimitedError(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					Kind: "Deployment",
+					Name: "example",
+				},
+			},
+			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
+					{
+						Type:    autoscalingv2.AbleToScale,
+						Status:  "True",
+						Message: "recommended size matches current size",
+					},
+					{
+						Type:    autoscalingv2.ScalingActive,
+						Status:  "True",
+						Message: "the HPA was able to successfully calculate a replica count",
+					},
+					{
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  "True",
+						Message: "the desired replica count is less than the minimum replica count",
+					},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  "example",
+								Image: "nginx",
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	var errorFound bool
+	want := "the desired replica count is less than the minimum replica count"
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			if want == got.Text {
+				errorFound = true
+			}
+		}
+		if errorFound {
+			break
+		}
+	}
+
+	if !errorFound {
+		t.Errorf("Expected message, <%v> , not found in HorizontalPodAutoscaler's analysis results", want)
+	}
+}
