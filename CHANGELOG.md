@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.8...v0.4.9) (2025-04-08)
+
+
+### Other
+
+* **deps:** pin dependencies ([#1440](https://github.com/k8sgpt-ai/k8sgpt/issues/1440)) ([a5574ee](https://github.com/k8sgpt-ai/k8sgpt/commit/a5574ee49d530960a515c419f4875cf02cb36fb3))
+* fixing ([#1437](https://github.com/k8sgpt-ai/k8sgpt/issues/1437)) ([f68ff0e](https://github.com/k8sgpt-ai/k8sgpt/commit/f68ff0efee9bad5f8368c83800611fa9acbc53d7))
+
 ## [0.4.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.7...v0.4.8) (2025-04-07)
 
 
