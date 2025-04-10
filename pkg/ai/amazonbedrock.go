@@ -174,7 +174,7 @@ var (
 				MaxTokens:   100, // max of 300k tokens
 				Temperature: 0.5,
 				TopP:        0.9,
-				ModelName:   "eu.wamazon.nova-pro-v1:0",
+				ModelName:   "eu.amazon.nova-pro-v1:0",
 			},
 		},
 		{
@@ -239,6 +239,16 @@ var (
 		},
 	}
 )
+
+// NewAmazonBedRockClient creates a new AmazonBedRockClient with the given models
+func NewAmazonBedRockClient(models []bedrock_support.BedrockModel) *AmazonBedRockClient {
+	if models == nil {
+		models = defaultModels // Use default models if none provided
+	}
+	return &AmazonBedRockClient{
+		models: models,
+	}
+}
 
 // GetModelOrDefault check config region
 func GetRegionOrDefault(region string) string {
@@ -325,7 +335,6 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	if err != nil {
 		return err
 	}
-	// TODO: Override the completion config somehow
 
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
