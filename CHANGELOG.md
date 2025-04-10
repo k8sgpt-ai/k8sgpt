@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.9...v0.4.10) (2025-04-10)
+
+
+### Features
+
+* add a naive support of bedrock inference profile ([#1446](https://github.com/k8sgpt-ai/k8sgpt/issues/1446)) ([78ffa59](https://github.com/k8sgpt-ai/k8sgpt/commit/78ffa5904addf71caf04554966437b14351f21e5))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1417](https://github.com/k8sgpt-ai/k8sgpt/issues/1417)) ([ce4b3c2](https://github.com/k8sgpt-ai/k8sgpt/commit/ce4b3c2e7d0762093506d9010eceb47a2dcdf5bc))
+* **deps:** update module helm.sh/helm/v3 to v3.17.3 [security] ([#1448](https://github.com/k8sgpt-ai/k8sgpt/issues/1448)) ([060a3b2](https://github.com/k8sgpt-ai/k8sgpt/commit/060a3b2a26f117827090697eb599cd51a44125e6))
+* pod analyzer catches errors when containers are in Terminated state ([#1438](https://github.com/k8sgpt-ai/k8sgpt/issues/1438)) ([dceda9a](https://github.com/k8sgpt-ai/k8sgpt/commit/dceda9a6a16a914b916c478ecd0b4c8ed0e19c40))
+
 ## [0.4.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.8...v0.4.9) (2025-04-08)
 
 
