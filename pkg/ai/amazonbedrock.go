@@ -293,6 +293,8 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 			strings.Contains(modelConfigNameLower, modelLower) || strings.Contains(modelLower, modelConfigNameLower) {
 			// Create a copy to avoid returning a pointer to a loop variable
 			modelCopy := a.models[i]
+			// for partial match, set the model name to the input string
+			modelCopy.Config.ModelName = modelLower
 			return &modelCopy, nil
 		}
 	}
