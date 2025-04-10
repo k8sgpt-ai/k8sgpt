@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go/service/bedrockruntime/bedrockruntimeiface"
 	"os"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
 
@@ -255,7 +256,7 @@ func GetRegionOrDefault(region string) string {
 // Get model from string
 func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support.BedrockModel, error) {
 	for _, m := range models {
-		if model == m.Name {
+		if strings.Contains(model, m.Name) || strings.Contains(model, m.Config.ModelName) {
 			return &m, nil
 		}
 	}
