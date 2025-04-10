@@ -53,200 +53,192 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 	AP_South_1,
 }
 
-var defaultModels = []bedrock_support.BedrockModel{
-	{
-		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
-		Response:   &bedrock_support.CohereMessagesResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "anthropic.claude-3-5-sonnet-20240620-v1:0",
+var (
+	defaultModels = []bedrock_support.BedrockModel{
+		{
+			Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
+			Completion: &bedrock_support.CohereMessagesCompletion{},
+			Response:   &bedrock_support.CohereMessagesResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "anthropic.claude-3-5-sonnet-20240620-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+		{
+			Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+			},
 		},
-	},
-	{
-		Name:       "anthropic.claude-v2",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "anthropic.claude-v2",
+		{
+			Name:       "anthropic.claude-v2",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "anthropic.claude-v2",
+			},
 		},
-	},
-	{
-		Name:       "anthropic.claude-v1",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "anthropic.claude-v1",
+		{
+			Name:       "anthropic.claude-v1",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "anthropic.claude-v1",
+			},
 		},
-	},
-	{
-		Name:       "anthropic.claude-instant-v1",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "anthropic.claude-instant-v1",
+		{
+			Name:       "anthropic.claude-instant-v1",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "anthropic.claude-instant-v1",
+			},
 		},
-	},
-	{
-		Name:       "ai21.j2-ultra-v1",
-		Completion: &bedrock_support.AI21{},
-		Response:   &bedrock_support.AI21Response{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "ai21.j2-ultra-v1",
+		{
+			Name:       "ai21.j2-ultra-v1",
+			Completion: &bedrock_support.AI21{},
+			Response:   &bedrock_support.AI21Response{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "ai21.j2-ultra-v1",
+			},
 		},
-	},
-	{
-		Name:       "ai21.j2-jumbo-instruct",
-		Completion: &bedrock_support.AI21{},
-		Response:   &bedrock_support.AI21Response{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "ai21.j2-jumbo-instruct",
+		{
+			Name:       "ai21.j2-jumbo-instruct",
+			Completion: &bedrock_support.AI21{},
+			Response:   &bedrock_support.AI21Response{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "ai21.j2-jumbo-instruct",
+			},
 		},
-	},
-	{
-		Name:       "amazon.titan-text-express-v1",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.AmazonResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "amazon.titan-text-express-v1",
+		{
+			Name:       "amazon.titan-text-express-v1",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.AmazonResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "amazon.titan-text-express-v1",
+			},
 		},
-	},
-	{
-		Name:       "amazon.nova-pro-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "amazon.nova-pro-v1:0",
+		{
+			Name:       "amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "amazon.nova-pro-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "eu.amazon.nova-pro-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "eu.amazon.nova-pro-v1:0",
+		{
+			Name:       "eu.amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "eu.wamazon.nova-pro-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "us.amazon.nova-pro-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "us.amazon.nova-pro-v1:0",
+		{
+			Name:       "us.amazon.nova-pro-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "us.amazon.nova-pro-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "amazon.nova-lite-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "amazon.nova-lite-v1:0",
+		{
+			Name:       "amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "amazon.nova-lite-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "eu.amazon.nova-lite-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "eu.amazon.nova-lite-v1:0",
+		{
+			Name:       "eu.amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "eu.amazon.nova-lite-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "us.amazon.nova-lite-v1:0",
-		Completion: &bedrock_support.AmazonCompletion{},
-		Response:   &bedrock_support.NovaResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100, // max of 300k tokens
-			Temperature: 0.5,
-			TopP:        0.9,
-			ModelName:   "us.amazon.nova-lite-v1:0",
+		{
+			Name:       "us.amazon.nova-lite-v1:0",
+			Completion: &bedrock_support.AmazonCompletion{},
+			Response:   &bedrock_support.NovaResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100, // max of 300k tokens
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   "us.amazon.nova-lite-v1:0",
+			},
 		},
-	},
-	{
-		Name:       "anthropic.claude-3-haiku-20240307-v1:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
-		Config: bedrock_support.BedrockModelConfig{
-			// sensible defaults
-			MaxTokens:   100,
-			Temperature: 0.5,
-			TopP:        0.9,
+		{
+			Name:       "anthropic.claude-3-haiku-20240307-v1:0",
+			Completion: &bedrock_support.CohereCompletion{},
+			Response:   &bedrock_support.CohereResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				// sensible defaults
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+			},
 		},
-	},
-}
-
-// NewAmazonBedRockClient creates a new AmazonBedRockClient with the given models
-func NewAmazonBedRockClient(models []bedrock_support.BedrockModel) *AmazonBedRockClient {
-	if models == nil {
-		models = defaultModels // Use default models if none provided
 	}
-	return &AmazonBedRockClient{
-		models: models,
-	}
-}
+)
 
 // GetModelOrDefault check config region
 func GetRegionOrDefault(region string) string {
