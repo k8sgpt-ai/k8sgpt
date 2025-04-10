@@ -17,7 +17,12 @@ var SUPPPORTED_BEDROCK_MODELS = []string{
 	"ai21.j2-jumbo-instruct",
 	"amazon.titan-text-express-v1",
 	"amazon.nova-pro-v1:0",
+	"eu.amazon.nova-pro-v1:0",
+	"us.amazon.nova-pro-v1:0",
+	"amazon.nova-lite-v1:0",
 	"eu.amazon.nova-lite-v1:0",
+	"us.amazon.nova-lite-v1:0",
+	"anthropic.claude-3-haiku-20240307-v1:0",
 }
 
 type ICompletion interface {
@@ -91,7 +96,7 @@ type AmazonCompletion struct {
 
 func isModelSupported(modelName string) bool {
 	for _, supportedModel := range SUPPPORTED_BEDROCK_MODELS {
-		if modelName == supportedModel {
+		if strings.Contains(modelName, supportedModel) {
 			return true
 		}
 	}
