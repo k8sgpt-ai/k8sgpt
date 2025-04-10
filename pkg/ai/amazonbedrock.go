@@ -333,6 +333,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	if err != nil {
 		return err
 	}
+	// TODO: Override the completion config somehow
 
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
