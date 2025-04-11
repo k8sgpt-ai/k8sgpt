@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.10...v0.4.11) (2025-04-11)
+
+
+### Features
+
+* call bedrock with inference profile ([#1449](https://github.com/k8sgpt-ai/k8sgpt/issues/1449)) ([91d423b](https://github.com/k8sgpt-ai/k8sgpt/commit/91d423b147ca18cda7d54ff19349938a894ecb85))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1447](https://github.com/k8sgpt-ai/k8sgpt/issues/1447)) ([969fe99](https://github.com/k8sgpt-ai/k8sgpt/commit/969fe99b3320c313f1c97133cdffb668a00d5fb5))
+
 ## [0.4.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.9...v0.4.10) (2025-04-10)
 
 
