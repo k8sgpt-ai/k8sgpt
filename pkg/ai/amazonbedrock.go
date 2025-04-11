@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/bedrockruntime/bedrockruntimeiface"
@@ -294,12 +295,24 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 			// Create a copy to avoid returning a pointer to a loop variable
 			modelCopy := a.models[i]
 			// for partial match, set the model name to the input string
+			if err := validateModelArn(modelLower); err != nil {
+				return nil, err
+			}
 			modelCopy.Config.ModelName = modelLower
 			return &modelCopy, nil
 		}
 	}
 
 	return nil, fmt.Errorf("model '%s' not found in supported models", model)
+}
+
+func validateModelArn(model string) error {
+	var re = regexp.MustCompile(`(?m)^arn:(?P<Partition>[^:\n]*):bedrock:(?P<Region>[^:\n]*):(?P<AccountID>[^:\n]*):(?P<Ignore>(?P<ResourceType>[^:\/\n]*)[:\/])?(?P<Resource>.*)$`)
+	if re.MatchString(model) {
+		return nil
+	} else {
+		return errors.New("invalid model arn")
+	}
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.

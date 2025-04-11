@@ -44,6 +44,13 @@ func TestBedrockModelConfig(t *testing.T) {
 	assert.Equal(t, foundModel.Config.ModelName, "arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
 }
 
+func TestBedrockInvalidModel(t *testing.T) {
+	client := &AmazonBedRockClient{models: testModels}
+
+	_, err := client.getModelFromString("arn:aws:s3:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
+	assert.Error(t, err, "Should report error")
+}
+
 func TestGetModelFromString(t *testing.T) {
 	client := &AmazonBedRockClient{models: testModels}
 
