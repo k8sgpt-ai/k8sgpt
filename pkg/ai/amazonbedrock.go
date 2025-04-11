@@ -294,11 +294,11 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 			strings.Contains(modelConfigNameLower, modelLower) || strings.Contains(modelLower, modelConfigNameLower) {
 			// Create a copy to avoid returning a pointer to a loop variable
 			modelCopy := a.models[i]
-			// for partial match, set the model name to the input string
-			if err := validateModelArn(modelLower); err != nil {
-				return nil, err
+			// for partial match, set the model name to the input string if it is a valid ARN
+			if validateModelArn(modelLower) {
+				modelCopy.Config.ModelName = modelLower
 			}
-			modelCopy.Config.ModelName = modelLower
+
 			return &modelCopy, nil
 		}
 	}
@@ -306,13 +306,9 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 	return nil, fmt.Errorf("model '%s' not found in supported models", model)
 }
 
-func validateModelArn(model string) error {
+func validateModelArn(model string) bool {
 	var re = regexp.MustCompile(`(?m)^arn:(?P<Partition>[^:\n]*):bedrock:(?P<Region>[^:\n]*):(?P<AccountID>[^:\n]*):(?P<Ignore>(?P<ResourceType>[^:\/\n]*)[:\/])?(?P<Resource>.*)$`)
-	if re.MatchString(model) {
-		return nil
-	} else {
-		return errors.New("invalid model arn")
-	}
+	return re.MatchString(model)
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.
