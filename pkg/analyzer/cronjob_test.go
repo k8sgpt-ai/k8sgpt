@@ -292,4 +292,16 @@ func TestCheckCronScheduleIsValid(t *testing.T) {
 			}
 		})
 	}
+<<<<<<< HEAD
+=======
+}
+
+// Helper functions
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+func int64Ptr(i int64) *int64 {
+	return &i
+>>>>>>> 80904e3 (feat: improved test coverage (#1455))
 }
