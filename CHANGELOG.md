@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.10...v0.4.11) (2025-04-15)
+
+
+### Features
+
+* add verbose flag to enable detailed output ([#1420](https://github.com/k8sgpt-ai/k8sgpt/issues/1420)) ([a79224e](https://github.com/k8sgpt-ai/k8sgpt/commit/a79224e2bf96f458dbc96404c8f4847970e8d2ef))
+* call bedrock with inference profile ([#1449](https://github.com/k8sgpt-ai/k8sgpt/issues/1449)) ([91d423b](https://github.com/k8sgpt-ai/k8sgpt/commit/91d423b147ca18cda7d54ff19349938a894ecb85))
+* improved test coverage ([#1455](https://github.com/k8sgpt-ai/k8sgpt/issues/1455)) ([80904e3](https://github.com/k8sgpt-ai/k8sgpt/commit/80904e3063b00b0536171b7b62b938938b20825a))
+
+
+### Bug Fixes
+
+* config ai provider in query ([#1457](https://github.com/k8sgpt-ai/k8sgpt/issues/1457)) ([df17e3e](https://github.com/k8sgpt-ai/k8sgpt/commit/df17e3e728591e974703527dff86de882af17790))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1447](https://github.com/k8sgpt-ai/k8sgpt/issues/1447)) ([969fe99](https://github.com/k8sgpt-ai/k8sgpt/commit/969fe99b3320c313f1c97133cdffb668a00d5fb5))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1453](https://github.com/k8sgpt-ai/k8sgpt/issues/1453)) ([cf6f928](https://github.com/k8sgpt-ai/k8sgpt/commit/cf6f9289e13ee729c24968fd771c901f412e8db7))
+
+
+### Docs
+
+* fix the slack invite link ([#1450](https://github.com/k8sgpt-ai/k8sgpt/issues/1450)) ([9ce3346](https://github.com/k8sgpt-ai/k8sgpt/commit/9ce33469d85aa0829e995e4b404ae85734124fb4))
+
 ## [0.4.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.9...v0.4.10) (2025-04-10)
 
 
