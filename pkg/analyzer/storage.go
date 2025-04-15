@@ -170,17 +170,18 @@ func analyzePersistentVolumeClaims(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 
 		// Check for PVC state issues first (most critical)
-		if pvc.Status.Phase == v1.ClaimPending {
+		switch pvc.Status.Phase {
+		case v1.ClaimPending:
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("PersistentVolumeClaim %s is in Pending state", pvc.Name),
 				Sensitive: []common.Sensitive{},
 			})
-		} else if pvc.Status.Phase == v1.ClaimLost {
+		case v1.ClaimLost:
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("PersistentVolumeClaim %s is in Lost state", pvc.Name),
 				Sensitive: []common.Sensitive{},
 			})
-		} else {
+		default:
 			// Only check other issues if PVC is not in a critical state
 			if capacity, ok := pvc.Spec.Resources.Requests[v1.ResourceStorage]; ok {
 				if capacity.Cmp(resource.MustParse("1Gi")) < 0 {
