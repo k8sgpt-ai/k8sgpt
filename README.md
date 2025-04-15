@@ -196,6 +196,9 @@ you will be able to write your own analyzers.
 - [x] gateway
 - [x] httproute
 - [x] logAnalyzer
+- [x] storageAnalyzer
+- [x] securityAnalyzer
+- [x] configMapAnalyzer
 
 ## Examples
 
