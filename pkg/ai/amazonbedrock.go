@@ -337,7 +337,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
 	a.model = foundModel
-	a.model.Config.ModelName = foundModel.Name
+	a.model.Config.ModelName = foundModel.Config.ModelName
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
 	a.maxTokens = config.GetMaxTokens()
@@ -360,7 +360,7 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	// Build the parameters for the model invocation
 	params := &bedrockruntime.InvokeModelInput{
 		Body:        body,
-		ModelId:     aws.String(a.model.Name),
+		ModelId:     aws.String(a.model.Config.ModelName),
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
