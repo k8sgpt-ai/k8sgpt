@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.12](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.11...v0.4.12) (2025-04-17)
+
+
+### Features
+
+* new analyzers ([#1459](https://github.com/k8sgpt-ai/k8sgpt/issues/1459)) ([a128906](https://github.com/k8sgpt-ai/k8sgpt/commit/a128906136431189812d4d2dea68ea98cbfe5eeb))
+
+
+### Bug Fixes
+
+* **deps:** update module golang.org/x/net to v0.38.0 [security] ([#1462](https://github.com/k8sgpt-ai/k8sgpt/issues/1462)) ([e588fc3](https://github.com/k8sgpt-ai/k8sgpt/commit/e588fc316d29a29a7dde6abe2302833b38f1d302))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to ad3126e ([#1456](https://github.com/k8sgpt-ai/k8sgpt/issues/1456)) ([0553b98](https://github.com/k8sgpt-ai/k8sgpt/commit/0553b984b7c87b345f171bf6e5d632d890db689c))
+
 ## [0.4.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.10...v0.4.11) (2025-04-15)
 
 
