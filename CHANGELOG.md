@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.13](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.12...v0.4.13) (2025-04-22)
+
+
+### Features
+
+* slack announce ([#1466](https://github.com/k8sgpt-ai/k8sgpt/issues/1466)) ([3b6ad06](https://github.com/k8sgpt-ai/k8sgpt/commit/3b6ad06de1121c870fb486e0fe2bd1f87be16627))
+
+
+### Bug Fixes
+
+* reverse hpa ScalingLimited error condition ([#1366](https://github.com/k8sgpt-ai/k8sgpt/issues/1366)) ([ebb0373](https://github.com/k8sgpt-ai/k8sgpt/commit/ebb0373f69ad64a6cc43d0695d07e1d076c6366e))
+
+
+### Other
+
+* **deps:** update softprops/action-gh-release digest to da05d55 ([#1464](https://github.com/k8sgpt-ai/k8sgpt/issues/1464)) ([4434699](https://github.com/k8sgpt-ai/k8sgpt/commit/443469960a6b6791e358ee0a97e4c1dc5c3018e6))
+
 ## [0.4.12](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.11...v0.4.12) (2025-04-17)
 
 
