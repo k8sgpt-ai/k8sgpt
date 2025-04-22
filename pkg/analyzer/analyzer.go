@@ -43,6 +43,7 @@ var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Node":                           NodeAnalyzer{},
 	"ValidatingWebhookConfiguration": ValidatingWebhookAnalyzer{},
 	"MutatingWebhookConfiguration":   MutatingWebhookAnalyzer{},
+	"ConfigMap":                      ConfigMapAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
@@ -53,6 +54,8 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"GatewayClass":            GatewayClassAnalyzer{},
 	"Gateway":                 GatewayAnalyzer{},
 	"HTTPRoute":               HTTPRouteAnalyzer{},
+	"Storage":                 StorageAnalyzer{},
+	"Security":                SecurityAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {

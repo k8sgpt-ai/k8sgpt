@@ -3,8 +3,14 @@ package ai
 import (
 	"context"
 	"errors"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
+	"fmt"
 	"os"
+	"regexp"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/service/bedrockruntime/bedrockruntimeiface"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/bedrock_support"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -17,11 +23,12 @@ const amazonbedrockAIClientName = "amazonbedrock"
 type AmazonBedRockClient struct {
 	nopCloser
 
-	client      *bedrockruntime.BedrockRuntime
+	client      bedrockruntimeiface.BedrockRuntimeAPI
 	model       *bedrock_support.BedrockModel
 	temperature float32
 	topP        float32
 	maxTokens   int
+	models      []bedrock_support.BedrockModel
 }
 
 // AmazonCompletion BedRock support region list US East (N. Virginia),US West (Oregon),Asia Pacific (Singapore),Asia Pacific (Tokyo),Europe (Frankfurt)
@@ -34,6 +41,7 @@ const (
 	AP_Southeast_1 = "ap-southeast-1"
 	AP_Northeast_1 = "ap-northeast-1"
 	EU_Central_1   = "eu-central-1"
+	AP_South_1     = "ap-south-1"
 )
 
 var BEDROCKER_SUPPORTED_REGION = []string{
@@ -42,111 +50,203 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 	AP_Southeast_1,
 	AP_Northeast_1,
 	EU_Central_1,
+	AP_South_1,
 }
 
-var (
-	models = []bedrock_support.BedrockModel{
-		{
-			Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+var defaultModels = []bedrock_support.BedrockModel{
+	{
+		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-3-5-sonnet-20240620-v1:0",
 		},
-		{
-			Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
 		},
-		{
-			Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "anthropic.claude-v2",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-v2",
 		},
-		{
-			Name:       "anthropic.claude-v2",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "anthropic.claude-v1",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-v1",
 		},
-		{
-			Name:       "anthropic.claude-v1",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "anthropic.claude-instant-v1",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-instant-v1",
 		},
-		{
-			Name:       "anthropic.claude-instant-v1",
-			Completion: &bedrock_support.CohereCompletion{},
-			Response:   &bedrock_support.CohereResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "ai21.j2-ultra-v1",
+		Completion: &bedrock_support.AI21{},
+		Response:   &bedrock_support.AI21Response{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "ai21.j2-ultra-v1",
 		},
-		{
-			Name:       "ai21.j2-ultra-v1",
-			Completion: &bedrock_support.AI21{},
-			Response:   &bedrock_support.AI21Response{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "ai21.j2-jumbo-instruct",
+		Completion: &bedrock_support.AI21{},
+		Response:   &bedrock_support.AI21Response{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "ai21.j2-jumbo-instruct",
 		},
-		{
-			Name:       "ai21.j2-jumbo-instruct",
-			Completion: &bedrock_support.AI21{},
-			Response:   &bedrock_support.AI21Response{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "amazon.titan-text-express-v1",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.AmazonResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "amazon.titan-text-express-v1",
 		},
-		{
-			Name:       "amazon.titan-text-express-v1",
-			Completion: &bedrock_support.AmazonCompletion{},
-			Response:   &bedrock_support.AmazonResponse{},
-			Config: bedrock_support.BedrockModelConfig{
-				// sensible defaults
-				MaxTokens:   100,
-				Temperature: 0.5,
-				TopP:        0.9,
-			},
+	},
+	{
+		Name:       "amazon.nova-pro-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "amazon.nova-pro-v1:0",
 		},
+	},
+	{
+		Name:       "eu.amazon.nova-pro-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "eu.amazon.nova-pro-v1:0",
+		},
+	},
+	{
+		Name:       "us.amazon.nova-pro-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			// https://docs.aws.amazon.com/nova/latest/userguide/getting-started-api.html
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.amazon.nova-pro-v1:0",
+		},
+	},
+	{
+		Name:       "amazon.nova-lite-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "amazon.nova-lite-v1:0",
+		},
+	},
+	{
+		Name:       "eu.amazon.nova-lite-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "eu.amazon.nova-lite-v1:0",
+		},
+	},
+	{
+		Name:       "us.amazon.nova-lite-v1:0",
+		Completion: &bedrock_support.AmazonCompletion{},
+		Response:   &bedrock_support.NovaResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100, // max of 300k tokens
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.amazon.nova-lite-v1:0",
+		},
+	},
+	{
+		Name:       "anthropic.claude-3-haiku-20240307-v1:0",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+		},
+	},
+}
+
+// NewAmazonBedRockClient creates a new AmazonBedRockClient with the given models
+func NewAmazonBedRockClient(models []bedrock_support.BedrockModel) *AmazonBedRockClient {
+	if models == nil {
+		models = defaultModels // Use default models if none provided
 	}
-)
+	return &AmazonBedRockClient{
+		models: models,
+	}
+}
 
 // GetModelOrDefault check config region
 func GetRegionOrDefault(region string) string {
@@ -167,16 +267,56 @@ func GetRegionOrDefault(region string) string {
 
 // Get model from string
 func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support.BedrockModel, error) {
-	for _, m := range models {
-		if model == m.Name {
-			return &m, nil
+	if model == "" {
+		return nil, errors.New("model name cannot be empty")
+	}
+
+	// Trim spaces from the model name
+	model = strings.TrimSpace(model)
+	modelLower := strings.ToLower(model)
+
+	// Try to find an exact match first
+	for i := range a.models {
+		if strings.EqualFold(model, a.models[i].Name) || strings.EqualFold(model, a.models[i].Config.ModelName) {
+			// Create a copy to avoid returning a pointer to a loop variable
+			modelCopy := a.models[i]
+			return &modelCopy, nil
 		}
 	}
-	return nil, errors.New("model not found")
+
+	// If no exact match, try partial match
+	for i := range a.models {
+		modelNameLower := strings.ToLower(a.models[i].Name)
+		modelConfigNameLower := strings.ToLower(a.models[i].Config.ModelName)
+
+		// Check if the input string contains the model name or vice versa
+		if strings.Contains(modelNameLower, modelLower) || strings.Contains(modelLower, modelNameLower) ||
+			strings.Contains(modelConfigNameLower, modelLower) || strings.Contains(modelLower, modelConfigNameLower) {
+			// Create a copy to avoid returning a pointer to a loop variable
+			modelCopy := a.models[i]
+			// for partial match, set the model name to the input string if it is a valid ARN
+			if validateModelArn(modelLower) {
+				modelCopy.Config.ModelName = modelLower
+			}
+
+			return &modelCopy, nil
+		}
+	}
+
+	return nil, fmt.Errorf("model '%s' not found in supported models", model)
+}
+
+func validateModelArn(model string) bool {
+	var re = regexp.MustCompile(`(?m)^arn:(?P<Partition>[^:\n]*):bedrock:(?P<Region>[^:\n]*):(?P<AccountID>[^:\n]*):(?P<Ignore>(?P<ResourceType>[^:\/\n]*)[:\/])?(?P<Resource>.*)$`)
+	return re.MatchString(model)
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.
 func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
+	// Initialize models if not already initialized
+	if a.models == nil {
+		a.models = defaultModels
+	}
 
 	// Create a new AWS session
 	providerRegion := GetRegionOrDefault(config.GetProviderRegion())
@@ -193,11 +333,11 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	if err != nil {
 		return err
 	}
-	// TODO: Override the completion config somehow
 
 	// Create a new BedrockRuntime client
 	a.client = bedrockruntime.New(sess)
 	a.model = foundModel
+	a.model.Config.ModelName = foundModel.Name
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
 	a.maxTokens = config.GetMaxTokens()
