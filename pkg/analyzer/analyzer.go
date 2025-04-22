@@ -47,7 +47,7 @@ var coreAnalyzerMap = map[string]common.IAnalyzer{
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
-	"HorizontalPodAutoScaler": HpaAnalyzer{},
+	"HorizontalPodAutoscaler": HpaAnalyzer{},
 	"PodDisruptionBudget":     PdbAnalyzer{},
 	"NetworkPolicy":           NetworkPolicyAnalyzer{},
 	"Log":                     LogAnalyzer{},
