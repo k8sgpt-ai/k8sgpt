@@ -66,7 +66,6 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Sensitive: []common.Sensitive{},
 					})
 				}
-				break
 			default:
 				if condition.Status == corev1.ConditionFalse {
 					failures = append(failures, common.Failure{
