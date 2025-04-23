@@ -1,30 +1,49 @@
-# serve
+# K8sGPT MCP Server
 
-The serve commands allow you to run k8sgpt in a grpc server mode.
-This would be enabled typically through `k8sgpt serve` and is how the in-cluster k8sgpt deployment functions when managed by the [k8sgpt-operator](https://github.com/k8sgpt-ai/k8sgpt-operator)
+This directory contains the implementation of the Mission Control Protocol (MCP) server for K8sGPT. The MCP server allows K8sGPT to be integrated with other tools that support the MCP protocol.
 
-The grpc interface that is served is hosted on [buf](https://buf.build/k8sgpt-ai/schemas) and the repository for this is [here](https://github.com/k8sgpt-ai/schemas)
+## Components
 
-## grpcurl
+- `mcp.go`: The main MCP server implementation
+- `server.go`: The HTTP server implementation
+- `tools.go`: Tool definitions for the MCP server
 
-A fantastic tool for local debugging and development is `grpcurl`
-It allows you to form curl like requests that are http2
-e.g.
+## Features
 
-```
-grpcurl -plaintext -d '{"namespace": "k8sgpt", "explain" : "true"}' localhost:8080 schema.v1.ServiceAnalyzeService/Analyze
-```
+The MCP server provides the following features:
 
-```
-grpcurl -plaintext  localhost:8080 schema.v1.ServiceConfigService/ListIntegrations
-{
-  "integrations": [
-    "prometheus"
-  ]
+1. **Analyze Kubernetes Resources**: Analyze Kubernetes resources in a cluster
+2. **Get Cluster Information**: Retrieve information about the Kubernetes cluster
+
+## Usage
+
+To use the MCP server, you need to:
+
+1. Initialize the MCP server with a Kubernetes client
+2. Start the server
+3. Connect to the server using an MCP client
+
+Example:
+
+```go
+client, err := kubernetes.NewForConfig(config)
+if err != nil {
+    log.Fatalf("Failed to create Kubernetes client: %v", err)
 }
 
+mcpServer := server.NewMCPServer(client)
+if err := mcpServer.Start(); err != nil {
+    log.Fatalf("Failed to start MCP server: %v", err)
+}
 ```
 
-```
-grpcurl -plaintext -d '{"integrations":{"prometheus":{"enabled":"true","namespace":"default","skipInstall":"false"}}}' localhost:8080 schema.v1.ServiceConfigService/AddConfig
-```
+## Integration
+
+The MCP server can be integrated with other tools that support the MCP protocol, such as:
+
+- Mission Control
+- Other MCP-compatible tools
+
+## License
+
+This code is licensed under the Apache License 2.0.

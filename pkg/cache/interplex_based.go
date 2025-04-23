@@ -1,12 +1,13 @@
 package cache
 
 import (
-	rpc "buf.build/gen/go/interplex-ai/schemas/grpc/go/protobuf/schema/v1/schemav1grpc"
-	schemav1 "buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go/protobuf/schema/v1"
 	"context"
 	"errors"
-	"google.golang.org/grpc"
 	"os"
+
+	rpc "buf.build/gen/go/interplex-ai/schemas/grpc/go/protobuf/schema/v1/schemav1grpc"
+	schemav1 "buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go/protobuf/schema/v1"
+	"google.golang.org/grpc"
 )
 
 var _ ICache = (*InterplexCache)(nil)
@@ -59,6 +60,10 @@ func (c *InterplexCache) Store(key string, data string) error {
 }
 
 func (c *InterplexCache) Load(key string) (string, error) {
+	if os.Getenv("INTERPLEX_LOCAL_MODE") != "" {
+		c.configuration.ConnectionString = "localhost:8084"
+	}
+
 	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
 	defer conn.Close()
 	if err != nil {
@@ -70,36 +75,46 @@ func (c *InterplexCache) Load(key string) (string, error) {
 		Key: key,
 	}
 	resp, err := c.cacheServiceClient.Get(context.Background(), &req)
-	// check if response is cache error not found
 	if err != nil {
 		return "", err
 	}
 	return resp.Value, nil
 }
 
-func (InterplexCache) List() ([]CacheObjectDetails, error) {
-	//TODO implement me
-	return nil, errors.New("not implemented")
+func (c *InterplexCache) List() ([]CacheObjectDetails, error) {
+	// Not implemented for Interplex cache
+	return []CacheObjectDetails{}, nil
 }
 
-func (InterplexCache) Remove(key string) error {
+func (c *InterplexCache) Remove(key string) error {
+	if os.Getenv("INTERPLEX_LOCAL_MODE") != "" {
+		c.configuration.ConnectionString = "localhost:8084"
+	}
 
-	return errors.New("not implemented")
+	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
+	defer conn.Close()
+	if err != nil {
+		return err
+	}
+	serviceClient := rpc.NewCacheServiceClient(conn)
+	c.cacheServiceClient = serviceClient
+	req := schemav1.DeleteRequest{
+		Key: key,
+	}
+	_, err = c.cacheServiceClient.Delete(context.Background(), &req)
+	return err
 }
 
 func (c *InterplexCache) Exists(key string) bool {
-	if _, err := c.Load(key); err != nil {
-		return false
-	}
-	return true
+	_, err := c.Load(key)
+	return err == nil
 }
 
 func (c *InterplexCache) IsCacheDisabled() bool {
 	return c.noCache
 }
 
-func (InterplexCache) GetName() string {
-	//TODO implement me
+func (c *InterplexCache) GetName() string {
 	return "interplex"
 }
 
