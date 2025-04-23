@@ -1,6 +1,6 @@
-# K8sGPT MCP Server Example
+# K8sGPT MCP Client Example
 
-This directory contains an example of how to use the K8sGPT MCP server in a real-world scenario.
+This directory contains an example of how to use the K8sGPT MCP client in a real-world scenario.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ This directory contains an example of how to use the K8sGPT MCP server in a real
 To build the example, run:
 
 ```bash
-go build -o mcp-server-example
+go build -o mcp-client-example
 ```
 
 ## Running the Example
@@ -21,7 +21,7 @@ go build -o mcp-server-example
 To run the example, use the following command:
 
 ```bash
-./mcp-server-example --kubeconfig=/path/to/kubeconfig --namespace=default
+./mcp-client-example --kubeconfig=/path/to/kubeconfig --namespace=default
 ```
 
 ### Command-line Flags
@@ -34,17 +34,17 @@ To run the example, use the following command:
 When you run the example, you should see output similar to the following:
 
 ```
-Starting MCP server...
+Starting MCP client...
 ```
 
-The server will continue running until you press Ctrl+C to stop it.
+The client will continue running until you press Ctrl+C to stop it.
 
 ## Integration with Mission Control
 
 To integrate this example with Mission Control, you need to:
 
-1. Start the MCP server using the example
-2. Configure Mission Control to connect to the MCP server
+1. Start the MCP client using the example
+2. Configure Mission Control to connect to the MCP client
 3. Use Mission Control to analyze your Kubernetes cluster
 
 ## Troubleshooting
