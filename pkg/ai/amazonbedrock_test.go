@@ -52,6 +52,31 @@ func TestBedrockInvalidModel(t *testing.T) {
 	assert.Equal(t, foundModel.Config.MaxTokens, 100)
 }
 
+func TestBedrockGetCompletionInferenceProfile(t *testing.T) {
+	modelName := "arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0"
+	var inferenceModelModels = []bedrock_support.BedrockModel{
+		{
+			Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
+			Completion: &bedrock_support.CohereMessagesCompletion{},
+			Response:   &bedrock_support.CohereMessagesResponse{},
+			Config: bedrock_support.BedrockModelConfig{
+				MaxTokens:   100,
+				Temperature: 0.5,
+				TopP:        0.9,
+				ModelName:   modelName,
+			},
+		},
+	}
+	client := &AmazonBedRockClient{models: inferenceModelModels}
+
+	config := AIProvider{
+		Model: modelName,
+	}
+	err := client.Configure(&config)
+	assert.Nil(t, err, "Error should be nil")
+	assert.Equal(t, modelName, client.model.Config.ModelName, "Model name should match")
+}
+
 func TestGetModelFromString(t *testing.T) {
 	client := &AmazonBedRockClient{models: testModels}
 
