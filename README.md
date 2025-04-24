@@ -24,14 +24,27 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a> <a href="https://hellogithub.com/repository/9dfe44c18dfb4d6fa0181baf8b2cf2e1" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=9dfe44c18dfb4d6fa0181baf8b2cf2e1&claim_uid=gqG4wmzkMrP0eFy" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 
-<img src="images/demo4.gif" width=650px; />
+<img src="images/demo4.gif" width="650px">
+
+# Table of Contents
+- [Overview](#k8sgpt)
+- [Installation](#cli-installation)
+- [Quick Start](#quick-start)
+- [Analyzers](#analyzers)
+- [Examples](#examples)
+- [LLM AI Backends](#llm-ai-backends)
+- [Key Features](#key-features)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Community](#community)
+- [License](#license)
 
 # CLI Installation
 
 ### Linux/Mac via brew
 
 ```sh
-$ brew install k8sgpt
+brew install k8sgpt
 ```
 
 or
@@ -49,7 +62,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -57,7 +70,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -70,7 +83,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -81,7 +94,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -96,7 +109,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -105,7 +118,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.1/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.13/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -133,7 +146,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 - Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
   tab based on your system architecture.
-- Extract the downloaded package to your desired location. Configure the system _path_ variable with the binary location
+- Extract the downloaded package to your desired location. Configure the system _PATH_ environment variable with the binary location
 
 ## Operator Installation
 
@@ -183,6 +196,9 @@ you will be able to write your own analyzers.
 - [x] gateway
 - [x] httproute
 - [x] logAnalyzer
+- [x] storageAnalyzer
+- [x] securityAnalyzer
+- [x] configMapAnalyzer
 
 ## Examples
 
@@ -324,14 +340,14 @@ _Print analysis stats_
 ```
 k8sgpt analyze -s
 The stats mode allows for debugging and understanding the time taken by an analysis by displaying the statistics of each analyzer.
-- Analyzer Ingress took 47.125583ms 
-- Analyzer PersistentVolumeClaim took 53.009167ms 
-- Analyzer CronJob took 57.517792ms 
-- Analyzer Deployment took 156.6205ms 
-- Analyzer Node took 160.109833ms 
-- Analyzer ReplicaSet took 245.938333ms 
-- Analyzer StatefulSet took 448.0455ms 
-- Analyzer Pod took 5.662594708s 
+- Analyzer Ingress took 47.125583ms
+- Analyzer PersistentVolumeClaim took 53.009167ms
+- Analyzer CronJob took 57.517792ms
+- Analyzer Deployment took 156.6205ms
+- Analyzer Node took 160.109833ms
+- Analyzer ReplicaSet took 245.938333ms
+- Analyzer StatefulSet took 448.0455ms
+- Analyzer Pod took 5.662594708s
 - Analyzer Service took 38.583359166s
 ```
 
@@ -412,11 +428,9 @@ The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs usi
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
 
-Note: **Anonymization does not currently apply to events.**
-
 ### Further Details
 
-**Anonymization does not currently apply to events.**
+Note: **Anonymization does not currently apply to events.**
 
 _In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**._
 
@@ -434,7 +448,7 @@ _In a few analysers like Pod, we feed to the AI backend the event messages which
 
 - The following is the list of analysers in which data is **not being masked**:-
 
-  - RepicaSet
+  - ReplicaSet
   - PersistentVolumeClaim
   - Pod
   - Log
@@ -485,7 +499,7 @@ There may be scenarios where caching remotely is preferred.
 In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
 <summary> Remote caching </summary>
-<em>Note: You can only configure and use only one remote cache at a time</em>
+<em>Note: You can configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
 
@@ -581,7 +595,7 @@ Please read our [contributing guide](./CONTRIBUTING.md).
 
 ## Community
 
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-276pa9uyq-pxAUr4TCVHubFxEvLZuT1Q)
+Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />

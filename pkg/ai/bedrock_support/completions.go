@@ -17,7 +17,12 @@ var SUPPPORTED_BEDROCK_MODELS = []string{
 	"ai21.j2-jumbo-instruct",
 	"amazon.titan-text-express-v1",
 	"amazon.nova-pro-v1:0",
+	"eu.amazon.nova-pro-v1:0",
+	"us.amazon.nova-pro-v1:0",
+	"amazon.nova-lite-v1:0",
 	"eu.amazon.nova-lite-v1:0",
+	"us.amazon.nova-lite-v1:0",
+	"anthropic.claude-3-haiku-20240307-v1:0",
 }
 
 type ICompletion interface {
@@ -35,6 +40,31 @@ func (a *CohereCompletion) GetCompletion(ctx context.Context, prompt string, mod
 		"temperature":          modelConfig.Temperature,
 		"top_p":                modelConfig.TopP,
 	}
+	body, err := json.Marshal(request)
+	if err != nil {
+		return []byte{}, err
+	}
+	return body, nil
+}
+
+type CohereMessagesCompletion struct {
+	completion ICompletion
+}
+
+func (a *CohereMessagesCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
+	request := map[string]interface{}{
+		"max_tokens":        modelConfig.MaxTokens,
+		"temperature":       modelConfig.Temperature,
+		"top_p":             modelConfig.TopP,
+		"anthropic_version": "bedrock-2023-05-31", // Or another valid version
+		"messages": []map[string]interface{}{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+	}
+
 	body, err := json.Marshal(request)
 	if err != nil {
 		return []byte{}, err
@@ -66,7 +96,7 @@ type AmazonCompletion struct {
 
 func isModelSupported(modelName string) bool {
 	for _, supportedModel := range SUPPPORTED_BEDROCK_MODELS {
-		if modelName == supportedModel {
+		if strings.Contains(modelName, supportedModel) {
 			return true
 		}
 	}

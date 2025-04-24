@@ -24,145 +24,232 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
 func TestServiceAnalyzer(t *testing.T) {
-	config := common.Analyzer{
-		Client: &kubernetes.Client{
-			Client: fake.NewSimpleClientset(
-				&v1.Endpoints{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "Endpoint1",
-						Namespace: "test",
-					},
-					// Endpoint with non-zero subsets.
-					Subsets: []v1.EndpointSubset{
-						{
-							// These not ready end points will contribute to failures.
-							NotReadyAddresses: []v1.EndpointAddress{
-								{
-									TargetRef: &v1.ObjectReference{
-										Kind: "test-reference",
-										Name: "reference1",
-									},
-								},
-								{
-									TargetRef: &v1.ObjectReference{
-										Kind: "test-reference",
-										Name: "reference2",
-									},
-								},
-							},
-						},
-						{
-							// These not ready end points will contribute to failures.
-							NotReadyAddresses: []v1.EndpointAddress{
-								{
-									TargetRef: &v1.ObjectReference{
-										Kind: "test-reference",
-										Name: "reference3",
-									},
-								},
-							},
-						},
-					},
-				},
-				&v1.Endpoints{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "Endpoint2",
-						Namespace: "test",
-						Annotations: map[string]string{
-							// Leader election record annotation key defined.
-							resourcelock.LeaderElectionRecordAnnotationKey: "this is okay",
-						},
-					},
-					// Endpoint with zero subsets.
-				},
-				&v1.Endpoints{
-					ObjectMeta: metav1.ObjectMeta{
-						// This won't contribute to any failures.
-						Name:        "non-existent-service",
-						Namespace:   "test",
-						Annotations: map[string]string{},
-					},
-					// Endpoint with zero subsets.
-				},
-				&v1.Endpoints{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:        "Service1",
-						Namespace:   "test",
-						Annotations: map[string]string{},
-					},
-					// Endpoint with zero subsets.
-				},
-				&v1.Service{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "Service1",
-						Namespace: "test",
-					},
-					Spec: v1.ServiceSpec{
-						Selector: map[string]string{
-							"app1": "test-app1",
-							"app2": "test-app2",
-						},
-					},
-				},
-				&v1.Service{
-					ObjectMeta: metav1.ObjectMeta{
-						// This service won't be discovered.
-						Name:      "Service2",
-						Namespace: "default",
-					},
-					Spec: v1.ServiceSpec{
-						Selector: map[string]string{
-							"app1": "test-app1",
-							"app2": "test-app2",
-						},
-					},
-				},
-				&v1.Service{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "Service3",
-						Namespace: "test",
-					},
-					Spec: v1.ServiceSpec{
-						// No Spec Selector
-					},
-				},
-			),
-		},
-		Context:   context.Background(),
-		Namespace: "test",
-	}
-
-	sAnalyzer := ServiceAnalyzer{}
-	results, err := sAnalyzer.Analyze(config)
-	require.NoError(t, err)
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].Name < results[j].Name
-	})
-
-	expectations := []struct {
-		name          string
-		failuresCount int
+	tests := []struct {
+		name         string
+		config       common.Analyzer
+		expectations []struct {
+			name          string
+			failuresCount int
+		}
 	}{
 		{
-			name:          "test/Endpoint1",
-			failuresCount: 1,
+			name: "Service with no endpoints",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Subsets: []v1.EndpointSubset{}, // Empty subsets
+						},
+						&v1.Service{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Spec: v1.ServiceSpec{
+								Selector: map[string]string{
+									"app": "test",
+								},
+							},
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/test-service",
+					failuresCount: 1, // One failure for no endpoints
+				},
+			},
 		},
 		{
-			name:          "test/Service1",
-			failuresCount: 2,
+			name: "Service with not ready endpoints",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Subsets: []v1.EndpointSubset{
+								{
+									NotReadyAddresses: []v1.EndpointAddress{
+										{
+											TargetRef: &v1.ObjectReference{
+												Kind: "Pod",
+												Name: "test-pod",
+											},
+										},
+									},
+								},
+							},
+						},
+						&v1.Service{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Spec: v1.ServiceSpec{
+								Selector: map[string]string{
+									"app": "test",
+								},
+							},
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/test-service",
+					failuresCount: 1, // One failure for not ready endpoints
+				},
+			},
+		},
+		{
+			name: "Service with warning events",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Subsets: []v1.EndpointSubset{}, // Empty subsets
+						},
+						&v1.Service{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Spec: v1.ServiceSpec{
+								Selector: map[string]string{
+									"app": "test",
+								},
+							},
+						},
+						&v1.Event{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-event",
+								Namespace: "default",
+							},
+							InvolvedObject: v1.ObjectReference{
+								Kind:      "Service",
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Type:    "Warning",
+							Reason:  "TestReason",
+							Message: "Test warning message",
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/test-service",
+					failuresCount: 2, // One failure for no endpoints, one for warning event
+				},
+			},
+		},
+		{
+			name: "Service with leader election annotation",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+								Annotations: map[string]string{
+									"control-plane.alpha.kubernetes.io/leader": "test-leader",
+								},
+							},
+							Subsets: []v1.EndpointSubset{}, // Empty subsets
+						},
+						&v1.Service{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Spec: v1.ServiceSpec{
+								Selector: map[string]string{
+									"app": "test",
+								},
+							},
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				// No expectations for leader election endpoints
+			},
+		},
+		{
+			name: "Service with non-existent service",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Subsets: []v1.EndpointSubset{}, // Empty subsets
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				// No expectations for non-existent service
+			},
 		},
 	}
 
-	require.Equal(t, len(expectations), len(results))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			analyzer := ServiceAnalyzer{}
+			results, err := analyzer.Analyze(tt.config)
+			require.NoError(t, err)
+			require.Len(t, results, len(tt.expectations))
 
-	for i, result := range results {
-		require.Equal(t, expectations[i].name, result.Name)
-		require.Equal(t, expectations[i].failuresCount, len(result.Error))
+			// Sort results by name for consistent comparison
+			sort.Slice(results, func(i, j int) bool {
+				return results[i].Name < results[j].Name
+			})
+
+			for i, expectation := range tt.expectations {
+				require.Equal(t, expectation.name, results[i].Name)
+				require.Len(t, results[i].Error, expectation.failuresCount)
+			}
+		})
 	}
 }
 
