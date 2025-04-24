@@ -303,6 +303,13 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 		}
 	}
 
+	modelCopy := a.models[0]
+	if validateModelArn(modelLower) {
+		modelCopy.Config.ModelName = modelLower
+		modelCopy.Name = modelLower
+		return &modelCopy, nil
+	}
+
 	return nil, fmt.Errorf("model '%s' not found in supported models", model)
 }
 
