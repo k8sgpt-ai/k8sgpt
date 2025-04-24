@@ -3,11 +3,13 @@ package cache
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 
 	rpc "buf.build/gen/go/interplex-ai/schemas/grpc/go/protobuf/schema/v1/schemav1grpc"
 	schemav1 "buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go/protobuf/schema/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var _ ICache = (*InterplexCache)(nil)
@@ -91,11 +93,17 @@ func (c *InterplexCache) Remove(key string) error {
 		c.configuration.ConnectionString = "localhost:8084"
 	}
 
-	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
-	defer conn.Close()
+	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err := conn.Close(); err != nil {
+			// Log the error but don't return it since this is a deferred function
+			fmt.Printf("Error closing connection: %v\n", err)
+		}
+	}()
+
 	serviceClient := rpc.NewCacheServiceClient(conn)
 	c.cacheServiceClient = serviceClient
 	req := schemav1.DeleteRequest{
