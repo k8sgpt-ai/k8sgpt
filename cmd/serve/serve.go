@@ -39,6 +39,7 @@ var (
 	backend     string
 	enableHttp  bool
 	enableMCP   bool
+	mcpPort     string
 )
 
 var ServeCmd = &cobra.Command{
@@ -186,7 +187,7 @@ var ServeCmd = &cobra.Command{
 
 		if enableMCP {
 			// Create and start MCP server
-			mcpServer := k8sgptserver.NewMCPServer()
+			mcpServer := k8sgptserver.NewMCPServer(mcpPort, aiProvider)
 			go func() {
 				if err := mcpServer.Start(); err != nil {
 					color.Red("Error starting MCP server: %v", err)
@@ -229,4 +230,5 @@ func init() {
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 	ServeCmd.Flags().BoolVarP(&enableMCP, "mcp", "", false, "Enable Mission Control Protocol server")
+	ServeCmd.Flags().StringVarP(&mcpPort, "mcp-port", "", "8089", "Port to run the MCP server on")
 }

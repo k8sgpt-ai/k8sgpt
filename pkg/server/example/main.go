@@ -15,6 +15,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -22,12 +23,18 @@ import (
 	"syscall"
 
 	mcp_golang "github.com/metoro-io/mcp-golang"
-	"github.com/metoro-io/mcp-golang/transport/stdio"
+	"github.com/metoro-io/mcp-golang/transport/http"
 )
 
 func main() {
 	// Create transport and client
-	transport := stdio.NewStdioServerTransport()
+	port := flag.String("port", "8089", "MCP server port")
+	flag.Parse()
+
+	transport := http.NewHTTPClientTransport("/mcp")
+	transport.WithBaseURL(fmt.Sprintf("http://localhost:%s", *port))
+
+	// Create a new client with the transport
 	client := mcp_golang.NewClient(transport)
 
 	// Initialize the client

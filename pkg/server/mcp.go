@@ -17,22 +17,29 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	mcp_golang "github.com/metoro-io/mcp-golang"
-	"github.com/metoro-io/mcp-golang/transport/stdio"
+	"github.com/metoro-io/mcp-golang/transport/http"
 )
 
 // MCPServer represents an MCP server for k8sgpt
 type MCPServer struct {
-	server *mcp_golang.Server
+	server     *mcp_golang.Server
+	port       string
+	aiProvider *ai.AIProvider
 }
 
 // NewMCPServer creates a new MCP server
-func NewMCPServer() *MCPServer {
-	// Create MCP server with stdio transport
-	server := mcp_golang.NewServer(stdio.NewStdioServerTransport())
+func NewMCPServer(port string, aiProvider *ai.AIProvider) *MCPServer {
+	// Create MCP server with HTTP transport
+	transport := http.NewHTTPTransport("/mcp").WithAddr(":" + port)
+
+	server := mcp_golang.NewServer(transport)
 	return &MCPServer{
-		server: server,
+		server:     server,
+		port:       port,
+		aiProvider: aiProvider,
 	}
 }
 
@@ -95,18 +102,18 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 
 	// Create analysis configuration
 	config, err := analysis.NewAnalysis(
-		"",         // backend
-		"english",  // language
-		[]string{}, // filters
-		namespace,  // namespace
-		"",         // labelSelector
-		false,      // nocache
-		false,      // explain
-		10,         // maxConcurrency
-		false,      // withDoc
-		false,      // interactiveMode
-		[]string{}, // customHeaders
-		false,      // withStats
+		s.aiProvider.Name, // backend
+		"english",         // language
+		[]string{},        // filters
+		namespace,         // namespace
+		"",                // labelSelector
+		false,             // nocache
+		false,             // explain
+		10,                // maxConcurrency
+		false,             // withDoc
+		false,             // interactiveMode
+		[]string{},        // customHeaders
+		false,             // withStats
 	)
 	if err != nil {
 		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to create analysis: %v", err))), nil
@@ -129,18 +136,18 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 func (s *MCPServer) handleClusterInfo(ctx context.Context, request *ClusterInfoRequest) (*mcp_golang.ToolResponse, error) {
 	// Create analysis configuration to get cluster info
 	config, err := analysis.NewAnalysis(
-		"",         // backend
-		"english",  // language
-		[]string{}, // filters
-		"",         // namespace
-		"",         // labelSelector
-		false,      // nocache
-		false,      // explain
-		10,         // maxConcurrency
-		false,      // withDoc
-		false,      // interactiveMode
-		[]string{}, // customHeaders
-		false,      // withStats
+		s.aiProvider.Name, // backend
+		"english",         // language
+		[]string{},        // filters
+		"",                // namespace
+		"",                // labelSelector
+		false,             // nocache
+		false,             // explain
+		10,                // maxConcurrency
+		false,             // withDoc
+		false,             // interactiveMode
+		[]string{},        // customHeaders
+		false,             // withStats
 	)
 	if err != nil {
 		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to create analysis: %v", err))), nil
@@ -174,18 +181,18 @@ func (s *MCPServer) registerResources() error {
 func (s *MCPServer) getClusterInfo(ctx context.Context) (interface{}, error) {
 	// Create analysis configuration to get cluster info
 	config, err := analysis.NewAnalysis(
-		"",         // backend
-		"english",  // language
-		[]string{}, // filters
-		"",         // namespace
-		"",         // labelSelector
-		false,      // nocache
-		false,      // explain
-		10,         // maxConcurrency
-		false,      // withDoc
-		false,      // interactiveMode
-		[]string{}, // customHeaders
-		false,      // withStats
+		s.aiProvider.Name, // backend
+		"english",         // language
+		[]string{},        // filters
+		"",                // namespace
+		"",                // labelSelector
+		false,             // nocache
+		false,             // explain
+		10,                // maxConcurrency
+		false,             // withDoc
+		false,             // interactiveMode
+		[]string{},        // customHeaders
+		false,             // withStats
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create analysis: %v", err)
