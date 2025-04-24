@@ -173,6 +173,20 @@ func TestAmazonCompletion_GetCompletion_UnsupportedModel(t *testing.T) {
 	assert.Contains(t, err.Error(), "model unsupported-model is not supported")
 }
 
+func TestAmazonCompletion_GetCompletion_Inference_Profile(t *testing.T) {
+	completion := &AmazonCompletion{}
+	modelConfig := BedrockModelConfig{
+		MaxTokens:   200,
+		Temperature: 0.5,
+		TopP:        0.7,
+		ModelName:   "arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0",
+	}
+	prompt := "Test prompt"
+
+	_, err := completion.GetCompletion(context.Background(), prompt, modelConfig)
+	assert.NoError(t, err)
+}
+
 func Test_isModelSupported(t *testing.T) {
 	assert.True(t, isModelSupported("anthropic.claude-v2"))
 	assert.False(t, isModelSupported("unsupported-model"))
