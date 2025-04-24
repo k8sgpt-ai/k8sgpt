@@ -93,7 +93,7 @@ func (c *InterplexCache) Remove(key string) error {
 		c.configuration.ConnectionString = "localhost:8084"
 	}
 
-	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
