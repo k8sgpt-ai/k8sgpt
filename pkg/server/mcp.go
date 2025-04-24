@@ -20,7 +20,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	mcp_golang "github.com/metoro-io/mcp-golang"
-	"github.com/metoro-io/mcp-golang/transport/http"
+	"github.com/metoro-io/mcp-golang/transport/stdio"
 )
 
 // MCPServer represents an MCP server for k8sgpt
@@ -32,8 +32,8 @@ type MCPServer struct {
 
 // NewMCPServer creates a new MCP server
 func NewMCPServer(port string, aiProvider *ai.AIProvider) *MCPServer {
-	// Create MCP server with HTTP transport
-	transport := http.NewHTTPTransport("/mcp").WithAddr(":" + port)
+	// Create MCP server with stdio transport
+	transport := stdio.NewStdioServerTransport()
 
 	server := mcp_golang.NewServer(transport)
 	return &MCPServer{
