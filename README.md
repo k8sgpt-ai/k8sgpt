@@ -165,6 +165,76 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 - And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 - You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
 
+# Using with Claude Desktop
+
+K8sGPT can be integrated with Claude Desktop to provide AI-powered Kubernetes cluster analysis. This integration requires K8sGPT v0.4.14 or later.
+
+## Prerequisites
+
+1. Install K8sGPT v0.4.14 or later:
+   ```sh
+   brew install k8sgpt
+   ```
+
+2. Install Claude Desktop from the official website
+
+3. Configure K8sGPT with your preferred AI backend:
+   ```sh
+   k8sgpt auth
+   ```
+
+## Setup
+
+1. Start the K8sGPT MCP server:
+   ```sh
+   k8sgpt serve --mcp
+   ```
+
+2. In Claude Desktop:
+   - Open Settings
+   - Navigate to the Integrations section
+   - Add K8sGPT as a new integration
+   - The MCP server will be automatically detected
+
+3. Configure Claude Desktop with the following JSON:
+   
+  ```json
+  {
+    "mcpServers": {
+      "k8sgpt": {
+        "command": "k8sgpt",
+        "args": [
+          "serve",
+          "--mcp"
+        ]
+      }
+    }
+  }
+  ```
+
+## Usage
+
+Once connected, you can use Claude Desktop to:
+- Analyze your Kubernetes cluster
+- Get detailed insights about cluster health
+- Receive recommendations for fixing issues
+- Query cluster information
+
+Example commands in Claude Desktop:
+- "Analyze my Kubernetes cluster"
+- "What's the health status of my cluster?"
+- "Show me any issues in the default namespace"
+
+## Troubleshooting
+
+If you encounter connection issues:
+1. Ensure K8sGPT is running with the MCP server enabled
+2. Verify your Kubernetes cluster is accessible
+3. Check that your AI backend is properly configured
+4. Restart both K8sGPT and Claude Desktop
+
+For more information, visit our [documentation](https://docs.k8sgpt.ai).
+
 ## Analyzers
 
 K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but
