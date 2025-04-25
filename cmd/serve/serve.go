@@ -187,7 +187,11 @@ var ServeCmd = &cobra.Command{
 
 		if enableMCP {
 			// Create and start MCP server
-			mcpServer := k8sgptserver.NewMCPServer(mcpPort, aiProvider)
+			mcpServer, err := k8sgptserver.NewMCPServer(mcpPort, aiProvider)
+			if err != nil {
+				color.Red("Error creating MCP server: %v", err)
+				os.Exit(1)
+			}
 			go func() {
 				if err := mcpServer.Start(); err != nil {
 					color.Red("Error starting MCP server: %v", err)
