@@ -17,10 +17,13 @@ import (
 	"context"
 	"fmt"
 
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 	mcp_golang "github.com/metoro-io/mcp-golang"
 	"github.com/metoro-io/mcp-golang/transport/stdio"
+	"github.com/spf13/viper"
 )
 
 // MCPServer represents an MCP server for k8sgpt
@@ -81,6 +84,11 @@ func (s *MCPServer) Start() error {
 		return fmt.Errorf("failed to register cluster-info tool: %v", err)
 	}
 
+	// Register config tool
+	if err := s.server.RegisterTool("config", "Configure K8sGPT settings", s.handleConfig); err != nil {
+		return fmt.Errorf("failed to register config tool: %v", err)
+	}
+
 	// Register resources
 	if err := s.registerResources(); err != nil {
 		return fmt.Errorf("failed to register resources: %v", err)
@@ -126,8 +134,59 @@ type ClusterInfoResponse struct {
 	Info string `json:"info"`
 }
 
+// ConfigRequest represents the input parameters for the config tool
+type ConfigRequest struct {
+	CustomAnalyzers []struct {
+		Name       string `json:"name"`
+		Connection struct {
+			Url  string `json:"url"`
+			Port int    `json:"port"`
+		} `json:"connection"`
+	} `json:"customAnalyzers,omitempty"`
+	Cache struct {
+		Type string `json:"type"`
+		// S3 specific fields
+		BucketName string `json:"bucketName,omitempty"`
+		Region     string `json:"region,omitempty"`
+		Endpoint   string `json:"endpoint,omitempty"`
+		Insecure   bool   `json:"insecure,omitempty"`
+		// Azure specific fields
+		StorageAccount string `json:"storageAccount,omitempty"`
+		ContainerName  string `json:"containerName,omitempty"`
+		// GCS specific fields
+		ProjectId string `json:"projectId,omitempty"`
+	} `json:"cache,omitempty"`
+}
+
+// ConfigResponse represents the output of the config tool
+type ConfigResponse struct {
+	Status string `json:"status"`
+}
+
 // handleAnalyze handles the analyze tool
 func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) (*mcp_golang.ToolResponse, error) {
+	// Get stored configuration
+	var configAI ai.AIConfiguration
+	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
+		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to load AI configuration: %v", err))), nil
+	}
+
+	// Use stored configuration if not specified in request
+	if request.Backend == "" {
+		if configAI.DefaultProvider != "" {
+			request.Backend = configAI.DefaultProvider
+		} else if len(configAI.Providers) > 0 {
+			request.Backend = configAI.Providers[0].Name
+		} else {
+			request.Backend = "openai" // fallback default
+		}
+	}
+
+	// Get stored filters if not specified
+	if len(request.Filters) == 0 {
+		request.Filters = viper.GetStringSlice("active_filters")
+	}
+
 	// Create a new analysis with the request parameters
 	analysis, err := analysis.NewAnalysis(
 		request.Backend,
@@ -170,6 +229,69 @@ func (s *MCPServer) handleClusterInfo(ctx context.Context, request *ClusterInfoR
 
 	info := fmt.Sprintf("Kubernetes %s", version.GitVersion)
 	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(info)), nil
+}
+
+// handleConfig handles the config tool
+func (s *MCPServer) handleConfig(ctx context.Context, request *ConfigRequest) (*mcp_golang.ToolResponse, error) {
+	// Create a new config handler
+	handler := &config.Handler{}
+
+	// Convert request to AddConfigRequest
+	addConfigReq := &schemav1.AddConfigRequest{
+		CustomAnalyzers: make([]*schemav1.CustomAnalyzer, 0),
+	}
+
+	// Add custom analyzers if present
+	if len(request.CustomAnalyzers) > 0 {
+		for _, ca := range request.CustomAnalyzers {
+			addConfigReq.CustomAnalyzers = append(addConfigReq.CustomAnalyzers, &schemav1.CustomAnalyzer{
+				Name: ca.Name,
+				Connection: &schemav1.Connection{
+					Url:  ca.Connection.Url,
+					Port: fmt.Sprintf("%d", ca.Connection.Port),
+				},
+			})
+		}
+	}
+
+	// Add cache configuration if present
+	if request.Cache.Type != "" {
+		cacheConfig := &schemav1.Cache{}
+		switch request.Cache.Type {
+		case "s3":
+			cacheConfig.CacheType = &schemav1.Cache_S3Cache{
+				S3Cache: &schemav1.S3Cache{
+					BucketName: request.Cache.BucketName,
+					Region:     request.Cache.Region,
+					Endpoint:   request.Cache.Endpoint,
+					Insecure:   request.Cache.Insecure,
+				},
+			}
+		case "azure":
+			cacheConfig.CacheType = &schemav1.Cache_AzureCache{
+				AzureCache: &schemav1.AzureCache{
+					StorageAccount: request.Cache.StorageAccount,
+					ContainerName:  request.Cache.ContainerName,
+				},
+			}
+		case "gcs":
+			cacheConfig.CacheType = &schemav1.Cache_GcsCache{
+				GcsCache: &schemav1.GCSCache{
+					BucketName: request.Cache.BucketName,
+					Region:     request.Cache.Region,
+					ProjectId:  request.Cache.ProjectId,
+				},
+			}
+		}
+		addConfigReq.Cache = cacheConfig
+	}
+
+	// Apply the configuration using the shared function
+	if err := handler.ApplyConfig(ctx, addConfigReq); err != nil {
+		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to add config: %v", err))), nil
+	}
+
+	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent("Successfully added configuration")), nil
 }
 
 // registerPrompts registers the prompts for the MCP server
