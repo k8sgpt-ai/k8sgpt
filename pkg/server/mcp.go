@@ -15,15 +15,19 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 	mcp_golang "github.com/metoro-io/mcp-golang"
 	"github.com/metoro-io/mcp-golang/transport/stdio"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 // MCPServer represents an MCP server for k8sgpt
@@ -31,40 +35,23 @@ type MCPServer struct {
 	server     *mcp_golang.Server
 	port       string
 	aiProvider *ai.AIProvider
-	analysis   *analysis.Analysis
+	useHTTP    bool
+	logger     *zap.Logger
 }
 
 // NewMCPServer creates a new MCP server
-func NewMCPServer(port string, aiProvider *ai.AIProvider) (*MCPServer, error) {
+func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*MCPServer, error) {
 	// Create MCP server with stdio transport
 	transport := stdio.NewStdioServerTransport()
 
 	server := mcp_golang.NewServer(transport)
 
-	// Initialize analysis configuration
-	analysis, err := analysis.NewAnalysis(
-		aiProvider.Name, // backend
-		"english",       // language
-		[]string{},      // filters
-		"",              // namespace
-		"",              // labelSelector
-		false,           // nocache
-		false,           // explain
-		10,              // maxConcurrency
-		false,           // withDoc
-		false,           // interactiveMode
-		[]string{},      // customHeaders
-		false,           // withStats
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize analysis: %v", err)
-	}
-
 	return &MCPServer{
 		server:     server,
 		port:       port,
 		aiProvider: aiProvider,
-		analysis:   analysis,
+		useHTTP:    useHTTP,
+		logger:     logger,
 	}, nil
 }
 
@@ -97,6 +84,18 @@ func (s *MCPServer) Start() error {
 	// Register prompts
 	if err := s.registerPrompts(); err != nil {
 		return fmt.Errorf("failed to register prompts: %v", err)
+	}
+
+	if s.useHTTP {
+		// Start HTTP server
+		go func() {
+			http.HandleFunc("/mcp/analyze", s.handleAnalyzeHTTP)
+			http.HandleFunc("/mcp", s.handleSSE)
+			s.logger.Info("Starting MCP server on port", zap.String("port", s.port))
+			if err := http.ListenAndServe(fmt.Sprintf(":%s", s.port), nil); err != nil {
+				s.logger.Error("Error starting HTTP server", zap.Error(err))
+			}
+		}()
 	}
 
 	// Start the server
@@ -170,7 +169,6 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
 		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to load AI configuration: %v", err))), nil
 	}
-
 	// Use stored configuration if not specified in request
 	if request.Backend == "" {
 		if configAI.DefaultProvider != "" {
@@ -182,6 +180,7 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 		}
 	}
 
+	request.Explain = true
 	// Get stored filters if not specified
 	if len(request.Filters) == 0 {
 		request.Filters = viper.GetStringSlice("active_filters")
@@ -221,8 +220,14 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 
 // handleClusterInfo handles the cluster-info tool
 func (s *MCPServer) handleClusterInfo(ctx context.Context, request *ClusterInfoRequest) (*mcp_golang.ToolResponse, error) {
+	// Create a new Kubernetes client
+	client, err := kubernetes.NewClient("", "")
+	if err != nil {
+		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to create Kubernetes client: %v", err))), nil
+	}
+
 	// Get cluster info from the client
-	version, err := s.analysis.Client.Client.Discovery().ServerVersion()
+	version, err := client.Client.Discovery().ServerVersion()
 	if err != nil {
 		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to get cluster version: %v", err))), nil
 	}
@@ -309,8 +314,14 @@ func (s *MCPServer) registerResources() error {
 }
 
 func (s *MCPServer) getClusterInfo(ctx context.Context) (interface{}, error) {
+	// Create a new Kubernetes client
+	client, err := kubernetes.NewClient("", "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %v", err)
+	}
+
 	// Get cluster info from the client
-	version, err := s.analysis.Client.Client.Discovery().ServerVersion()
+	version, err := client.Client.Discovery().ServerVersion()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cluster version: %v", err)
 	}
@@ -322,10 +333,63 @@ func (s *MCPServer) getClusterInfo(ctx context.Context) (interface{}, error) {
 	}, nil
 }
 
+// handleSSE handles Server-Sent Events for MCP
+func (s *MCPServer) handleSSE(w http.ResponseWriter, r *http.Request) {
+	// Set headers for SSE
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Create a channel to receive messages
+	msgChan := make(chan string)
+	defer close(msgChan)
+
+	// Start a goroutine to handle the stdio transport
+	go func() {
+		// TODO: Implement message handling between HTTP and stdio transport
+		// This would require implementing a custom transport that bridges HTTP and stdio
+	}()
+
+	// Send messages to the client
+	for msg := range msgChan {
+		fmt.Fprintf(w, "data: %s\n\n", msg)
+		w.(http.Flusher).Flush()
+	}
+}
+
+// handleAnalyzeHTTP handles HTTP requests for the analyze endpoint
+func (s *MCPServer) handleAnalyzeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse the request body
+	var req AnalyzeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to decode request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Call the analyze handler
+	resp, err := s.handleAnalyze(r.Context(), &req)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to analyze: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Set response headers
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	// Write the response
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		s.logger.Error("Failed to encode response", zap.Error(err))
+	}
+}
+
 // Close closes the MCP server and releases resources
 func (s *MCPServer) Close() error {
-	if s.analysis != nil {
-		s.analysis.Close()
-	}
 	return nil
 }

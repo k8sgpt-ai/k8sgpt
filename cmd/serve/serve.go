@@ -40,6 +40,7 @@ var (
 	enableHttp  bool
 	enableMCP   bool
 	mcpPort     string
+	mcpHTTP     bool
 )
 
 var ServeCmd = &cobra.Command{
@@ -187,7 +188,7 @@ var ServeCmd = &cobra.Command{
 
 		if enableMCP {
 			// Create and start MCP server
-			mcpServer, err := k8sgptserver.NewMCPServer(mcpPort, aiProvider)
+			mcpServer, err := k8sgptserver.NewMCPServer(mcpPort, aiProvider, mcpHTTP, logger)
 			if err != nil {
 				color.Red("Error creating MCP server: %v", err)
 				os.Exit(1)
@@ -235,4 +236,5 @@ func init() {
 	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 	ServeCmd.Flags().BoolVarP(&enableMCP, "mcp", "", false, "Enable Mission Control Protocol server")
 	ServeCmd.Flags().StringVarP(&mcpPort, "mcp-port", "", "8089", "Port to run the MCP server on")
+	ServeCmd.Flags().BoolVarP(&mcpHTTP, "mcp-http", "", false, "Enable HTTP mode for MCP server")
 }
