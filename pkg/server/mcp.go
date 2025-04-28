@@ -353,7 +353,10 @@ func (s *MCPServer) handleSSE(w http.ResponseWriter, r *http.Request) {
 
 	// Send messages to the client
 	for msg := range msgChan {
-		fmt.Fprintf(w, "data: %s\n\n", msg)
+		if _, err := fmt.Fprintf(w, "data: %s\n\n", msg); err != nil {
+			s.logger.Error("Failed to write SSE message", zap.Error(err))
+			return
+		}
 		w.(http.Flusher).Flush()
 	}
 }

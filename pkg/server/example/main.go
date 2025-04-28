@@ -14,11 +14,8 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"flag"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,7 +36,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Printf("Error syncing logger: %v", err)
+		}
+	}()
 
 	// Create AI provider
 	aiProvider := &ai.AIProvider{
@@ -69,35 +70,5 @@ func main() {
 	// Cleanup
 	if err := mcpServer.Close(); err != nil {
 		log.Printf("Error closing MCP server: %v", err)
-	}
-}
-
-// Example client code for SSE mode
-func exampleSSEClient() {
-	// Create a channel to receive events
-	eventChan := make(chan string)
-	defer close(eventChan)
-
-	// Connect to the SSE endpoint
-	resp, err := http.Get("http://localhost:8089/mcp")
-	if err != nil {
-		log.Fatalf("Error connecting to SSE endpoint: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Read events from the response
-	decoder := json.NewDecoder(resp.Body)
-	for {
-		var event struct {
-			Data string `json:"data"`
-		}
-		if err := decoder.Decode(&event); err != nil {
-			if err == io.EOF {
-				break
-			}
-			log.Printf("Error decoding event: %v", err)
-			continue
-		}
-		eventChan <- event.Data
 	}
 }
