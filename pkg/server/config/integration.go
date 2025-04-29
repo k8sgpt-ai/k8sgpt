@@ -1,17 +1,14 @@
 package config
 
 import (
-	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"context"
 	"fmt"
+
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/integration"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-//const (
-//	trivyName = "trivy"
-//)
 
 // syncIntegration is aware of the following events
 // A new integration added

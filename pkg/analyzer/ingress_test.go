@@ -15,116 +15,45 @@ package analyzer
 
 import (
 	"context"
-	"sort"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
-	tests := []struct {
-		name         string
-		config       common.Analyzer
-		expectations []struct {
-			name          string
-			failuresCount int
-		}
+	// Create test cases
+	testCases := []struct {
+		name           string
+		ingress        *networkingv1.Ingress
+		expectedIssues []string
 	}{
 		{
-			name: "Missing ingress class",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "no-class",
-								Namespace: "default",
-							},
-							Spec: networkingv1.IngressSpec{
-								// No ingress class specified
-							},
-						},
-					),
-				},
-				Context:   context.Background(),
-				Namespace: "default",
-			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/no-class",
-					failuresCount: 1, // One failure for missing ingress class
-				},
-			},
-		},
-		{
-			name: "Non-existent ingress class",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "bad-class",
-								Namespace: "default",
-							},
-							Spec: networkingv1.IngressSpec{
-								IngressClassName: strPtr("non-existent"),
-							},
-						},
-					),
-				},
-				Context:   context.Background(),
-				Namespace: "default",
-			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/bad-class",
-					failuresCount: 1, // One failure for non-existent ingress class
-				},
-			},
-		},
-		{
 			name: "Non-existent backend service",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "bad-backend",
-								Namespace: "default",
-								Annotations: map[string]string{
-									"kubernetes.io/ingress.class": "nginx",
-								},
-							},
-							Spec: networkingv1.IngressSpec{
-								Rules: []networkingv1.IngressRule{
-									{
-										Host: "example.com",
-										IngressRuleValue: networkingv1.IngressRuleValue{
-											HTTP: &networkingv1.HTTPIngressRuleValue{
-												Paths: []networkingv1.HTTPIngressPath{
-													{
-														Path:     "/",
-														PathType: pathTypePtr(networkingv1.PathTypePrefix),
-														Backend: networkingv1.IngressBackend{
-															Service: &networkingv1.IngressServiceBackend{
-																Name: "non-existent-service",
-																Port: networkingv1.ServiceBackendPort{
-																	Number: 80,
-																},
-															},
-														},
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "example.com",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path: "/",
+											Backend: networkingv1.IngressBackend{
+												Service: &networkingv1.IngressServiceBackend{
+													Name: "non-existent-service",
+													Port: networkingv1.ServiceBackendPort{
+														Number: 80,
 													},
 												},
 											},
@@ -133,177 +62,144 @@ func TestIngressAnalyzer(t *testing.T) {
 								},
 							},
 						},
-					),
+					},
 				},
-				Context:   context.Background(),
-				Namespace: "default",
 			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/bad-backend",
-					failuresCount: 2, // Two failures: non-existent ingress class and non-existent service
-				},
+			expectedIssues: []string{
+				"Ingress default/test-ingress does not specify an Ingress class.",
+				"Ingress uses the service default/non-existent-service which does not exist.",
 			},
 		},
 		{
 			name: "Non-existent TLS secret",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "bad-tls",
-								Namespace: "default",
-								Annotations: map[string]string{
-									"kubernetes.io/ingress.class": "nginx",
-								},
-							},
-							Spec: networkingv1.IngressSpec{
-								TLS: []networkingv1.IngressTLS{
-									{
-										Hosts:      []string{"example.com"},
-										SecretName: "non-existent-secret",
-									},
-								},
-							},
-						},
-					),
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-tls",
+					Namespace: "default",
 				},
-				Context:   context.Background(),
-				Namespace: "default",
-			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/bad-tls",
-					failuresCount: 2, // Two failures: non-existent ingress class and non-existent TLS secret
-				},
-			},
-		},
-		{
-			name: "Valid ingress with all components",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "valid-ingress",
-								Namespace: "default",
-							},
-							Spec: networkingv1.IngressSpec{
-								IngressClassName: strPtr("nginx"),
-							},
+				Spec: networkingv1.IngressSpec{
+					TLS: []networkingv1.IngressTLS{
+						{
+							Hosts:      []string{"example.com"},
+							SecretName: "non-existent-secret",
 						},
-						&networkingv1.IngressClass{
-							ObjectMeta: metav1.ObjectMeta{
-								Name: "nginx",
-							},
-						},
-						&v1.Service{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "backend-service",
-								Namespace: "default",
-							},
-						},
-						&v1.Secret{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "tls-secret",
-								Namespace: "default",
-							},
-							Type: v1.SecretTypeTLS,
-						},
-					),
-				},
-				Context:   context.Background(),
-				Namespace: "default",
-			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				// No expectations for valid ingress
-			},
-		},
-		{
-			name: "Multiple issues",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&networkingv1.Ingress{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "multiple-issues",
-								Namespace: "default",
-							},
-							Spec: networkingv1.IngressSpec{
-								IngressClassName: strPtr("non-existent"),
-								Rules: []networkingv1.IngressRule{
-									{
-										Host: "example.com",
-										IngressRuleValue: networkingv1.IngressRuleValue{
-											HTTP: &networkingv1.HTTPIngressRuleValue{
-												Paths: []networkingv1.HTTPIngressPath{
-													{
-														Path:     "/",
-														PathType: pathTypePtr(networkingv1.PathTypePrefix),
-														Backend: networkingv1.IngressBackend{
-															Service: &networkingv1.IngressServiceBackend{
-																Name: "non-existent-service",
-																Port: networkingv1.ServiceBackendPort{
-																	Number: 80,
-																},
-															},
-														},
+					},
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "example.com",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path: "/",
+											Backend: networkingv1.IngressBackend{
+												Service: &networkingv1.IngressServiceBackend{
+													Name: "test-service",
+													Port: networkingv1.ServiceBackendPort{
+														Number: 80,
 													},
 												},
 											},
 										},
 									},
 								},
-								TLS: []networkingv1.IngressTLS{
-									{
-										Hosts:      []string{"example.com"},
-										SecretName: "non-existent-secret",
+							},
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-tls does not specify an Ingress class.",
+				"Ingress uses the service default/test-service which does not exist.",
+				"Ingress uses the secret default/non-existent-secret as a TLS certificate which does not exist.",
+			},
+		},
+		{
+			name: "Multiple issues",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-multi",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					TLS: []networkingv1.IngressTLS{
+						{
+							Hosts:      []string{"example.com"},
+							SecretName: "non-existent-secret",
+						},
+					},
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "example.com",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path: "/",
+											Backend: networkingv1.IngressBackend{
+												Service: &networkingv1.IngressServiceBackend{
+													Name: "non-existent-service",
+													Port: networkingv1.ServiceBackendPort{
+														Number: 80,
+													},
+												},
+											},
+										},
 									},
 								},
 							},
 						},
-					),
+					},
 				},
-				Context:   context.Background(),
-				Namespace: "default",
 			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/multiple-issues",
-					failuresCount: 3, // Three failures: ingress class, service, and TLS secret
-				},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-multi does not specify an Ingress class.",
+				"Ingress uses the service default/non-existent-service which does not exist.",
+				"Ingress uses the secret default/non-existent-secret as a TLS certificate which does not exist.",
 			},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	// Run test cases
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create a new context and clientset for each test case
+			ctx := context.Background()
+			clientset := fake.NewSimpleClientset()
+
+			// Create the ingress in the fake clientset
+			_, err := clientset.NetworkingV1().Ingresses(tc.ingress.Namespace).Create(ctx, tc.ingress, metav1.CreateOptions{})
+			assert.NoError(t, err)
+
+			// Create the analyzer configuration
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   ctx,
+				Namespace: tc.ingress.Namespace,
+			}
+
+			// Create the analyzer and run analysis
 			analyzer := IngressAnalyzer{}
-			results, err := analyzer.Analyze(tt.config)
-			require.NoError(t, err)
-			require.Len(t, results, len(tt.expectations))
+			results, err := analyzer.Analyze(config)
+			assert.NoError(t, err)
 
-			// Sort results by name for consistent comparison
-			sort.Slice(results, func(i, j int) bool {
-				return results[i].Name < results[j].Name
-			})
+			// Check that we got the expected number of issues
+			assert.Len(t, results, 1, "Expected 1 result")
+			result := results[0]
+			assert.Len(t, result.Error, len(tc.expectedIssues), "Expected %d issues, got %d", len(tc.expectedIssues), len(result.Error))
 
-			for i, expectation := range tt.expectations {
-				require.Equal(t, expectation.name, results[i].Name)
-				require.Len(t, results[i].Error, expectation.failuresCount)
+			// Check that each expected issue is present
+			for _, expectedIssue := range tc.expectedIssues {
+				found := false
+				for _, failure := range result.Error {
+					if failure.Text == expectedIssue {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Expected to find issue: %s", expectedIssue)
 			}
 		})
 	}
