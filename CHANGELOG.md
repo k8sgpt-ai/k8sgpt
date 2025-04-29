@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.14](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.13...v0.4.14) (2025-04-29)
+
+
+### Features
+
+* add MCP support ([#1471](https://github.com/k8sgpt-ai/k8sgpt/issues/1471)) ([e41ffd8](https://github.com/k8sgpt-ai/k8sgpt/commit/e41ffd80d01ce7ae1fac9ce7e07344020d8bf914))
+* using modelName will calling completion ([#1469](https://github.com/k8sgpt-ai/k8sgpt/issues/1469)) ([f603948](https://github.com/k8sgpt-ai/k8sgpt/commit/f603948935f1c4cb171378634714577205de7b08))
+
 ## [0.4.13](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.12...v0.4.13) (2025-04-22)
 
 
