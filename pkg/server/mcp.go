@@ -186,6 +186,9 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 		request.Filters = viper.GetStringSlice("active_filters")
 	}
 
+	// Validate MaxConcurrency to prevent excessive memory allocation
+	request.MaxConcurrency = validateMaxConcurrency(request.MaxConcurrency)
+
 	// Create a new analysis with the request parameters
 	analysis, err := analysis.NewAnalysis(
 		request.Backend,
@@ -216,6 +219,17 @@ func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) 
 	}
 
 	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(string(output))), nil
+}
+
+// validateMaxConcurrency validates and bounds the MaxConcurrency parameter
+func validateMaxConcurrency(maxConcurrency int) int {
+	const maxAllowedConcurrency = 100
+	if maxConcurrency <= 0 {
+		return 10 // Default value if not set
+	} else if maxConcurrency > maxAllowedConcurrency {
+		return maxAllowedConcurrency // Cap at a reasonable maximum
+	}
+	return maxConcurrency
 }
 
 // handleClusterInfo handles the cluster-info tool
@@ -349,6 +363,7 @@ func (s *MCPServer) handleSSE(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		// TODO: Implement message handling between HTTP and stdio transport
 		// This would require implementing a custom transport that bridges HTTP and stdio
+
 	}()
 
 	// Send messages to the client
@@ -374,6 +389,9 @@ func (s *MCPServer) handleAnalyzeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Failed to decode request: %v", err), http.StatusBadRequest)
 		return
 	}
+
+	// Validate MaxConcurrency to prevent excessive memory allocation
+	req.MaxConcurrency = validateMaxConcurrency(req.MaxConcurrency)
 
 	// Call the analyze handler
 	resp, err := s.handleAnalyze(r.Context(), &req)
