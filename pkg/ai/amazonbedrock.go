@@ -42,6 +42,8 @@ const (
 	AP_Northeast_1 = "ap-northeast-1"
 	EU_Central_1   = "eu-central-1"
 	AP_South_1     = "ap-south-1"
+	US_Gov_West_1  = "us-gov-west-1"
+	US_Gov_East_1  = "us-gov-east-1"
 )
 
 var BEDROCKER_SUPPORTED_REGION = []string{
@@ -51,6 +53,8 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 	AP_Northeast_1,
 	EU_Central_1,
 	AP_South_1,
+	US_Gov_West_1,
+	US_Gov_East_1,
 }
 
 var defaultModels = []bedrock_support.BedrockModel{
