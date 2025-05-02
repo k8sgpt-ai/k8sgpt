@@ -127,20 +127,21 @@ var addCmd = &cobra.Command{
 
 		// create new provider object
 		newProvider := ai.AIProvider{
-			Name:           backend,
-			Model:          model,
-			Password:       password,
-			BaseURL:        baseURL,
-			EndpointName:   endpointName,
-			Engine:         engine,
-			Temperature:    temperature,
-			ProviderRegion: providerRegion,
-			ProviderId:     providerId,
-			CompartmentId:  compartmentId,
-			TopP:           topP,
-			TopK:           topK,
-			MaxTokens:      maxTokens,
-			OrganizationId: organizationId,
+			Name:                backend,
+			Model:                model,
+			Password:             password,
+			BaseURL:              baseURL,
+			EndpointName:         endpointName,
+			Engine:               engine,
+			Temperature:          temperature,
+			ProviderRegion:       providerRegion,
+			ProviderId:           providerId,
+			CompartmentId:        compartmentId,
+			TopP:                 topP,
+			TopK:                 topK,
+			MaxTokens:            maxTokens,
+			OrganizationId:       organizationId,
+			InferenceProfileARN:  inferenceProfileARN,
 		}
 
 		if providerIndex == -1 {
@@ -185,4 +186,6 @@ func init() {
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
+	// add flag for Amazon Bedrock inference profile
+	addCmd.Flags().StringVarP(&inferenceProfileARN, "inferenceProfileARN", "", "", "Amazon Bedrock inference profile ARN (only for amazonbedrock backend, e.g. arn:aws:bedrock:region:account-id:inference-profile/profile-name)")
 }

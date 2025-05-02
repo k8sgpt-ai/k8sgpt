@@ -55,9 +55,21 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 
 var defaultModels = []bedrock_support.BedrockModel{
 	{
-		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
+		Name:       "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		Completion: &bedrock_support.CohereMessagesCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		},
+	},
+	{
+		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
+		Completion: &bedrock_support.CohereCompletion{},
+		Response:   &bedrock_support.CohereResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			// sensible defaults
 			MaxTokens:   100,
@@ -311,6 +323,12 @@ func validateModelArn(model string) bool {
 	return re.MatchString(model)
 }
 
+func validateInferenceProfileArn(inferenceProfile string) bool {
+	// Support both inference-profile and application-inference-profile formats
+	var re = regexp.MustCompile(`(?m)^arn:(?P<Partition>[^:\n]*):bedrock:(?P<Region>[^:\n]*):(?P<AccountID>[^:\n]*):(?:inference-profile|application-inference-profile)\/(?P<ProfileName>.+)$`)
+	return re.MatchString(inferenceProfile)
+}
+
 // Configure configures the AmazonBedRockClient with the provided configuration.
 func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	// Initialize models if not already initialized
@@ -341,6 +359,16 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
 	a.maxTokens = config.GetMaxTokens()
+	
+	// Set inference profile ARN if provided
+	if config.GetInferenceProfileARN() != "" {
+		inferenceProfileARN := config.GetInferenceProfileARN()
+		// Validate that the inference profile is a valid ARN
+		if !validateInferenceProfileArn(inferenceProfileARN) {
+			return fmt.Errorf("invalid inference profile ARN format: %s. Expected format: arn:aws:bedrock:region:account-id:inference-profile/profile-name or arn:aws:bedrock:region:account-id:application-inference-profile/profile-name", inferenceProfileARN)
+		}
+		a.model.Config.InferenceProfileARN = inferenceProfileARN
+	}
 
 	return nil
 }
@@ -364,6 +392,12 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
+	
+	// If inference profile ARN is configured, use it as the model ID
+	if a.model.Config.InferenceProfileARN != "" {
+		params.ModelId = aws.String(a.model.Config.InferenceProfileARN)
+	}
+	
 	// Invoke the model
 	resp, err := a.client.InvokeModelWithContext(ctx, params)
 

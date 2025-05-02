@@ -85,6 +85,10 @@ var updateCmd = &cobra.Command{
 					configAI.Providers[i].OrganizationId = organizationId
 					color.Blue("Organization Id updated successfully")
 				}
+				if inferenceProfileARN != "" {
+					configAI.Providers[i].InferenceProfileARN = inferenceProfileARN
+					color.Blue("Inference Profile ARN updated successfully")
+				}
 				configAI.Providers[i].Temperature = temperature
 				color.Green("%s updated in the AI backend provider list", backend)
 			}
@@ -117,4 +121,6 @@ func init() {
 	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
 	// update flag for organizationId
 	updateCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "Update OpenAI or Azure organization Id")
+	// update flag for Amazon Bedrock inference profile
+	updateCmd.Flags().StringVarP(&inferenceProfileARN, "inferenceProfileARN", "", "", "Update Amazon Bedrock inference profile ARN (e.g. arn:aws:bedrock:region:account-id:inference-profile/profile-name)")
 }

@@ -38,6 +38,10 @@ func (m *mockConfig) GetCustomHeaders() []http.Header {
 	}
 }
 
+func (m *mockConfig) GetInferenceProfileARN() string {
+	return ""
+}
+
 func (m *mockConfig) GetModel() string {
 	return ""
 }

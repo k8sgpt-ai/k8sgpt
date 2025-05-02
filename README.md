@@ -466,6 +466,16 @@ k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
 ```
 
+_Using Amazon Bedrock with inference profiles_
+
+```
+# Add a new Amazon Bedrock backend with an inference profile ARN
+k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model anthropic.claude-3-5-sonnet-20240620-v1:0 --inferenceProfileARN arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+# Update an existing Amazon Bedrock backend to use an inference profile ARN
+k8sgpt auth update --backend amazonbedrock --inferenceProfileARN arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+```
+
 ## Key Features
 
 <details>
