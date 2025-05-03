@@ -67,6 +67,18 @@ var defaultModels = []bedrock_support.BedrockModel{
 		},
 	},
 	{
+		Name:       "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		},
+	},
+	{
 		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
 		Completion: &bedrock_support.CohereCompletion{},
 		Response:   &bedrock_support.CohereResponse{},
@@ -388,7 +400,6 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 				return fmt.Errorf("failed to find model configuration for %s: %v", modelID, err)
 			}
 			a.model = foundModel
-			}
 			
 			// Use the inference profile ARN as the model ID for API calls
 			a.model.Config.ModelName = modelInput
@@ -443,8 +454,8 @@ func (a *AmazonBedRockClient) extractModelFromInferenceProfile(profile *bedrock.
 		return "", fmt.Errorf("inference profile does not contain any models")
 	}
 	
-	// Check if the first model exists and has a non-nil ModelArn
-	if profile.Models[0] == nil || profile.Models[0].ModelArn == nil {
+	// Check if the first model has a non-nil ModelArn
+	if profile.Models[0].ModelArn == nil {
 		return "", fmt.Errorf("model information is missing in inference profile")
 	}
 	
