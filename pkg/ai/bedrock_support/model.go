@@ -5,7 +5,6 @@ type BedrockModelConfig struct {
 	Temperature         float32
 	TopP                float32
 	ModelName           string
-	InferenceProfileARN string
 }
 type BedrockModel struct {
 	Name       string
