@@ -33,7 +33,6 @@ var (
 	topK                 int32
 	maxTokens            int
 	organizationId       string
-	inferenceProfileARN  string
 )
 
 var configAI ai.AIConfiguration

@@ -87,7 +87,6 @@ type IAIConfig interface {
 	GetCompartmentId() string
 	GetOrganizationId() string
 	GetCustomHeaders() []http.Header
-	GetInferenceProfileARN() string
 }
 
 func NewClient(provider string) IAI {
@@ -123,7 +122,6 @@ type AIProvider struct {
 	MaxTokens            int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 	OrganizationId       string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
 	CustomHeaders        []http.Header `mapstructure:"customHeaders"`
-	InferenceProfileARN  string        `mapstructure:"inferenceprofilearn" yaml:"inferenceprofilearn,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -183,10 +181,6 @@ func (p *AIProvider) GetOrganizationId() string {
 
 func (p *AIProvider) GetCustomHeaders() []http.Header {
 	return p.CustomHeaders
-}
-
-func (p *AIProvider) GetInferenceProfileARN() string {
-	return p.InferenceProfileARN
 }
 
 var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "customrest"}
