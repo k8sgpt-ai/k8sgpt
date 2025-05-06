@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.15](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.14...v0.4.15) (2025-04-29)
+
+
+### Features
+
+* added token for goreleaser ([#1476](https://github.com/k8sgpt-ai/k8sgpt/issues/1476)) ([85935a4](https://github.com/k8sgpt-ai/k8sgpt/commit/85935a46d8f137b0339435cf19ce7f83ead97f8c))
+
 ## [0.4.14](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.13...v0.4.14) (2025-04-29)
 
 
