@@ -71,22 +71,14 @@ type nopCloser struct{}
 
 func (nopCloser) Close() {}
 
+// IAIConfig represents the configuration for an AI provider
 type IAIConfig interface {
-	GetPassword() string
 	GetModel() string
-	GetBaseURL() string
-	GetProxyEndpoint() string
-	GetEndpointName() string
-	GetEngine() string
-	GetTemperature() float32
 	GetProviderRegion() string
+	GetTemperature() float32
 	GetTopP() float32
-	GetTopK() int32
 	GetMaxTokens() int
-	GetProviderId() string
-	GetCompartmentId() string
-	GetOrganizationId() string
-	GetCustomHeaders() []http.Header
+	GetConfigName() string // Added to support multiple configurations
 }
 
 func NewClient(provider string) IAI {
@@ -104,24 +96,95 @@ type AIConfiguration struct {
 	DefaultProvider string       `mapstructure:"defaultprovider"`
 }
 
+// AIProvider represents a provider configuration
 type AIProvider struct {
-	Name           string        `mapstructure:"name"`
-	Model          string        `mapstructure:"model"`
-	Password       string        `mapstructure:"password" yaml:"password,omitempty"`
-	BaseURL        string        `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
-	ProxyEndpoint  string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
-	ProxyPort      string        `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
-	EndpointName   string        `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
-	Engine         string        `mapstructure:"engine" yaml:"engine,omitempty"`
-	Temperature    float32       `mapstructure:"temperature" yaml:"temperature,omitempty"`
-	ProviderRegion string        `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
-	ProviderId     string        `mapstructure:"providerid" yaml:"providerid,omitempty"`
-	CompartmentId  string        `mapstructure:"compartmentid" yaml:"compartmentid,omitempty"`
-	TopP           float32       `mapstructure:"topp" yaml:"topp,omitempty"`
-	TopK           int32         `mapstructure:"topk" yaml:"topk,omitempty"`
-	MaxTokens      int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
-	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
-	CustomHeaders  []http.Header `mapstructure:"customHeaders"`
+	Name           string             `mapstructure:"name" json:"name"`
+	Model          string             `mapstructure:"model" json:"model,omitempty"`
+	Password       string             `mapstructure:"password" yaml:"password,omitempty" json:"password,omitempty"`
+	BaseURL        string             `mapstructure:"baseurl" yaml:"baseurl,omitempty" json:"baseurl,omitempty"`
+	ProxyEndpoint  string             `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty" json:"proxyEndpoint,omitempty"`
+	ProxyPort      string             `mapstructure:"proxyPort" yaml:"proxyPort,omitempty" json:"proxyPort,omitempty"`
+	EndpointName   string             `mapstructure:"endpointname" yaml:"endpointname,omitempty" json:"endpointname,omitempty"`
+	Engine         string             `mapstructure:"engine" yaml:"engine,omitempty" json:"engine,omitempty"`
+	Temperature    float32            `mapstructure:"temperature" yaml:"temperature,omitempty" json:"temperature,omitempty"`
+	ProviderRegion string             `mapstructure:"providerregion" yaml:"providerregion,omitempty" json:"providerregion,omitempty"`
+	ProviderId     string             `mapstructure:"providerid" yaml:"providerid,omitempty" json:"providerid,omitempty"`
+	CompartmentId  string             `mapstructure:"compartmentid" yaml:"compartmentid,omitempty" json:"compartmentid,omitempty"`
+	TopP           float32            `mapstructure:"topp" yaml:"topp,omitempty" json:"topp,omitempty"`
+	TopK           int32              `mapstructure:"topk" yaml:"topk,omitempty" json:"topk,omitempty"`
+	MaxTokens      int                `mapstructure:"maxtokens" yaml:"maxtokens,omitempty" json:"maxtokens,omitempty"`
+	OrganizationId string             `mapstructure:"organizationid" yaml:"organizationid,omitempty" json:"organizationid,omitempty"`
+	CustomHeaders  []http.Header      `mapstructure:"customHeaders" json:"customHeaders,omitempty"`
+	Configs        []AIProviderConfig `mapstructure:"configs" json:"configs,omitempty"`
+	DefaultConfig  int                `mapstructure:"defaultConfig" json:"defaultConfig,omitempty"`
+}
+
+// AIProviderConfig represents a single configuration for a provider
+type AIProviderConfig struct {
+	Model          string        `mapstructure:"model" json:"model"`
+	ProviderRegion string        `mapstructure:"providerRegion" json:"providerRegion"`
+	Temperature    float32       `mapstructure:"temperature" json:"temperature"`
+	TopP           float32       `mapstructure:"topP" json:"topP"`
+	MaxTokens      int           `mapstructure:"maxTokens" json:"maxTokens"`
+	ConfigName     string        `mapstructure:"configName" json:"configName"`
+	Password       string        `mapstructure:"password" yaml:"password,omitempty" json:"password,omitempty"`
+	BaseURL        string        `mapstructure:"baseurl" yaml:"baseurl,omitempty" json:"baseurl,omitempty"`
+	ProxyEndpoint  string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty" json:"proxyEndpoint,omitempty"`
+	EndpointName   string        `mapstructure:"endpointname" yaml:"endpointname,omitempty" json:"endpointname,omitempty"`
+	Engine         string        `mapstructure:"engine" yaml:"engine,omitempty" json:"engine,omitempty"`
+	ProviderId     string        `mapstructure:"providerid" yaml:"providerid,omitempty" json:"providerid,omitempty"`
+	CompartmentId  string        `mapstructure:"compartmentid" yaml:"compartmentid,omitempty" json:"compartmentid,omitempty"`
+	TopK           int32         `mapstructure:"topk" yaml:"topk,omitempty" json:"topk,omitempty"`
+	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty" json:"organizationid,omitempty"`
+	CustomHeaders  []http.Header `mapstructure:"customHeaders" json:"customHeaders,omitempty"`
+}
+
+// GetConfigName returns the configuration name
+func (p *AIProvider) GetConfigName() string {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].ConfigName
+	}
+	return ""
+}
+
+// GetModel returns the model name
+func (p *AIProvider) GetModel() string {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].Model
+	}
+	return p.Model
+}
+
+// GetProviderRegion returns the provider region
+func (p *AIProvider) GetProviderRegion() string {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].ProviderRegion
+	}
+	return p.ProviderRegion
+}
+
+// GetTemperature returns the temperature
+func (p *AIProvider) GetTemperature() float32 {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].Temperature
+	}
+	return p.Temperature
+}
+
+// GetTopP returns the top P value
+func (p *AIProvider) GetTopP() float32 {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].TopP
+	}
+	return p.TopP
+}
+
+// GetMaxTokens returns the maximum number of tokens
+func (p *AIProvider) GetMaxTokens() int {
+	if len(p.Configs) > 0 && p.DefaultConfig >= 0 && p.DefaultConfig < len(p.Configs) {
+		return p.Configs[p.DefaultConfig].MaxTokens
+	}
+	return p.MaxTokens
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -136,35 +199,16 @@ func (p *AIProvider) GetEndpointName() string {
 	return p.EndpointName
 }
 
-func (p *AIProvider) GetTopP() float32 {
-	return p.TopP
-}
-
 func (p *AIProvider) GetTopK() int32 {
 	return p.TopK
-}
-
-func (p *AIProvider) GetMaxTokens() int {
-	return p.MaxTokens
 }
 
 func (p *AIProvider) GetPassword() string {
 	return p.Password
 }
 
-func (p *AIProvider) GetModel() string {
-	return p.Model
-}
-
 func (p *AIProvider) GetEngine() string {
 	return p.Engine
-}
-func (p *AIProvider) GetTemperature() float32 {
-	return p.Temperature
-}
-
-func (p *AIProvider) GetProviderRegion() string {
-	return p.ProviderRegion
 }
 
 func (p *AIProvider) GetProviderId() string {
