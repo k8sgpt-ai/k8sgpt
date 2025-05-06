@@ -78,7 +78,17 @@ type IAIConfig interface {
 	GetTemperature() float32
 	GetTopP() float32
 	GetMaxTokens() int
-	GetConfigName() string // Added to support multiple configurations
+	GetConfigName() string
+	GetPassword() string
+	GetBaseURL() string
+	GetProxyEndpoint() string
+	GetEndpointName() string
+	GetEngine() string
+	GetProviderId() string
+	GetCompartmentId() string
+	GetOrganizationId() string
+	GetCustomHeaders() []http.Header
+	GetTopK() int32
 }
 
 func NewClient(provider string) IAI {
