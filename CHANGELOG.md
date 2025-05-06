@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.16](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.15...v0.4.16) (2025-05-06)
+
+
+### Features
+
+* add support for Amazon Bedrock Inference Profiles ([#1492](https://github.com/k8sgpt-ai/k8sgpt/issues/1492)) ([21bc76e](https://github.com/k8sgpt-ai/k8sgpt/commit/21bc76e5b77524b48f09ef6707204742dcd879a7))
+* enhancement of deployment analyzer ([#1406](https://github.com/k8sgpt-ai/k8sgpt/issues/1406)) ([61b60d5](https://github.com/k8sgpt-ai/k8sgpt/commit/61b60d5768b54f98232dcc415e89aa38987dc6e3))
+* supported regions govcloud ([#1483](https://github.com/k8sgpt-ai/k8sgpt/issues/1483)) ([752a16c](https://github.com/k8sgpt-ai/k8sgpt/commit/752a16c40728f42f10ab6c3177cb7e24f44db339))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 0f33e8f ([#1484](https://github.com/k8sgpt-ai/k8sgpt/issues/1484)) ([6a81d2c](https://github.com/k8sgpt-ai/k8sgpt/commit/6a81d2c140f00a405b651d6c6dae5e343ffddb4f))
+
+
+### Other
+
+* **deps:** update docker/build-push-action digest to 14487ce ([#1472](https://github.com/k8sgpt-ai/k8sgpt/issues/1472)) ([81da402](https://github.com/k8sgpt-ai/k8sgpt/commit/81da402d46e1a1db83a41b717dfb23eb07d2e919))
+* **deps:** update golangci/golangci-lint-action digest to 9fae48a ([#1489](https://github.com/k8sgpt-ai/k8sgpt/issues/1489)) ([d5341f3](https://github.com/k8sgpt-ai/k8sgpt/commit/d5341f3c0019c1114254ac05f00c743a0354ec0b))
+
 ## [0.4.15](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.14...v0.4.15) (2025-04-29)
 
 
