@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-09)
+
+
+### Bug Fixes
+
+* align documentation to reflect default analyzers properly ([#1498](https://github.com/k8sgpt-ai/k8sgpt/issues/1498)) ([7e375a3](https://github.com/k8sgpt-ai/k8sgpt/commit/7e375a30bee24198f9221e4a4aea17fcd2fe005c))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1454](https://github.com/k8sgpt-ai/k8sgpt/issues/1454)) ([d0f0364](https://github.com/k8sgpt-ai/k8sgpt/commit/d0f03641ae372a00cd0eca1f41ef30a988d436bc))
+* panic in k8sgpt auth update ([#1497](https://github.com/k8sgpt-ai/k8sgpt/issues/1497)) ([cae94e7](https://github.com/k8sgpt-ai/k8sgpt/commit/cae94e7b6df1684a3b61af3e7aa0f4e68e8df594))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to d35c59a ([#1495](https://github.com/k8sgpt-ai/k8sgpt/issues/1495)) ([e76bdb0](https://github.com/k8sgpt-ai/k8sgpt/commit/e76bdb0c23b7d23972d99661c8fe1bffe5f9f398))
+
 ## [0.4.16](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.15...v0.4.16) (2025-05-06)
 
 
