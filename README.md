@@ -256,6 +256,7 @@ you will be able to write your own analyzers.
 - [x] nodeAnalyzer
 - [x] mutatingWebhookAnalyzer
 - [x] validatingWebhookAnalyzer
+- [x] configMapAnalyzer
 
 #### Optional
 
@@ -268,7 +269,6 @@ you will be able to write your own analyzers.
 - [x] logAnalyzer
 - [x] storageAnalyzer
 - [x] securityAnalyzer
-- [x] configMapAnalyzer
 
 ## Examples
 
