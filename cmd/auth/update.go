@@ -90,7 +90,7 @@ var updateCmd = &cobra.Command{
 			}
 		}
 		if !foundBackend {
-			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", args[0])
+			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", backend)
 			os.Exit(1)
 		}
 
