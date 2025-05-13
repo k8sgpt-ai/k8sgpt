@@ -252,6 +252,7 @@ you will be able to write your own analyzers.
 - [x] ingressAnalyzer
 - [x] statefulSetAnalyzer
 - [x] deploymentAnalyzer
+- [x] jobAnalyzer
 - [x] cronJobAnalyzer
 - [x] nodeAnalyzer
 - [x] mutatingWebhookAnalyzer

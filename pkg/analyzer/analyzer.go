@@ -39,6 +39,7 @@ var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Service":                        ServiceAnalyzer{},
 	"Ingress":                        IngressAnalyzer{},
 	"StatefulSet":                    StatefulSetAnalyzer{},
+	"Job":                            JobAnalyzer{},
 	"CronJob":                        CronJobAnalyzer{},
 	"Node":                           NodeAnalyzer{},
 	"ValidatingWebhookConfiguration": ValidatingWebhookAnalyzer{},
