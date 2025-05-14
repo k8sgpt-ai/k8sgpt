@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-14)
+
+
+### Features
+
+* adding fixes for Messages API issue 1391 ([#1504](https://github.com/k8sgpt-ai/k8sgpt/issues/1504)) ([b2241c0](https://github.com/k8sgpt-ai/k8sgpt/commit/b2241c03c975aeab02897d73e57cd351f60f3af3))
+* new job analyzer ([#1506](https://github.com/k8sgpt-ai/k8sgpt/issues/1506)) ([0b7ddf5](https://github.com/k8sgpt-ai/k8sgpt/commit/0b7ddf5e3b93e56ea92dfb6447e97c067cad9e54))
+
+
+### Bug Fixes
+
+* align documentation to reflect default analyzers properly ([#1498](https://github.com/k8sgpt-ai/k8sgpt/issues/1498)) ([7e375a3](https://github.com/k8sgpt-ai/k8sgpt/commit/7e375a30bee24198f9221e4a4aea17fcd2fe005c))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1454](https://github.com/k8sgpt-ai/k8sgpt/issues/1454)) ([d0f0364](https://github.com/k8sgpt-ai/k8sgpt/commit/d0f03641ae372a00cd0eca1f41ef30a988d436bc))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1500](https://github.com/k8sgpt-ai/k8sgpt/issues/1500)) ([d308c51](https://github.com/k8sgpt-ai/k8sgpt/commit/d308c511fbe06e012c641dfa08c4dcf4181b243a))
+* panic in k8sgpt auth update ([#1497](https://github.com/k8sgpt-ai/k8sgpt/issues/1497)) ([cae94e7](https://github.com/k8sgpt-ai/k8sgpt/commit/cae94e7b6df1684a3b61af3e7aa0f4e68e8df594))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to d35c59a ([#1495](https://github.com/k8sgpt-ai/k8sgpt/issues/1495)) ([e76bdb0](https://github.com/k8sgpt-ai/k8sgpt/commit/e76bdb0c23b7d23972d99661c8fe1bffe5f9f398))
+* **deps:** update golangci/golangci-lint-action action to v8 ([#1490](https://github.com/k8sgpt-ai/k8sgpt/issues/1490)) ([1e57b77](https://github.com/k8sgpt-ai/k8sgpt/commit/1e57b7774c20bda4ae0b0d765278bcd3504cfb33))
+* golangci lint ([#1508](https://github.com/k8sgpt-ai/k8sgpt/issues/1508)) ([4faf77d](https://github.com/k8sgpt-ai/k8sgpt/commit/4faf77d91a3da8fdd6166ec1c381a151e5846057))
+
 ## [0.4.16](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.15...v0.4.16) (2025-05-06)
 
 
