@@ -84,8 +84,8 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-3-5-sonnet-20240620-v1:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			// sensible defaults
 			MaxTokens:   100,
@@ -96,8 +96,8 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			// sensible defaults
 			MaxTokens:   100,
@@ -353,10 +353,10 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 
 	// Get the model input
 	modelInput := config.GetModel()
-	
+
 	// Determine the appropriate region to use
 	var region string
-	
+
 	// Check if the model input is actually an inference profile ARN
 	if validateInferenceProfileArn(modelInput) {
 		// Extract the region from the inference profile ARN
@@ -370,11 +370,11 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 		// Use the provided region or default
 		region = GetRegionOrDefault(config.GetProviderRegion())
 	}
-	
+
 	// Only create AWS clients if they haven't been injected (for testing)
 	if a.client == nil || a.mgmtClient == nil {
 		// Create a new AWS config with the determined region
-		cfg, err := awsconfig.LoadDefaultConfig(context.Background(), 
+		cfg, err := awsconfig.LoadDefaultConfig(context.Background(),
 			awsconfig.WithRegion(region),
 		)
 		if err != nil {
@@ -385,7 +385,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 		a.client = bedrockruntime.NewFromConfig(cfg)
 		a.mgmtClient = bedrock.NewFromConfig(cfg)
 	}
-	
+
 	// Handle model selection based on input type
 	if validateInferenceProfileArn(modelInput) {
 		// Get the inference profile details
@@ -399,7 +399,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 			if err != nil {
 				return fmt.Errorf("failed to extract model ID from inference profile: %v", err)
 			}
-			
+
 			// Find the model configuration for the extracted model ID
 			foundModel, err := a.getModelFromString(modelID)
 			if err != nil {
@@ -407,7 +407,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 				return fmt.Errorf("failed to find model configuration for %s: %v", modelID, err)
 			}
 			a.model = foundModel
-			
+
 			// Use the inference profile ARN as the model ID for API calls
 			a.model.Config.ModelName = modelInput
 		}
@@ -420,7 +420,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 		a.model = foundModel
 		a.model.Config.ModelName = foundModel.Config.ModelName
 	}
-	
+
 	// Set common configuration parameters
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
@@ -438,20 +438,20 @@ func (a *AmazonBedRockClient) getInferenceProfile(ctx context.Context, inference
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid inference profile ARN format: %s", inferenceProfileARN)
 	}
-	
+
 	profileID := parts[1]
-	
+
 	// Create the input for the GetInferenceProfile API call
 	input := &bedrock.GetInferenceProfileInput{
 		InferenceProfileIdentifier: aws.String(profileID),
 	}
-	
+
 	// Call the GetInferenceProfile API
 	output, err := a.mgmtClient.GetInferenceProfile(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get inference profile: %w", err)
 	}
-	
+
 	return output, nil
 }
 
@@ -460,25 +460,25 @@ func (a *AmazonBedRockClient) extractModelFromInferenceProfile(profile *bedrock.
 	if profile == nil || len(profile.Models) == 0 {
 		return "", fmt.Errorf("inference profile does not contain any models")
 	}
-	
+
 	// Check if the first model has a non-nil ModelArn
 	if profile.Models[0].ModelArn == nil {
 		return "", fmt.Errorf("model information is missing in inference profile")
 	}
-	
+
 	// Get the first model ARN from the profile
 	modelARN := aws.ToString(profile.Models[0].ModelArn)
 	if modelARN == "" {
 		return "", fmt.Errorf("model ARN is empty in inference profile")
 	}
-	
+
 	// Extract the model ID from the ARN
 	// ARN format: arn:aws:bedrock:region::foundation-model/model-id
 	parts := strings.Split(modelARN, "/")
 	if len(parts) != 2 {
 		return "", fmt.Errorf("invalid model ARN format: %s", modelARN)
 	}
-	
+
 	modelID := parts[1]
 	return modelID, nil
 }
@@ -494,7 +494,7 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	if err != nil {
 		return "", err
 	}
-	
+
 	// Build the parameters for the model invocation
 	params := &bedrockruntime.InvokeModelInput{
 		Body:        body,
@@ -502,7 +502,7 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 		ContentType: aws.String("application/json"),
 		Accept:      aws.String("application/json"),
 	}
-	
+
 	// Invoke the model
 	resp, err := a.client.InvokeModel(ctx, params)
 	if err != nil {
