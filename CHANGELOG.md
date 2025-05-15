@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.17...v0.4.18) (2025-05-15)
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1509](https://github.com/k8sgpt-ai/k8sgpt/issues/1509)) ([d7cb19a](https://github.com/k8sgpt-ai/k8sgpt/commit/d7cb19ad29c92eaba552ba723945c937fc3c42da))
+
 ## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-14)
 
 
