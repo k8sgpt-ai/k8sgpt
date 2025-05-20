@@ -53,7 +53,7 @@ require (
 	github.com/prometheus/prometheus v0.302.1
 	github.com/pterm/pterm v0.12.80
 	google.golang.org/api v0.218.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 	gopkg.in/yaml.v3 v3.0.1
 	sigs.k8s.io/controller-runtime v0.19.3
 	sigs.k8s.io/gateway-api v1.2.1
