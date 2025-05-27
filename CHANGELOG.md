@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.17...v0.4.18) (2025-05-27)
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1509](https://github.com/k8sgpt-ai/k8sgpt/issues/1509)) ([d7cb19a](https://github.com/k8sgpt-ai/k8sgpt/commit/d7cb19ad29c92eaba552ba723945c937fc3c42da))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 18283e0 ([#1513](https://github.com/k8sgpt-ai/k8sgpt/issues/1513)) ([42654e7](https://github.com/k8sgpt-ai/k8sgpt/commit/42654e7f55d7a9e9be5b664adaaa8979106e7298))
+* **deps:** update docker/build-push-action digest to 1dc7386 ([#1512](https://github.com/k8sgpt-ai/k8sgpt/issues/1512)) ([dfcc5dc](https://github.com/k8sgpt-ai/k8sgpt/commit/dfcc5dc5a15a3d59a7f6317944784e3ecd86fb50))
+* **deps:** update docker/build-push-action digest to 2634353 ([#1517](https://github.com/k8sgpt-ai/k8sgpt/issues/1517)) ([7dfe8be](https://github.com/k8sgpt-ai/k8sgpt/commit/7dfe8bef0face65f607475a6620923fdfed57961))
+
 ## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-14)
 
 
