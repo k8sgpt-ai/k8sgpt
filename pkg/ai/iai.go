@@ -27,6 +27,7 @@ var (
 		&NoOpAIClient{},
 		&CohereClient{},
 		&AmazonBedRockClient{},
+		&AmazonBedRockKnowledgeBaseClient{},
 		&SageMakerAIClient{},
 		&GoogleGenAIClient{},
 		&HuggingfaceClient{},
@@ -42,6 +43,7 @@ var (
 		azureAIClientName,
 		cohereAIClientName,
 		amazonbedrockAIClientName,
+		amazonbedrockKnowledgeBaseAIClientName,
 		amazonsagemakerAIClientName,
 		googleAIClientName,
 		noopAIClientName,
@@ -77,6 +79,7 @@ type IAIConfig interface {
 	GetBaseURL() string
 	GetProxyEndpoint() string
 	GetEndpointName() string
+	GetKnowledgeBase() string
 	GetEngine() string
 	GetTemperature() float32
 	GetProviderRegion() string
@@ -112,6 +115,7 @@ type AIProvider struct {
 	ProxyEndpoint  string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
 	ProxyPort      string        `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
 	EndpointName   string        `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
+	KnowledgeBase  string        `mapstructure:"knowledgebase" yaml:"knowledgebase,omitempty"`
 	Engine         string        `mapstructure:"engine" yaml:"engine,omitempty"`
 	Temperature    float32       `mapstructure:"temperature" yaml:"temperature,omitempty"`
 	ProviderRegion string        `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
@@ -175,6 +179,10 @@ func (p *AIProvider) GetCompartmentId() string {
 	return p.CompartmentId
 }
 
+func (p *AIProvider) GetKnowledgeBase() string {
+	return p.KnowledgeBase
+}
+
 func (p *AIProvider) GetOrganizationId() string {
 	return p.OrganizationId
 }
@@ -183,7 +191,7 @@ func (p *AIProvider) GetCustomHeaders() []http.Header {
 	return p.CustomHeaders
 }
 
-var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "googlevertexai", "oci", "customrest"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "amazonbedrockknowledgebase", "googlevertexai", "oci", "customrest"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {
