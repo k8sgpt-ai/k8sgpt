@@ -233,12 +233,12 @@ func (a *AmazonBedRockKnowledgeBaseClient) GetCompletion(ctx context.Context, pr
 	sourcesSection := "\n\nSources:\n"
 	
 	// Process citations if available
-	if response.Citations != nil && len(response.Citations) > 0 {
+	if len(response.Citations) > 0 {
 		for _, citation := range response.Citations {
 			sourceURI := ""
 			snippetText := ""
 			
-			if citation.RetrievedReferences != nil && len(citation.RetrievedReferences) > 0 {
+			if len(citation.RetrievedReferences) > 0 {
 				for _, ref := range citation.RetrievedReferences {
 					if ref.Location != nil && ref.Location.S3Location != nil && ref.Location.S3Location.Uri != nil {
 						sourceURI = *ref.Location.S3Location.Uri
