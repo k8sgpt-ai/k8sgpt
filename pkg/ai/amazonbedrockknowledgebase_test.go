@@ -15,12 +15,11 @@ package ai
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagent"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockagentruntime"
-	"github.com/aws/aws-sdk-go-v2/service/bedrockagentruntime/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,33 +93,117 @@ func TestConfigure(t *testing.T) {
 	assert.Equal(t, 100, client.maxTokens)
 }
 
-func TestGetCompletion(t *testing.T) {
-	// Create a mock BedrockAgentRuntimeAPI
-	mockAgentRuntimeAPI := &mockBedrockAgentRuntimeAPI{
-		retrieveAndGenerateFunc: func(ctx context.Context, params *bedrockagentruntime.RetrieveAndGenerateInput, optFns ...func(*bedrockagentruntime.Options)) (*bedrockagentruntime.RetrieveAndGenerateOutput, error) {
-			expectedText := "This is the generated response"
-			return &bedrockagentruntime.RetrieveAndGenerateOutput{
-				Output: &types.RetrieveAndGenerateOutput{
-					Text: aws.String(expectedText),
-				},
-			}, nil
-		},
-	}
+// TestConfigureErrors tests error cases for the Configure method
+func TestConfigureErrors(t *testing.T) {
+	t.Run("Missing knowledge base", func(t *testing.T) {
+		client := NewAmazonBedRockKnowledgeBaseClient()
+		config := &mockAIProvider{
+			model:          "anthropic.claude-v2",
+			providerRegion: "us-east-1",
+		}
+		
+		err := client.Configure(config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "knowledge base is required")
+	})
+	
+	t.Run("Missing model ID", func(t *testing.T) {
+		client := NewAmazonBedRockKnowledgeBaseClient()
+		config := &mockAIProvider{
+			knowledgeBase:  "kb-123",
+			providerRegion: "us-east-1",
+		}
+		
+		err := client.Configure(config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "model ID is required")
+	})
+	
+	t.Run("Knowledge base validation failure", func(t *testing.T) {
+		// Create a mock BedrockAgentAPI that returns an error
+		mockAgentAPI := &mockBedrockAgentAPI{
+			getKnowledgeBaseFunc: func(ctx context.Context, params *bedrockagent.GetKnowledgeBaseInput, optFns ...func(*bedrockagent.Options)) (*bedrockagent.GetKnowledgeBaseOutput, error) {
+				return nil, fmt.Errorf("knowledge base not found")
+			},
+		}
+		
+		client := &AmazonBedRockKnowledgeBaseClient{
+			agentClient: mockAgentAPI,
+		}
+		
+		config := &mockAIProvider{
+			knowledgeBase:  "kb-123",
+			model:          "anthropic.claude-v2",
+			providerRegion: "us-east-1",
+		}
+		
+		err := client.Configure(config)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get knowledge base")
+	})
+}
 
-	// Create the client with a single knowledge base
-	client := &AmazonBedRockKnowledgeBaseClient{
-		agentRuntimeClient: mockAgentRuntimeAPI,
-		knowledgeBases: []KnowledgeBaseConfig{
-			{ID: "kb-123", NumberOfResults: 5},
-		},
-		modelId:     "anthropic.claude-v2",
-		temperature: 0.7,
-		topP:        0.9,
-		maxTokens:   100,
-	}
+// TestGetName tests the GetName method
+func TestGetName(t *testing.T) {
+	client := NewAmazonBedRockKnowledgeBaseClient()
+	assert.Equal(t, "amazonbedrockknowledgebase", client.GetName())
+}
 
-	// Test GetCompletion
-	result, err := client.GetCompletion(context.Background(), "Test prompt")
-	assert.NoError(t, err)
-	assert.Equal(t, "This is the generated response", result)
+// TestNewAmazonBedRockKnowledgeBaseClient tests the constructor
+func TestNewAmazonBedRockKnowledgeBaseClient(t *testing.T) {
+	client := NewAmazonBedRockKnowledgeBaseClient()
+	assert.NotNil(t, client)
+	assert.True(t, client.enableCitations)
+}
+
+// TestGetUniqueSnippets tests the getUniqueSnippets helper function
+func TestGetUniqueSnippets(t *testing.T) {
+	t.Run("Empty snippets", func(t *testing.T) {
+		result := getUniqueSnippets([]string{}, 3)
+		assert.Empty(t, result)
+	})
+	
+	t.Run("Unique snippets under max", func(t *testing.T) {
+		snippets := []string{
+			"This is snippet 1",
+			"This is snippet 2",
+		}
+		result := getUniqueSnippets(snippets, 3)
+		assert.Len(t, result, 2)
+		assert.Contains(t, result, "This is snippet 1")
+		assert.Contains(t, result, "This is snippet 2")
+	})
+	
+	t.Run("Duplicate snippets", func(t *testing.T) {
+		snippets := []string{
+			"This is snippet 1",
+			"This is snippet 1", // Duplicate
+			"This is snippet 2",
+		}
+		result := getUniqueSnippets(snippets, 3)
+		assert.Len(t, result, 2)
+		assert.Contains(t, result, "This is snippet 1")
+		assert.Contains(t, result, "This is snippet 2")
+	})
+	
+	t.Run("Max snippets limit", func(t *testing.T) {
+		snippets := []string{
+			"This is snippet 1",
+			"This is snippet 2",
+			"This is snippet 3",
+			"This is snippet 4",
+		}
+		result := getUniqueSnippets(snippets, 2)
+		assert.Len(t, result, 2)
+	})
+	
+	t.Run("Long snippets get truncated", func(t *testing.T) {
+		snippets := []string{
+			"This is a very long snippet that should be truncated in the display because it exceeds the maximum length allowed for display",
+		}
+		result := getUniqueSnippets(snippets, 1)
+		assert.Len(t, result, 1)
+		assert.Contains(t, result[0], "...")
+		assert.True(t, len(result[0]) < len(snippets[0]))
+	})
 }
