@@ -14,6 +14,7 @@ limitations under the License.
 package util
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -310,4 +311,34 @@ func LabelStrToSelector(labelStr string) labels.Selector {
 		}
 	}
 	return labels.SelectorFromSet(labels.Set(labelSelectorMap))
+}
+
+// CaptureOutput captures the output of a function that writes to stdout
+func CaptureOutput(f func()) string {
+	old := os.Stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		panic(fmt.Sprintf("failed to create pipe: %v", err))
+	}
+	os.Stdout = w
+	// Ensure os.Stdout is restored even if panic occurs
+	defer func() {
+		os.Stdout = old
+	}()
+
+	f()
+
+	if err := w.Close(); err != nil {
+		panic(fmt.Sprintf("failed to close writer: %v", err))
+	}
+	var buf bytes.Buffer
+	if _, err := buf.ReadFrom(r); err != nil {
+		panic(fmt.Sprintf("failed to read from pipe: %v", err))
+	}
+	return buf.String()
+}
+
+// Contains checks if substr is present in s
+func Contains(s, substr string) bool {
+	return bytes.Contains([]byte(s), []byte(substr))
 }

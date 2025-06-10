@@ -20,6 +20,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -34,7 +35,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
 			Group:   "autoscaling",
-			Version: "v1",
+			Version: "v2",
 		},
 		OpenapiSchema: a.OpenapiSchema,
 	}
@@ -56,11 +57,22 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		//check the error from status field
 		conditions := hpa.Status.Conditions
 		for _, condition := range conditions {
-			if condition.Status != "True" {
-				failures = append(failures, common.Failure{
-					Text:      condition.Message,
-					Sensitive: []common.Sensitive{},
-				})
+			// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#appendix-horizontal-pod-autoscaler-status-conditions
+			switch condition.Type {
+			case autoscalingv2.ScalingLimited:
+				if condition.Status == corev1.ConditionTrue {
+					failures = append(failures, common.Failure{
+						Text:      condition.Message,
+						Sensitive: []common.Sensitive{},
+					})
+				}
+			default:
+				if condition.Status == corev1.ConditionFalse {
+					failures = append(failures, common.Failure{
+						Text:      condition.Message,
+						Sensitive: []common.Sensitive{},
+					})
+				}
 			}
 		}
 

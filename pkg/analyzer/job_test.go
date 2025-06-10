@@ -1,5 +1,5 @@
 /*
-Copyright 2023 The K8sGPT Authors.
+Copyright 2025 The K8sGPT Authors.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -26,7 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func TestCronJobAnalyzer(t *testing.T) {
+func TestJobAnalyzer(t *testing.T) {
 	tests := []struct {
 		name         string
 		config       common.Analyzer
@@ -36,18 +36,17 @@ func TestCronJobAnalyzer(t *testing.T) {
 		}
 	}{
 		{
-			name: "Suspended CronJob",
+			name: "Suspended Job",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(
-						&batchv1.CronJob{
+						&batchv1.Job{
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "suspended-job",
 								Namespace: "default",
 							},
-							Spec: batchv1.CronJobSpec{
-								Schedule: "*/5 * * * *",
-								Suspend:  boolPtr(true),
+							Spec: batchv1.JobSpec{
+								Suspend: boolPtr(true),
 							},
 						},
 					),
@@ -65,18 +64,20 @@ func TestCronJobAnalyzer(t *testing.T) {
 				},
 			},
 		},
+
 		{
-			name: "Invalid schedule format",
+			name: "Failed Job",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(
-						&batchv1.CronJob{
+						&batchv1.Job{
 							ObjectMeta: metav1.ObjectMeta{
-								Name:      "invalid-schedule",
+								Name:      "failed-job",
 								Namespace: "default",
 							},
-							Spec: batchv1.CronJobSpec{
-								Schedule: "invalid-cron", // Invalid cron format
+							Spec: batchv1.JobSpec{},
+							Status: batchv1.JobStatus{
+								Failed: 1,
 							},
 						},
 					),
@@ -89,54 +90,22 @@ func TestCronJobAnalyzer(t *testing.T) {
 				failuresCount int
 			}{
 				{
-					name:          "default/invalid-schedule",
-					failuresCount: 1, // One failure for invalid schedule
+					name:          "default/failed-job",
+					failuresCount: 1, // One failure for failed job
 				},
 			},
 		},
 		{
-			name: "Negative starting deadline",
+			name: "Valid Job",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(
-						&batchv1.CronJob{
-							ObjectMeta: metav1.ObjectMeta{
-								Name:      "negative-deadline",
-								Namespace: "default",
-							},
-							Spec: batchv1.CronJobSpec{
-								Schedule:                "*/5 * * * *",
-								StartingDeadlineSeconds: int64Ptr(-60), // Negative deadline
-							},
-						},
-					),
-				},
-				Context:   context.Background(),
-				Namespace: "default",
-			},
-			expectations: []struct {
-				name          string
-				failuresCount int
-			}{
-				{
-					name:          "default/negative-deadline",
-					failuresCount: 1, // One failure for negative deadline
-				},
-			},
-		},
-		{
-			name: "Valid CronJob",
-			config: common.Analyzer{
-				Client: &kubernetes.Client{
-					Client: fake.NewSimpleClientset(
-						&batchv1.CronJob{
+						&batchv1.Job{
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "valid-job",
 								Namespace: "default",
 							},
-							Spec: batchv1.CronJobSpec{
-								Schedule: "*/5 * * * *", // Valid cron format
-							},
+							Spec: batchv1.JobSpec{},
 						},
 					),
 				},
@@ -155,14 +124,16 @@ func TestCronJobAnalyzer(t *testing.T) {
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
 					Client: fake.NewSimpleClientset(
-						&batchv1.CronJob{
+						&batchv1.Job{
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "multiple-issues",
 								Namespace: "default",
 							},
-							Spec: batchv1.CronJobSpec{
-								Schedule:                "invalid-cron",
-								StartingDeadlineSeconds: int64Ptr(-60),
+							Spec: batchv1.JobSpec{
+								Suspend: boolPtr(true),
+							},
+							Status: batchv1.JobStatus{
+								Failed: 1,
 							},
 						},
 					),
@@ -176,7 +147,7 @@ func TestCronJobAnalyzer(t *testing.T) {
 			}{
 				{
 					name:          "default/multiple-issues",
-					failuresCount: 2, // Two failures: invalid schedule and negative deadline
+					failuresCount: 2, // Two failures: suspended and failed job
 				},
 			},
 		},
@@ -184,7 +155,7 @@ func TestCronJobAnalyzer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			analyzer := CronJobAnalyzer{}
+			analyzer := JobAnalyzer{}
 			results, err := analyzer.Analyze(tt.config)
 			require.NoError(t, err)
 			require.Len(t, results, len(tt.expectations))
@@ -202,9 +173,9 @@ func TestCronJobAnalyzer(t *testing.T) {
 	}
 }
 
-func TestCronJobAnalyzerLabelSelector(t *testing.T) {
+func TestJobAnalyzerLabelSelector(t *testing.T) {
 	clientSet := fake.NewSimpleClientset(
-		&batchv1.CronJob{
+		&batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-with-label",
 				Namespace: "default",
@@ -212,18 +183,17 @@ func TestCronJobAnalyzerLabelSelector(t *testing.T) {
 					"app": "test",
 				},
 			},
-			Spec: batchv1.CronJobSpec{
-				Schedule: "invalid-cron", // This should trigger a failure
+			Spec: batchv1.JobSpec{},
+			Status: batchv1.JobStatus{
+				Failed: 1,
 			},
 		},
-		&batchv1.CronJob{
+		&batchv1.Job{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "job-without-label",
 				Namespace: "default",
 			},
-			Spec: batchv1.CronJobSpec{
-				Schedule: "invalid-cron", // This should trigger a failure
-			},
+			Spec: batchv1.JobSpec{},
 		},
 	)
 
@@ -237,59 +207,9 @@ func TestCronJobAnalyzerLabelSelector(t *testing.T) {
 		LabelSelector: "app=test",
 	}
 
-	analyzer := CronJobAnalyzer{}
+	analyzer := JobAnalyzer{}
 	results, err := analyzer.Analyze(config)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/job-with-label", results[0].Name)
-}
-
-func TestCheckCronScheduleIsValid(t *testing.T) {
-	tests := []struct {
-		name     string
-		schedule string
-		wantErr  bool
-	}{
-		{
-			name:     "Valid schedule - every 5 minutes",
-			schedule: "*/5 * * * *",
-			wantErr:  false,
-		},
-		{
-			name:     "Valid schedule - specific time",
-			schedule: "0 2 * * *",
-			wantErr:  false,
-		},
-		{
-			name:     "Valid schedule - complex",
-			schedule: "0 0 1,15 * 3",
-			wantErr:  false,
-		},
-		{
-			name:     "Invalid schedule - wrong format",
-			schedule: "invalid-cron",
-			wantErr:  true,
-		},
-		{
-			name:     "Invalid schedule - too many fields",
-			schedule: "* * * * * *",
-			wantErr:  true,
-		},
-		{
-			name:     "Invalid schedule - empty string",
-			schedule: "",
-			wantErr:  true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := CheckCronScheduleIsValid(tt.schedule)
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
 }

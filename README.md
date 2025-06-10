@@ -62,7 +62,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -70,7 +70,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -83,7 +83,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -94,7 +94,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -109,7 +109,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -118,7 +118,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.2/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -165,6 +165,76 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 - And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 - You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
 
+# Using with Claude Desktop
+
+K8sGPT can be integrated with Claude Desktop to provide AI-powered Kubernetes cluster analysis. This integration requires K8sGPT v0.4.14 or later.
+
+## Prerequisites
+
+1. Install K8sGPT v0.4.14 or later:
+   ```sh
+   brew install k8sgpt
+   ```
+
+2. Install Claude Desktop from the official website
+
+3. Configure K8sGPT with your preferred AI backend:
+   ```sh
+   k8sgpt auth
+   ```
+
+## Setup
+
+1. Start the K8sGPT MCP server:
+   ```sh
+   k8sgpt serve --mcp
+   ```
+
+2. In Claude Desktop:
+   - Open Settings
+   - Navigate to the Integrations section
+   - Add K8sGPT as a new integration
+   - The MCP server will be automatically detected
+
+3. Configure Claude Desktop with the following JSON:
+   
+  ```json
+  {
+    "mcpServers": {
+      "k8sgpt": {
+        "command": "k8sgpt",
+        "args": [
+          "serve",
+          "--mcp"
+        ]
+      }
+    }
+  }
+  ```
+
+## Usage
+
+Once connected, you can use Claude Desktop to:
+- Analyze your Kubernetes cluster
+- Get detailed insights about cluster health
+- Receive recommendations for fixing issues
+- Query cluster information
+
+Example commands in Claude Desktop:
+- "Analyze my Kubernetes cluster"
+- "What's the health status of my cluster?"
+- "Show me any issues in the default namespace"
+
+## Troubleshooting
+
+If you encounter connection issues:
+1. Ensure K8sGPT is running with the MCP server enabled
+2. Verify your Kubernetes cluster is accessible
+3. Check that your AI backend is properly configured
+4. Restart both K8sGPT and Claude Desktop
+
+For more information, visit our [documentation](https://docs.k8sgpt.ai).
+
 ## Analyzers
 
 K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but
@@ -182,10 +252,12 @@ you will be able to write your own analyzers.
 - [x] ingressAnalyzer
 - [x] statefulSetAnalyzer
 - [x] deploymentAnalyzer
+- [x] jobAnalyzer
 - [x] cronJobAnalyzer
 - [x] nodeAnalyzer
 - [x] mutatingWebhookAnalyzer
 - [x] validatingWebhookAnalyzer
+- [x] configMapAnalyzer
 
 #### Optional
 
@@ -196,6 +268,8 @@ you will be able to write your own analyzers.
 - [x] gateway
 - [x] httproute
 - [x] logAnalyzer
+- [x] storageAnalyzer
+- [x] securityAnalyzer
 
 ## Examples
 
@@ -391,6 +465,22 @@ _To set a new default provider_
 ```
 k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
+```
+
+_Using Amazon Bedrock with inference profiles_
+
+_System Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+```
+
+_Application Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+
 ```
 
 ## Key Features
@@ -592,7 +682,7 @@ Please read our [contributing guide](./CONTRIBUTING.md).
 
 ## Community
 
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-276pa9uyq-pxAUr4TCVHubFxEvLZuT1Q)
+Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
