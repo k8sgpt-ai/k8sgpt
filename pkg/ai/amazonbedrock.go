@@ -380,6 +380,9 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 			awsconfig.WithRegion(region),
 		)
 		if err != nil {
+			if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+				return fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+			}
 			return fmt.Errorf("failed to load AWS config for region %s: %w", region, err)
 		}
 
@@ -523,6 +526,9 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	// Invoke the model
 	resp, err := a.client.InvokeModel(ctx, params)
 	if err != nil {
+		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+			return "", fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+		}
 		return "", err
 	}
 

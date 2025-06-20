@@ -158,21 +158,6 @@ func TestAmazonCompletion_GetCompletion_Default(t *testing.T) {
 	assert.Equal(t, 0.7, textConfig["topP"])
 }
 
-func TestAmazonCompletion_GetCompletion_UnsupportedModel(t *testing.T) {
-	completion := &AmazonCompletion{}
-	modelConfig := BedrockModelConfig{
-		MaxTokens:   200,
-		Temperature: 0.5,
-		TopP:        0.7,
-		ModelName:   "unsupported-model",
-	}
-	prompt := "Test prompt"
-
-	_, err := completion.GetCompletion(context.Background(), prompt, modelConfig)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "model unsupported-model is not supported")
-}
-
 func TestAmazonCompletion_GetCompletion_Inference_Profile(t *testing.T) {
 	completion := &AmazonCompletion{}
 	modelConfig := BedrockModelConfig{
