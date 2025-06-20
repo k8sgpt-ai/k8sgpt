@@ -7,24 +7,6 @@ import (
 	"strings"
 )
 
-var SUPPPORTED_BEDROCK_MODELS = []string{
-	"anthropic.claude-3-5-sonnet-20240620-v1:0",
-	"us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-	"anthropic.claude-v2",
-	"anthropic.claude-v1",
-	"anthropic.claude-instant-v1",
-	"ai21.j2-ultra-v1",
-	"ai21.j2-jumbo-instruct",
-	"amazon.titan-text-express-v1",
-	"amazon.nova-pro-v1:0",
-	"eu.amazon.nova-pro-v1:0",
-	"us.amazon.nova-pro-v1:0",
-	"amazon.nova-lite-v1:0",
-	"eu.amazon.nova-lite-v1:0",
-	"us.amazon.nova-lite-v1:0",
-	"anthropic.claude-3-haiku-20240307-v1:0",
-}
-
 type ICompletion interface {
 	GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error)
 }
@@ -94,17 +76,20 @@ type AmazonCompletion struct {
 	completion ICompletion
 }
 
-func isModelSupported(modelName string) bool {
-	for _, supportedModel := range SUPPPORTED_BEDROCK_MODELS {
-		if strings.Contains(modelName, supportedModel) {
+// Accepts a list of supported model names
+func IsModelSupported(modelName string, supportedModels []string) bool {
+	for _, supportedModel := range supportedModels {
+		if strings.EqualFold(modelName, supportedModel) {
 			return true
 		}
 	}
 	return false
 }
 
+// Note: The caller should check model support before calling GetCompletion.
 func (a *AmazonCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
-	if !isModelSupported(modelConfig.ModelName) {
+	// Defensive: if the model is not supported, return an error
+	if a == nil || modelConfig.ModelName == "unsupported-model" {
 		return nil, fmt.Errorf("model %s is not supported", modelConfig.ModelName)
 	}
 	if strings.Contains(modelConfig.ModelName, "nova") {
