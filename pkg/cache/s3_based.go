@@ -28,7 +28,7 @@ type S3CacheConfiguration struct {
 
 func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if cacheInfo.S3.BucketName == "" {
-		return errors.New("Bucket name not configured")
+		return errors.New("bucket name not configured")
 	}
 	s.bucketName = cacheInfo.S3.BucketName
 
@@ -39,7 +39,7 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 		},
 	})
 	if err != nil {
-		return errors.New("Failed to create AWS session. Please check your AWS credentials and configuration: " + err.Error())
+		return errors.New("failed to create AWS session; please check your AWS credentials and configuration: " + err.Error())
 	}
 	if cacheInfo.S3.Endpoint != "" {
 		sess.Config.Endpoint = &cacheInfo.S3.Endpoint
@@ -60,7 +60,7 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if err != nil {
 		// Check for AWS credentials error
 		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
-			return errors.New("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config.")
+			return errors.New("aws credentials are invalid or missing; please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config")
 		}
 		_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 			Bucket: aws.String(cacheInfo.S3.BucketName),
