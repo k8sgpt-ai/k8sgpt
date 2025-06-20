@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.19](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.18...v0.4.19) (2025-06-20)
+
+
+### Features
+
+* fixed haiku ([#1530](https://github.com/k8sgpt-ai/k8sgpt/issues/1530)) ([5636515](https://github.com/k8sgpt-ai/k8sgpt/commit/5636515db98b529689a214af5066d50b5e42d3a1))
+
 ## [0.4.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.17...v0.4.18) (2025-06-20)
 
 
