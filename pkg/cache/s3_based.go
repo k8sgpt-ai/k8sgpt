@@ -3,8 +3,9 @@ package cache
 import (
 	"bytes"
 	"crypto/tls"
-	"log"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -27,16 +28,19 @@ type S3CacheConfiguration struct {
 
 func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if cacheInfo.S3.BucketName == "" {
-		log.Fatal("Bucket name not configured")
+		return errors.New("Bucket name not configured")
 	}
 	s.bucketName = cacheInfo.S3.BucketName
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
+	sess, err := session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 		Config: aws.Config{
 			Region: aws.String(cacheInfo.S3.Region),
 		},
-	}))
+	})
+	if err != nil {
+		return errors.New("Failed to create AWS session. Please check your AWS credentials and configuration: " + err.Error())
+	}
 	if cacheInfo.S3.Endpoint != "" {
 		sess.Config.Endpoint = &cacheInfo.S3.Endpoint
 		sess.Config.S3ForcePathStyle = aws.Bool(true)
@@ -50,10 +54,14 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	s3Client := s3.New(sess)
 
 	// Check if the bucket exists, if not create it
-	_, err := s3Client.HeadBucket(&s3.HeadBucketInput{
+	_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
 		Bucket: aws.String(cacheInfo.S3.BucketName),
 	})
 	if err != nil {
+		// Check for AWS credentials error
+		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+			return errors.New("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config.")
+		}
 		_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 			Bucket: aws.String(cacheInfo.S3.BucketName),
 		})
