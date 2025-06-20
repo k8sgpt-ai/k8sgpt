@@ -187,7 +187,11 @@ func TestAmazonCompletion_GetCompletion_Inference_Profile(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_isModelSupported(t *testing.T) {
-	assert.True(t, isModelSupported("anthropic.claude-v2"))
-	assert.False(t, isModelSupported("unsupported-model"))
+func TestIsModelSupported(t *testing.T) {
+	supported := []string{
+		"anthropic.claude-v2",
+		"anthropic.claude-v1",
+	}
+	assert.True(t, IsModelSupported("anthropic.claude-v2", supported))
+	assert.False(t, IsModelSupported("unsupported-model", supported))
 }

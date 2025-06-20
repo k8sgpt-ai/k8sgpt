@@ -143,7 +143,7 @@ func TestGetModelFromString(t *testing.T) {
 			name:      "partial model name match",
 			model:     "claude-3-5-sonnet",
 			wantModel: "anthropic.claude-3-5-sonnet-20240620-v1:0",
-			wantErr:   false,
+			wantErr:   true,
 		},
 		{
 			name:      "model name with different version",
