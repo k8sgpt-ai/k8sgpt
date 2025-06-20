@@ -47,57 +47,54 @@ var testModels = []bedrock_support.BedrockModel{
 func TestBedrockModelConfig(t *testing.T) {
 	client := &AmazonBedRockClient{models: testModels}
 
-	foundModel, err := client.getModelFromString("arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
-	assert.Nil(t, err, "Error should be nil")
-	assert.Equal(t, foundModel.Config.MaxTokens, 100)
-	assert.Equal(t, foundModel.Config.Temperature, float32(0.5))
-	assert.Equal(t, foundModel.Config.TopP, float32(0.9))
-	assert.Equal(t, foundModel.Config.ModelName, "arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
+	// Should return error for ARN input (no exact match)
+	_, err := client.getModelFromString("arn:aws:bedrock:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
+	assert.NotNil(t, err, "Should return error for ARN input")
 }
 
 func TestBedrockInvalidModel(t *testing.T) {
 	client := &AmazonBedRockClient{models: testModels}
 
-	foundModel, err := client.getModelFromString("arn:aws:s3:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
-	assert.Nil(t, err, "Error should be nil")
-	assert.Equal(t, foundModel.Config.MaxTokens, 100)
+	// Should return error for invalid model name
+	_, err := client.getModelFromString("arn:aws:s3:us-east-1:*:inference-policy/anthropic.claude-3-5-sonnet-20240620-v1:0")
+	assert.NotNil(t, err, "Should return error for invalid model name")
 }
 
 func TestBedrockInferenceProfileARN(t *testing.T) {
 	// Create a mock client with test models
 	client := &AmazonBedRockClient{models: testModels}
-	
+
 	// Test with a valid inference profile ARN
 	inferenceProfileARN := "arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-profile"
 	config := AIProvider{
 		Model:          inferenceProfileARN,
 		ProviderRegion: "us-east-1",
 	}
-	
+
 	// This will fail in a real environment without mocks, but we're just testing the validation logic
 	err := client.Configure(&config)
 	// We expect an error since we can't actually call AWS in tests
 	assert.NotNil(t, err, "Error should not be nil without AWS mocks")
-	
+
 	// Test with a valid application inference profile ARN
 	appInferenceProfileARN := "arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/my-profile"
 	config = AIProvider{
 		Model:          appInferenceProfileARN,
 		ProviderRegion: "us-east-1",
 	}
-	
+
 	// This will fail in a real environment without mocks, but we're just testing the validation logic
 	err = client.Configure(&config)
 	// We expect an error since we can't actually call AWS in tests
 	assert.NotNil(t, err, "Error should not be nil without AWS mocks")
-	
+
 	// Test with an invalid inference profile ARN format
 	invalidARN := "arn:aws:bedrock:us-east-1:123456789012:invalid-resource/my-profile"
 	config = AIProvider{
 		Model:          invalidARN,
 		ProviderRegion: "us-east-1",
 	}
-	
+
 	err = client.Configure(&config)
 	assert.NotNil(t, err, "Error should not be nil for invalid inference profile ARN format")
 }
