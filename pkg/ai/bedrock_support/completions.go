@@ -88,9 +88,8 @@ func IsModelSupported(modelName string, supportedModels []string) bool {
 
 // Note: The caller should check model support before calling GetCompletion.
 func (a *AmazonCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
-	// Defensive: if the model is not supported, return an error
-	if a == nil || modelConfig.ModelName == "unsupported-model" {
-		return nil, fmt.Errorf("model %s is not supported", modelConfig.ModelName)
+	if a == nil || modelConfig.ModelName == "" {
+		return nil, fmt.Errorf("no model name provided to Bedrock completion")
 	}
 	if strings.Contains(modelConfig.ModelName, "nova") {
 		return a.GetNovaCompletion(ctx, prompt, modelConfig)
@@ -113,7 +112,6 @@ func (a *AmazonCompletion) GetDefaultCompletion(ctx context.Context, prompt stri
 		return []byte{}, err
 	}
 	return body, nil
-
 }
 
 func (a *AmazonCompletion) GetNovaCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
