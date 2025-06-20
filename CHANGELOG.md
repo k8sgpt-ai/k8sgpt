@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.19...v0.4.20) (2025-06-20)
+
+
+### Features
+
+* added cache purge ([#1532](https://github.com/k8sgpt-ai/k8sgpt/issues/1532)) ([74fbde0](https://github.com/k8sgpt-ai/k8sgpt/commit/74fbde00537e627c408b317ff9098227be11e2ad))
+
+
+### Other
+
+* model name ([#1535](https://github.com/k8sgpt-ai/k8sgpt/issues/1535)) ([0f700f0](https://github.com/k8sgpt-ai/k8sgpt/commit/0f700f0cd39bf5881d6c05240b842f4df7a6c016))
+
 ## [0.4.19](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.18...v0.4.19) (2025-06-20)
 
 
