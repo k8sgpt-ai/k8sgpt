@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.20...v0.4.21) (2025-06-27)
+
+
+### Features
+
+* add latest and legacy stable models ([#1539](https://github.com/k8sgpt-ai/k8sgpt/issues/1539)) ([00c0799](https://github.com/k8sgpt-ai/k8sgpt/commit/00c07999e2290e70a6ecb95b255b4924f55ecd5f))
+* support for claude4 && model names listed ([#1540](https://github.com/k8sgpt-ai/k8sgpt/issues/1540)) ([8002d94](https://github.com/k8sgpt-ai/k8sgpt/commit/8002d943453aac8c3675d7072b25dfdc3aec1c1d))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1511](https://github.com/k8sgpt-ai/k8sgpt/issues/1511)) ([08f2855](https://github.com/k8sgpt-ai/k8sgpt/commit/08f2855a4d7e61f3422cb68b0966272a85f617a5))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to e468171 ([#1527](https://github.com/k8sgpt-ai/k8sgpt/issues/1527)) ([0c917fc](https://github.com/k8sgpt-ai/k8sgpt/commit/0c917fc60115ef0dc775e858a55964382b20c5e1))
+
 ## [0.4.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.19...v0.4.20) (2025-06-20)
 
 
