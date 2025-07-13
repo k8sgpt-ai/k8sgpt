@@ -41,13 +41,18 @@ type MCPServer struct {
 
 // NewMCPServer creates a new MCP server
 func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*MCPServer, error) {
+	opts := []mcp_golang.ServerOptions{
+		mcp_golang.WithName("k8sgpt"),
+		mcp_golang.WithVersion("0.0.1"),
+	}
+
 	var server *mcp_golang.Server
 	if useHTTP {
 		logger.Info("starting MCP server with http transport on port", zap.String("port", port))
 		httpTransport := mcp_http.NewHTTPTransport("/mcp").WithAddr(":" + port)
-		server = mcp_golang.NewServer(httpTransport)
+		server = mcp_golang.NewServer(httpTransport, opts...)
 	} else {
-		server = mcp_golang.NewServer(stdio.NewStdioServerTransport())
+		server = mcp_golang.NewServer(stdio.NewStdioServerTransport(), opts...)
 	}
 
 	return &MCPServer{
