@@ -95,7 +95,18 @@ var defaultModels = []bedrock_support.BedrockModel{
 			ModelName:   "eu.anthropic.claude-sonnet-4-20250514-v1:0",
 		},
 	},
-
+	{
+		Name:       "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
 	{
 		Name:       "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		Completion: &bedrock_support.CohereMessagesCompletion{},
@@ -118,6 +129,18 @@ var defaultModels = []bedrock_support.BedrockModel{
 			Temperature: 0.5,
 			TopP:        0.9,
 			ModelName:   "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		},
+	},
+	{
+		Name:       "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		},
 	},
 	{
