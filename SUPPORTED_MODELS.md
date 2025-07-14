@@ -29,8 +29,10 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
   - anthropic.claude-sonnet-4-20250514-v1:0
   - us.anthropic.claude-sonnet-4-20250514-v1:0
   - eu.anthropic.claude-sonnet-4-20250514-v1:0
+  - apac.anthropic.claude-sonnet-4-20250514-v1:0
   - us.anthropic.claude-3-7-sonnet-20250219-v1:0
   - eu.anthropic.claude-3-7-sonnet-20250219-v1:0
+  - apac.anthropic.claude-3-7-sonnet-20250219-v1:0
   - anthropic.claude-3-5-sonnet-20240620-v1:0
   - us.anthropic.claude-3-5-sonnet-20241022-v2:0
   - anthropic.claude-v2
