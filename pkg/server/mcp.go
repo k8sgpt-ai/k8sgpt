@@ -43,7 +43,7 @@ type MCPServer struct {
 func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*MCPServer, error) {
 	opts := []mcp_golang.ServerOptions{
 		mcp_golang.WithName("k8sgpt"),
-		mcp_golang.WithVersion("0.0.1"),
+		mcp_golang.WithVersion("1.0.0"),
 	}
 
 	var server *mcp_golang.Server
