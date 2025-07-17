@@ -17,7 +17,12 @@ import (
 
 func TestServe(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			t.Logf("logger.Sync() error: %v", err)
+		}
+	}()
 
 	s := &Config{
 		Port:       "50059",
@@ -55,7 +60,12 @@ func TestServe(t *testing.T) {
 // TestMCPServerCreation tests the creation of an MCP server
 func TestMCPServerCreation(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			t.Logf("logger.Sync() error: %v", err)
+		}
+	}()
 
 	aiProvider := &ai.AIProvider{
 		Name:     "test-provider",
@@ -80,7 +90,12 @@ func TestMCPServerCreation(t *testing.T) {
 // TestMCPServerBasicHTTP tests basic HTTP connectivity to the MCP server
 func TestMCPServerBasicHTTP(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			t.Logf("logger.Sync() error: %v", err)
+		}
+	}()
 
 	aiProvider := &ai.AIProvider{
 		Name:     "test-provider",
@@ -113,7 +128,12 @@ func TestMCPServerBasicHTTP(t *testing.T) {
 		t.Logf("MCP endpoint test skipped (server might not be fully ready): %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			t.Logf("resp.Body.Close() error: %v", err)
+		}
+	}()
 
 	// Accept both 200 and 404 as valid responses (404 means endpoint not implemented)
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
@@ -128,7 +148,12 @@ func TestMCPServerBasicHTTP(t *testing.T) {
 // TestMCPServerToolCall tests calling a specific tool (analyze) through the MCP server
 func TestMCPServerToolCall(t *testing.T) {
 	logger, _ := zap.NewDevelopment()
-	defer logger.Sync()
+	defer func() {
+		err := logger.Sync()
+		if err != nil {
+			t.Logf("logger.Sync() error: %v", err)
+		}
+	}()
 
 	aiProvider := &ai.AIProvider{
 		Name:     "test-provider",
@@ -175,7 +200,12 @@ func TestMCPServerToolCall(t *testing.T) {
 		t.Logf("Analyze tool call test skipped (server might not be fully ready): %v", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			t.Logf("resp.Body.Close() error: %v", err)
+		}
+	}()
 
 	// Accept both 200 and 404 as valid responses
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
