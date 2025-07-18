@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -25,6 +24,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
 	mcp_golang "github.com/metoro-io/mcp-golang"
+	mcp_http "github.com/metoro-io/mcp-golang/transport/http"
 	"github.com/metoro-io/mcp-golang/transport/stdio"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -41,10 +41,19 @@ type MCPServer struct {
 
 // NewMCPServer creates a new MCP server
 func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*MCPServer, error) {
-	// Create MCP server with stdio transport
-	transport := stdio.NewStdioServerTransport()
+	opts := []mcp_golang.ServerOptions{
+		mcp_golang.WithName("k8sgpt"),
+		mcp_golang.WithVersion("1.0.0"),
+	}
 
-	server := mcp_golang.NewServer(transport)
+	var server *mcp_golang.Server
+	if useHTTP {
+		logger.Info("starting MCP server with http transport on port", zap.String("port", port))
+		httpTransport := mcp_http.NewHTTPTransport("/mcp").WithAddr(":" + port)
+		server = mcp_golang.NewServer(httpTransport, opts...)
+	} else {
+		server = mcp_golang.NewServer(stdio.NewStdioServerTransport(), opts...)
+	}
 
 	return &MCPServer{
 		server:     server,
@@ -86,20 +95,11 @@ func (s *MCPServer) Start() error {
 		return fmt.Errorf("failed to register prompts: %v", err)
 	}
 
-	if s.useHTTP {
-		// Start HTTP server
-		go func() {
-			http.HandleFunc("/mcp/analyze", s.handleAnalyzeHTTP)
-			http.HandleFunc("/mcp", s.handleSSE)
-			s.logger.Info("Starting MCP server on port", zap.String("port", s.port))
-			if err := http.ListenAndServe(fmt.Sprintf(":%s", s.port), nil); err != nil {
-				s.logger.Error("Error starting HTTP server", zap.Error(err))
-			}
-		}()
+	// Start the server (this will block)
+	if err := s.server.Serve(); err != nil {
+		s.logger.Error("Error starting MCP server", zap.Error(err))
 	}
-
-	// Start the server
-	return s.server.Serve()
+	return nil
 }
 
 // AnalyzeRequest represents the input parameters for the analyze tool
@@ -327,7 +327,7 @@ func (s *MCPServer) registerResources() error {
 	return nil
 }
 
-func (s *MCPServer) getClusterInfo(ctx context.Context) (interface{}, error) {
+func (s *MCPServer) getClusterInfo(ctx context.Context) (*mcp_golang.ResourceResponse, error) {
 	// Create a new Kubernetes client
 	client, err := kubernetes.NewClient("", "")
 	if err != nil {
@@ -340,74 +340,27 @@ func (s *MCPServer) getClusterInfo(ctx context.Context) (interface{}, error) {
 		return nil, fmt.Errorf("failed to get cluster version: %v", err)
 	}
 
-	return map[string]string{
+	data, err := json.Marshal(map[string]string{
 		"version":    version.String(),
 		"platform":   version.Platform,
 		"gitVersion": version.GitVersion,
-	}, nil
-}
-
-// handleSSE handles Server-Sent Events for MCP
-func (s *MCPServer) handleSSE(w http.ResponseWriter, r *http.Request) {
-	// Set headers for SSE
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	// Create a channel to receive messages
-	msgChan := make(chan string)
-	defer close(msgChan)
-
-	// Start a goroutine to handle the stdio transport
-	go func() {
-		// TODO: Implement message handling between HTTP and stdio transport
-		// This would require implementing a custom transport that bridges HTTP and stdio
-
-	}()
-
-	// Send messages to the client
-	for msg := range msgChan {
-		if _, err := fmt.Fprintf(w, "data: %s\n\n", msg); err != nil {
-			s.logger.Error("Failed to write SSE message", zap.Error(err))
-			return
-		}
-		w.(http.Flusher).Flush()
-	}
-}
-
-// handleAnalyzeHTTP handles HTTP requests for the analyze endpoint
-func (s *MCPServer) handleAnalyzeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Parse the request body
-	var req AnalyzeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, fmt.Sprintf("Failed to decode request: %v", err), http.StatusBadRequest)
-		return
-	}
-
-	// Validate MaxConcurrency to prevent excessive memory allocation
-	req.MaxConcurrency = validateMaxConcurrency(req.MaxConcurrency)
-
-	// Call the analyze handler
-	resp, err := s.handleAnalyze(r.Context(), &req)
+	})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to analyze: %v", err), http.StatusInternalServerError)
-		return
+		return mcp_golang.NewResourceResponse(
+			mcp_golang.NewTextEmbeddedResource(
+				"cluster-info",
+				"Failed to marshal cluster info",
+				"text/plain",
+			),
+		), nil
 	}
-
-	// Set response headers
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	// Write the response
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		s.logger.Error("Failed to encode response", zap.Error(err))
-	}
+	return mcp_golang.NewResourceResponse(
+		mcp_golang.NewTextEmbeddedResource(
+			"cluster-info",
+			string(data),
+			"application/json",
+		),
+	), nil
 }
 
 // Close closes the MCP server and releases resources
