@@ -58,6 +58,55 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 }
 
 var defaultModels = []bedrock_support.BedrockModel{
+
+	{
+		Name:       "anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "us.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
 	{
 		Name:       "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		Completion: &bedrock_support.CohereMessagesCompletion{},
@@ -80,6 +129,18 @@ var defaultModels = []bedrock_support.BedrockModel{
 			Temperature: 0.5,
 			TopP:        0.9,
 			ModelName:   "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		},
+	},
+	{
+		Name:       "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		},
 	},
 	{
@@ -255,13 +316,14 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-3-haiku-20240307-v1:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			// sensible defaults
 			MaxTokens:   100,
 			Temperature: 0.5,
 			TopP:        0.9,
+			ModelName:   "anthropic.claude-3-haiku-20240307-v1:0",
 		},
 	},
 }
@@ -311,7 +373,6 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 
 	// Trim spaces from the model name
 	model = strings.TrimSpace(model)
-	modelLower := strings.ToLower(model)
 
 	// Try to find an exact match first
 	for i := range a.models {
@@ -322,26 +383,27 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 		}
 	}
 
-	// If no exact match, try partial match
-	for i := range a.models {
-		modelNameLower := strings.ToLower(a.models[i].Name)
-		modelConfigNameLower := strings.ToLower(a.models[i].Config.ModelName)
-
-		// Check if the input string contains the model name or vice versa
-		if strings.Contains(modelNameLower, modelLower) || strings.Contains(modelLower, modelNameLower) ||
-			strings.Contains(modelConfigNameLower, modelLower) || strings.Contains(modelLower, modelConfigNameLower) {
-			// Create a copy to avoid returning a pointer to a loop variable
-			modelCopy := a.models[i]
-			// for partial match, set the model name to the input string if it is a valid ARN
-			if validateModelArn(modelLower) {
-				modelCopy.Config.ModelName = modelLower
-			}
-
-			return &modelCopy, nil
-		}
+	supportedModels := make([]string, len(a.models))
+	for i, m := range a.models {
+		supportedModels[i] = m.Name
 	}
 
-	return nil, fmt.Errorf("model '%s' not found in supported models", model)
+	supportedRegions := BEDROCKER_SUPPORTED_REGION
+
+	// Pretty-print supported models and regions
+	modelList := ""
+	for _, m := range supportedModels {
+		modelList += "  - " + m + "\n"
+	}
+	regionList := ""
+	for _, r := range supportedRegions {
+		regionList += "  - " + r + "\n"
+	}
+
+	return nil, fmt.Errorf(
+		"model '%s' not found in supported models.\n\nSupported models:\n%sSupported regions:\n%s",
+		model, modelList, regionList,
+	)
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.
@@ -378,6 +440,9 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 			awsconfig.WithRegion(region),
 		)
 		if err != nil {
+			if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+				return fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+			}
 			return fmt.Errorf("failed to load AWS config for region %s: %w", region, err)
 		}
 
@@ -415,7 +480,7 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 		// Regular model ID provided
 		foundModel, err := a.getModelFromString(modelInput)
 		if err != nil {
-			return err
+			return fmt.Errorf("model '%s' is not supported: %v", modelInput, err)
 		}
 		a.model = foundModel
 		a.model.Config.ModelName = foundModel.Config.ModelName
@@ -490,6 +555,21 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	a.model.Config.Temperature = a.temperature
 	a.model.Config.TopP = a.topP
 
+	supportedModels := make([]string, len(a.models))
+	for i, m := range a.models {
+		supportedModels[i] = m.Name
+	}
+
+	if !bedrock_support.IsModelSupported(a.model.Config.ModelName, supportedModels) {
+		return "", fmt.Errorf("model '%s' is not supported.\nSupported models:\n%s", a.model.Config.ModelName, func() string {
+			s := ""
+			for _, m := range supportedModels {
+				s += "  - " + m + "\n"
+			}
+			return s
+		}())
+	}
+
 	body, err := a.model.Completion.GetCompletion(ctx, prompt, a.model.Config)
 	if err != nil {
 		return "", err
@@ -506,6 +586,9 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	// Invoke the model
 	resp, err := a.client.InvokeModel(ctx, params)
 	if err != nil {
+		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+			return "", fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+		}
 		return "", err
 	}
 

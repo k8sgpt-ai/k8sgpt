@@ -23,23 +23,51 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var all bool
+
 var purgeCmd = &cobra.Command{
 	Use:   "purge [object name]",
 	Short: "Purge a remote cache",
-	Long:  "This command allows you to delete/purge one object from the cache",
+	Long:  "This command allows you to delete/purge one object from the cache or all objects with --all flag.",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			color.Red("Error: Please provide a value for object name. Run k8sgpt cache purge --help")
-			os.Exit(1)
-		}
-		objectKey := args[0]
-		fmt.Println(color.YellowString("Purging a remote cache."))
 		c, err := cache.GetCacheConfiguration()
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 
+		if all {
+			fmt.Println(color.YellowString("Purging all objects from the remote cache."))
+			names, err := c.List()
+			if err != nil {
+				color.Red("Error listing cache objects: %v", err)
+				os.Exit(1)
+			}
+			if len(names) == 0 {
+				fmt.Println(color.GreenString("No objects to delete."))
+				return
+			}
+			var failed []string
+			for _, obj := range names {
+				err := c.Remove(obj.Name)
+				if err != nil {
+					failed = append(failed, obj.Name)
+				}
+			}
+			if len(failed) > 0 {
+				color.Red("Failed to delete: %v", failed)
+				os.Exit(1)
+			}
+			fmt.Println(color.GreenString("All objects deleted."))
+			return
+		}
+
+		if len(args) == 0 {
+			color.Red("Error: Please provide a value for object name or use --all. Run k8sgpt cache purge --help")
+			os.Exit(1)
+		}
+		objectKey := args[0]
+		fmt.Println(color.YellowString("Purging a remote cache."))
 		err = c.Remove(objectKey)
 		if err != nil {
 			color.Red("Error: %v", err)
@@ -50,5 +78,6 @@ var purgeCmd = &cobra.Command{
 }
 
 func init() {
+	purgeCmd.Flags().BoolVar(&all, "all", false, "Purge all objects in the cache")
 	CacheCmd.AddCommand(purgeCmd)
 }

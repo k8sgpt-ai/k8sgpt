@@ -1,5 +1,68 @@
 # Changelog
 
+## [0.4.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.21...v0.4.22) (2025-07-18)
+
+
+### Features
+
+* add APAC region Claude models support for Amazon Bedrock ([#1543](https://github.com/k8sgpt-ai/k8sgpt/issues/1543)) ([1819e6f](https://github.com/k8sgpt-ai/k8sgpt/commit/1819e6f410d078fce2bda8bbdb22054dfb4fc092))
+* add streamable-http support for MCP server ([#1546](https://github.com/k8sgpt-ai/k8sgpt/issues/1546)) ([3a1187a](https://github.com/k8sgpt-ai/k8sgpt/commit/3a1187ad5a190713b9216cf6d9d52d54cdb3e4da))
+
+## [0.4.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.20...v0.4.21) (2025-06-27)
+
+
+### Features
+
+* add latest and legacy stable models ([#1539](https://github.com/k8sgpt-ai/k8sgpt/issues/1539)) ([00c0799](https://github.com/k8sgpt-ai/k8sgpt/commit/00c07999e2290e70a6ecb95b255b4924f55ecd5f))
+* support for claude4 && model names listed ([#1540](https://github.com/k8sgpt-ai/k8sgpt/issues/1540)) ([8002d94](https://github.com/k8sgpt-ai/k8sgpt/commit/8002d943453aac8c3675d7072b25dfdc3aec1c1d))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1511](https://github.com/k8sgpt-ai/k8sgpt/issues/1511)) ([08f2855](https://github.com/k8sgpt-ai/k8sgpt/commit/08f2855a4d7e61f3422cb68b0966272a85f617a5))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to e468171 ([#1527](https://github.com/k8sgpt-ai/k8sgpt/issues/1527)) ([0c917fc](https://github.com/k8sgpt-ai/k8sgpt/commit/0c917fc60115ef0dc775e858a55964382b20c5e1))
+
+## [0.4.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.19...v0.4.20) (2025-06-20)
+
+
+### Features
+
+* added cache purge ([#1532](https://github.com/k8sgpt-ai/k8sgpt/issues/1532)) ([74fbde0](https://github.com/k8sgpt-ai/k8sgpt/commit/74fbde00537e627c408b317ff9098227be11e2ad))
+
+
+### Other
+
+* model name ([#1535](https://github.com/k8sgpt-ai/k8sgpt/issues/1535)) ([0f700f0](https://github.com/k8sgpt-ai/k8sgpt/commit/0f700f0cd39bf5881d6c05240b842f4df7a6c016))
+
+## [0.4.19](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.18...v0.4.19) (2025-06-20)
+
+
+### Features
+
+* fixed haiku ([#1530](https://github.com/k8sgpt-ai/k8sgpt/issues/1530)) ([5636515](https://github.com/k8sgpt-ai/k8sgpt/commit/5636515db98b529689a214af5066d50b5e42d3a1))
+
+## [0.4.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.17...v0.4.18) (2025-06-20)
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 4c0f3b2 ([#1523](https://github.com/k8sgpt-ai/k8sgpt/issues/1523)) ([7d4cb26](https://github.com/k8sgpt-ai/k8sgpt/commit/7d4cb267130f60088350213482795f37594cb0bc))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1509](https://github.com/k8sgpt-ai/k8sgpt/issues/1509)) ([d7cb19a](https://github.com/k8sgpt-ai/k8sgpt/commit/d7cb19ad29c92eaba552ba723945c937fc3c42da))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 18283e0 ([#1513](https://github.com/k8sgpt-ai/k8sgpt/issues/1513)) ([42654e7](https://github.com/k8sgpt-ai/k8sgpt/commit/42654e7f55d7a9e9be5b664adaaa8979106e7298))
+* **deps:** update docker/build-push-action digest to 1dc7386 ([#1512](https://github.com/k8sgpt-ai/k8sgpt/issues/1512)) ([dfcc5dc](https://github.com/k8sgpt-ai/k8sgpt/commit/dfcc5dc5a15a3d59a7f6317944784e3ecd86fb50))
+* **deps:** update docker/build-push-action digest to 2634353 ([#1517](https://github.com/k8sgpt-ai/k8sgpt/issues/1517)) ([7dfe8be](https://github.com/k8sgpt-ai/k8sgpt/commit/7dfe8bef0face65f607475a6620923fdfed57961))
+* **deps:** update softprops/action-gh-release digest to 72f2c25 ([#1526](https://github.com/k8sgpt-ai/k8sgpt/issues/1526)) ([5947876](https://github.com/k8sgpt-ai/k8sgpt/commit/5947876e4942729eea883937faf5e2b47d1f16ec))
+* **deps:** update softprops/action-gh-release digest to d5382d3 ([#1525](https://github.com/k8sgpt-ai/k8sgpt/issues/1525)) ([6b9f346](https://github.com/k8sgpt-ai/k8sgpt/commit/6b9f346bf668ed3517b23b99000611ea14afafe2))
+* model access ([#1529](https://github.com/k8sgpt-ai/k8sgpt/issues/1529)) ([be4fb1c](https://github.com/k8sgpt-ai/k8sgpt/commit/be4fb1cc034d9c3843cf3e9912a26e05bd54c146))
+
 ## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-14)
 
 
