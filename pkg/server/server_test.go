@@ -42,7 +42,11 @@ func TestServe(t *testing.T) {
 
 	conn, err := grpc.Dial("localhost:50059", grpc.WithInsecure())
 	assert.NoError(t, err, "Should be able to dial the server")
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			t.Logf("failed to close connection: %v", err)
+		}
+	}()
 
 	// Test a simple gRPC reflection request
 	cli := grpc_reflection_v1alpha.NewServerReflectionClient(conn)
@@ -222,7 +226,7 @@ func waitForPort(address string, timeout time.Duration) error {
 	for {
 		conn, err := net.Dial("tcp", address)
 		if err == nil {
-			conn.Close()
+			_ = conn.Close()
 			return nil
 		}
 		if time.Since(start) > timeout {
