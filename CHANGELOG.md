@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.21...v0.4.22) (2025-07-18)
+
+
+### Features
+
+* add APAC region Claude models support for Amazon Bedrock ([#1543](https://github.com/k8sgpt-ai/k8sgpt/issues/1543)) ([1819e6f](https://github.com/k8sgpt-ai/k8sgpt/commit/1819e6f410d078fce2bda8bbdb22054dfb4fc092))
+* add streamable-http support for MCP server ([#1546](https://github.com/k8sgpt-ai/k8sgpt/issues/1546)) ([3a1187a](https://github.com/k8sgpt-ai/k8sgpt/commit/3a1187ad5a190713b9216cf6d9d52d54cdb3e4da))
+
 ## [0.4.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.20...v0.4.21) (2025-06-27)
 
 
