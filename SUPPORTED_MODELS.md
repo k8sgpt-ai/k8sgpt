@@ -49,6 +49,9 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
   - us.amazon.nova-lite-v1:0
   - anthropic.claude-3-haiku-20240307-v1:0
 
+> **Note:**
+> If you use an AWS Bedrock inference profile ARN (e.g., `arn:aws:bedrock:us-east-1:<account>:application-inference-profile/<id>`) as the model, you must still provide a valid modelId (e.g., `anthropic.claude-3-sonnet-20240229-v1:0`). K8sGPT will automatically set the required `X-Amzn-Bedrock-Inference-Profile-ARN` header for you when making requests to Bedrock.
+
 ### Amazon SageMaker
 - **Model:** User-configurable (any model deployed in your SageMaker endpoint)
 

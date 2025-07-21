@@ -14,6 +14,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/aws/smithy-go/middleware"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 const amazonbedrockAIClientName = "amazonbedrock"
@@ -583,8 +585,30 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 		Accept:      aws.String("application/json"),
 	}
 
+	// Detect if the model name is an inference profile ARN and set the header if so
+	var optFns []func(*bedrockruntime.Options)
+	if validateInferenceProfileArn(a.model.Config.ModelName) {
+		inferenceProfileArn := a.model.Config.ModelName
+		optFns = append(optFns, func(options *bedrockruntime.Options) {
+			options.APIOptions = append(options.APIOptions, func(stack *middleware.Stack) error {
+				return stack.Initialize.Add(middleware.InitializeMiddlewareFunc("InferenceProfileHeader", func(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (out middleware.InitializeOutput, metadata middleware.Metadata, err error) {
+					req, ok := in.Parameters.(*smithyhttp.Request)
+					if ok {
+						req.Header.Set("X-Amzn-Bedrock-Inference-Profile-ARN", inferenceProfileArn)
+					}
+					return next.HandleInitialize(ctx, in)
+				}), middleware.Before)
+			})
+		})
+	}
+
 	// Invoke the model
-	resp, err := a.client.InvokeModel(ctx, params)
+	var resp *bedrockruntime.InvokeModelOutput
+	if len(optFns) > 0 {
+		resp, err = a.client.InvokeModel(ctx, params, optFns...)
+	} else {
+		resp, err = a.client.InvokeModel(ctx, params)
+	}
 	if err != nil {
 		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
 			return "", fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
