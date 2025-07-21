@@ -76,6 +76,10 @@ func (m *mockConfig) GetProviderRegion() string {
 	return ""
 }
 
+func (m *mockConfig) GetKnowledgeBase() string {
+	return ""
+}
+
 func TestOpenAIClient_CustomHeaders(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "Value1", r.Header.Get("X-Custom-Header-1"))
