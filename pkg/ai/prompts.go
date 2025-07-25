@@ -1,52 +1,56 @@
 package ai
 
 const (
-	default_prompt = `Simplify the following Kubernetes error message delimited by triple dashes written in --- %s --- language; --- %s ---.
-	Provide the most possible solution in a step by step style in no more than 280 characters. Write the output in the following format:
-	Error: {Explain error here}
-	Solution: {Step by step solution here}
-	`
+    // Prompt para erros genéricos do Kubernetes (ex: ImagePullBackOff)
+    default_prompt = `Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---.
+    Forneça a solução mais provável em um estilo passo a passo em não mais que 280 caracteres. Escreva a saída no seguinte formato:
+    Error: {Explique o erro aqui}
+    Solution: {Solução passo a passo aqui}
+    `
 
-	prom_conf_prompt = `Simplify the following Prometheus error message delimited by triple dashes written in --- %s --- language; --- %s ---.
-	This error came when validating the Prometheus configuration file.
-	Provide step by step instructions to fix, with suggestions, referencing Prometheus documentation if relevant.
-	Write the output in the following format in no more than 300 characters:
-	Error: {Explain error here}
-	Solution: {Step by step solution here}
-	`
+	// Prompt para erros de configuração do Prometheus
+    prom_conf_prompt = `Simplifique a seguinte mensagem de erro do Prometheus delimitada por três traços em português; --- %s ---.
+    Este erro ocorreu ao validar o arquivo de configuração do Prometheus.
+    Forneça instruções passo a passo para corrigir, com sugestões, referenciando a documentação do Prometheus se for relevante.
+    Escreva a saída no seguinte formato, em não mais que 300 caracteres:
+    Error: {Explique o erro aqui}
+    Solution: {Solução passo a passo aqui}
+    `
 
-	prom_relabel_prompt = `
-	Return your prompt in this language: %s, beginning with
-	The following is a list of the form:
-	job_name:
-	{Prometheus job_name}
-	relabel_configs:
-	{Prometheus relabel_configs}
-	kubernetes_sd_configs:
-	{Prometheus service discovery config}
-	---
-	%s
-	---
-	For each job_name, describe the Kubernetes service and pod labels,
-	namespaces, ports, and containers they match.
-	Return the message:
-	Discovered and parsed Prometheus scrape configurations.
-	For targets to be scraped by Prometheus, ensure they are running with
-	at least one of the following label sets:
-	Then for each job, write this format:
-	- Job: {job_name}
-	  - Service Labels:
-	    - {list of service labels}
-	  - Pod Labels:
-	    - {list of pod labels}
-	  - Namespaces:
-	    - {list of namespaces}
-	  - Ports:
-	    - {list of ports}
-	  - Containers:
-	    - {list of container names}
-	`
-
+	// Prompt para relatórios de relabeling do Prometheus
+    prom_relabel_prompt = `
+    Retorne o seu prompt neste idioma: %s, começando com
+    A seguir está uma lista no formato:
+    job_name:
+    {nome_do_job_do_Prometheus}
+    relabel_configs:
+    {configurações de relabeling do Prometheus}
+    kubernetes_sd_configs:
+    {configuração de descoberta de serviço do Kubernetes}
+    ---
+    %s
+    ---
+    Para cada job_name, descreva os labels de serviço e pod do Kubernetes,
+    namespaces, portas e contêineres que eles correspondem.
+    Retorne a mensagem:
+    Configurações de scrape do Prometheus descobertas e analisadas.
+    Para que os alvos sejam scaneados pelo Prometheus, certifique-se de que estão
+    sendo executados com pelo menos um dos seguintes conjuntos de labels:
+    Em seguida, para cada job, escreva neste formato:
+    - Job: {nome_do_job}
+      - Labels de Serviço:
+        - {lista de labels de serviço}
+      - Labels de Pod:
+        - {lista de labels de pod}
+      - Namespaces:
+        - {lista de namespaces}
+      - Portas:
+        - {lista de portas}
+      - Contêineres:
+        - {lista de nomes de contêineres}
+    `
+    
+    // Prompt para avisos do Kyverno
     kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços em português; --- %s ---.
     Forneça a solução mais provável como um comando kubectl.
 
@@ -56,6 +60,8 @@ const (
 
     Solution: {comando kubectl}
     `
+
+    // Prompt de análise genérico em formato JSON (mantenha assim, se necessário para a sua versão)
     raw_promt = `{"language": "portuguese","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---. Forneça a solução mais provável em português."}`
 )
 
