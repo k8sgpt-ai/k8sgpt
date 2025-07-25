@@ -55,8 +55,8 @@ const (
     Error: {Explique o erro aqui}
 
     Solution: {comando kubectl}
-	`
-	raw_promt = `{"language": "%s","message": "%s","prompt": "%s"}`
+    `
+    raw_promt = `{"language": "portuguese","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---. Forneça a solução mais provável em português."}`
 )
 
 var PromptMap = map[string]string{
