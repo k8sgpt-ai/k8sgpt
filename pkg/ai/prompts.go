@@ -61,7 +61,7 @@ const (
     Solution: {comando kubectl}
     `
 
-    // Prompt de análise genérico em formato JSON (mantenha assim, se necessário para a sua versão)
+    // Prompt de análise genérico em formato JSON 
     raw_promt = `{"language": "portuguese","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---. Forneça a solução mais provável em português."}`
 )
 
