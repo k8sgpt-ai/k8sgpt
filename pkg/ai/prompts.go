@@ -47,14 +47,14 @@ const (
 	    - {list of container names}
 	`
 
-	kyverno_prompt = `Simplify the following Kyverno warnings message delimited by triple dashes written in --- %s --- language; --- %s ---.
-	Provide the most probable solution as a kubectl command. 
+	kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços em português; --- %s ---.
+    Forneça a solução mais provável como um comando kubectl.
 
-	Write the output in the following format, for the solution, only show the kubectl command:
-	
-	Error: {Explain error here}
+    Escreva a saída no seguinte formato, para a solução, mostre apenas o comando kubectl:
 
-	Solution: {kubectl command}
+    Error: {Explique o erro aqui}
+
+    Solution: {comando kubectl}
 	`
 	raw_promt = `{"language": "%s","message": "%s","prompt": "%s"}`
 )
