@@ -47,7 +47,7 @@ const (
 	    - {list of container names}
 	`
 
-	kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços em português; --- %s ---.
+    kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços em português; --- %s ---.
     Forneça a solução mais provável como um comando kubectl.
 
     Escreva a saída no seguinte formato, para a solução, mostre apenas o comando kubectl:
