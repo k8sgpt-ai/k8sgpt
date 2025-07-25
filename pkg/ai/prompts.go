@@ -2,14 +2,14 @@ package ai
 
 const (
     // Prompt para erros genéricos do Kubernetes (ex: ImagePullBackOff)
-    default_prompt = `Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---.
+    default_prompt = `Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
     Forneça a solução mais provável em um estilo passo a passo em não mais que 280 caracteres. Escreva a saída no seguinte formato:
     Error: {Explique o erro aqui}
     Solution: {Solução passo a passo aqui}
     `
 
 	// Prompt para erros de configuração do Prometheus
-    prom_conf_prompt = `Simplifique a seguinte mensagem de erro do Prometheus delimitada por três traços em português; --- %s ---.
+    prom_conf_prompt = `Simplifique a seguinte mensagem de erro do Prometheus delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
     Este erro ocorreu ao validar o arquivo de configuração do Prometheus.
     Forneça instruções passo a passo para corrigir, com sugestões, referenciando a documentação do Prometheus se for relevante.
     Escreva a saída no seguinte formato, em não mais que 300 caracteres:
@@ -51,7 +51,7 @@ const (
     `
     
     // Prompt para avisos do Kyverno
-    kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços em português; --- %s ---.
+    kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
     Forneça a solução mais provável como um comando kubectl.
 
     Escreva a saída no seguinte formato, para a solução, mostre apenas o comando kubectl:
@@ -60,9 +60,8 @@ const (
 
     Solution: {comando kubectl}
     `
-
-    // Prompt de análise genérico em formato JSON 
-    raw_promt = `{"language": "portuguese","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços em português; --- %s ---. Forneça a solução mais provável em português."}`
+    // O prompt raw também precisa ser corrigido para corresponder à estrutura
+    raw_promt = `{"language": "%s","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços escrita na linguagem --- %s ---; --- %s ---. Forneça a solução mais provável em português."}`
 )
 
 var PromptMap = map[string]string{
