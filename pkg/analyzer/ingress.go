@@ -64,11 +64,23 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: ing.Namespace,
-							Masked:   util.MaskString(ing.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(ing.Namespace)
+								if err != nil {
+									return ing.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: ing.Name,
-							Masked:   util.MaskString(ing.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(ing.Name)
+								if err != nil {
+									return ing.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -89,7 +101,13 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: *ingressClassName,
-							Masked:   util.MaskString(*ingressClassName),
+							Masked: func() string {
+								masked, err := util.MaskString(*ingressClassName)
+								if err != nil {
+									return *ingressClassName
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -111,11 +129,23 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							Sensitive: []common.Sensitive{
 								{
 									Unmasked: ing.Namespace,
-									Masked:   util.MaskString(ing.Namespace),
+									Masked: func() string {
+										masked, err := util.MaskString(ing.Namespace)
+										if err != nil {
+											return ing.Namespace
+										}
+										return masked
+									}(),
 								},
 								{
 									Unmasked: path.Backend.Service.Name,
-									Masked:   util.MaskString(path.Backend.Service.Name),
+									Masked: func() string {
+										masked, err := util.MaskString(path.Backend.Service.Name)
+										if err != nil {
+											return path.Backend.Service.Name
+										}
+										return masked
+									}(),
 								},
 							},
 						})
@@ -135,11 +165,23 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: ing.Namespace,
-							Masked:   util.MaskString(ing.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(ing.Namespace)
+								if err != nil {
+									return ing.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: tls.SecretName,
-							Masked:   util.MaskString(tls.SecretName),
+							Masked: func() string {
+								masked, err := util.MaskString(tls.SecretName)
+								if err != nil {
+									return tls.SecretName
+								}
+								return masked
+							}(),
 						},
 					},
 				})

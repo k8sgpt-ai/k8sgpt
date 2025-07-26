@@ -65,11 +65,23 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
-							Masked:   util.MaskString(webhookConfig.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(webhookConfig.Namespace)
+								if err != nil {
+									return webhookConfig.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: svc.Name,
-							Masked:   util.MaskString(svc.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(svc.Name)
+								if err != nil {
+									return svc.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -100,7 +112,13 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
-							Masked:   util.MaskString(webhookConfig.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(webhookConfig.Namespace)
+								if err != nil {
+									return webhookConfig.Namespace
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -119,15 +137,33 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: webhookConfig.Namespace,
-								Masked:   util.MaskString(webhookConfig.Namespace),
+								Masked: func() string {
+									masked, err := util.MaskString(webhookConfig.Namespace)
+									if err != nil {
+										return webhookConfig.Namespace
+									}
+									return masked
+								}(),
 							},
 							{
 								Unmasked: webhook.Name,
-								Masked:   util.MaskString(webhook.Name),
+								Masked: func() string {
+									masked, err := util.MaskString(webhook.Name)
+									if err != nil {
+										return webhook.Name
+									}
+									return masked
+								}(),
 							},
 							{
 								Unmasked: pod.Name,
-								Masked:   util.MaskString(pod.Name),
+								Masked: func() string {
+									masked, err := util.MaskString(pod.Name)
+									if err != nil {
+										return pod.Name
+									}
+									return masked
+								}(),
 							},
 						},
 					})

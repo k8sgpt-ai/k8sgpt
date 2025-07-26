@@ -147,17 +147,17 @@ func SliceDiff(source, dest []string) []string {
 	return diff
 }
 
-func MaskString(input string) string {
+func MaskString(input string) (string, error) {
 	key := make([]byte, len(input))
 	result := make([]rune, len(input))
 	_, err := rand.Read(key)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	for i := range result {
 		result[i] = anonymizePattern[int(key[i])%len(anonymizePattern)]
 	}
-	return base64.StdEncoding.EncodeToString([]byte(string(result)))
+	return base64.StdEncoding.EncodeToString([]byte(string(result))), nil
 }
 
 func ReplaceIfMatch(text string, pattern string, replacement string) string {
@@ -268,13 +268,14 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 
 // NewHeaders parses a slice of strings in the format "key:value" into []http.Header
 // It handles headers with the same key by appending values
-func NewHeaders(customHeaders []string) []http.Header {
+func NewHeaders(customHeaders []string) ([]http.Header, error) {
 	headers := make(map[string][]string)
+	var malformed []string
 
 	for _, header := range customHeaders {
 		vals := strings.SplitN(header, ":", 2)
 		if len(vals) != 2 {
-			//TODO: Handle error instead of ignoring it
+			malformed = append(malformed, header)
 			continue
 		}
 		key := strings.TrimSpace(vals[0])
@@ -296,7 +297,10 @@ func NewHeaders(customHeaders []string) []http.Header {
 		result = append(result, header)
 	}
 
-	return result
+	if len(malformed) > 0 {
+		return result, fmt.Errorf("malformed headers: %v", malformed)
+	}
+	return result, nil
 }
 
 func LabelStrToSelector(labelStr string) labels.Selector {
@@ -314,11 +318,11 @@ func LabelStrToSelector(labelStr string) labels.Selector {
 }
 
 // CaptureOutput captures the output of a function that writes to stdout
-func CaptureOutput(f func()) string {
+func CaptureOutput(f func()) (string, error) {
 	old := os.Stdout
 	r, w, err := os.Pipe()
 	if err != nil {
-		panic(fmt.Sprintf("failed to create pipe: %v", err))
+		return "", fmt.Errorf("failed to create pipe: %w", err)
 	}
 	os.Stdout = w
 	// Ensure os.Stdout is restored even if panic occurs
@@ -329,13 +333,13 @@ func CaptureOutput(f func()) string {
 	f()
 
 	if err := w.Close(); err != nil {
-		panic(fmt.Sprintf("failed to close writer: %v", err))
+		return "", fmt.Errorf("failed to close writer: %w", err)
 	}
 	var buf bytes.Buffer
 	if _, err := buf.ReadFrom(r); err != nil {
-		panic(fmt.Sprintf("failed to read from pipe: %v", err))
+		return "", fmt.Errorf("failed to read from pipe: %w", err)
 	}
-	return buf.String()
+	return buf.String(), nil
 }
 
 // Contains checks if substr is present in s

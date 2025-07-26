@@ -201,7 +201,10 @@ func NewAnalysis(
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
-	customHeaders := util.NewHeaders(httpHeaders)
+	customHeaders, err := util.NewHeaders(httpHeaders)
+	if err != nil {
+		a.Errors = append(a.Errors, err.Error())
+	}
 	aiProvider.CustomHeaders = customHeaders
 	if verbose {
 		fmt.Println("Debug: Checking AI client initialization.")

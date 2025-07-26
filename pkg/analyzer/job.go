@@ -59,11 +59,23 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: Job.Namespace,
-						Masked:   util.MaskString(Job.Namespace),
+						Masked: func() string {
+							masked, err := util.MaskString(Job.Namespace)
+							if err != nil {
+								return Job.Namespace
+							}
+							return masked
+						}(),
 					},
 					{
 						Unmasked: Job.Name,
-						Masked:   util.MaskString(Job.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(Job.Name)
+							if err != nil {
+								return Job.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -76,11 +88,23 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: Job.Namespace,
-						Masked:   util.MaskString(Job.Namespace),
+						Masked: func() string {
+							masked, err := util.MaskString(Job.Namespace)
+							if err != nil {
+								return Job.Namespace
+							}
+							return masked
+						}(),
 					},
 					{
 						Unmasked: Job.Name,
-						Masked:   util.MaskString(Job.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(Job.Name)
+							if err != nil {
+								return Job.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
