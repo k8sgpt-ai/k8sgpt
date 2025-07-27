@@ -66,7 +66,13 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: string(gtw.Spec.GatewayClassName),
-						Masked:   util.MaskString(string(gtw.Spec.GatewayClassName)),
+						Masked: func() string {
+							masked, err := util.MaskString(string(gtw.Spec.GatewayClassName))
+							if err != nil {
+								return string(gtw.Spec.GatewayClassName)
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -84,11 +90,23 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: gtwNamespace,
-						Masked:   util.MaskString(gtwNamespace),
+						Masked: func() string {
+							masked, err := util.MaskString(gtwNamespace)
+							if err != nil {
+								return gtwNamespace
+							}
+							return masked
+						}(),
 					},
 					{
 						Unmasked: gtwName,
-						Masked:   util.MaskString(gtwName),
+						Masked: func() string {
+							masked, err := util.MaskString(gtwName)
+							if err != nil {
+								return gtwName
+							}
+							return masked
+						}(),
 					},
 				},
 			})
