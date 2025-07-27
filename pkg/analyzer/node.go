@@ -93,7 +93,13 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 		Sensitive: []common.Sensitive{
 			{
 				Unmasked: nodeName,
-				Masked:   util.MaskString(nodeName),
+				Masked: func() string {
+					masked, err := util.MaskString(nodeName)
+					if err != nil {
+						return nodeName
+					}
+					return masked
+				}(),
 			},
 		},
 	})

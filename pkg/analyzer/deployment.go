@@ -64,11 +64,23 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: deployment.Namespace,
-							Masked:   util.MaskString(deployment.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(deployment.Namespace)
+								if err != nil {
+									return deployment.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: deployment.Name,
-							Masked:   util.MaskString(deployment.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(deployment.Name)
+								if err != nil {
+									return deployment.Name
+								}
+								return masked
+							}(),
 						},
 					}})
 
@@ -81,11 +93,23 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: deployment.Namespace,
-							Masked:   util.MaskString(deployment.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(deployment.Namespace)
+								if err != nil {
+									return deployment.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: deployment.Name,
-							Masked:   util.MaskString(deployment.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(deployment.Name)
+								if err != nil {
+									return deployment.Name
+								}
+								return masked
+							}(),
 						},
 					}})
 				}

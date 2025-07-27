@@ -67,11 +67,23 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: sts.Namespace,
-						Masked:   util.MaskString(sts.Namespace),
+						Masked: func() string {
+							masked, err := util.MaskString(sts.Namespace)
+							if err != nil {
+								return sts.Namespace
+							}
+							return masked
+						}(),
 					},
 					{
 						Unmasked: serviceName,
-						Masked:   util.MaskString(serviceName),
+						Masked: func() string {
+							masked, err := util.MaskString(serviceName)
+							if err != nil {
+								return serviceName
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -86,7 +98,13 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							Sensitive: []common.Sensitive{
 								{
 									Unmasked: *volumeClaimTemplate.Spec.StorageClassName,
-									Masked:   util.MaskString(*volumeClaimTemplate.Spec.StorageClassName),
+									Masked: func() string {
+										masked, err := util.MaskString(*volumeClaimTemplate.Spec.StorageClassName)
+										if err != nil {
+											return *volumeClaimTemplate.Spec.StorageClassName
+										}
+										return masked
+									}(),
 								},
 							},
 						})
@@ -117,11 +135,23 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: sts.Namespace,
-								Masked:   util.MaskString(pod.Name),
+								Masked: func() string {
+									masked, err := util.MaskString(sts.Namespace)
+									if err != nil {
+										return sts.Namespace
+									}
+									return masked
+								}(),
 							},
 							{
 								Unmasked: serviceName,
-								Masked:   util.MaskString(pod.Namespace),
+								Masked: func() string {
+									masked, err := util.MaskString(pod.Namespace)
+									if err != nil {
+										return pod.Namespace
+									}
+									return masked
+								}(),
 							},
 						},
 					})

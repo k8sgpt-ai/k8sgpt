@@ -141,7 +141,11 @@ func MaskString(input string) (string, error) {
 	result := make([]rune, len(input))
 	_, err := rand.Read(key)
 	if err != nil {
+<<<<<<< HEAD
 		return "", fmt.Errorf("failed to generate random key: %w", err)
+=======
+		return "", err
+>>>>>>> fa8dccb (fix(util): replace panic with proper error handling in MaskString)
 	}
 	for i := range result {
 		result[i] = anonymizePattern[int(key[i])%len(anonymizePattern)]
@@ -234,11 +238,24 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 	return latestEvent, nil
 }
 
+<<<<<<< HEAD
 func NewHeaders(customHeaders []string) []http.Header {
 	headers := make(map[string][]string)
 	for _, header := range customHeaders {
 		vals := strings.SplitN(header, ":", 2)
 		if len(vals) != 2 {
+=======
+// NewHeaders parses a slice of strings in the format "key:value" into []http.Header
+// It handles headers with the same key by appending values
+func NewHeaders(customHeaders []string) ([]http.Header, error) {
+	headers := make(map[string][]string)
+	var malformed []string
+
+	for _, header := range customHeaders {
+		vals := strings.SplitN(header, ":", 2)
+		if len(vals) != 2 {
+			malformed = append(malformed, header)
+>>>>>>> fa8dccb (fix(util): replace panic with proper error handling in MaskString)
 			continue
 		}
 		key := strings.TrimSpace(vals[0])
@@ -253,7 +270,15 @@ func NewHeaders(customHeaders []string) []http.Header {
 		}
 		result = append(result, header)
 	}
+<<<<<<< HEAD
 	return result
+=======
+
+	if len(malformed) > 0 {
+		return result, fmt.Errorf("malformed headers: %v", malformed)
+	}
+	return result, nil
+>>>>>>> fa8dccb (fix(util): replace panic with proper error handling in MaskString)
 }
 
 func LabelStrToSelector(labelStr string) labels.Selector {
@@ -270,6 +295,10 @@ func LabelStrToSelector(labelStr string) labels.Selector {
 	return labels.SelectorFromSet(labels.Set(labelSelectorMap))
 }
 
+<<<<<<< HEAD
+=======
+// CaptureOutput captures the output of a function that writes to stdout
+>>>>>>> fa8dccb (fix(util): replace panic with proper error handling in MaskString)
 func CaptureOutput(f func()) (string, error) {
 	old := os.Stdout
 	r, w, err := os.Pipe()

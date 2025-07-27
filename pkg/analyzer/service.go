@@ -76,11 +76,23 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: k,
-							Masked:   util.MaskString(k),
+							Masked: func() string {
+								masked, err := util.MaskString(k)
+								if err != nil {
+									return k
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: v,
-							Masked:   util.MaskString(v),
+							Masked: func() string {
+								masked, err := util.MaskString(v)
+								if err != nil {
+									return v
+								}
+								return masked
+							}(),
 						},
 					},
 				})
