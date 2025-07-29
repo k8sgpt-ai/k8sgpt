@@ -2,19 +2,21 @@ package ai
 
 const (
     // Prompt para erros genéricos do Kubernetes (ex: ImagePullBackOff)
-    default_prompt = `Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
-    Forneça a solução mais provável em um estilo passo a passo em não mais que 280 caracteres. Escreva a saída no seguinte formato:
+    default_prompt = `Explique o seguinte erro do Kubernetes, delimitado por três traços, na linguagem --- %s ---: --- %s ---.
+    Forneça a solução mais provável em formato de lista numerada, com cada passo em uma nova linha, em não mais que 280 caracteres. Escreva a saída no seguinte formato:
     Error: {Explique o erro aqui}
-    Solution: {Solução passo a passo aqui}
+    Solution:
+    {Liste os passos da solução aqui, formatados como uma lista numerada (ex: 1. Primeiro passo).}
     `
 
 	// Prompt para erros de configuração do Prometheus
-    prom_conf_prompt = `Simplifique a seguinte mensagem de erro do Prometheus delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
-    Este erro ocorreu ao validar o arquivo de configuração do Prometheus.
-    Forneça instruções passo a passo para corrigir, com sugestões, referenciando a documentação do Prometheus se for relevante.
+    prom_conf_prompt = `Explique o seguinte erro do Prometheus, delimitado por três traços, na linguagem --- %s ---: --- %s ---.
+    Este erro ocorreu durante a validação do arquivo de configuração do Prometheus.
+    Forneça instruções passo a passo para corrigir, em formato de lista numerada, com cada passo em uma nova linha, com sugestões, e referencie a documentação oficial do Prometheus se for relevante.
     Escreva a saída no seguinte formato, em não mais que 300 caracteres:
     Error: {Explique o erro aqui}
-    Solution: {Solução passo a passo aqui}
+    Solution:
+    {Liste os passos da solução aqui, formatados como uma lista numerada (ex: 1. Primeiro passo).}
     `
 
 	// Prompt para relatórios de relabeling do Prometheus
@@ -51,24 +53,21 @@ const (
     `
     
     // Prompt para avisos do Kyverno
-    kyverno_prompt = `Simplifique a seguinte mensagem de aviso do Kyverno delimitada por três traços escrita na linguagem --- %s ---; --- %s ---.
-    Forneça a solução mais provável como um comando kubectl.
-
-    Escreva a saída no seguinte formato, para a solução, mostre apenas o comando kubectl:
-
+    kyverno_prompt = `Explique o seguinte aviso do Kyverno, delimitado por três traços, na linguagem --- %s ---: --- %s ---.
+    Forneça a solução mais provável como um comando kubectl. Escreva a saída no seguinte formato:
     Error: {Explique o erro aqui}
-
-    Solution: {comando kubectl}
+    Solution:
+    {comando kubectl}
     `
     // O prompt raw também precisa ser corrigido para corresponder à estrutura
-    raw_promt = `{"language": "%s","message": "%s","prompt": "Simplifique a seguinte mensagem de erro do Kubernetes delimitada por três traços escrita na linguagem --- %s ---; --- %s ---. Forneça a solução mais provável em português."}`
+    raw_promt = `{"language": "%s","message": "%s","prompt": "Explique o seguinte erro do Kubernetes, delimitado por três traços, na linguagem --- %s ---: --- %s ---. Forneça a solução mais provável em português."}`
 )
 
 var PromptMap = map[string]string{
-	"raw":                           raw_promt,
-	"default":                       default_prompt,
-	"PrometheusConfigValidate":      prom_conf_prompt,
-	"PrometheusConfigRelabelReport": prom_relabel_prompt,
-	"PolicyReport":                  kyverno_prompt,
-	"ClusterPolicyReport":           kyverno_prompt,
+    "raw":                           raw_promt,
+    "default":                       default_prompt,
+    "PrometheusConfigValidate":      prom_conf_prompt,
+    "PrometheusConfigRelabelReport": prom_relabel_prompt,
+    "PolicyReport":                  kyverno_prompt,
+    "ClusterPolicyReport":           kyverno_prompt,
 }
