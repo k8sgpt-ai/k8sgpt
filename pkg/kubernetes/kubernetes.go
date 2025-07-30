@@ -14,6 +14,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
@@ -31,6 +32,10 @@ func (c *Client) GetClient() kubernetes.Interface {
 
 func (c *Client) GetCtrlClient() ctrl.Client {
 	return c.CtrlClient
+}
+
+func (c *Client) GetDynamicClient() dynamic.Interface {
+	return c.DynamicClient
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
@@ -69,10 +74,16 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	dynamicClient, err := dynamic.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		Client:        clientSet,
 		CtrlClient:    ctrlClient,
 		Config:        config,
 		ServerVersion: serverVersion,
+		DynamicClient: dynamicClient,
 	}, nil
 }
