@@ -57,6 +57,8 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"HTTPRoute":               HTTPRouteAnalyzer{},
 	"Storage":                 StorageAnalyzer{},
 	"Security":                SecurityAnalyzer{},
+	"ClusterCatalog":          ClusterCatalogAnalyzer{},
+	"ClusterExtension":        ClusterExtensionAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
