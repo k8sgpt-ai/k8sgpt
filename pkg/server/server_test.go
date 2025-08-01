@@ -144,7 +144,11 @@ func TestMCPServerBasicHTTP(t *testing.T) {
 		t.Logf("Initialize request failed: %v", err)
 		return
 	}
-	defer initResp.Body.Close()
+	defer func() {
+		if err := initResp.Body.Close(); err != nil {
+			t.Logf("Error closing init response body: %v", err)
+		}
+	}()
 
 	// Read initialization response
 	initBody, err := io.ReadAll(initResp.Body)
@@ -262,7 +266,11 @@ func TestMCPServerToolCall(t *testing.T) {
 		t.Logf("Initialize request failed: %v", err)
 		return
 	}
-	defer initResp.Body.Close()
+	defer func() {
+		if err := initResp.Body.Close(); err != nil {
+			t.Logf("Error closing init response body: %v", err)
+		}
+	}()
 
 	// Extract session ID from response headers if present
 	sessionID := initResp.Header.Get("Mcp-Session-Id")

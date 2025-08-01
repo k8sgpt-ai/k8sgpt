@@ -113,7 +113,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to send init request: %v", err)
 	}
-	defer initResp.Body.Close()
+	defer func() {
+		if err := initResp.Body.Close(); err != nil {
+			log.Printf("Error closing init response body: %v", err)
+		}
+	}()
 
 	// Extract session ID from response headers
 	sessionID := initResp.Header.Get("Mcp-Session-Id")

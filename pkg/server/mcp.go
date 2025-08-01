@@ -233,6 +233,7 @@ type AnalyzeRequest struct {
 	InteractiveMode bool     `json:"interactiveMode,omitempty"`
 	CustomHeaders   []string `json:"customHeaders,omitempty"`
 	WithStats       bool     `json:"withStats,omitempty"`
+	Anonymize       bool     `json:"anonymize,omitempty"`
 }
 
 // AnalyzeResponse represents the output of the analyze tool
@@ -328,9 +329,7 @@ func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToo
 	if req.Explain {
 
 		var output string
-		var anonymize bool = false
-		// analysis.Explain = true
-		err := analysis.GetAIResults(output, anonymize)
+		err := analysis.GetAIResults(output, req.Anonymize)
 		if err != nil {
 			return mcp.NewToolResultErrorf("Failed to get results from AI: %v", err), nil
 		}
