@@ -40,12 +40,20 @@ type AnalyzeRequest struct {
 	WithStats       bool     `json:"withStats,omitempty"`
 }
 
-// AnalyzeResponse represents the output of the analyze tool
-type AnalyzeResponse struct {
-	Content []struct {
-		Text string `json:"text"`
-		Type string `json:"type"`
-	} `json:"content"`
+// JSONRPCResponse represents the JSON-RPC response format
+type JSONRPCResponse struct {
+	JSONRPC string `json:"jsonrpc"`
+	ID      int    `json:"id"`
+	Result  struct {
+		Content []struct {
+			Text string `json:"text"`
+			Type string `json:"type"`
+		} `json:"content"`
+	} `json:"result,omitempty"`
+	Error *struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error,omitempty"`
 }
 
 func main() {
@@ -65,23 +73,85 @@ func main() {
 		MaxConcurrency: 10,
 	}
 
-	// Convert request to JSON
-	reqJSON, err := json.Marshal(req)
-	if err != nil {
-		log.Fatalf("Failed to marshal request: %v", err)
-	}
+	// Note: req is now used directly in the JSON-RPC request
 
 	// Create HTTP client with timeout
 	client := &http.Client{
 		Timeout: 5 * time.Minute,
 	}
 
-	// Send request to MCP server
-	resp, err := client.Post(
-		fmt.Sprintf("http://localhost:%s/mcp/analyze", *serverPort),
+	// First, initialize the session
+	initRequest := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      1,
+		"method":  "initialize",
+		"params": map[string]interface{}{
+			"protocolVersion": "2025-03-26",
+			"capabilities": map[string]interface{}{
+				"tools":     map[string]interface{}{},
+				"resources": map[string]interface{}{},
+				"prompts":   map[string]interface{}{},
+			},
+			"clientInfo": map[string]interface{}{
+				"name":    "k8sgpt-client",
+				"version": "1.0.0",
+			},
+		},
+	}
+
+	initData, err := json.Marshal(initRequest)
+	if err != nil {
+		log.Fatalf("Failed to marshal init request: %v", err)
+	}
+
+	// Send initialization request
+	initResp, err := client.Post(
+		fmt.Sprintf("http://localhost:%s/mcp", *serverPort),
 		"application/json",
-		bytes.NewBuffer(reqJSON),
+		bytes.NewBuffer(initData),
 	)
+	if err != nil {
+		log.Fatalf("Failed to send init request: %v", err)
+	}
+	defer initResp.Body.Close()
+
+	// Extract session ID from response headers
+	sessionID := initResp.Header.Get("Mcp-Session-Id")
+	if sessionID == "" {
+		log.Println("Warning: No session ID received from server")
+	}
+
+	// Create JSON-RPC request for analyze
+	jsonRPCRequest := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      2,
+		"method":  "tools/call",
+		"params": map[string]interface{}{
+			"name":      "analyze",
+			"arguments": req,
+		},
+	}
+
+	// Convert to JSON
+	jsonRPCData, err := json.Marshal(jsonRPCRequest)
+	if err != nil {
+		log.Fatalf("Failed to marshal JSON-RPC request: %v", err)
+	}
+
+	// Create request with session ID if available
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/mcp", *serverPort), bytes.NewBuffer(jsonRPCData))
+	if err != nil {
+		log.Fatalf("Failed to create request: %v", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Accept", "application/json,text/event-stream")
+	if sessionID != "" {
+		httpReq.Header.Set("Mcp-Session-Id", sessionID)
+	}
+
+	// Send request to MCP server
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		log.Fatalf("Failed to send request: %v", err)
 	}
@@ -99,15 +169,17 @@ func main() {
 	fmt.Printf("Raw response: %s\n", string(body))
 
 	// Parse response
-	var analyzeResp AnalyzeResponse
-	if err := json.Unmarshal(body, &analyzeResp); err != nil {
+	var jsonRPCResp JSONRPCResponse
+	if err := json.Unmarshal(body, &jsonRPCResp); err != nil {
 		log.Fatalf("Failed to decode response: %v", err)
 	}
 
 	// Print results
 	fmt.Println("Analysis Results:")
-	if len(analyzeResp.Content) > 0 {
-		fmt.Println(analyzeResp.Content[0].Text)
+	if jsonRPCResp.Error != nil {
+		fmt.Printf("Error: %s (code: %d)\n", jsonRPCResp.Error.Message, jsonRPCResp.Error.Code)
+	} else if len(jsonRPCResp.Result.Content) > 0 {
+		fmt.Println(jsonRPCResp.Result.Content[0].Text)
 	} else {
 		fmt.Println("No results returned")
 	}

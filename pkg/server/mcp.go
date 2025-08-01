@@ -17,88 +17,205 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/server/config"
-	mcp_golang "github.com/metoro-io/mcp-golang"
-	mcp_http "github.com/metoro-io/mcp-golang/transport/http"
-	"github.com/metoro-io/mcp-golang/transport/stdio"
+	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
-// MCPServer represents an MCP server for k8sgpt
-type MCPServer struct {
-	server     *mcp_golang.Server
-	port       string
-	aiProvider *ai.AIProvider
-	useHTTP    bool
-	logger     *zap.Logger
+// K8sGptMCPServer represents an MCP server for k8sgpt
+type K8sGptMCPServer struct {
+	server      *server.MCPServer
+	port        string
+	aiProvider  *ai.AIProvider
+	useHTTP     bool
+	logger      *zap.Logger
+	httpServer  *server.StreamableHTTPServer
+	stdioServer *server.StdioServer
 }
 
-// NewMCPServer creates a new MCP server
-func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*MCPServer, error) {
-	opts := []mcp_golang.ServerOptions{
-		mcp_golang.WithName("k8sgpt"),
-		mcp_golang.WithVersion("1.0.0"),
+func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *zap.Logger) (*K8sGptMCPServer, error) {
+	opts := []server.ServerOption{
+		server.WithToolCapabilities(true),
+		server.WithResourceCapabilities(true, false),
+		server.WithPromptCapabilities(false),
 	}
 
-	var server *mcp_golang.Server
-	if useHTTP {
-		logger.Info("starting MCP server with http transport on port", zap.String("port", port))
-		httpTransport := mcp_http.NewHTTPTransport("/mcp").WithAddr(":" + port)
-		server = mcp_golang.NewServer(httpTransport, opts...)
-	} else {
-		server = mcp_golang.NewServer(stdio.NewStdioServerTransport(), opts...)
-	}
-
-	return &MCPServer{
-		server:     server,
+	// Create the MCP server
+	mcpServer := server.NewMCPServer("k8sgpt", "1.0.0", opts...)
+	var k8sGptMCPServer = &K8sGptMCPServer{
+		server:     mcpServer,
 		port:       port,
 		aiProvider: aiProvider,
 		useHTTP:    useHTTP,
 		logger:     logger,
-	}, nil
+	}
+
+	// Register tools and resources immediately
+	if err := k8sGptMCPServer.registerToolsAndResources(); err != nil {
+		return nil, fmt.Errorf("failed to register tools and resources: %v", err)
+	}
+
+	if useHTTP {
+		// Create HTTP server with streamable transport
+		httpOpts := []server.StreamableHTTPOption{
+			server.WithLogger(&zapLoggerAdapter{logger: logger}),
+		}
+
+		httpServer := server.NewStreamableHTTPServer(mcpServer, httpOpts...)
+
+		// Launch the HTTP server directly
+		go func() {
+			logger.Info("Starting MCP HTTP server", zap.String("port", port))
+			if err := httpServer.Start(":" + port); err != nil {
+				logger.Fatal("MCP HTTP server failed", zap.Error(err))
+			}
+		}()
+
+		return &K8sGptMCPServer{
+			server:     mcpServer,
+			port:       port,
+			aiProvider: aiProvider,
+			useHTTP:    useHTTP,
+			logger:     logger,
+			httpServer: httpServer,
+		}, nil
+	} else {
+		// Create stdio server
+		stdioServer := server.NewStdioServer(mcpServer)
+
+		return &K8sGptMCPServer{
+			server:      mcpServer,
+			port:        port,
+			aiProvider:  aiProvider,
+			useHTTP:     useHTTP,
+			logger:      logger,
+			stdioServer: stdioServer,
+		}, nil
+	}
 }
 
 // Start starts the MCP server
-func (s *MCPServer) Start() error {
+func (s *K8sGptMCPServer) Start() error {
 	if s.server == nil {
 		return fmt.Errorf("server not initialized")
 	}
-
-	// Register analyze tool
-	if err := s.server.RegisterTool("analyze", "Analyze Kubernetes resources", s.handleAnalyze); err != nil {
-		return fmt.Errorf("failed to register analyze tool: %v", err)
+	// Register prompts
+	if err := s.registerPrompts(); err != nil {
+		return fmt.Errorf("failed to register prompts: %v", err)
 	}
-
-	// Register cluster info tool
-	if err := s.server.RegisterTool("cluster-info", "Get Kubernetes cluster information", s.handleClusterInfo); err != nil {
-		return fmt.Errorf("failed to register cluster-info tool: %v", err)
-	}
-
-	// Register config tool
-	if err := s.server.RegisterTool("config", "Configure K8sGPT settings", s.handleConfig); err != nil {
-		return fmt.Errorf("failed to register config tool: %v", err)
-	}
-
 	// Register resources
 	if err := s.registerResources(); err != nil {
 		return fmt.Errorf("failed to register resources: %v", err)
 	}
 
-	// Register prompts
-	if err := s.registerPrompts(); err != nil {
-		return fmt.Errorf("failed to register prompts: %v", err)
+	// Start the server based on transport type
+	if s.useHTTP {
+		// HTTP server is already running in a goroutine
+		return nil
+	} else {
+		// Start stdio server (this will block)
+		return server.ServeStdio(s.server)
 	}
+}
 
-	// Start the server (this will block)
-	if err := s.server.Serve(); err != nil {
-		s.logger.Error("Error starting MCP server", zap.Error(err))
-	}
+func (s *K8sGptMCPServer) registerToolsAndResources() error {
+	// Register analyze tool with proper JSON schema
+	analyzeTool := mcp.NewTool("analyze",
+		mcp.WithDescription("Analyze Kubernetes resources for issues and problems"),
+		mcp.WithString("namespace",
+			mcp.Description("Kubernetes namespace to analyze (empty for all namespaces)"),
+		),
+		mcp.WithString("backend",
+			mcp.Description("AI backend to use for analysis (e.g., openai, azure, localai)"),
+		),
+		mcp.WithBoolean("explain",
+			mcp.Description("Provide detailed explanations for issues"),
+		),
+		mcp.WithArray("filters",
+			mcp.Description("Provide filters to narrow down the analysis (e.g. ['Pods', 'Deployments'])"),
+		),
+	)
+	s.server.AddTool(analyzeTool, s.handleAnalyze)
+
+	// Register cluster info tool (no parameters needed)
+	clusterInfoTool := mcp.NewTool("cluster-info",
+		mcp.WithDescription("Get Kubernetes cluster information and version"),
+	)
+	s.server.AddTool(clusterInfoTool, s.handleClusterInfo)
+
+	// Register config tool with proper JSON schema
+	configTool := mcp.NewTool("config",
+		mcp.WithDescription("Configure K8sGPT settings including custom analyzers and cache"),
+		mcp.WithObject("customAnalyzers",
+			mcp.Description("Custom analyzer configurations"),
+			mcp.Properties(map[string]any{
+				"name": map[string]any{
+					"type":        "string",
+					"description": "Name of the custom analyzer",
+				},
+				"connection": map[string]any{
+					"type": "object",
+					"properties": map[string]any{
+						"url": map[string]any{
+							"type":        "string",
+							"description": "URL of the custom analyzer service",
+						},
+						"port": map[string]any{
+							"type":        "integer",
+							"description": "Port of the custom analyzer service",
+						},
+					},
+				},
+			}),
+		),
+		mcp.WithObject("cache",
+			mcp.Description("Cache configuration"),
+			mcp.Properties(map[string]any{
+				"type": map[string]any{
+					"type":        "string",
+					"description": "Cache type (s3, azure, gcs)",
+					"enum":        []string{"s3", "azure", "gcs"},
+				},
+				"bucketName": map[string]any{
+					"type":        "string",
+					"description": "Bucket name for S3/GCS cache",
+				},
+				"region": map[string]any{
+					"type":        "string",
+					"description": "Region for S3/GCS cache",
+				},
+				"endpoint": map[string]any{
+					"type":        "string",
+					"description": "Custom endpoint for S3 cache",
+				},
+				"insecure": map[string]any{
+					"type":        "boolean",
+					"description": "Use insecure connection for cache",
+				},
+				"storageAccount": map[string]any{
+					"type":        "string",
+					"description": "Storage account for Azure cache",
+				},
+				"containerName": map[string]any{
+					"type":        "string",
+					"description": "Container name for Azure cache",
+				},
+				"projectId": map[string]any{
+					"type":        "string",
+					"description": "Project ID for GCS cache",
+				},
+			}),
+		),
+	)
+	s.server.AddTool(configTool, s.handleConfig)
 	return nil
 }
 
@@ -163,62 +280,76 @@ type ConfigResponse struct {
 }
 
 // handleAnalyze handles the analyze tool
-func (s *MCPServer) handleAnalyze(ctx context.Context, request *AnalyzeRequest) (*mcp_golang.ToolResponse, error) {
-	// Get stored configuration
-	var configAI ai.AIConfiguration
-	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to load AI configuration: %v", err))), nil
+func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+
+	var req AnalyzeRequest
+	if err := request.BindArguments(&req); err != nil {
+		return mcp.NewToolResultErrorf("Failed to parse request arguments: %v", err), nil
 	}
-	// Use stored configuration if not specified in request
-	if request.Backend == "" {
-		if configAI.DefaultProvider != "" {
-			request.Backend = configAI.DefaultProvider
-		} else if len(configAI.Providers) > 0 {
-			request.Backend = configAI.Providers[0].Name
+
+	if req.Backend == "" {
+		if s.aiProvider.Name != "" {
+			req.Backend = s.aiProvider.Name
 		} else {
-			request.Backend = "openai" // fallback default
+			req.Backend = "openai" // fallback default
 		}
 	}
 
-	request.Explain = true
 	// Get stored filters if not specified
-	if len(request.Filters) == 0 {
-		request.Filters = viper.GetStringSlice("active_filters")
+	if len(req.Filters) == 0 {
+		req.Filters = viper.GetStringSlice("active_filters")
 	}
 
 	// Validate MaxConcurrency to prevent excessive memory allocation
-	request.MaxConcurrency = validateMaxConcurrency(request.MaxConcurrency)
+	req.MaxConcurrency = validateMaxConcurrency(req.MaxConcurrency)
 
 	// Create a new analysis with the request parameters
 	analysis, err := analysis.NewAnalysis(
-		request.Backend,
-		request.Language,
-		request.Filters,
-		request.Namespace,
-		request.LabelSelector,
-		request.NoCache,
-		request.Explain,
-		request.MaxConcurrency,
-		request.WithDoc,
-		request.InteractiveMode,
-		request.CustomHeaders,
-		request.WithStats,
+		req.Backend,
+		req.Language,
+		req.Filters,
+		req.Namespace,
+		req.LabelSelector,
+		req.NoCache,
+		req.Explain,
+		req.MaxConcurrency,
+		req.WithDoc,
+		req.InteractiveMode,
+		req.CustomHeaders,
+		req.WithStats,
 	)
 	if err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to create analysis: %v", err))), nil
+		return mcp.NewToolResultErrorf("Failed to create analysis: %v", err), nil
 	}
 	defer analysis.Close()
 
 	// Run the analysis
 	analysis.RunAnalysis()
+	if req.Explain {
 
-	// Get the output
-	output, err := analysis.PrintOutput("json")
-	if err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to print output: %v", err))), nil
+		var output string
+		var anonymize bool = false
+		// analysis.Explain = true
+		err := analysis.GetAIResults(output, anonymize)
+		if err != nil {
+			return mcp.NewToolResultErrorf("Failed to get results from AI: %v", err), nil
+		}
+
+		// Convert results to JSON string using PrintOutput
+		outputBytes, err := analysis.PrintOutput("text")
+		if err != nil {
+			return mcp.NewToolResultErrorf("Failed to convert results to string: %v", err), nil
+		}
+		plainText := stripANSI(string(outputBytes))
+		return mcp.NewToolResultText(plainText), nil
+	} else {
+		// Get the output
+		output, err := analysis.PrintOutput("json")
+		if err != nil {
+			return mcp.NewToolResultErrorf("Failed to print output: %v", err), nil
+		}
+		return mcp.NewToolResultText(string(output)), nil
 	}
-
-	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(string(output))), nil
 }
 
 // validateMaxConcurrency validates and bounds the MaxConcurrency parameter
@@ -233,25 +364,31 @@ func validateMaxConcurrency(maxConcurrency int) int {
 }
 
 // handleClusterInfo handles the cluster-info tool
-func (s *MCPServer) handleClusterInfo(ctx context.Context, request *ClusterInfoRequest) (*mcp_golang.ToolResponse, error) {
+func (s *K8sGptMCPServer) handleClusterInfo(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	// Create a new Kubernetes client
 	client, err := kubernetes.NewClient("", "")
 	if err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to create Kubernetes client: %v", err))), nil
+		return mcp.NewToolResultErrorf("failed to create Kubernetes client: %v", err), nil
 	}
 
 	// Get cluster info from the client
 	version, err := client.Client.Discovery().ServerVersion()
 	if err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("failed to get cluster version: %v", err))), nil
+		return mcp.NewToolResultErrorf("failed to get cluster version: %v", err), nil
 	}
 
 	info := fmt.Sprintf("Kubernetes %s", version.GitVersion)
-	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(info)), nil
+	return mcp.NewToolResultText(info), nil
 }
 
 // handleConfig handles the config tool
-func (s *MCPServer) handleConfig(ctx context.Context, request *ConfigRequest) (*mcp_golang.ToolResponse, error) {
+func (s *K8sGptMCPServer) handleConfig(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	// Parse request arguments
+	var req ConfigRequest
+	if err := request.BindArguments(&req); err != nil {
+		return mcp.NewToolResultErrorf("Failed to parse request arguments: %v", err), nil
+	}
+
 	// Create a new config handler
 	handler := &config.Handler{}
 
@@ -261,8 +398,8 @@ func (s *MCPServer) handleConfig(ctx context.Context, request *ConfigRequest) (*
 	}
 
 	// Add custom analyzers if present
-	if len(request.CustomAnalyzers) > 0 {
-		for _, ca := range request.CustomAnalyzers {
+	if len(req.CustomAnalyzers) > 0 {
+		for _, ca := range req.CustomAnalyzers {
 			addConfigReq.CustomAnalyzers = append(addConfigReq.CustomAnalyzers, &schemav1.CustomAnalyzer{
 				Name: ca.Name,
 				Connection: &schemav1.Connection{
@@ -274,31 +411,31 @@ func (s *MCPServer) handleConfig(ctx context.Context, request *ConfigRequest) (*
 	}
 
 	// Add cache configuration if present
-	if request.Cache.Type != "" {
+	if req.Cache.Type != "" {
 		cacheConfig := &schemav1.Cache{}
-		switch request.Cache.Type {
+		switch req.Cache.Type {
 		case "s3":
 			cacheConfig.CacheType = &schemav1.Cache_S3Cache{
 				S3Cache: &schemav1.S3Cache{
-					BucketName: request.Cache.BucketName,
-					Region:     request.Cache.Region,
-					Endpoint:   request.Cache.Endpoint,
-					Insecure:   request.Cache.Insecure,
+					BucketName: req.Cache.BucketName,
+					Region:     req.Cache.Region,
+					Endpoint:   req.Cache.Endpoint,
+					Insecure:   req.Cache.Insecure,
 				},
 			}
 		case "azure":
 			cacheConfig.CacheType = &schemav1.Cache_AzureCache{
 				AzureCache: &schemav1.AzureCache{
-					StorageAccount: request.Cache.StorageAccount,
-					ContainerName:  request.Cache.ContainerName,
+					StorageAccount: req.Cache.StorageAccount,
+					ContainerName:  req.Cache.ContainerName,
 				},
 			}
 		case "gcs":
 			cacheConfig.CacheType = &schemav1.Cache_GcsCache{
 				GcsCache: &schemav1.GCSCache{
-					BucketName: request.Cache.BucketName,
-					Region:     request.Cache.Region,
-					ProjectId:  request.Cache.ProjectId,
+					BucketName: req.Cache.BucketName,
+					Region:     req.Cache.Region,
+					ProjectId:  req.Cache.ProjectId,
 				},
 			}
 		}
@@ -307,27 +444,30 @@ func (s *MCPServer) handleConfig(ctx context.Context, request *ConfigRequest) (*
 
 	// Apply the configuration using the shared function
 	if err := handler.ApplyConfig(ctx, addConfigReq); err != nil {
-		return mcp_golang.NewToolResponse(mcp_golang.NewTextContent(fmt.Sprintf("Failed to add config: %v", err))), nil
+		return mcp.NewToolResultErrorf("Failed to add config: %v", err), nil
 	}
 
-	return mcp_golang.NewToolResponse(mcp_golang.NewTextContent("Successfully added configuration")), nil
+	return mcp.NewToolResultText("Successfully added configuration"), nil
 }
 
 // registerPrompts registers the prompts for the MCP server
-func (s *MCPServer) registerPrompts() error {
+func (s *K8sGptMCPServer) registerPrompts() error {
 	// Register any prompts needed for the MCP server
 	return nil
 }
 
 // registerResources registers the resources for the MCP server
-func (s *MCPServer) registerResources() error {
-	if err := s.server.RegisterResource("cluster-info", "Get cluster information", "Get information about the Kubernetes cluster", "text", s.getClusterInfo); err != nil {
-		return fmt.Errorf("failed to register cluster-info resource: %v", err)
-	}
+func (s *K8sGptMCPServer) registerResources() error {
+	clusterInfoResource := mcp.NewResource("cluster-info", "cluster-info",
+		mcp.WithResourceDescription("Get information about the Kubernetes cluster"),
+		mcp.WithMIMEType("application/json"),
+	)
+
+	s.server.AddResource(clusterInfoResource, s.getClusterInfo)
 	return nil
 }
 
-func (s *MCPServer) getClusterInfo(ctx context.Context) (*mcp_golang.ResourceResponse, error) {
+func (s *K8sGptMCPServer) getClusterInfo(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 	// Create a new Kubernetes client
 	client, err := kubernetes.NewClient("", "")
 	if err != nil {
@@ -346,24 +486,44 @@ func (s *MCPServer) getClusterInfo(ctx context.Context) (*mcp_golang.ResourceRes
 		"gitVersion": version.GitVersion,
 	})
 	if err != nil {
-		return mcp_golang.NewResourceResponse(
-			mcp_golang.NewTextEmbeddedResource(
-				"cluster-info",
-				"Failed to marshal cluster info",
-				"text/plain",
-			),
-		), nil
+		return []mcp.ResourceContents{
+			&mcp.TextResourceContents{
+				URI:      "cluster-info",
+				MIMEType: "text/plain",
+				Text:     "Failed to marshal cluster info",
+			},
+		}, nil
 	}
-	return mcp_golang.NewResourceResponse(
-		mcp_golang.NewTextEmbeddedResource(
-			"cluster-info",
-			string(data),
-			"application/json",
-		),
-	), nil
+
+	return []mcp.ResourceContents{
+		&mcp.TextResourceContents{
+			URI:      "cluster-info",
+			MIMEType: "application/json",
+			Text:     string(data),
+		},
+	}, nil
 }
 
 // Close closes the MCP server and releases resources
-func (s *MCPServer) Close() error {
+func (s *K8sGptMCPServer) Close() error {
 	return nil
+}
+
+// zapLoggerAdapter adapts zap.Logger to the interface expected by mark3labs/mcp-go
+type zapLoggerAdapter struct {
+	logger *zap.Logger
+}
+
+func (z *zapLoggerAdapter) Infof(format string, v ...any) {
+	z.logger.Info(fmt.Sprintf(format, v...))
+}
+
+func (z *zapLoggerAdapter) Errorf(format string, v ...any) {
+	z.logger.Error(fmt.Sprintf(format, v...))
+}
+
+// stripANSI removes ANSI escape sequences from a string
+func stripANSI(input string) string {
+	re := regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	return re.ReplaceAllString(input, "")
 }

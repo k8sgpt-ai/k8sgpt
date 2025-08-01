@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"io"
 	"net"
 	"net/http"
 	"testing"
@@ -78,14 +79,14 @@ func TestMCPServerCreation(t *testing.T) {
 	}
 
 	// Test HTTP mode
-	mcpServer, err := NewMCPServer("8089", aiProvider, true, logger)
+	mcpServer, err := NewMCPServer("8088", aiProvider, true, logger)
 	assert.NoError(t, err, "Should be able to create MCP server with HTTP transport")
 	assert.NotNil(t, mcpServer, "MCP server should not be nil")
 	assert.True(t, mcpServer.useHTTP, "MCP server should be in HTTP mode")
-	assert.Equal(t, "8089", mcpServer.port, "Port should be set correctly")
+	assert.Equal(t, "8088", mcpServer.port, "Port should be set correctly")
 
 	// Test stdio mode
-	mcpServerStdio, err := NewMCPServer("8089", aiProvider, false, logger)
+	mcpServerStdio, err := NewMCPServer("8088", aiProvider, false, logger)
 	assert.NoError(t, err, "Should be able to create MCP server with stdio transport")
 	assert.NotNil(t, mcpServerStdio, "MCP server should not be nil")
 	assert.False(t, mcpServerStdio.useHTTP, "MCP server should be in stdio mode")
@@ -107,27 +108,79 @@ func TestMCPServerBasicHTTP(t *testing.T) {
 		Model:    "test-model",
 	}
 
-	mcpServer, err := NewMCPServer("8089", aiProvider, true, logger)
+	mcpServer, err := NewMCPServer("8091", aiProvider, true, logger)
 	assert.NoError(t, err, "Should be able to create MCP server")
 
-	// Start the MCP server in a goroutine
-	go func() {
-		err := mcpServer.Start()
-		// Note: Start() might return an error when the server is stopped, which is expected
-		if err != nil {
-			logger.Info("MCP server stopped", zap.Error(err))
-		}
-	}()
+	// For HTTP mode, the server is already started in NewMCPServer
+	// No need to call Start() as it's already running in a goroutine
 
 	// Wait for the server to start
-	err = waitForPort("localhost:8089", 10*time.Second)
+	err = waitForPort("localhost:8091", 10*time.Second)
 	if err != nil {
 		t.Skipf("MCP server did not start within timeout: %v", err)
 	}
 
-	// Test basic connectivity to the MCP endpoint
-	// The MCP HTTP transport uses a single POST endpoint for all requests
-	resp, err := http.Post("http://localhost:8089/mcp", "application/json", bytes.NewBufferString(`{"jsonrpc":"2.0","id":1,"method":"tools/list"}`))
+	// First, initialize the session
+	initRequest := `{
+		"jsonrpc": "2.0",
+		"id": 1,
+		"method": "initialize",
+		"params": {
+			"protocolVersion": "2025-03-26",
+			"capabilities": {
+				"tools": {},
+				"resources": {},
+				"prompts": {}
+			},
+			"clientInfo": {
+				"name": "test-client",
+				"version": "1.0.0"
+			}
+		}
+	}`
+
+	initResp, err := http.Post("http://localhost:8091/mcp", "application/json", bytes.NewBufferString(initRequest))
+	if err != nil {
+		t.Logf("Initialize request failed: %v", err)
+		return
+	}
+	defer initResp.Body.Close()
+
+	// Read initialization response
+	initBody, err := io.ReadAll(initResp.Body)
+	if err != nil {
+		t.Logf("Failed to read init response body: %v", err)
+	} else {
+		t.Logf("Init response status: %d, body: %s", initResp.StatusCode, string(initBody))
+	}
+
+	// Extract session ID from response headers if present
+	sessionID := initResp.Header.Get("Mcp-Session-Id")
+	if sessionID == "" {
+		t.Logf("No session ID in response headers")
+	}
+
+	// Now test tools/list with session ID if available
+	headers := map[string]string{
+		"Content-Type": "application/json",
+		"Accept":       "application/json,text/event-stream",
+	}
+	if sessionID != "" {
+		headers["Mcp-Session-Id"] = sessionID
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8091/mcp", bytes.NewBufferString(`{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}`))
+	if err != nil {
+		t.Logf("Failed to create request: %v", err)
+		return
+	}
+
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Logf("MCP endpoint test skipped (server might not be fully ready): %v", err)
 		return
@@ -138,6 +191,14 @@ func TestMCPServerBasicHTTP(t *testing.T) {
 			t.Logf("resp.Body.Close() error: %v", err)
 		}
 	}()
+
+	// Read response body for debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Logf("Failed to read response body: %v", err)
+	} else {
+		t.Logf("Response status: %d, body: %s", resp.StatusCode, string(body))
+	}
 
 	// Accept both 200 and 404 as valid responses (404 means endpoint not implemented)
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
@@ -168,19 +229,43 @@ func TestMCPServerToolCall(t *testing.T) {
 	mcpServer, err := NewMCPServer("8090", aiProvider, true, logger)
 	assert.NoError(t, err, "Should be able to create MCP server")
 
-	// Start the MCP server in a goroutine
-	go func() {
-		err := mcpServer.Start()
-		if err != nil {
-			logger.Info("MCP server stopped", zap.Error(err))
-		}
-	}()
+	// For HTTP mode, the server is already started in NewMCPServer
+	// No need to call Start() as it's already running in a goroutine
 
 	// Wait for the server to start
 	err = waitForPort("localhost:8090", 10*time.Second)
 	if err != nil {
 		t.Skipf("MCP server did not start within timeout: %v", err)
 	}
+
+	// First, initialize the session
+	initRequest := `{
+		"jsonrpc": "2.0",
+		"id": 1,
+		"method": "initialize",
+		"params": {
+			"protocolVersion": "2025-03-26",
+			"capabilities": {
+				"tools": {},
+				"resources": {},
+				"prompts": {}
+			},
+			"clientInfo": {
+				"name": "test-client",
+				"version": "1.0.0"
+			}
+		}
+	}`
+
+	initResp, err := http.Post("http://localhost:8090/mcp", "application/json", bytes.NewBufferString(initRequest))
+	if err != nil {
+		t.Logf("Initialize request failed: %v", err)
+		return
+	}
+	defer initResp.Body.Close()
+
+	// Extract session ID from response headers if present
+	sessionID := initResp.Header.Get("Mcp-Session-Id")
 
 	// Test calling the analyze tool with proper JSON-RPC format
 	analyzeRequest := `{
@@ -199,7 +284,21 @@ func TestMCPServerToolCall(t *testing.T) {
 		}
 	}`
 
-	resp, err := http.Post("http://localhost:8090/mcp", "application/json", bytes.NewBufferString(analyzeRequest))
+	// Create request with session ID if available
+	req, err := http.NewRequest("POST", "http://localhost:8090/mcp", bytes.NewBufferString(analyzeRequest))
+	if err != nil {
+		t.Logf("Failed to create request: %v", err)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json,text/event-stream")
+	if sessionID != "" {
+		req.Header.Set("Mcp-Session-Id", sessionID)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Logf("Analyze tool call test skipped (server might not be fully ready): %v", err)
 		return
