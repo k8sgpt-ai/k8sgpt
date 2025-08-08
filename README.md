@@ -270,6 +270,8 @@ you will be able to write your own analyzers.
 - [x] logAnalyzer
 - [x] storageAnalyzer
 - [x] securityAnalyzer
+- [x] ClusterCatalog
+- [x] ClusterExtension
 
 ## Examples
 
