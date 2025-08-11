@@ -523,6 +523,9 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 		}
 	}
 
+	if a.AIClient.GetName() == ai.CustomRestClientName {
+		inputKey = strings.ReplaceAll(inputKey, `"`, "'")
+	}
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
 	if a.AIClient.GetName() == ai.CustomRestClientName {
