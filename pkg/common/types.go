@@ -17,7 +17,6 @@ import (
 	"context"
 	"time"
 
-	trivy "github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -67,8 +66,6 @@ type PreAnalysis struct {
 	HTTPRoute                gtwapi.HTTPRoute
 	// Integrations
 	ScaledObject               keda.ScaledObject
-	TrivyVulnerabilityReport   trivy.VulnerabilityReport
-	TrivyConfigAuditReport     trivy.ConfigAuditReport
 	KyvernoPolicyReport        kyverno.PolicyReport
 	KyvernoClusterPolicyReport kyverno.ClusterPolicyReport
 }
