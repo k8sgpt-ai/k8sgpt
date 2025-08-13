@@ -42,6 +42,7 @@ type Analysis struct {
 	Client             *kubernetes.Client
 	Language           string
 	AIClient           ai.IAI
+	PromptMap          map[string]string
 	Results            []common.Result
 	Errors             []string
 	Namespace          string
@@ -209,11 +210,22 @@ func NewAnalysis(
 	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
 	}
+	// Initialize prompt map with default prompts
+	promptMap := make(map[string]string)
+	for promptType, promptTemplate := range ai.PromptMap {
+		promptMap[promptType] = promptTemplate
+	}
+	for promptType, customPrompt := range configAI.PromptMap {
+		if promptType != "raw" {
+			promptMap[promptType] = customPrompt
+		}
+	}
 	if verbose {
 		fmt.Println("Debug: AI client initialized.")
 	}
 	a.AIClient = aiClient
 	a.AnalysisAIProvider = aiProvider.Name
+	a.PromptMap = promptMap
 	return a, nil
 }
 
@@ -464,10 +476,10 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 			texts = append(texts, failure.Text)
 		}
 
-		promptTemplate := ai.PromptMap["default"]
+		promptTemplate := a.PromptMap["default"]
 		// If the resource `Kind` comes from an "integration plugin",
 		// maybe a customized prompt template will be involved.
-		if prompt, ok := ai.PromptMap[analysis.Kind]; ok {
+		if prompt, ok := a.PromptMap[analysis.Kind]; ok {
 			promptTemplate = prompt
 		}
 		result, err := a.getAIResultForSanitizedFailures(texts, promptTemplate)
