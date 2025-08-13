@@ -197,7 +197,7 @@ K8sGPT can be integrated with Claude Desktop to provide AI-powered Kubernetes cl
    - The MCP server will be automatically detected
 
 3. Configure Claude Desktop with the following JSON:
-   
+
   ```json
   {
     "mcpServers": {
@@ -270,8 +270,14 @@ you will be able to write your own analyzers.
 - [x] logAnalyzer
 - [x] storageAnalyzer
 - [x] securityAnalyzer
+- [x] CatalogSource
 - [x] ClusterCatalog
 - [x] ClusterExtension
+- [x] ClusterService
+- [x] ClusterServiceVersion
+- [x] OperatorGroup
+- [x] InstallPlan
+- [x] Subscription
 
 ## Examples
 
