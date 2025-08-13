@@ -1308,10 +1308,6 @@ github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f h1:y5//uYreIhSUg3J
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=
 github.com/naveenthangaraj03/k8sgpt-custom v0.0.0-20250217091002-d783b8c5750d h1:hW4KIekQL+RgM7TJbknE/ZdlX8dhhJGoje6A+UPhQlA=
 github.com/naveenthangaraj03/k8sgpt-custom v0.0.0-20250217091002-d783b8c5750d/go.mod h1:QUQSk7W7pwnimI9MjHT4Qv5KOawl1RAcw/gXD4/BpF0=
-github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
-github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
-github.com/oklog/ulid v1.3.1 h1:EGfNDEx6MqHz8B3uNV6QAib1UR2Lm97sHi3ocA6ESJ4=
-github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.5 h1:P2Ga83D34wi1o9J6Wh1mRuqd4mF/x/lgBS7N7AbDhec=
 github.com/olekukonko/tablewriter v0.0.5/go.mod h1:hPp6KlRPjbx+hW8ykQs1w3UBbZlj6HuIJcUGPhkA7kY=
 github.com/ollama/ollama v0.5.1 h1:Ug4y/5UZZoTgetMklZslAlEdaCnYEX9qZJ/aTsM4+xc=

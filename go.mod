@@ -50,6 +50,7 @@ require (
 	github.com/naveenthangaraj03/k8sgpt-custom v0.0.0-20250217091002-d783b8c5750d
 	github.com/metoro-io/mcp-golang v0.11.0
 	github.com/mark3labs/mcp-go v0.36.0
+	github.com/naveenthangaraj03/k8sgpt-custom v0.0.0-20250217091002-d783b8c5750d
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/oracle/oci-go-sdk/v65 v65.79.0
 	github.com/prometheus/prometheus v0.302.1
