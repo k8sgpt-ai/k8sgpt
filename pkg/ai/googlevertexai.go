@@ -61,10 +61,22 @@ var VERTEXAI_SUPPORTED_REGION = []string{
 }
 
 const (
-	ModelGeminiProV1 = "gemini-1.0-pro-001"
+	ModelGeminiProV1       = "gemini-1.0-pro-001"    // Retired Model
+	ModelGeminiProV2_5     = "gemini-2.5-pro"        // Latest Stable Model
+	ModelGeminiFlashV2_5   = "gemini-2.5-flash"      // Latest Stable Model
+	ModelGeminiFlashV2     = "gemini-2.0-flash"      // Latest Stable Model
+	ModelGeminiFlashLiteV2 = "gemini-2.0-flash-lite" // Latest Stable Model
+	ModelGeminiProV1_5     = "gemini-1.5-pro-002*"   // Legacy Stable Model
+	ModelGeminiFlashV1_5   = "gemini-1.5-flash-002*" // Legacy Stable Model
 )
 
 var VERTEXAI_MODELS = []string{
+	ModelGeminiProV2_5,
+	ModelGeminiFlashV2_5,
+	ModelGeminiFlashV2,
+	ModelGeminiFlashLiteV2,
+	ModelGeminiProV1_5,
+	ModelGeminiFlashV1_5,
 	ModelGeminiProV1,
 }
 
@@ -139,10 +151,10 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 				if !r.Blocked {
 					continue
 				}
-				return "", fmt.Errorf("complection blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
+				return "", fmt.Errorf("completion blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
 			}
 		}
-		return "", errors.New("no complection returned; unknown reason")
+		return "", errors.New("no completion returned; unknown reason")
 	}
 
 	// Format output.

@@ -43,14 +43,6 @@ func TestAnalyzerByIntegration(t *testing.T) {
 			name:         "PrometheusConfigRelabelReport",
 			expectedName: "prometheus",
 		},
-		{
-			name:         "VulnerabilityReport",
-			expectedName: "trivy",
-		},
-		{
-			name:         "ConfigAuditReport",
-			expectedName: "trivy",
-		},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -105,12 +97,6 @@ func TestActivate(t *testing.T) {
 			name:               "prometheus",
 			skipInstall:        true,
 			expectedIsActivate: true,
-		},
-		{
-			name:                    "trivy",
-			skipInstall:             false,
-			expectedActivationErr:   "failed to deploy trivy integration:",
-			expectedDeactivationErr: "failed to undeploy trivy integration:",
 		},
 	}
 	for _, tt := range tests {

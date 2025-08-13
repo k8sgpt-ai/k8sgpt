@@ -46,15 +46,17 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
 			switch nodeCondition.Type {
 			case v1.NodeReady:
-				if nodeCondition.Status == v1.ConditionTrue {
-					break
+				if nodeCondition.Status != v1.ConditionTrue {
+					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
-				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 			// k3s `EtcdIsVoter`` should not be reported as an error
 			case v1.NodeConditionType("EtcdIsVoter"):
 				break
 			default:
-				if nodeCondition.Status != v1.ConditionFalse {
+				// For other conditions:
+				// - Report True or Unknown status as failures (for standard conditions)
+				// - Report any unknown condition type as a failure
+				if nodeCondition.Status == v1.ConditionTrue || nodeCondition.Status == v1.ConditionUnknown || !isKnownNodeConditionType(nodeCondition.Type) {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
 			}
@@ -98,4 +100,18 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 		},
 	})
 	return failures
+}
+
+// isKnownNodeConditionType checks if the condition type is a standard Kubernetes node condition
+func isKnownNodeConditionType(conditionType v1.NodeConditionType) bool {
+	switch conditionType {
+	case v1.NodeReady,
+		v1.NodeMemoryPressure,
+		v1.NodeDiskPressure,
+		v1.NodePIDPressure,
+		v1.NodeNetworkUnavailable:
+		return true
+	default:
+		return false
+	}
 }

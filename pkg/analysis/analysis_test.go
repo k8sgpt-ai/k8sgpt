@@ -17,13 +17,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/agiledragon/gomonkey/v2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/magiconair/properties/assert"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -31,9 +35,15 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 )
 
-// sub-function
+// helper function: get type name of an analyzer
+func getTypeName(i interface{}) string {
+	return reflect.TypeOf(i).Name()
+}
+
+// helper function: run analysis with filter
 func analysis_RunAnalysisFilterTester(t *testing.T, filterFlag string) []common.Result {
 	clientset := fake.NewSimpleClientset(
 		&v1.Pod{
@@ -402,5 +412,254 @@ func TestGetAIResultForSanitizedFailures(t *testing.T) {
 				require.Empty(t, output)
 			}
 		})
+	}
+}
+
+// Test: Verbose output in NewAnalysis with explain=false
+func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
+	// Set viper config.
+	viper.Set("verbose", true)
+	viper.Set("kubecontext", "dummy")
+	viper.Set("kubeconfig", "dummy")
+
+	// Patch kubernetes.NewClient to return a dummy client.
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{
+			Config: &rest.Config{Host: "fake-server"},
+		}, nil
+	})
+	defer patches.Reset()
+
+	output := util.CaptureOutput(func() {
+		a, err := NewAnalysis(
+			"", "english", []string{"Pod"}, "default", "", true,
+			false, // explain
+			10, false, false, []string{}, false,
+		)
+		require.NoError(t, err)
+		a.Close()
+	})
+
+	expectedOutputs := []string{
+		"Debug: Checking kubernetes client initialization.",
+		"Debug: Kubernetes client initialized, server=fake-server.",
+		"Debug: Checking cache configuration.",
+		"Debug: Cache configuration loaded, type=file.",
+		"Debug: Cache disabled.",
+		"Debug: Analysis configuration loaded, filters=[Pod], language=english, namespace=default, labelSelector=none, explain=false, maxConcurrency=10, withDoc=false, withStats=false.",
+	}
+	for _, expected := range expectedOutputs {
+		if !util.Contains(output, expected) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+		}
+	}
+}
+
+// Test: Verbose output in NewAnalysis with explain=true
+func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
+	// Set viper config.
+	viper.Set("verbose", true)
+	viper.Set("kubecontext", "dummy")
+	viper.Set("kubeconfig", "dummy")
+	// Set a dummy AI configuration.
+	dummyAIConfig := map[string]interface{}{
+		"defaultProvider": "dummy",
+		"providers": []map[string]interface{}{
+			{
+				"name":          "dummy",
+				"baseUrl":       "http://dummy",
+				"model":         "dummy-model",
+				"customHeaders": map[string]string{},
+			},
+		},
+	}
+	viper.Set("ai", dummyAIConfig)
+
+	// Patch kubernetes.NewClient to return a dummy client.
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{
+			Config: &rest.Config{Host: "fake-server"},
+		}, nil
+	})
+	defer patches.Reset()
+
+	// Patch ai.NewClient to return a NoOp client.
+	patches2 := gomonkey.ApplyFunc(ai.NewClient, func(name string) ai.IAI {
+		return &ai.NoOpAIClient{}
+	})
+	defer patches2.Reset()
+
+	output := util.CaptureOutput(func() {
+		a, err := NewAnalysis(
+			"", "english", []string{"Pod"}, "default", "", true,
+			true, // explain
+			10, false, false, []string{}, false,
+		)
+		require.NoError(t, err)
+		a.Close()
+	})
+
+	expectedOutputs := []string{
+		"Debug: Checking AI configuration.",
+		"Debug: Using default AI provider dummy.",
+		"Debug: AI configuration loaded, provider=dummy, baseUrl=http://dummy, model=dummy-model.",
+		"Debug: Checking AI client initialization.",
+		"Debug: AI client initialized.",
+	}
+	for _, expected := range expectedOutputs {
+		if !util.Contains(output, expected) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+		}
+	}
+}
+
+// Test: Verbose output in RunAnalysis with filter flag
+func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
+	viper.Set("verbose", true)
+	// Run analysis with a filter flag ("Pod") to trigger debug output.
+	output := util.CaptureOutput(func() {
+		_ = analysis_RunAnalysisFilterTester(t, "Pod")
+	})
+
+	expectedOutputs := []string{
+		"Debug: Filter flags [Pod] specified, run selected core analyzers.",
+		"Debug: PodAnalyzer launched.",
+		"Debug: PodAnalyzer completed without errors.",
+	}
+
+	for _, expected := range expectedOutputs {
+		if !util.Contains(output, expected) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+		}
+	}
+}
+
+// Test: Verbose output in RunAnalysis with active filter
+func TestVerbose_RunAnalysisWithActiveFilter(t *testing.T) {
+	viper.Set("verbose", true)
+	viper.SetDefault("active_filters", "Ingress")
+	output := util.CaptureOutput(func() {
+		_ = analysis_RunAnalysisFilterTester(t, "")
+	})
+
+	expectedOutputs := []string{
+		"Debug: Found active filters [Ingress], run selected core analyzers.",
+		"Debug: IngressAnalyzer launched.",
+		"Debug: IngressAnalyzer completed without errors.",
+	}
+
+	for _, expected := range expectedOutputs {
+		if !util.Contains(output, expected) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+		}
+	}
+}
+
+// Test: Verbose output in RunAnalysis without any filter (run all core analyzers)
+func TestVerbose_RunAnalysisWithoutFilter(t *testing.T) {
+	viper.Set("verbose", true)
+	// Clear filter flag and active_filters to run all core analyzers.
+	viper.SetDefault("active_filters", []string{})
+	output := util.CaptureOutput(func() {
+		_ = analysis_RunAnalysisFilterTester(t, "")
+	})
+
+	// Check for debug message indicating no filters.
+	expectedNoFilter := "Debug: No filters selected and no active filters found, run all core analyzers."
+	if !util.Contains(output, expectedNoFilter) {
+		t.Errorf("Expected output to contain: '%s', but got output: '%s'", expectedNoFilter, output)
+	}
+
+	// Get all core analyzers from analyzer.GetAnalyzerMap()
+	coreAnalyzerMap, _ := analyzer.GetAnalyzerMap()
+	for _, analyzerInstance := range coreAnalyzerMap {
+		analyzerType := getTypeName(analyzerInstance)
+		expectedLaunched := fmt.Sprintf("Debug: %s launched.", analyzerType)
+		expectedCompleted := fmt.Sprintf("Debug: %s completed without errors.", analyzerType)
+		if !util.Contains(output, expectedLaunched) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expectedLaunched, output)
+		}
+		if !util.Contains(output, expectedCompleted) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expectedCompleted, output)
+		}
+	}
+}
+
+// Test: Verbose output in RunCustomAnalysis without custom analyzer
+func TestVerbose_RunCustomAnalysisWithoutCustomAnalyzer(t *testing.T) {
+	viper.Set("verbose", true)
+	// Set custom_analyzers to empty array to trigger "No custom analyzers" debug message.
+	viper.Set("custom_analyzers", []interface{}{})
+	analysisObj := &Analysis{
+		MaxConcurrency: 1,
+	}
+	output := util.CaptureOutput(func() {
+		analysisObj.RunCustomAnalysis()
+	})
+	expected := "Debug: No custom analyzers found."
+	if !util.Contains(output, "Debug: No custom analyzers found.") {
+		t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+	}
+}
+
+// Test: Verbose output in RunCustomAnalysis with custom analyzer
+func TestVerbose_RunCustomAnalysisWithCustomAnalyzer(t *testing.T) {
+	viper.Set("verbose", true)
+	// Set custom_analyzers with one custom analyzer using "fake" connection.
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{
+			"name":       "TestCustomAnalyzer",
+			"connection": map[string]interface{}{"url": "127.0.0.1", "port": "2333"},
+		},
+	})
+
+	analysisObj := &Analysis{
+		MaxConcurrency: 1,
+	}
+	output := util.CaptureOutput(func() {
+		analysisObj.RunCustomAnalysis()
+	})
+	assert.Equal(t, 1, len(analysisObj.Errors)) // connection error
+
+	expectedOutputs := []string{
+		"Debug: Found custom analyzers [TestCustomAnalyzer].",
+		"Debug: TestCustomAnalyzer launched.",
+		"Debug: TestCustomAnalyzer completed with errors.",
+	}
+
+	for _, expected := range expectedOutputs {
+		if !util.Contains(output, expected) {
+			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
+		}
+	}
+}
+
+// Test: Verbose output in GetAIResults
+func TestVerbose_GetAIResults(t *testing.T) {
+	viper.Set("verbose", true)
+	disabledCache := cache.New("disabled-cache")
+	disabledCache.DisableCache()
+	aiClient := &ai.NoOpAIClient{}
+	analysisObj := Analysis{
+		AIClient: aiClient,
+		Cache:    disabledCache,
+		Results: []common.Result{
+			{
+				Kind:         "Deployment",
+				Name:         "test-deployment",
+				Error:        []common.Failure{{Text: "test-problem", Sensitive: []common.Sensitive{}}},
+				Details:      "test-solution",
+				ParentObject: "parent-resource",
+			},
+		},
+		Namespace: "default",
+	}
+	output := util.CaptureOutput(func() {
+		_ = analysisObj.GetAIResults("json", false)
+	})
+
+	expected := "Debug: Generating AI analysis."
+	if !util.Contains(output, expected) {
+		t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
 	}
 }

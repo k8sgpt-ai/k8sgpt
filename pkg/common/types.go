@@ -17,7 +17,6 @@ import (
 	"context"
 	"time"
 
-	trivy "github.com/aquasecurity/trivy-operator/pkg/apis/aquasecurity/v1alpha1"
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -29,6 +28,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -67,10 +67,10 @@ type PreAnalysis struct {
 	HTTPRoute                gtwapi.HTTPRoute
 	// Integrations
 	ScaledObject               keda.ScaledObject
-	TrivyVulnerabilityReport   trivy.VulnerabilityReport
-	TrivyConfigAuditReport     trivy.ConfigAuditReport
 	KyvernoPolicyReport        kyverno.PolicyReport
 	KyvernoClusterPolicyReport kyverno.ClusterPolicyReport
+	Catalog                    ClusterCatalog
+	Extension                  ClusterExtension
 }
 
 type Result struct {
@@ -95,4 +95,118 @@ type Failure struct {
 type Sensitive struct {
 	Unmasked string
 	Masked   string
+}
+
+type (
+	SourceType                  string
+	AvailabilityMode            string
+	UpgradeConstraintPolicy     string
+	CRDUpgradeSafetyEnforcement string
+)
+
+type ClusterCatalog struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata"`
+	Spec              ClusterCatalogSpec   `json:"spec"`
+	Status            ClusterCatalogStatus `json:"status,omitempty"`
+}
+type ClusterCatalogList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []ClusterCatalog `json:"items"`
+}
+
+type ClusterCatalogSpec struct {
+	Source CatalogSource `json:"source"`
+
+	Priority int32 `json:"priority"`
+
+	AvailabilityMode AvailabilityMode `json:"availabilityMode,omitempty"`
+}
+
+type ClusterCatalogStatus struct {
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+
+	ResolvedSource *ResolvedCatalogSource `json:"resolvedSource,omitempty"`
+
+	URLs         *ClusterCatalogURLs `json:"urls,omitempty"`
+	LastUnpacked *metav1.Time        `json:"lastUnpacked,omitempty"`
+}
+
+type ClusterCatalogURLs struct {
+	Base string `json:"base"`
+}
+type CatalogSource struct {
+	Type  SourceType   `json:"type"`
+	Image *ImageSource `json:"image,omitempty"`
+}
+type ResolvedCatalogSource struct {
+	Type  SourceType           `json:"type"`
+	Image *ResolvedImageSource `json:"image"`
+}
+type ResolvedImageSource struct {
+	Ref string `json:"ref"`
+}
+
+type ImageSource struct {
+	Ref                 string `json:"ref"`
+	PollIntervalMinutes *int   `json:"pollIntervalMinutes,omitempty"`
+}
+
+type ClusterExtension struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              ClusterExtensionSpec   `json:"spec,omitempty"`
+	Status            ClusterExtensionStatus `json:"status,omitempty"`
+}
+
+type ClusterExtensionSpec struct {
+	Namespace      string                         `json:"namespace"`
+	ServiceAccount ServiceAccountReference        `json:"serviceAccount"`
+	Source         SourceConfig                   `json:"source"`
+	Install        *ClusterExtensionInstallConfig `json:"install,omitempty"`
+}
+
+type ClusterExtensionInstallConfig struct {
+	Preflight *PreflightConfig `json:"preflight,omitempty"`
+}
+
+type PreflightConfig struct {
+	CRDUpgradeSafety *CRDUpgradeSafetyPreflightConfig `json:"crdUpgradeSafety"`
+}
+
+type CRDUpgradeSafetyPreflightConfig struct {
+	Enforcement CRDUpgradeSafetyEnforcement `json:"enforcement"`
+}
+
+type ServiceAccountReference struct {
+	Name string `json:"name"`
+}
+
+type SourceConfig struct {
+	SourceType string         `json:"sourceType"`
+	Catalog    *CatalogFilter `json:"catalog,omitempty"`
+}
+
+type CatalogFilter struct {
+	PackageName             string                  `json:"packageName"`
+	Version                 string                  `json:"version,omitempty"`
+	Channels                []string                `json:"channels,omitempty"`
+	Selector                *metav1.LabelSelector   `json:"selector,omitempty"`
+	UpgradeConstraintPolicy UpgradeConstraintPolicy `json:"upgradeConstraintPolicy,omitempty"`
+}
+
+type ClusterExtensionStatus struct {
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+
+	Install *ClusterExtensionInstallStatus `json:"install,omitempty"`
+}
+
+type ClusterExtensionInstallStatus struct {
+	Bundle BundleMetadata `json:"bundle"`
+}
+
+type BundleMetadata struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
 }

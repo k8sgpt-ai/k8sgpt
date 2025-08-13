@@ -23,6 +23,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai/interactive"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -67,26 +68,47 @@ var AnalyzeCmd = &cobra.Command{
 			withStats,
 		)
 
+		verbose := viper.GetBool("verbose")
+		if verbose {
+			fmt.Println("Debug: Checking analysis configuration.")
+		}
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
+		}
+		if verbose {
+			fmt.Println("Debug: Analysis initialized.")
 		}
 		defer config.Close()
 
 		if customAnalysis {
 			config.RunCustomAnalysis()
+			if verbose {
+				fmt.Println("Debug: All custom analyzers completed.")
+			}
 		} else {
 			config.RunAnalysis()
+			if verbose {
+				fmt.Println("Debug: All core analyzers completed.")
+			}
 		}
 
+
 		if explain {
-			if err := config.GetAIResults(output, anonymize); err != nil {
+			err := config.GetAIResults(output, anonymize)
+			if verbose {
+				fmt.Println("Debug: Checking AI results.")
+			}
+			if err != nil {
 				color.Red("Error: %v", err)
 				os.Exit(1)
 			}
 		}
 		// print results
 		output_data, err := config.PrintOutput(output)
+		if verbose {
+			fmt.Println("Debug: Checking output.")
+		}
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)

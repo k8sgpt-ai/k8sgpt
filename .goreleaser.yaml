@@ -70,8 +70,28 @@ checksum:
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 
-  # skip: true
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+announce:
+  slack:
+    # Whether its enabled or not.
+    #
+    # Templates: allowed (since v2.6).
+    enabled: true
+
+    # Message template to use while publishing.
+    #
+    # Default: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'.
+    # Templates: allowed.
+    message_template: "{{ .ProjectName }} release {{.Tag}} is out!"
+
+    # The name of the channel that the user selected as a destination for webhook messages.
+    channel: "#general"
+
+    # Set your Webhook's user name.
+    username: "K8sGPT"
+
+    # Emoji to use as the icon for this message. Overrides icon_url.
+    icon_emoji: ""
+
+    # URL to an image to use as the icon for this message.
+    icon_url: ""
+
