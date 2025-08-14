@@ -86,11 +86,13 @@ var AnalyzeCmd = &cobra.Command{
 			if verbose {
 				fmt.Println("Debug: All custom analyzers completed.")
 			}
+		} else {
+			config.RunAnalysis()
+			if verbose {
+				fmt.Println("Debug: All core analyzers completed.")
+			}
 		}
-		config.RunAnalysis()
-		if verbose {
-			fmt.Println("Debug: All core analyzers completed.")
-		}
+
 
 		if explain {
 			err := config.GetAIResults(output, anonymize)
