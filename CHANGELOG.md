@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.23](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.22...v0.4.23) (2025-08-08)
+
+
+### Features
+
+* add ClusterCatalog and ClusterExtension analyzers ([#1555](https://github.com/k8sgpt-ai/k8sgpt/issues/1555)) ([a821814](https://github.com/k8sgpt-ai/k8sgpt/commit/a821814125e25c062ff2faebf9df1b880414c22c))
+* oci genai chat models ([#1337](https://github.com/k8sgpt-ai/k8sgpt/issues/1337)) ([290a4be](https://github.com/k8sgpt-ai/k8sgpt/commit/290a4be210fbb508214070c31218138781d96142))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1537](https://github.com/k8sgpt-ai/k8sgpt/issues/1537)) ([50d5d78](https://github.com/k8sgpt-ai/k8sgpt/commit/50d5d78c06e42d75a2448989528e5e6be12ea825))
+* **deps:** update module helm.sh/helm/v3 to v3.17.4 [security] ([#1541](https://github.com/k8sgpt-ai/k8sgpt/issues/1541)) ([5b42249](https://github.com/k8sgpt-ai/k8sgpt/commit/5b4224951e7348e9d78292dadc9b9786957117f1))
+
 ## [0.4.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.21...v0.4.22) (2025-07-18)
 
 
