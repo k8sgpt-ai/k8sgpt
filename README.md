@@ -391,6 +391,26 @@ _Serve mode_
 k8sgpt serve
 ```
 
+_Serve mode with MCP (Model Context Protocol)_
+
+```
+# Enable MCP server on default port 8089
+k8sgpt serve --mcp --mcp-http
+
+# Enable MCP server on custom port
+k8sgpt serve --mcp --mcp-http --mcp-port 8089
+
+# Full serve mode with MCP
+k8sgpt serve --mcp --mcp-http --port 8080 --metrics-port 8081 --mcp-port 8089
+```
+
+The MCP server enables integration with tools like Claude Desktop and other MCP-compatible clients. It runs on port 8089 by default and provides:
+- Kubernetes cluster analysis via MCP protocol
+- Resource information and health status
+- AI-powered issue explanations and recommendations
+
+For Helm chart deployment with MCP support, see the `charts/k8sgpt/values-mcp-example.yaml` file.
+
 _Analysis with serve mode_
 
 ```
