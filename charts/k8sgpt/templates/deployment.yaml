@@ -32,7 +32,13 @@ spec:
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}
         ports:
         - containerPort: 8080
-        args: ["serve"]
+        {{- if .Values.deployment.mcp.enabled }}
+        - containerPort: {{ .Values.deployment.mcp.port | int }}
+        {{- end }}
+        args: ["serve"
+        {{- if .Values.deployment.mcp.enabled }}, "--mcp", "-v","--mcp-http", "--mcp-port", {{ .Values.deployment.mcp.port | quote }}
+        {{- end }}
+        ]
         {{- if .Values.deployment.resources }}
         resources:
         {{- toYaml .Values.deployment.resources | nindent 10 }}

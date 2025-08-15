@@ -141,6 +141,8 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 		),
 		mcp.WithArray("filters",
 			mcp.Description("Provide filters to narrow down the analysis (e.g. ['Pods', 'Deployments'])"),
+			// without below line MCP server fails with Google Agent Development Kit (ADK), interestingly works fine with mcpinspector
+			mcp.WithStringItems(),
 		),
 	)
 	s.server.AddTool(analyzeTool, s.handleAnalyze)
