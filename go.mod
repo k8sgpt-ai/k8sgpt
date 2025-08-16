@@ -14,7 +14,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/term v0.30.0
-	helm.sh/helm/v3 v3.17.4
+	helm.sh/helm/v3 v3.18.5
 	k8s.io/api v0.32.2
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
