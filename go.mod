@@ -48,7 +48,7 @@ require (
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
 	github.com/mark3labs/mcp-go v0.36.0
-	github.com/olekukonko/tablewriter v0.0.5
+	github.com/olekukonko/tablewriter v1.0.9
 	github.com/oracle/oci-go-sdk/v65 v65.79.0
 	github.com/prometheus/prometheus v0.302.1
 	github.com/pterm/pterm v0.12.80
@@ -130,6 +130,8 @@ require (
 	github.com/moby/sys/mountinfo v0.7.1 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/olekukonko/errors v1.1.0 // indirect
+	github.com/olekukonko/ll v0.0.9 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/prometheus/sigv4 v0.1.1 // indirect
