@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.24](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.23...v0.4.24) (2025-08-18)
+
+
+### Features
+
+* add ClusterServiceVersion, Subscription, InstallPlan, OperatorGroup, and CatalogSource analyzers ([#1564](https://github.com/k8sgpt-ai/k8sgpt/issues/1564)) ([0cf4cae](https://github.com/k8sgpt-ai/k8sgpt/commit/0cf4cae07e32a0025246abcf2d1a5a91f82d093a))
+* reintroduced inference code ([#1548](https://github.com/k8sgpt-ai/k8sgpt/issues/1548)) ([7e33276](https://github.com/k8sgpt-ai/k8sgpt/commit/7e332761d89d953989b4f33509208dd4db4d4b91))
+* update helm charts with mcp support and fix Google ADA issue  ([#1568](https://github.com/k8sgpt-ai/k8sgpt/issues/1568)) ([5334589](https://github.com/k8sgpt-ai/k8sgpt/commit/53345895deec4c74cac00ee3fd5e230f6a92cf4a))
+
+
+### Bug Fixes
+
+* migrated to more actively maintained mcp golang lib and added AI explain  ([#1557](https://github.com/k8sgpt-ai/k8sgpt/issues/1557)) ([c47ae59](https://github.com/k8sgpt-ai/k8sgpt/commit/c47ae595fb9fc5bf22afef3bc6764b3e87e4553d))
+
+
+### Other
+
+* **deps:** update actions/checkout action to v5 ([#1562](https://github.com/k8sgpt-ai/k8sgpt/issues/1562)) ([e385e77](https://github.com/k8sgpt-ai/k8sgpt/commit/e385e77da93a65fe52a152bf1f8f1415552698d5))
+* **deps:** update amannn/action-semantic-pull-request action to v6 ([#1565](https://github.com/k8sgpt-ai/k8sgpt/issues/1565)) ([c5c9135](https://github.com/k8sgpt-ai/k8sgpt/commit/c5c9135900ec6f95b63dac47df751269e7420e87))
+* **deps:** update docker/login-action digest to 184bdaa ([#1559](https://github.com/k8sgpt-ai/k8sgpt/issues/1559)) ([0239b2f](https://github.com/k8sgpt-ai/k8sgpt/commit/0239b2fe6e7105bbcf3256c559c30ec7065b25f3))
+* **deps:** update goreleaser/goreleaser-action digest to e435ccd ([#1569](https://github.com/k8sgpt-ai/k8sgpt/issues/1569)) ([5e86f49](https://github.com/k8sgpt-ai/k8sgpt/commit/5e86f4925c4209b0eb2959227229c2994cfc5b6f))
+
 ## [0.4.23](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.22...v0.4.23) (2025-08-08)
 
 
