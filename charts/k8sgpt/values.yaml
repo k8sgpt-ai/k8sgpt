@@ -7,6 +7,11 @@ deployment:
   env:
     model: "gpt-3.5-turbo"
     backend: "openai" # one of: [ openai | llama ]
+  # MCP (Model Context Protocol) server configuration
+  mcp:
+    enabled: false # Enable MCP server
+    port: "8089" # Port for MCP server
+    http: true # Enable HTTP mode for MCP server
   resources:
     limits:
       cpu: "1"
