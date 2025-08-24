@@ -79,7 +79,13 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: scaleTargetRef.Name,
-						Masked:   util.MaskString(scaleTargetRef.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(scaleTargetRef.Name)
+							if err != nil {
+								return scaleTargetRef.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -105,7 +111,13 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: scaleTargetRef.Name,
-							Masked:   util.MaskString(scaleTargetRef.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(scaleTargetRef.Name)
+								if err != nil {
+									return scaleTargetRef.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -122,7 +134,13 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: scaleTargetRef.Name,
-							Masked:   util.MaskString(scaleTargetRef.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(scaleTargetRef.Name)
+								if err != nil {
+									return scaleTargetRef.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
