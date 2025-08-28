@@ -623,15 +623,26 @@ func TestVerbose_RunCustomAnalysisWithCustomAnalyzer(t *testing.T) {
 
 	expectedOutputs := []string{
 		"Debug: Found custom analyzers [TestCustomAnalyzer].",
+	}
+
+	unexpectedOutputs := []string{
 		"Debug: TestCustomAnalyzer launched.",
 		"Debug: TestCustomAnalyzer completed with errors.",
 	}
+
 
 	for _, expected := range expectedOutputs {
 		if !util.Contains(output, expected) {
 			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
 		}
 	}
+
+	for _, unexpected := range unexpectedOutputs {
+		if util.Contains(output, unexpected) {
+			t.Errorf("Did not expect output to contain: '%s', but it did. Full output: '%s'", unexpected, output)
+		}
+	}
+
 }
 
 // Test: Verbose output in GetAIResults
