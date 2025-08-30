@@ -256,8 +256,11 @@ func (a *Analysis) RunCustomAnalysis() {
 						a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
 						return
 					}
+					if verbose {
+						fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
+					}
 
-					result, err := canClient.Run(filter)
+					result, err := canClient.Run(cAnalyzer.Name)
 					if result.Kind == "" {
 						result.Kind = cAnalyzer.Name
 					}
