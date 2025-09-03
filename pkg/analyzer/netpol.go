@@ -63,7 +63,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: policy.Name,
-						Masked:   util.MaskString(policy.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(policy.Name)
+							if err != nil {
+								return policy.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -79,7 +85,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: policy.Name,
-							Masked:   util.MaskString(policy.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(policy.Name)
+								if err != nil {
+									return policy.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})

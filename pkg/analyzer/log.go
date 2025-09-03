@@ -63,7 +63,13 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: pod.Name,
-							Masked:   util.MaskString(pod.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(pod.Name)
+								if err != nil {
+									return pod.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -75,7 +81,13 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: pod.Name,
-								Masked:   util.MaskString(pod.Name),
+								Masked: func() string {
+									masked, err := util.MaskString(pod.Name)
+									if err != nil {
+										return pod.Name
+									}
+									return masked
+								}(),
 							},
 						},
 					})
