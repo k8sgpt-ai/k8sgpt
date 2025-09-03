@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.25](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.24...v0.4.25) (2025-09-03)
+
+
+### Features
+
+* fix to broken inference ([#1575](https://github.com/k8sgpt-ai/k8sgpt/issues/1575)) ([291e42d](https://github.com/k8sgpt-ai/k8sgpt/commit/291e42dc4b81ffb0672c21fbb325ddebc5d531a3))
+
 ## [0.4.24](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.23...v0.4.24) (2025-08-18)
 
 
