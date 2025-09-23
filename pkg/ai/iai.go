@@ -34,6 +34,7 @@ var (
 		&OCIGenAIClient{},
 		&CustomRestClient{},
 		&IBMWatsonxAIClient{},
+		&DeepseekAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -50,6 +51,7 @@ var (
 		ociClientName,
 		CustomRestClientName,
 		ibmWatsonxAIClientName,
+		deepSeekAIClientName,
 	}
 )
 
