@@ -41,6 +41,8 @@ var (
 	enableMCP   bool
 	mcpPort     string
 	mcpHTTP     bool
+	// filters can be injected into the server (repeatable flag)
+	filters     []string
 )
 
 var ServeCmd = &cobra.Command{
@@ -208,6 +210,7 @@ var ServeCmd = &cobra.Command{
 			EnableHttp:  enableHttp,
 			Token:       aiProvider.Password,
 			Logger:      logger,
+			Filters:     filters,
 		}
 		go func() {
 			if err := server.ServeMetrics(); err != nil {
@@ -237,4 +240,6 @@ func init() {
 	ServeCmd.Flags().BoolVarP(&enableMCP, "mcp", "", false, "Enable Mission Control Protocol server")
 	ServeCmd.Flags().StringVarP(&mcpPort, "mcp-port", "", "8089", "Port to run the MCP server on")
 	ServeCmd.Flags().BoolVarP(&mcpHTTP, "mcp-http", "", false, "Enable HTTP mode for MCP server")
+	// allow injecting filters into the running server (repeatable)
+	ServeCmd.Flags().StringSliceVar(&filters, "filter", []string{}, "Filter to apply (can be specified multiple times)")
 }
