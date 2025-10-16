@@ -430,7 +430,7 @@ func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
 	})
 	defer patches.Reset()
 
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		a, err := NewAnalysis(
 			"", "english", []string{"Pod"}, "default", "", true,
 			false, // explain
@@ -439,6 +439,7 @@ func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
 		require.NoError(t, err)
 		a.Close()
 	})
+	require.NoError(t, err)
 
 	expectedOutputs := []string{
 		"Debug: Checking kubernetes client initialization.",
@@ -489,7 +490,7 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 	})
 	defer patches2.Reset()
 
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		a, err := NewAnalysis(
 			"", "english", []string{"Pod"}, "default", "", true,
 			true, // explain
@@ -498,6 +499,7 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 		require.NoError(t, err)
 		a.Close()
 	})
+	require.NoError(t, err)
 
 	expectedOutputs := []string{
 		"Debug: Checking AI configuration.",
@@ -517,9 +519,10 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	// Run analysis with a filter flag ("Pod") to trigger debug output.
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		_ = analysis_RunAnalysisFilterTester(t, "Pod")
 	})
+	require.NoError(t, err)
 
 	expectedOutputs := []string{
 		"Debug: Filter flags [Pod] specified, run selected core analyzers.",
@@ -538,9 +541,10 @@ func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
 func TestVerbose_RunAnalysisWithActiveFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	viper.SetDefault("active_filters", "Ingress")
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		_ = analysis_RunAnalysisFilterTester(t, "")
 	})
+	require.NoError(t, err)
 
 	expectedOutputs := []string{
 		"Debug: Found active filters [Ingress], run selected core analyzers.",
@@ -560,9 +564,10 @@ func TestVerbose_RunAnalysisWithoutFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	// Clear filter flag and active_filters to run all core analyzers.
 	viper.SetDefault("active_filters", []string{})
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		_ = analysis_RunAnalysisFilterTester(t, "")
 	})
+	require.NoError(t, err)
 
 	// Check for debug message indicating no filters.
 	expectedNoFilter := "Debug: No filters selected and no active filters found, run all core analyzers."
@@ -593,9 +598,10 @@ func TestVerbose_RunCustomAnalysisWithoutCustomAnalyzer(t *testing.T) {
 	analysisObj := &Analysis{
 		MaxConcurrency: 1,
 	}
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		analysisObj.RunCustomAnalysis()
 	})
+	require.NoError(t, err)
 	expected := "Debug: No custom analyzers found."
 	if !util.Contains(output, "Debug: No custom analyzers found.") {
 		t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
@@ -616,9 +622,10 @@ func TestVerbose_RunCustomAnalysisWithCustomAnalyzer(t *testing.T) {
 	analysisObj := &Analysis{
 		MaxConcurrency: 1,
 	}
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		analysisObj.RunCustomAnalysis()
 	})
+	require.NoError(t, err)
 	assert.Equal(t, 1, len(analysisObj.Errors)) // connection error
 
 	expectedOutputs := []string{
@@ -654,9 +661,10 @@ func TestVerbose_GetAIResults(t *testing.T) {
 		},
 		Namespace: "default",
 	}
-	output := util.CaptureOutput(func() {
+	output, err := util.CaptureOutput(func() {
 		_ = analysisObj.GetAIResults("json", false)
 	})
+	require.NoError(t, err)
 
 	expected := "Debug: Generating AI analysis."
 	if !util.Contains(output, expected) {

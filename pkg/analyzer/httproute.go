@@ -72,11 +72,23 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: gtw.Namespace,
-							Masked:   util.MaskString(gtw.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(gtw.Namespace)
+								if err != nil {
+									return gtw.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: gtw.Name,
-							Masked:   util.MaskString(gtw.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(gtw.Name)
+								if err != nil {
+									return gtw.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -98,19 +110,43 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 									Sensitive: []common.Sensitive{
 										{
 											Unmasked: route.Namespace,
-											Masked:   util.MaskString(route.Namespace),
+											Masked: func() string {
+												masked, err := util.MaskString(route.Namespace)
+												if err != nil {
+													return route.Namespace
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: route.Name,
-											Masked:   util.MaskString(route.Name),
+											Masked: func() string {
+												masked, err := util.MaskString(route.Name)
+												if err != nil {
+													return route.Name
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: gtw.Namespace,
-											Masked:   util.MaskString(gtw.Namespace),
+											Masked: func() string {
+												masked, err := util.MaskString(gtw.Namespace)
+												if err != nil {
+													return gtw.Namespace
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: gtw.Name,
-											Masked:   util.MaskString(gtw.Name),
+											Masked: func() string {
+												masked, err := util.MaskString(gtw.Name)
+												if err != nil {
+													return gtw.Name
+												}
+												return masked
+											}(),
 										},
 									},
 								})
@@ -129,19 +165,43 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 									Sensitive: []common.Sensitive{
 										{
 											Unmasked: route.Namespace,
-											Masked:   util.MaskString(route.Namespace),
+											Masked: func() string {
+												masked, err := util.MaskString(route.Namespace)
+												if err != nil {
+													return route.Namespace
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: route.Name,
-											Masked:   util.MaskString(route.Name),
+											Masked: func() string {
+												masked, err := util.MaskString(route.Name)
+												if err != nil {
+													return route.Name
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: gtw.Namespace,
-											Masked:   util.MaskString(gtw.Namespace),
+											Masked: func() string {
+												masked, err := util.MaskString(gtw.Namespace)
+												if err != nil {
+													return gtw.Namespace
+												}
+												return masked
+											}(),
 										},
 										{
 											Unmasked: gtw.Name,
-											Masked:   util.MaskString(gtw.Name),
+											Masked: func() string {
+												masked, err := util.MaskString(gtw.Name)
+												if err != nil {
+													return gtw.Name
+												}
+												return masked
+											}(),
 										},
 									},
 								})
@@ -168,11 +228,23 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: service.Namespace,
-								Masked:   util.MaskString(service.Namespace),
+								Masked: func() string {
+									masked, err := util.MaskString(service.Namespace)
+									if err != nil {
+										return service.Namespace
+									}
+									return masked
+								}(),
 							},
 							{
 								Unmasked: service.Name,
-								Masked:   util.MaskString(service.Name),
+								Masked: func() string {
+									masked, err := util.MaskString(service.Name)
+									if err != nil {
+										return service.Name
+									}
+									return masked
+								}(),
 							},
 						},
 					})
@@ -195,11 +267,23 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							Sensitive: []common.Sensitive{
 								{
 									Unmasked: string(backend.Name),
-									Masked:   util.MaskString(string(backend.Name)),
+									Masked: func() string {
+										masked, err := util.MaskString(string(backend.Name))
+										if err != nil {
+											return string(backend.Name)
+										}
+										return masked
+									}(),
 								},
 								{
 									Unmasked: service.Name,
-									Masked:   util.MaskString(service.Name),
+									Masked: func() string {
+									masked, err := util.MaskString(service.Name)
+									if err != nil {
+										return service.Name
+									}
+									return masked
+								}(),
 								},
 								{
 									Unmasked: service.Namespace,

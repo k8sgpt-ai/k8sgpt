@@ -61,11 +61,23 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: cronJob.Namespace,
-						Masked:   util.MaskString(cronJob.Namespace),
+						Masked: func() string {
+							masked, err := util.MaskString(cronJob.Namespace)
+							if err != nil {
+								return cronJob.Namespace
+							}
+							return masked
+						}(),
 					},
 					{
 						Unmasked: cronJob.Name,
-						Masked:   util.MaskString(cronJob.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(cronJob.Name)
+							if err != nil {
+								return cronJob.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -80,11 +92,23 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: cronJob.Namespace,
-							Masked:   util.MaskString(cronJob.Namespace),
+							Masked: func() string {
+								masked, err := util.MaskString(cronJob.Namespace)
+								if err != nil {
+									return cronJob.Namespace
+								}
+								return masked
+							}(),
 						},
 						{
 							Unmasked: cronJob.Name,
-							Masked:   util.MaskString(cronJob.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(cronJob.Name)
+								if err != nil {
+									return cronJob.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
@@ -102,11 +126,23 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 						Sensitive: []common.Sensitive{
 							{
 								Unmasked: cronJob.Namespace,
-								Masked:   util.MaskString(cronJob.Namespace),
+								Masked: func() string {
+								masked, err := util.MaskString(cronJob.Namespace)
+								if err != nil {
+									return cronJob.Namespace
+								}
+								return masked
+							}(),
 							},
 							{
 								Unmasked: cronJob.Name,
-								Masked:   util.MaskString(cronJob.Name),
+								Masked: func() string {
+								masked, err := util.MaskString(cronJob.Name)
+								if err != nil {
+									return cronJob.Name
+								}
+								return masked
+							}(),
 							},
 						},
 					})
