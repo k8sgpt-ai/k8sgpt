@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.26](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.25...v0.4.26) (2025-10-16)
+
+
+### Other
+
+* missing filter arg on serve ([#1583](https://github.com/k8sgpt-ai/k8sgpt/issues/1583)) ([f1d2e30](https://github.com/k8sgpt-ai/k8sgpt/commit/f1d2e306f32eb1e01a2788174084be29a7fa1282))
+
 ## [0.4.25](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.24...v0.4.25) (2025-09-03)
 
 
