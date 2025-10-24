@@ -484,6 +484,7 @@ Unused:
 > watsonxai
 > customrest
 > ibmwatsonxai
+> liteLLM
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
