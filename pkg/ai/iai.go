@@ -35,6 +35,7 @@ var (
 		&CustomRestClient{},
 		&IBMWatsonxAIClient{},
 		&DeepseekAIClient{},
+		&QwenAIClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -52,6 +53,7 @@ var (
 		CustomRestClientName,
 		ibmWatsonxAIClientName,
 		deepSeekAIClientName,
+		qwenAIClientName,
 	}
 )
 

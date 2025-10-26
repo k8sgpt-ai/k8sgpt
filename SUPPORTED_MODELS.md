@@ -80,6 +80,12 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
   - deepseek-chat
   - deepseek-coder
 
+### Ali Qwen AI
+- **Supported Models:**
+  - qwen3-max
+  - qwen-plus
+  - qwen3-flash
+  - qwq-plus
 ---
 
 For more details on configuring each provider and model, refer to the official K8sGPT documentation and the provider's own documentation. 
