@@ -55,7 +55,7 @@ func (c *QwenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	}
 	completion, err := c.client.Chat.Completions.New(ctx, params)
 	if err != nil {
-		log.Fatalf("Qwen failed to complete, %v", err)
+		log.Fatalf("Ali Qwen failed to complete, %v", err)
 		return "", err
 	}
 
