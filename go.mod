@@ -1,6 +1,6 @@
 module github.com/k8sgpt-ai/k8sgpt
 
-go 1.24.0
+go 1.24.6
 
 require (
 	github.com/fatih/color v1.18.0
@@ -191,7 +191,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/btree v1.1.3 // indirect
-	github.com/google/gnostic v0.7.0
+	github.com/google/gnostic v0.7.1
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gosuri/uitable v0.0.4 // indirect
