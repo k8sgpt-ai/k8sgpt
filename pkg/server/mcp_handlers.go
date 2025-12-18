@@ -332,7 +332,9 @@ func (s *K8sGptMCPServer) handleGetLogs(ctx context.Context, request mcp.CallToo
 	if err != nil {
 		return mcp.NewToolResultErrorf("Failed to get logs: %v", err), nil
 	}
-	defer logStream.Close()
+	defer func() {
+		_ = logStream.Close()
+	}()
 
 	logs, err := io.ReadAll(logStream)
 	if err != nil {
