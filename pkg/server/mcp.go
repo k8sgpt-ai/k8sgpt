@@ -68,6 +68,8 @@ func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *
 		// Create HTTP server with streamable transport
 		httpOpts := []server.StreamableHTTPOption{
 			server.WithLogger(&zapLoggerAdapter{logger: logger}),
+			// Enable stateless mode for one-off tool invocations without session management
+			server.WithStateLess(true),
 		}
 
 		httpServer := server.NewStreamableHTTPServer(mcpServer, httpOpts...)
