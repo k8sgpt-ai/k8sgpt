@@ -18,17 +18,30 @@ func TestInterplexCache(t *testing.T) {
 	}
 
 	// Mock GRPC server setup
+	errChan := make(chan error, 1)
 	go func() {
 		lis, err := net.Listen("tcp", ":50051")
 		if err != nil {
-			t.Fatalf("failed to listen: %v", err)
+			errChan <- err
+			return
 		}
 		s := grpc.NewServer()
 		rpc.RegisterCacheServiceServer(s, &mockCacheService{})
 		if err := s.Serve(lis); err != nil {
-			t.Fatalf("failed to serve: %v", err)
+			errChan <- err
+			return
 		}
 	}()
+
+	// Check if server startup failed
+	select {
+	case err := <-errChan:
+		if err != nil {
+			t.Fatalf("failed to start mock server: %v", err)
+		}
+	default:
+		// Server started successfully
+	}
 
 	t.Run("TestStore", func(t *testing.T) {
 		err := cache.Store("key1", "value1")
