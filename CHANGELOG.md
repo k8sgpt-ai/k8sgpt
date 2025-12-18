@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.27](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.26...v0.4.27) (2025-12-18)
+
+
+### Features
+
+* mcp v2 ([#1589](https://github.com/k8sgpt-ai/k8sgpt/issues/1589)) ([5480051](https://github.com/k8sgpt-ai/k8sgpt/commit/5480051230ce83b89c0382abd7992c7ecc4a85b8))
+
 ## [0.4.26](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.25...v0.4.26) (2025-10-16)
 
 
