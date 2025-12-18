@@ -28,6 +28,7 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // K8sGptMCPServer represents an MCP server for k8sgpt
@@ -218,6 +219,122 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 		),
 	)
 	s.server.AddTool(configTool, s.handleConfig)
+
+	// Register resource listing tools
+	listResourcesTool := mcp.NewTool("list-resources",
+		mcp.WithDescription("List Kubernetes resources of a specific type (pods, deployments, services, nodes, etc.)"),
+		mcp.WithString("resourceType",
+			mcp.Required(),
+			mcp.Description("Type of resource to list (e.g., pods, deployments, services, nodes, jobs, etc.)"),
+		),
+		mcp.WithString("namespace",
+			mcp.Description("Namespace to list resources from (empty for all or cluster-scoped resources)"),
+		),
+		mcp.WithString("labelSelector",
+			mcp.Description("Label selector to filter resources (e.g., 'app=myapp')"),
+		),
+	)
+	s.server.AddTool(listResourcesTool, s.handleListResources)
+
+	// Register get resource tool
+	getResourceTool := mcp.NewTool("get-resource",
+		mcp.WithDescription("Get detailed information about a specific Kubernetes resource"),
+		mcp.WithString("resourceType",
+			mcp.Required(),
+			mcp.Description("Type of resource (e.g., pod, deployment, service)"),
+		),
+		mcp.WithString("name",
+			mcp.Required(),
+			mcp.Description("Name of the resource"),
+		),
+		mcp.WithString("namespace",
+			mcp.Description("Namespace of the resource (required for namespaced resources)"),
+		),
+	)
+	s.server.AddTool(getResourceTool, s.handleGetResource)
+
+	// Register list namespaces tool
+	listNamespacesTool := mcp.NewTool("list-namespaces",
+		mcp.WithDescription("List all namespaces in the cluster"),
+	)
+	s.server.AddTool(listNamespacesTool, s.handleListNamespaces)
+
+	// Register list events tool
+	listEventsTool := mcp.NewTool("list-events",
+		mcp.WithDescription("List Kubernetes events for debugging and troubleshooting"),
+		mcp.WithString("namespace",
+			mcp.Description("Namespace to list events from (empty for all namespaces)"),
+		),
+		mcp.WithString("involvedObjectName",
+			mcp.Description("Filter events by involved object name (e.g., pod name)"),
+		),
+		mcp.WithString("involvedObjectKind",
+			mcp.Description("Filter events by involved object kind (e.g., Pod, Deployment)"),
+		),
+		mcp.WithNumber("limit",
+			mcp.Description("Maximum number of events to return (default: 100)"),
+		),
+	)
+	s.server.AddTool(listEventsTool, s.handleListEvents)
+
+	// Register get logs tool
+	getLogsTool := mcp.NewTool("get-logs",
+		mcp.WithDescription("Get logs from a pod container"),
+		mcp.WithString("podName",
+			mcp.Required(),
+			mcp.Description("Name of the pod"),
+		),
+		mcp.WithString("namespace",
+			mcp.Required(),
+			mcp.Description("Namespace of the pod"),
+		),
+		mcp.WithString("container",
+			mcp.Description("Container name (if pod has multiple containers)"),
+		),
+		mcp.WithBoolean("previous",
+			mcp.Description("Get logs from previous terminated container"),
+		),
+		mcp.WithNumber("tailLines",
+			mcp.Description("Number of lines from the end of logs (default: 100)"),
+		),
+		mcp.WithNumber("sinceSeconds",
+			mcp.Description("Return logs newer than this many seconds"),
+		),
+	)
+	s.server.AddTool(getLogsTool, s.handleGetLogs)
+
+	// Register filter management tools
+	listFiltersTool := mcp.NewTool("list-filters",
+		mcp.WithDescription("List all available and active analyzers/filters in k8sgpt"),
+	)
+	s.server.AddTool(listFiltersTool, s.handleListFilters)
+
+	addFiltersTool := mcp.NewTool("add-filters",
+		mcp.WithDescription("Add filters to enable specific analyzers"),
+		mcp.WithArray("filters",
+			mcp.Required(),
+			mcp.Description("List of filter names to add (e.g., ['Pod', 'Service', 'Deployment'])"),
+			mcp.WithStringItems(),
+		),
+	)
+	s.server.AddTool(addFiltersTool, s.handleAddFilters)
+
+	removeFiltersTool := mcp.NewTool("remove-filters",
+		mcp.WithDescription("Remove filters to disable specific analyzers"),
+		mcp.WithArray("filters",
+			mcp.Required(),
+			mcp.Description("List of filter names to remove"),
+			mcp.WithStringItems(),
+		),
+	)
+	s.server.AddTool(removeFiltersTool, s.handleRemoveFilters)
+
+	// Register integration management tools
+	listIntegrationsTool := mcp.NewTool("list-integrations",
+		mcp.WithDescription("List available integrations (Prometheus, AWS, Keda, Kyverno, etc.)"),
+	)
+	s.server.AddTool(listIntegrationsTool, s.handleListIntegrations)
+
 	return nil
 }
 
@@ -453,7 +570,26 @@ func (s *K8sGptMCPServer) handleConfig(ctx context.Context, request mcp.CallTool
 
 // registerPrompts registers the prompts for the MCP server
 func (s *K8sGptMCPServer) registerPrompts() error {
-	// Register any prompts needed for the MCP server
+	// Register troubleshooting prompts
+	podTroubleshootPrompt := mcp.NewPrompt("troubleshoot-pod",
+		mcp.WithPromptDescription("Guide for troubleshooting pod issues in Kubernetes"),
+		mcp.WithArgument("podName"),
+		mcp.WithArgument("namespace"),
+	)
+	s.server.AddPrompt(podTroubleshootPrompt, s.getTroubleshootPodPrompt)
+
+	deploymentTroubleshootPrompt := mcp.NewPrompt("troubleshoot-deployment",
+		mcp.WithPromptDescription("Guide for troubleshooting deployment issues in Kubernetes"),
+		mcp.WithArgument("deploymentName"),
+		mcp.WithArgument("namespace"),
+	)
+	s.server.AddPrompt(deploymentTroubleshootPrompt, s.getTroubleshootDeploymentPrompt)
+
+	generalTroubleshootPrompt := mcp.NewPrompt("troubleshoot-cluster",
+		mcp.WithPromptDescription("General guide for troubleshooting Kubernetes cluster issues"),
+	)
+	s.server.AddPrompt(generalTroubleshootPrompt, s.getTroubleshootClusterPrompt)
+
 	return nil
 }
 
@@ -463,8 +599,20 @@ func (s *K8sGptMCPServer) registerResources() error {
 		mcp.WithResourceDescription("Get information about the Kubernetes cluster"),
 		mcp.WithMIMEType("application/json"),
 	)
-
 	s.server.AddResource(clusterInfoResource, s.getClusterInfo)
+
+	namespacesResource := mcp.NewResource("namespaces", "namespaces",
+		mcp.WithResourceDescription("List all namespaces in the cluster"),
+		mcp.WithMIMEType("application/json"),
+	)
+	s.server.AddResource(namespacesResource, s.getNamespacesResource)
+
+	activeFiltersResource := mcp.NewResource("active-filters", "active-filters",
+		mcp.WithResourceDescription("Get currently active analyzers/filters"),
+		mcp.WithMIMEType("application/json"),
+	)
+	s.server.AddResource(activeFiltersResource, s.getActiveFiltersResource)
+
 	return nil
 }
 
@@ -499,6 +647,72 @@ func (s *K8sGptMCPServer) getClusterInfo(ctx context.Context, request mcp.ReadRe
 	return []mcp.ResourceContents{
 		&mcp.TextResourceContents{
 			URI:      "cluster-info",
+			MIMEType: "application/json",
+			Text:     string(data),
+		},
+	}, nil
+}
+
+func (s *K8sGptMCPServer) getNamespacesResource(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
+	client, err := kubernetes.NewClient("", "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes client: %v", err)
+	}
+
+	namespaces, err := client.Client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list namespaces: %v", err)
+	}
+
+	// Extract just the namespace names
+	names := make([]string, 0, len(namespaces.Items))
+	for _, ns := range namespaces.Items {
+		names = append(names, ns.Name)
+	}
+
+	data, err := json.Marshal(map[string]interface{}{
+		"count":      len(names),
+		"namespaces": names,
+	})
+	if err != nil {
+		return []mcp.ResourceContents{
+			&mcp.TextResourceContents{
+				URI:      "namespaces",
+				MIMEType: "text/plain",
+				Text:     "Failed to marshal namespaces",
+			},
+		}, nil
+	}
+
+	return []mcp.ResourceContents{
+		&mcp.TextResourceContents{
+			URI:      "namespaces",
+			MIMEType: "application/json",
+			Text:     string(data),
+		},
+	}, nil
+}
+
+func (s *K8sGptMCPServer) getActiveFiltersResource(ctx context.Context, request mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
+	activeFilters := viper.GetStringSlice("active_filters")
+
+	data, err := json.Marshal(map[string]interface{}{
+		"activeFilters": activeFilters,
+		"count":         len(activeFilters),
+	})
+	if err != nil {
+		return []mcp.ResourceContents{
+			&mcp.TextResourceContents{
+				URI:      "active-filters",
+				MIMEType: "text/plain",
+				Text:     "Failed to marshal active filters",
+			},
+		}, nil
+	}
+
+	return []mcp.ResourceContents{
+		&mcp.TextResourceContents{
+			URI:      "active-filters",
 			MIMEType: "application/json",
 			Text:     string(data),
 		},
