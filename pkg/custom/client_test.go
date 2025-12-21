@@ -19,8 +19,6 @@ func (m *mockAnalyzerClient) Run(ctx context.Context, in *schemav1.RunRequest, o
     return m.resp, m.err
 }
 
-func (m *mockAnalyzerClient) mustEmbedUnimplementedCustomAnalyzerServiceClient() {}
-
 func TestClientRunMapsResponse(t *testing.T) {
     // prepare fake response
     resp := &schemav1.RunResponse{

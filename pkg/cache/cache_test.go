@@ -34,7 +34,9 @@ func TestAddRemoveRemoteCacheAndGet(t *testing.T) {
     // isolate viper with temp config file
     tmpFile, err := os.CreateTemp("", "k8sgpt-cache-config-*.yaml")
     require.NoError(t, err)
-    defer os.Remove(tmpFile.Name())
+    defer func() {
+        _ = os.Remove(tmpFile.Name())
+    }()
     viper.Reset()
     viper.SetConfigFile(tmpFile.Name())
 
