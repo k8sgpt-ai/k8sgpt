@@ -64,7 +64,13 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: gcName,
-						Masked:   util.MaskString(gcName),
+						Masked: func() string {
+							masked, err := util.MaskString(gcName)
+							if err != nil {
+								return gcName
+							}
+							return masked
+						}(),
 					},
 				},
 			})

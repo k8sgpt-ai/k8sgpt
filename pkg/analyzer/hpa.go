@@ -117,7 +117,13 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				Sensitive: []common.Sensitive{
 					{
 						Unmasked: scaleTargetRef.Name,
-						Masked:   util.MaskString(scaleTargetRef.Name),
+						Masked: func() string {
+							masked, err := util.MaskString(scaleTargetRef.Name)
+							if err != nil {
+								return scaleTargetRef.Name
+							}
+							return masked
+						}(),
 					},
 				},
 			})
@@ -138,7 +144,13 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: scaleTargetRef.Name,
-							Masked:   util.MaskString(scaleTargetRef.Name),
+							Masked: func() string {
+								masked, err := util.MaskString(scaleTargetRef.Name)
+								if err != nil {
+									return scaleTargetRef.Name
+								}
+								return masked
+							}(),
 						},
 					},
 				})
