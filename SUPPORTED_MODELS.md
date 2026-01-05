@@ -75,6 +75,9 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 - **Supported Models:**
   - ibm/granite-13b-chat-v2
 
+### Groq
+- **Model:** User-configurable (any model supported by Groq, e.g., `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`)
+
 ---
 
 For more details on configuring each provider and model, refer to the official K8sGPT documentation and the provider's own documentation. 
