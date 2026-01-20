@@ -17,7 +17,7 @@ on:
 env:
   GO_VERSION: "~1.23"
   IMAGE_NAME: "k8sgpt"
-  REGISTRY_IMAGE: ghcr.io/Albe83/k8sgpt
+  REGISTRY_IMAGE: ghcr.io/albe83/k8sgpt
 
 defaults:
   run:
