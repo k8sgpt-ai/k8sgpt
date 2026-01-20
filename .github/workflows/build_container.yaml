@@ -1,6 +1,7 @@
 name: Build container
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
@@ -16,11 +17,15 @@ on:
 env:
   GO_VERSION: "~1.23"
   IMAGE_NAME: "k8sgpt"
-  REGISTRY_IMAGE: ghcr.io/k8sgpt-ai/k8sgpt
+  REGISTRY_IMAGE: ghcr.io/Albe83/k8sgpt
 
 defaults:
   run:
     shell: bash
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   prepare_ci_run:
@@ -87,7 +92,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.K8SGPT_BOT_SECRET }}
+          password: ${{ github.token }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3
@@ -104,11 +109,12 @@ jobs:
           push: true
           target: production
           build-args: |
-            GIT_HASH=${{ env.GIT_SHA }}
-            RELEASE_VERSION=dev-${{ env.DATETIME }}
-            BUILD_TIME=${{ env.BUILD_TIME }}
+            VERSION=dev-${{ env.DATETIME }}
+            COMMIT=${{ env.GIT_SHA }}
+            DATE=${{ env.BUILD_TIME }}
           tags: |
+            ${{ steps.meta.outputs.tags }}
             ${{ env.REGISTRY_IMAGE }}:${{ env.DATETIME }}
           labels: ${{ steps.meta.outputs.labels }}
           secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}
+            GIT_AUTH_TOKEN=${{ github.token }}
