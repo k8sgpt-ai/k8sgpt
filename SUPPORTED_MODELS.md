@@ -9,6 +9,9 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 ### OpenAI
 - **Model:** User-configurable (any model supported by OpenAI, e.g., `gpt-3.5-turbo`, `gpt-4`, etc.)
 
+### OpenAI Responses
+- **Model:** User-configurable (any model supported by the OpenAI Responses API, e.g., `gpt-4.1`, `o1`, `gpt-5`)
+
 ### Azure OpenAI
 - **Model:** User-configurable (any model deployed in your Azure OpenAI resource)
 
