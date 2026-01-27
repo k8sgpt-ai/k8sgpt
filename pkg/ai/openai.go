@@ -95,7 +95,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 			},
 		},
 		Temperature:      c.temperature,
-		MaxTokens:        maxToken,
+		MaxCompletionTokens: maxToken,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
