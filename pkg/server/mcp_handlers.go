@@ -251,10 +251,10 @@ func (s *K8sGptMCPServer) handleListNamespaces(ctx context.Context, request mcp.
 // handleListEvents lists Kubernetes events
 func (s *K8sGptMCPServer) handleListEvents(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	var req struct {
-		Namespace           string `json:"namespace,omitempty"`
-		InvolvedObjectName  string `json:"involvedObjectName,omitempty"`
-		InvolvedObjectKind  string `json:"involvedObjectKind,omitempty"`
-		Limit               int64  `json:"limit,omitempty"`
+		Namespace          string `json:"namespace,omitempty"`
+		InvolvedObjectName string `json:"involvedObjectName,omitempty"`
+		InvolvedObjectKind string `json:"involvedObjectKind,omitempty"`
+		Limit              int64  `json:"limit,omitempty"`
 	}
 	if err := request.BindArguments(&req); err != nil {
 		return mcp.NewToolResultErrorf("Failed to parse request arguments: %v", err), nil

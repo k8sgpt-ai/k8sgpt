@@ -55,10 +55,10 @@ type Config struct {
 	QueryHandler   *query.Handler
 	Logger         *zap.Logger
 	// Filters can be injected into the server to limit analysis to specific analyzers
-	Filters        []string
-	metricsServer  *http.Server
-	listener       net.Listener
-	EnableHttp     bool
+	Filters       []string
+	metricsServer *http.Server
+	listener      net.Listener
+	EnableHttp    bool
 }
 
 type Health struct {

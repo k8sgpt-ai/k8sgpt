@@ -55,7 +55,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
 		if *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
-			if  deployment.Status.Replicas > *deployment.Spec.Replicas {
+			if deployment.Status.Replicas > *deployment.Spec.Replicas {
 				doc := apiDoc.GetApiDocV2("spec.replicas")
 
 				failures = append(failures, common.Failure{
@@ -88,7 +88,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 							Masked:   util.MaskString(deployment.Name),
 						},
 					}})
-				}
+			}
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{

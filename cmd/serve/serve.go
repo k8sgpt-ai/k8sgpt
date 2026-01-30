@@ -42,7 +42,7 @@ var (
 	mcpPort     string
 	mcpHTTP     bool
 	// filters can be injected into the server (repeatable flag)
-	filters     []string
+	filters []string
 )
 
 var ServeCmd = &cobra.Command{
