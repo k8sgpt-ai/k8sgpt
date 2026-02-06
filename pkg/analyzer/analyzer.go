@@ -64,6 +64,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"InstallPlan":             InstallPlanAnalyzer{},
 	"CatalogSource":           CatalogSourceAnalyzer{},
 	"OperatorGroup":           OperatorGroupAnalyzer{},
+	"CustomResource":          CRDAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
