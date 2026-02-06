@@ -383,24 +383,28 @@ func TestAnalyzeGenericHealth_NoStatusFields(t *testing.T) {
 	}
 }
 
-// Dummy test to satisfy the requirement
+// TestCRDAnalyzer_NilClientConfig tests that the analyzer handles errors gracefully
 func TestCRDAnalyzer_NilClientConfig(t *testing.T) {
 	viper.Reset()
 	viper.Set("crd_analyzer", map[string]interface{}{
 		"enabled": true,
 	})
 
-	// Create a client with nil config - this should cause an error when trying to create apiextensions client
+	// Create a client with a config that will cause an error when trying to create apiextensions client
 	a := common.Analyzer{
 		Context: context.TODO(),
 		Client:  &kubernetes.Client{Config: &rest.Config{}},
 	}
 
-	// This should fail gracefully
-	_, err := (CRDAnalyzer{}).Analyze(a)
-	if err == nil {
-		// Depending on the test setup, this may or may not error
-		// The important thing is that it doesn't panic
-		t.Log("Analyzer did not error with empty config - that's okay for this test")
+	// The analyzer should handle the error gracefully without panicking
+	results, err := (CRDAnalyzer{}).Analyze(a)
+	
+	// We expect either an error or no results, but no panic
+	if err != nil {
+		// Error is expected in this case - that's fine
+		if results != nil {
+			t.Errorf("Expected nil results when error occurs, got %v", results)
+		}
 	}
+	// The important thing is that we didn't panic
 }

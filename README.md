@@ -279,7 +279,7 @@ you will be able to write your own analyzers.
 - [x] OperatorGroup
 - [x] InstallPlan
 - [x] Subscription
-- [x] **customResourceAnalyzer** - Generic analyzer for any CRD (cert-manager, ArgoCD, Kafka, etc.) [Documentation](docs/CRD_ANALYZER.md)
+- [x] **CustomResource** - Generic analyzer for any CRD (cert-manager, ArgoCD, Kafka, etc.) [Documentation](docs/CRD_ANALYZER.md)
 
 ## Examples
 
