@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.28](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.27...v0.4.28) (2026-02-15)
+
+
+### Features
+
+* add Groq as LLM provider ([#1600](https://github.com/k8sgpt-ai/k8sgpt/issues/1600)) ([867bce1](https://github.com/k8sgpt-ai/k8sgpt/commit/867bce1907f5dd3387128b72c694e98091d55554))
+* multiple security fixes. Prometheus: v0.302.1 → v0.306.0 ([#1597](https://github.com/k8sgpt-ai/k8sgpt/issues/1597)) ([f5fb2a7](https://github.com/k8sgpt-ai/k8sgpt/commit/f5fb2a7e12e14fad8107940aeead5e60b064add1))
+
+
+### Bug Fixes
+
+* align CI Go versions with go.mod to ensure consistency ([#1611](https://github.com/k8sgpt-ai/k8sgpt/issues/1611)) ([1f2ff98](https://github.com/k8sgpt-ai/k8sgpt/commit/1f2ff988342b8ef2aa3e3263eb845c0ee09fe24c))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1550](https://github.com/k8sgpt-ai/k8sgpt/issues/1550)) ([7fe3bdb](https://github.com/k8sgpt-ai/k8sgpt/commit/7fe3bdbd952bc9a1975121de5f21ad31dc1f691d))
+* use MaxCompletionTokens instead of deprecated MaxTokens for OpenAI ([#1604](https://github.com/k8sgpt-ai/k8sgpt/issues/1604)) ([c80b2e2](https://github.com/k8sgpt-ai/k8sgpt/commit/c80b2e2c346845336593ce515fe90fd501b1d0a7))
+
+
+### Other
+
+* **deps:** update actions/checkout digest to 93cb6ef ([#1592](https://github.com/k8sgpt-ai/k8sgpt/issues/1592)) ([40ffcbe](https://github.com/k8sgpt-ai/k8sgpt/commit/40ffcbec6b65e3a99e40be5f414a3f2c087bffbb))
+* **deps:** update actions/setup-go digest to 40f1582 ([#1593](https://github.com/k8sgpt-ai/k8sgpt/issues/1593)) ([a303ffa](https://github.com/k8sgpt-ai/k8sgpt/commit/a303ffa21c7ede3dd9391185bc91fb3b4e8276b6))
+* util tests ([#1594](https://github.com/k8sgpt-ai/k8sgpt/issues/1594)) ([21369c5](https://github.com/k8sgpt-ai/k8sgpt/commit/21369c5c0917fd2b6ae4173378b2e257e2b1de7b))
+
 ## [0.4.27](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.26...v0.4.27) (2025-12-18)
 
 
