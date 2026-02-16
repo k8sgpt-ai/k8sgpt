@@ -16,6 +16,7 @@ package analysis
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -526,7 +527,22 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
 	if a.AIClient.GetName() == ai.CustomRestClientName {
-		prompt = fmt.Sprintf(ai.PromptMap["raw"], a.Language, inputKey, prompt)
+		// Use proper JSON marshaling to handle special characters in error messages
+		// This fixes issues with quotes, newlines, and other special chars in inputKey
+		customRestPrompt := struct {
+			Language string `json:"language"`
+			Message  string `json:"message"`
+			Prompt   string `json:"prompt"`
+		}{
+			Language: a.Language,
+			Message:  inputKey,
+			Prompt:   prompt,
+		}
+		promptBytes, err := json.Marshal(customRestPrompt)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal customrest prompt: %w", err)
+		}
+		prompt = string(promptBytes)
 	}
 	response, err := a.AIClient.GetCompletion(a.Context, prompt)
 	if err != nil {
