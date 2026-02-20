@@ -128,22 +128,24 @@ var ServeCmd = &cobra.Command{
 			engine := os.Getenv("K8SGPT_ENGINE")
 			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
 			providerId := os.Getenv("K8SGPT_PROVIDER_ID")
+			providerRegion := os.Getenv("K8SGPT_PROVIDER_REGION")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
 			envIsSet := backend != "" || password != "" || model != ""
 			if envIsSet {
 				aiProvider = &ai.AIProvider{
-					Name:          backend,
-					Password:      password,
-					Model:         model,
-					BaseURL:       baseURL,
-					Engine:        engine,
-					ProxyEndpoint: proxyEndpoint,
-					ProviderId:    providerId,
-					Temperature:   temperature(),
-					TopP:          topP(),
-					TopK:          topK(),
-					MaxTokens:     maxTokens(),
+					Name:           backend,
+					Password:       password,
+					Model:          model,
+					BaseURL:        baseURL,
+					Engine:         engine,
+					ProxyEndpoint:  proxyEndpoint,
+					ProviderId:     providerId,
+					ProviderRegion: providerRegion,
+					Temperature:    temperature(),
+					TopP:           topP(),
+					TopK:           topK(),
+					MaxTokens:      maxTokens(),
 				}
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
