@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.29](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.28...v0.4.29) (2026-02-20)
+
+
+### Features
+
+* **serve:** add short flag and env var for metrics port ([#1616](https://github.com/k8sgpt-ai/k8sgpt/issues/1616)) ([4f63e97](https://github.com/k8sgpt-ai/k8sgpt/commit/4f63e9737c6a2306686bd3b6f37e81f210665949))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to b8788ab ([#1572](https://github.com/k8sgpt-ai/k8sgpt/issues/1572)) ([a56e478](https://github.com/k8sgpt-ai/k8sgpt/commit/a56e4788c3361a64df17175f163f33422a8fe606))
+* use proper JSON marshaling for customrest prompt to handle special characters ([#1615](https://github.com/k8sgpt-ai/k8sgpt/issues/1615)) ([99911fb](https://github.com/k8sgpt-ai/k8sgpt/commit/99911fbb3ac8c950fd7ee1b3210f8a9c2a6b0ad7)), closes [#1556](https://github.com/k8sgpt-ai/k8sgpt/issues/1556)
+
+
+### Refactoring
+
+* improve MCP server handlers with better error handling and pagination ([#1613](https://github.com/k8sgpt-ai/k8sgpt/issues/1613)) ([abc4647](https://github.com/k8sgpt-ai/k8sgpt/commit/abc46474e372bcd27201f1a64372c04269acee13))
+
 ## [0.4.28](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.27...v0.4.28) (2026-02-15)
 
 
