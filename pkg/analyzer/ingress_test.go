@@ -247,6 +247,150 @@ func TestIngressAnalyzerLabelSelector(t *testing.T) {
 	require.Equal(t, "default/ingress-with-label", results[0].Name)
 }
 
+func TestIsGKEBuiltInIngressClass(t *testing.T) {
+	tests := []struct {
+		name      string
+		className string
+		expected  bool
+	}{
+		{
+			name:      "gce class is GKE built-in",
+			className: "gce",
+			expected:  true,
+		},
+		{
+			name:      "gce-internal class is GKE built-in",
+			className: "gce-internal",
+			expected:  true,
+		},
+		{
+			name:      "nginx class is not GKE built-in",
+			className: "nginx",
+			expected:  false,
+		},
+		{
+			name:      "empty class is not GKE built-in",
+			className: "",
+			expected:  false,
+		},
+		{
+			name:      "custom class is not GKE built-in",
+			className: "custom-ingress",
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isGKEBuiltInIngressClass(tt.className)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIngressAnalyzerGKEIngressClass(t *testing.T) {
+	gceClassName := "gce"
+	gceInternalClassName := "gce-internal"
+	nonExistentClassName := "non-existent-class"
+
+	testCases := []struct {
+		name                  string
+		ingress               *networkingv1.Ingress
+		expectIngressClassErr bool
+	}{
+		{
+			name: "GKE gce ingress class should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &gceClassName,
+				},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "GKE gce-internal ingress class should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-internal-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &gceInternalClassName,
+				},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "GKE gce ingress class via annotation should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-ingress-annotation",
+					Namespace: "default",
+					Annotations: map[string]string{
+						"kubernetes.io/ingress.class": "gce",
+					},
+				},
+				Spec: networkingv1.IngressSpec{},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "Non-existent ingress class should report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "custom-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &nonExistentClassName,
+				},
+			},
+			expectIngressClassErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			clientset := fake.NewSimpleClientset()
+
+			_, err := clientset.NetworkingV1().Ingresses(tc.ingress.Namespace).Create(ctx, tc.ingress, metav1.CreateOptions{})
+			require.NoError(t, err)
+
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   ctx,
+				Namespace: tc.ingress.Namespace,
+			}
+
+			analyzer := IngressAnalyzer{}
+			results, err := analyzer.Analyze(config)
+			require.NoError(t, err)
+
+			if tc.expectIngressClassErr {
+				require.Len(t, results, 1)
+				found := false
+				for _, failure := range results[0].Error {
+					if failure.Text == "Ingress uses the ingress class non-existent-class which does not exist." {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Expected to find ingress class error")
+			} else {
+				// Should have no results (no errors) for GKE built-in classes
+				assert.Len(t, results, 0, "Expected no errors for GKE built-in ingress class")
+			}
+		})
+	}
+}
+
 // Helper functions
 func strPtr(s string) *string {
 	return &s
