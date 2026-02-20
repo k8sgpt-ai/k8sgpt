@@ -51,7 +51,7 @@ require (
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
 	github.com/mark3labs/mcp-go v0.36.0
-	github.com/olekukonko/tablewriter v0.0.5
+	github.com/olekukonko/tablewriter v1.1.3
 	github.com/oracle/oci-go-sdk/v65 v65.79.0
 	github.com/prometheus/prometheus v0.306.0
 	github.com/pterm/pterm v0.12.80
@@ -98,6 +98,9 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
+	github.com/clipperhouse/displaywidth v0.6.2 // indirect
+	github.com/clipperhouse/stringish v0.1.1 // indirect
+	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20250326154945-ae57f3c0d45f // indirect
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
@@ -130,6 +133,9 @@ require (
 	github.com/moby/sys/mountinfo v0.7.1 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
+	github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6 // indirect
+	github.com/olekukonko/errors v1.1.0 // indirect
+	github.com/olekukonko/ll v0.1.4-0.20260115111900-9e59c2286df0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/prometheus/sigv4 v0.2.0 // indirect
@@ -221,9 +227,9 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
