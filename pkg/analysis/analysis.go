@@ -236,6 +236,7 @@ func (a *Analysis) RunCustomAnalysis() {
 	semaphore := make(chan struct{}, a.MaxConcurrency)
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
+
 	verbose := viper.GetBool("verbose")
 	if verbose {
 		if len(customAnalyzers) == 0 {
@@ -248,48 +249,79 @@ func (a *Analysis) RunCustomAnalysis() {
 			fmt.Printf("Debug: Found custom analyzers %v.\n", cAnalyzerNames)
 		}
 	}
-	for _, cAnalyzer := range customAnalyzers {
-		wg.Add(1)
-		semaphore <- struct{}{}
-		go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
-			defer wg.Done()
-			canClient, err := custom.NewClient(cAnalyzer.Connection)
-			if err != nil {
-				mutex.Lock()
-				a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
-				mutex.Unlock()
-				return
-			}
-			if verbose {
-				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
-			}
+	if len(a.Filters) != 0 {
+		for _, filter := range a.Filters {
+			for _, cAnalyzer := range customAnalyzers {
+				if cAnalyzer.Name == filter {
+					canClient, err := custom.NewClient(cAnalyzer.Connection)
+					if err != nil {
+						a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+						return
+					}
 
-			result, err := canClient.Run()
-			if result.Kind == "" {
-				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
-				//and must start and end with an alphanumeric character (e.g. 'example.com',
-				//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
-				result.Kind = cAnalyzer.Name
-			}
-			if err != nil {
-				mutex.Lock()
-				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
-				mutex.Unlock()
-				if verbose {
-					fmt.Printf("Debug: %s completed with errors.\n", cAnalyzer.Name)
-				}
-			} else {
-				mutex.Lock()
-				a.Results = append(a.Results, result)
-				mutex.Unlock()
-				if verbose {
-					fmt.Printf("Debug: %s completed without errors.\n", cAnalyzer.Name)
+					result, err := canClient.Run(filter)
+					if result.Kind == "" {
+						result.Kind = cAnalyzer.Name
+					}
+					if err != nil {
+						a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+						if verbose {
+							fmt.Printf("Debug: %s completed with errors.\n", cAnalyzer.Name)
+						}
+					} else {
+						a.Results = append(a.Results, result)
+						if verbose {
+							fmt.Printf("Debug: %s completed without errors.\n", cAnalyzer.Name)
+						}
+					}
 				}
 			}
-			<-semaphore
-		}(cAnalyzer, &wg, semaphore)
+		}
 	}
-	wg.Wait()
+	if len(a.Filters) == 0 {
+		for _, cAnalyzer := range customAnalyzers {
+			wg.Add(1)
+			semaphore <- struct{}{}
+			go func(analyzer custom.CustomAnalyzer, wg *sync.WaitGroup, semaphore chan struct{}) {
+				defer wg.Done()
+				canClient, err := custom.NewClient(cAnalyzer.Connection)
+				if err != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("Client creation error for %s analyzer", cAnalyzer.Name))
+					mutex.Unlock()
+					return
+				}
+				if verbose {
+					fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
+				}
+
+				result, err := canClient.Run(cAnalyzer.Name)
+				if result.Kind == "" {
+					// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
+					//and must start and end with an alphanumeric character (e.g. 'example.com',
+					//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+					result.Kind = cAnalyzer.Name
+				}
+				if err != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
+					mutex.Unlock()
+					if verbose {
+						fmt.Printf("Debug: %s completed with errors.\n", cAnalyzer.Name)
+					}
+				} else {
+					mutex.Lock()
+					a.Results = append(a.Results, result)
+					mutex.Unlock()
+					if verbose {
+						fmt.Printf("Debug: %s completed without errors.\n", cAnalyzer.Name)
+					}
+				}
+				<-semaphore
+			}(cAnalyzer, &wg, semaphore)
+		}
+		wg.Wait()
+	}
 }
 
 func (a *Analysis) RunAnalysis() {
