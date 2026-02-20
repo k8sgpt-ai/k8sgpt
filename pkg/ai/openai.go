@@ -94,11 +94,11 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 				Content: prompt,
 			},
 		},
-		Temperature:      c.temperature,
+		Temperature:         c.temperature,
 		MaxCompletionTokens: maxToken,
-		PresencePenalty:  presencePenalty,
-		FrequencyPenalty: frequencyPenalty,
-		TopP:             c.topP,
+		PresencePenalty:     presencePenalty,
+		FrequencyPenalty:    frequencyPenalty,
+		TopP:                c.topP,
 	})
 	if err != nil {
 		return "", err
