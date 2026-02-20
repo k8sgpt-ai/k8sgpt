@@ -203,6 +203,11 @@ var ServeCmd = &cobra.Command{
 			}()
 		}
 
+		// Allow metrics port to be overridden by environment variable
+		if envMetricsPort := os.Getenv("K8SGPT_METRICS_PORT"); envMetricsPort != "" && !cmd.Flags().Changed("metrics-port") {
+			metricsPort = envMetricsPort
+		}
+
 		server := k8sgptserver.Config{
 			Backend:     aiProvider.Name,
 			Port:        port,
@@ -234,7 +239,7 @@ var ServeCmd = &cobra.Command{
 func init() {
 	// add flag for backend
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
-	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
+	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "m", "8081", "Port to run the metrics-server on (env: K8SGPT_METRICS_PORT)")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 	ServeCmd.Flags().BoolVarP(&enableMCP, "mcp", "", false, "Enable Mission Control Protocol server")
