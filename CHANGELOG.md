@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.30](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.29...v0.4.30) (2026-02-20)
+
+
+### Bug Fixes
+
+* validate namespace before running custom analyzers ([#1617](https://github.com/k8sgpt-ai/k8sgpt/issues/1617)) ([458aa9d](https://github.com/k8sgpt-ai/k8sgpt/commit/458aa9debac7590eb0855ffd12141b702e999a36))
+
 ## [0.4.29](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.28...v0.4.29) (2026-02-20)
 
 
