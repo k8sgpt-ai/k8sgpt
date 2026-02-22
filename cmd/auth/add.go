@@ -48,6 +48,10 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrock" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "amazonbedrockknowledgebase" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+			_ = cmd.MarkFlagRequired("knowledgebase")
+		}
 		if strings.ToLower(backend) == "ibmwatsonxai" {
 			_ = cmd.MarkFlagRequired("providerId")
 		}
@@ -132,6 +136,7 @@ var addCmd = &cobra.Command{
 			Password:       password,
 			BaseURL:        baseURL,
 			EndpointName:   endpointName,
+			KnowledgeBase:  knowledgeBase,
 			Engine:         engine,
 			Temperature:    temperature,
 			ProviderRegion: providerRegion,
@@ -178,9 +183,11 @@ func init() {
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockknowledgebase, googlevertexai backend)")
 	//add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
+	// add flag for knowledgeBase
+	addCmd.Flags().StringVarP(&knowledgeBase, "knowledgebase", "w", "", "Knowledge Base ID, e.g. kb-123456789012 (only for amazonbedrockknowledgebase backend)")
 	//add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization

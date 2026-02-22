@@ -33,6 +33,7 @@ var (
 	topK           int32
 	maxTokens      int
 	organizationId string
+	knowledgeBase  string
 )
 
 var configAI ai.AIConfiguration
