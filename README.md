@@ -19,7 +19,7 @@
 
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
-_Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google Gemini and local models._
+_Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Amazon Bedrock Knowledge Base, Google Gemini and local models._
 
 
 > **Sister project:** Check out [sympozium](https://github.com/AlexsJones/sympozium/) for managing agents in Kubernetes.
@@ -481,6 +481,7 @@ Unused:
 > azureopenai
 > cohere
 > amazonbedrock
+> amazonbedrockknowledgebase
 > amazonsagemaker
 > google
 > huggingface
@@ -506,14 +507,18 @@ _System Inference Profile_
 
 ```
 k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
-
 ```
 
 _Application Inference Profile_
 
 ```
 k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+```
 
+_Using Amazon Bedrock Knowledge Base_
+
+```
+k8sgpt auth add --backend amazonbedrockknowledgebase --providerRegion us-east-1 --model anthropic.claude-v2 --knowledgebase kb-123456789012
 ```
 
 ## Key Features
