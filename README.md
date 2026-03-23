@@ -500,6 +500,21 @@ k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
 ```
 
+_Using Amazon Bedrock Converse with inference profiles_
+
+_System Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+```
+
+_Application Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+
+```
 _Using Amazon Bedrock with inference profiles_
 
 _System Inference Profile_
