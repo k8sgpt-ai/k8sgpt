@@ -12,9 +12,11 @@ import (
 // ---- Mock Wrapper ----
 type mockConverseClient struct {
 	converseFunc func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error)
+	lastInput    *bedrockruntime.ConverseInput
 }
 
 func (m *mockConverseClient) Converse(ctx context.Context, input *bedrockruntime.ConverseInput, _ ...func(*bedrockruntime.Options)) (*bedrockruntime.ConverseOutput, error) {
+	m.lastInput = input
 	return m.converseFunc(ctx, input)
 }
 
@@ -240,6 +242,91 @@ func TestExtractTextFromConverseOutput(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestGetCompletion_ClaudeModel_UsesTemperatureOnly(t *testing.T) {
+	mock := &mockConverseClient{
+		converseFunc: func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
+			return &bedrockruntime.ConverseOutput{
+				Output: &types.ConverseOutputMemberMessage{
+					Value: types.Message{
+						Content: []types.ContentBlock{
+							&types.ContentBlockMemberText{Value: "ok"},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	client := &AmazonBedrockConverseClient{
+		client:      mock,
+		model:       "anthropic.claude-v2",
+		temperature: 0.5,
+		topP:        0.9,
+		maxTokens:   100,
+	}
+
+	_, err := client.GetCompletion(context.Background(), "hello")
+
+	assert.NoError(t, err)
+
+	inf := mock.lastInput.InferenceConfig
+
+	assert.NotNil(t, inf.Temperature)
+	assert.Nil(t, inf.TopP)
+}
+
+func TestGetCompletion_NonClaudeModel_UsesTemperatureAndTopP(t *testing.T) {
+	mock := &mockConverseClient{
+		converseFunc: func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
+			return &bedrockruntime.ConverseOutput{
+				Output: &types.ConverseOutputMemberMessage{
+					Value: types.Message{
+						Content: []types.ContentBlock{
+							&types.ContentBlockMemberText{Value: "ok"},
+						},
+					},
+				},
+			}, nil
+		},
+	}
+
+	client := &AmazonBedrockConverseClient{
+		client:      mock,
+		model:       "amazon.titan-text",
+		temperature: 0.5,
+		topP:        0.9,
+		maxTokens:   100,
+	}
+
+	_, err := client.GetCompletion(context.Background(), "hello")
+
+	assert.NoError(t, err)
+
+	inf := mock.lastInput.InferenceConfig
+
+	assert.NotNil(t, inf.Temperature)
+	assert.NotNil(t, inf.TopP)
+	assert.Equal(t, float32(0.9), *inf.TopP)
+}
+
+func TestIsClaudeModel(t *testing.T) {
+	tests := []struct {
+		model    string
+		expected bool
+	}{
+		{"anthropic.claude-opus-4-6-v1", true},
+		{"CLAUDE-3", true},
+		{"amazon.titan", false},
+		{"gpt-4", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.model, func(t *testing.T) {
+			assert.Equal(t, tt.expected, isClaudeModel(tt.model))
 		})
 	}
 }
