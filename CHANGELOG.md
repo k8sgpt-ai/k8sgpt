@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.31](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.30...v0.4.31) (2026-03-24)
+
+
+### Features
+
+* support amazonbedrock converse api ([#1627](https://github.com/k8sgpt-ai/k8sgpt/issues/1627)) ([fc6a83d](https://github.com/k8sgpt-ai/k8sgpt/commit/fc6a83d063e69293f4e3aa18bd887740401c8fe0))
+
+
+### Other
+
+* updated readme ([#1620](https://github.com/k8sgpt-ai/k8sgpt/issues/1620)) ([fd5bba6](https://github.com/k8sgpt-ai/k8sgpt/commit/fd5bba6ab3ad7a81ef982f1980ac9c9de23bc46c))
+
+
+### Docs
+
+* align Go version with go.mod toolchain ([#1609](https://github.com/k8sgpt-ai/k8sgpt/issues/1609)) ([19a172e](https://github.com/k8sgpt-ai/k8sgpt/commit/19a172e575ffba6cd89330479033731426358342))
+
 ## [0.4.30](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.29...v0.4.30) (2026-02-20)
 
 
