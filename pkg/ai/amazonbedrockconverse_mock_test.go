@@ -3,10 +3,10 @@ package ai
 import (
 	"context"
 	"errors"
-	"testing"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime/types"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 // ---- Mock Wrapper ----
@@ -37,18 +37,14 @@ func TestGetCompletion_Success(t *testing.T) {
 	}
 
 	client := &AmazonBedrockConverseClient{
-		model: "test-model",
+		client: mock,
+		model:  "test-model",
 	}
 
-	client.client = (*bedrockruntime.Client)(nil)
-	result, err := mock.Converse(context.Background(), &bedrockruntime.ConverseInput{})
+	result, err := client.GetCompletion(context.Background(), "hello")
 
 	assert.NoError(t, err)
-
-	output := result.Output.(*types.ConverseOutputMemberMessage)
-	text := output.Value.Content[0].(*types.ContentBlockMemberText)
-
-	assert.Equal(t, "mock response", text.Value)
+	assert.Equal(t, "mock response", result)
 }
 
 func TestGetCompletion_Error(t *testing.T) {
@@ -58,44 +54,197 @@ func TestGetCompletion_Error(t *testing.T) {
 		},
 	}
 
-	_, err := mock.Converse(context.Background(), &bedrockruntime.ConverseInput{})
+	client := &AmazonBedrockConverseClient{
+		client: mock,
+		model:  "test-model",
+	}
+
+	_, err := client.GetCompletion(context.Background(), "hello")
+
 	assert.Error(t, err)
+}
+
+func TestConfigure_WithInjectedClient(t *testing.T) {
+	mock := &mockConverseClient{}
+
+	cfg := &AIProvider{
+		Model:          "test-model",
+		ProviderRegion: "us-west-2",
+		Temperature:    0.5,
+		TopP:           0.9,
+		MaxTokens:      100,
+		StopSequences:  []string{"stop"},
+	}
+
+	client := &AmazonBedrockConverseClient{
+		client: mock,
+	}
+
+	err := client.Configure(cfg)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "test-model", client.model)
+	assert.Equal(t, float32(0.5), client.temperature)
+	assert.Equal(t, float32(0.9), client.topP)
+	assert.Equal(t, 100, client.maxTokens)
+	assert.Equal(t, []string{"stop"}, client.stopSequences)
+}
+
+func TestConfigure_InvalidModel(t *testing.T) {
+	mock := &mockConverseClient{}
+
+	cfg := &AIProvider{
+		Model: "",
+	}
+
+	client := &AmazonBedrockConverseClient{
+		client: mock,
+	}
+
+	err := client.Configure(cfg)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "model name cannot be empty")
+}
+
+func TestGetRegion(t *testing.T) {
+	t.Run("uses provided region when env not set", func(t *testing.T) {
+		t.Setenv("AWS_DEFAULT_REGION", "")
+
+		result := getRegion("us-west-2")
+		assert.Equal(t, "us-west-2", result)
+	})
+
+	t.Run("env overrides provided region", func(t *testing.T) {
+		t.Setenv("AWS_DEFAULT_REGION", "us-east-1")
+
+		result := getRegion("us-west-2")
+		assert.Equal(t, "us-east-1", result)
+	})
+}
+
+func TestProcessError(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		modelId  string
+		contains string
+	}{
+		{
+			name:     "no such host",
+			err:      errors.New("dial tcp: no such host"),
+			modelId:  "test-model",
+			contains: "bedrock service is not available",
+		},
+		{
+			name:     "model not found",
+			err:      errors.New("Could not resolve the foundation model"),
+			modelId:  "test-model",
+			contains: "could not resolve the foundation model",
+		},
+		{
+			name:     "generic error",
+			err:      errors.New("something else"),
+			modelId:  "test-model",
+			contains: "could not invoke model",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := processError(tt.err, tt.modelId)
+			assert.Contains(t, result.Error(), tt.contains)
+		})
+	}
+}
+
+func TestExtractTextFromConverseOutput(t *testing.T) {
+	tests := []struct {
+		name        string
+		output      types.ConverseOutput
+		expectError bool
+		expected    string
+	}{
+		{
+			name:        "nil output",
+			output:      nil,
+			expectError: true,
+		},
+		{
+			name: "empty content",
+			output: &types.ConverseOutputMemberMessage{
+				Value: types.Message{
+					Content: []types.ContentBlock{},
+				},
+			},
+			expectError: true,
+		},
+		{
+			name: "single text block",
+			output: &types.ConverseOutputMemberMessage{
+				Value: types.Message{
+					Content: []types.ContentBlock{
+						&types.ContentBlockMemberText{Value: "hello"},
+					},
+				},
+			},
+			expected: "hello",
+		},
+		{
+			name: "multiple text blocks",
+			output: &types.ConverseOutputMemberMessage{
+				Value: types.Message{
+					Content: []types.ContentBlock{
+						&types.ContentBlockMemberText{Value: "hello "},
+						&types.ContentBlockMemberText{Value: "world"},
+					},
+				},
+			},
+			expected: "hello world",
+		},
+		{
+			name: "mixed content blocks",
+			output: &types.ConverseOutputMemberMessage{
+				Value: types.Message{
+					Content: []types.ContentBlock{
+						&types.ContentBlockMemberText{Value: "hello"},
+						// simulate non-text block
+						&types.ContentBlockMemberImage{},
+						&types.ContentBlockMemberText{Value: " world"},
+					},
+				},
+			},
+			expected: "hello world",
+		},
+		{
+			name: "no text blocks",
+			output: &types.ConverseOutputMemberMessage{
+				Value: types.Message{
+					Content: []types.ContentBlock{
+						&types.ContentBlockMemberImage{},
+					},
+				},
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := extractTextFromConverseOutput(tt.output, "test-model")
+
+			if tt.expectError {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }
 
 func TestGetName(t *testing.T) {
 	client := &AmazonBedrockConverseClient{}
 	assert.Equal(t, "amazonbedrockconverse", client.GetName())
-}
-
-type fakeConfig struct {
-	model         string
-	region        string
-	temperature   float32
-	topP          float32
-	maxTokens     int
-	stopSequences []string
-}
-
-func (f *fakeConfig) GetModel() string {
-	return f.model
-}
-
-func (f *fakeConfig) GetProviderRegion() string {
-	return f.region
-}
-
-func (f *fakeConfig) GetTemperature() float32 {
-	return f.temperature
-}
-
-func (f *fakeConfig) GetTopP() float32 {
-	return f.topP
-}
-
-func (f *fakeConfig) GetMaxTokens() int {
-	return f.maxTokens
-}
-
-func (f *fakeConfig) GetStopSequences() []string {
-	return f.stopSequences
 }
