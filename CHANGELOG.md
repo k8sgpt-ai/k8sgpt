@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.31...v0.4.32) (2026-03-24)
+
+
+### Bug Fixes
+
+* **deps:** update module google.golang.org/grpc to v1.79.3 [security] ([#1626](https://github.com/k8sgpt-ai/k8sgpt/issues/1626)) ([97fbf04](https://github.com/k8sgpt-ai/k8sgpt/commit/97fbf04e331b4a6f37c494b8becd8c6f0687af8b))
+
 ## [0.4.31](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.30...v0.4.31) (2026-03-24)
 
 
