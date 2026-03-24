@@ -61,6 +61,10 @@ func (m *mockConfig) GetMaxTokens() int {
 	return 0
 }
 
+func (m *mockConfig) GetStopSequences() []string {
+	return []string{"", "", "", ""}
+}
+
 func (m *mockConfig) GetEndpointName() string {
 	return ""
 }
