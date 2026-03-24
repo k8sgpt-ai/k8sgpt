@@ -61,6 +61,11 @@ func processError(err error, modelId string) error {
 	}
 }
 
+func isClaudeModel(modelId string) bool {
+	m := strings.ToLower(modelId)
+	return strings.Contains(m, "claude")
+}
+
 func (a *AmazonBedrockConverseClient) Configure(config IAIConfig) error {
 	modelInput := config.GetModel()
 
@@ -133,15 +138,24 @@ func (a *AmazonBedrockConverseClient) GetCompletion(ctx context.Context, prompt 
 		Content: []types.ContentBlock{&content},
 		Role:    "user",
 	}
+
+	var infConfig = &types.InferenceConfiguration{
+		MaxTokens:     aws.Int32(int32(a.maxTokens)),
+		StopSequences: a.stopSequences,
+	}
+
+	// Claude models only support temperature OR topP, while others support both temperature and topP. Prefer temperature for now
+	if isClaudeModel(a.model) {
+		infConfig.Temperature = aws.Float32(a.temperature)
+	} else {
+		infConfig.Temperature = aws.Float32(a.temperature)
+		infConfig.TopP = aws.Float32(a.topP)
+	}
+
 	var converseInput = bedrockruntime.ConverseInput{
 		ModelId:  aws.String(a.model),
 		Messages: []types.Message{message},
-		InferenceConfig: &types.InferenceConfiguration{
-			Temperature:   aws.Float32(a.temperature),
-			TopP:          aws.Float32(a.topP),
-			MaxTokens:     aws.Int32(int32(a.maxTokens)),
-			StopSequences: a.stopSequences,
-		},
+		InferenceConfig: infConfig,
 	}
 	response, err := a.client.Converse(ctx, &converseInput)
 	if err != nil {
