@@ -45,7 +45,7 @@ func (p *ViperConfigProvider) UnmarshalKey(key string, rawVal interface{}) error
 
 // Default instances to be used
 var (
-	DefaultClientFactory = &DefaultAIClientFactory{}
+	DefaultClientFactory  = &DefaultAIClientFactory{}
 	DefaultConfigProvider = &ViperConfigProvider{}
 )
 
