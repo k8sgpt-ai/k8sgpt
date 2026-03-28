@@ -97,6 +97,32 @@ type Sensitive struct {
 	Masked   string
 }
 
+// CRDAnalyzerConfig defines the configuration for the generic CRD analyzer
+type CRDAnalyzerConfig struct {
+	Enabled bool                 `yaml:"enabled" json:"enabled"`
+	Include []CRDIncludeConfig   `yaml:"include" json:"include"`
+	Exclude []CRDExcludeConfig   `yaml:"exclude" json:"exclude"`
+}
+
+// CRDIncludeConfig defines configuration for a specific CRD to analyze
+type CRDIncludeConfig struct {
+	Name            string                  `yaml:"name" json:"name"`
+	StatusPath      string                  `yaml:"statusPath" json:"statusPath"`
+	ReadyCondition  *CRDReadyCondition      `yaml:"readyCondition" json:"readyCondition"`
+	ExpectedValue   string                  `yaml:"expectedValue" json:"expectedValue"`
+}
+
+// CRDReadyCondition defines the expected ready condition
+type CRDReadyCondition struct {
+	Type           string `yaml:"type" json:"type"`
+	ExpectedStatus string `yaml:"expectedStatus" json:"expectedStatus"`
+}
+
+// CRDExcludeConfig defines a CRD to exclude from analysis
+type CRDExcludeConfig struct {
+	Name string `yaml:"name" json:"name"`
+}
+
 type (
 	SourceType                  string
 	AvailabilityMode            string
