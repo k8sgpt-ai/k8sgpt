@@ -79,20 +79,24 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// check if ingressclass exist
 		if ingressClassName != nil {
-			_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
-			if err != nil {
-				doc := apiDoc.GetApiDocV2("spec.ingressClassName")
+			// Skip validation for GKE built-in ingress classes that don't require
+			// an IngressClass resource (they are recognized by the GKE ingress controller)
+			if !isGKEBuiltInIngressClass(*ingressClassName) {
+				_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
+				if err != nil {
+					doc := apiDoc.GetApiDocV2("spec.ingressClassName")
 
-				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName),
-					KubernetesDoc: doc,
-					Sensitive: []common.Sensitive{
-						{
-							Unmasked: *ingressClassName,
-							Masked:   util.MaskString(*ingressClassName),
+					failures = append(failures, common.Failure{
+						Text:          fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName),
+						KubernetesDoc: doc,
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: *ingressClassName,
+								Masked:   util.MaskString(*ingressClassName),
+							},
 						},
-					},
-				})
+					})
+				}
 			}
 		}
 
@@ -171,4 +175,12 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+// isGKEBuiltInIngressClass returns true if the ingress class is a GKE built-in
+// ingress class that does not require an IngressClass resource to be defined.
+// GKE recognizes "gce" (external) and "gce-internal" (internal) as valid
+// ingress classes without requiring explicit IngressClass resources.
+func isGKEBuiltInIngressClass(className string) bool {
+	return className == "gce" || className == "gce-internal"
 }
