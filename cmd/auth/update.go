@@ -14,10 +14,12 @@ limitations under the License.
 package auth
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,6 +35,16 @@ var updateCmd = &cobra.Command{
 		if strings.ToLower(backend) == "azureopenai" {
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
+
+			azureAPIType, _ := cmd.Flags().GetString("azureAPIType")
+
+			switch openai.APIType(azureAPIType) {
+			case "", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure:
+				// valid types
+			default:
+				color.Red("Error: Valid values of azureAPIType for azureopenai backends are AZURE, AZURE_AD or CLOUDFLARE_AZURE")
+				os.Exit(1)
+			}
 		}
 		organizationId, _ := cmd.Flags().GetString("organizationId")
 		if strings.ToLower(backend) != "azureopenai" && strings.ToLower(backend) != "openai" {
@@ -85,6 +97,10 @@ var updateCmd = &cobra.Command{
 					configAI.Providers[i].OrganizationId = organizationId
 					color.Blue("Organization Id updated successfully")
 				}
+				if azureAPIType != "" {
+					configAI.Providers[i].AzureAPIType = azureAPIType
+					color.Blue("AzureAPIType updated successfully")
+				}
 				configAI.Providers[i].Temperature = temperature
 				color.Green("%s updated in the AI backend provider list", backend)
 			}
@@ -117,4 +133,6 @@ func init() {
 	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
 	// update flag for organizationId
 	updateCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "Update OpenAI or Azure organization Id")
+	// add flag for azure open ai APIType name
+	updateCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
 }
