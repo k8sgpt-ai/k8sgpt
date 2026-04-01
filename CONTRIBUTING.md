@@ -2,7 +2,7 @@
 We're happy that you want to contribute to this project. Please read the sections to make the process as smooth as possible.
 
 ## Requirements
-- Golang `1.23`
+- Golang `1.24+`
 - An OpenAI API key
   * OpenAI API keys can be obtained from [OpenAI](https://platform.openai.com/account/api-keys)
   * You can set the API key for k8sgpt using `./k8sgpt auth key`
