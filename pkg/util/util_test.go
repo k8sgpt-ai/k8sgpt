@@ -14,6 +14,8 @@ limitations under the License.
 package util
 
 import (
+	"encoding/base64"
+	"fmt"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -23,6 +25,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -502,4 +505,75 @@ func TestLabelsIncludeAny(t *testing.T) {
 			require.Equal(t, tt.ok, LabelsIncludeAny(tt.p, tt.m))
 		})
 	}
+}
+
+func TestMaskString(t *testing.T) {
+	input := "mysecret"
+	masked := MaskString(input)
+	// decode base64 to compare properties
+	decoded, err := base64.StdEncoding.DecodeString(masked)
+	require.NoError(t, err)
+	require.Len(t, decoded, len(input))
+	// ensure it is not equal to input
+	require.NotEqual(t, input, string(decoded))
+	// ensure all runes are from anonymizePattern
+	allowed := make(map[rune]struct{})
+	for _, r := range anonymizePattern {
+		allowed[r] = struct{}{}
+	}
+	for _, r := range string(decoded) {
+		_, ok := allowed[r]
+		require.True(t, ok, "unexpected rune: %q", r)
+	}
+}
+
+func TestNewHeaders(t *testing.T) {
+	input := []string{
+		"X-Test: foo",
+		"X-Test: bar",
+		"Content-Type: application/json",
+		"InvalidHeader", // should be ignored
+	}
+	hs := NewHeaders(input)
+	// flatten to a map for easier assertions
+	got := map[string][]string{}
+	for _, h := range hs {
+		for k, v := range h {
+			got[k] = append(got[k], v...)
+		}
+	}
+	// expected values
+	require.Contains(t, got, "X-Test")
+	require.Contains(t, got, "Content-Type")
+	// order of values is not guaranteed
+	require.ElementsMatch(t, []string{"foo", "bar"}, got["X-Test"])
+	require.ElementsMatch(t, []string{"application/json"}, got["Content-Type"])
+}
+
+func TestLabelStrToSelector(t *testing.T) {
+	// empty case returns nil
+	require.Nil(t, LabelStrToSelector(""))
+
+	sel := LabelStrToSelector("key=value,foo=bar")
+	require.NotNil(t, sel)
+
+	// matches exact set
+	m := map[string]string{"key": "value", "foo": "bar"}
+	require.True(t, sel.Matches(labels.Set(m)))
+
+	// does not match different values
+	m2 := map[string]string{"key": "other", "foo": "bar"}
+	require.False(t, sel.Matches(labels.Set(m2)))
+}
+
+func TestCaptureOutput(t *testing.T) {
+	out := CaptureOutput(func() {
+		fmt.Print("hello world")
+	})
+	require.Equal(t, "hello world", out)
+}
+
+func TestContains(t *testing.T) {
+	require.True(t, Contains("abcdef", "bcd"))
+	require.False(t, Contains("abcdef", "xyz"))
 }

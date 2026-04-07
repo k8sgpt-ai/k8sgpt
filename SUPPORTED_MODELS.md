@@ -24,6 +24,9 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 ### Cohere
 - **Model:** User-configurable (any model supported by Cohere)
 
+### Amazon Bedrock Converse
+- **Model:** User-configurable (any model supported by [Amazon Bedrock Converse](https://docs.aws.amazon.com/bedrock/latest/userguide/models-api-compatibility.html))
+
 ### Amazon Bedrock
 - **Supported Models:**
   - anthropic.claude-sonnet-4-20250514-v1:0
@@ -74,6 +77,9 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 ### IBM Watsonx
 - **Supported Models:**
   - ibm/granite-13b-chat-v2
+
+### Groq
+- **Model:** User-configurable (any model supported by Groq, e.g., `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`)
 
 ---
 

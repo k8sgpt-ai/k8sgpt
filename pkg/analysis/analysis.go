@@ -16,6 +16,7 @@ package analysis
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -34,6 +35,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Analysis struct {
@@ -226,6 +228,15 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 }
 
 func (a *Analysis) RunCustomAnalysis() {
+	// Validate namespace if specified, consistent with built-in filter behavior
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
@@ -560,7 +571,22 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
 	if a.AIClient.GetName() == ai.CustomRestClientName {
-		prompt = fmt.Sprintf(ai.PromptMap["raw"], a.Language, inputKey, prompt)
+		// Use proper JSON marshaling to handle special characters in error messages
+		// This fixes issues with quotes, newlines, and other special chars in inputKey
+		customRestPrompt := struct {
+			Language string `json:"language"`
+			Message  string `json:"message"`
+			Prompt   string `json:"prompt"`
+		}{
+			Language: a.Language,
+			Message:  inputKey,
+			Prompt:   prompt,
+		}
+		promptBytes, err := json.Marshal(customRestPrompt)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal customrest prompt: %w", err)
+		}
+		prompt = string(promptBytes)
 	}
 	response, err := a.AIClient.GetCompletion(a.Context, prompt)
 	if err != nil {

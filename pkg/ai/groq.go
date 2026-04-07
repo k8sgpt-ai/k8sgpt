@@ -22,34 +22,30 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-const openAIClientName = "openai"
+const groqAIClientName = "groq"
 
-type OpenAIClient struct {
+// Default Groq API endpoint (OpenAI-compatible)
+const groqAPIBaseURL = "https://api.groq.com/openai/v1"
+
+type GroqClient struct {
 	nopCloser
 
 	client      *openai.Client
 	model       string
 	temperature float32
 	topP        float32
-	// organizationId string
 }
 
-const (
-	// OpenAI completion parameters
-	maxToken         = 2048
-	presencePenalty  = 0.0
-	frequencyPenalty = 0.0
-)
-
-func (c *OpenAIClient) Configure(config IAIConfig) error {
+func (c *GroqClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	defaultConfig := openai.DefaultConfig(token)
-	orgId := config.GetOrganizationId()
 	proxyEndpoint := config.GetProxyEndpoint()
 
 	baseURL := config.GetBaseURL()
 	if baseURL != "" {
 		defaultConfig.BaseURL = baseURL
+	} else {
+		defaultConfig.BaseURL = groqAPIBaseURL
 	}
 
 	transport := &http.Transport{}
@@ -59,10 +55,6 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 			return err
 		}
 		transport.Proxy = http.ProxyURL(proxyUrl)
-	}
-
-	if orgId != "" {
-		defaultConfig.OrgID = orgId
 	}
 
 	customHeaders := config.GetCustomHeaders()
@@ -75,7 +67,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 
 	client := openai.NewClientWithConfig(defaultConfig)
 	if client == nil {
-		return errors.New("error creating OpenAI client")
+		return errors.New("error creating Groq client")
 	}
 	c.client = client
 	c.model = config.GetModel()
@@ -84,8 +76,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	return nil
 }
 
-func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
-	// Create a completion request
+func (c *GroqClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
@@ -95,7 +86,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 			},
 		},
 		Temperature:      c.temperature,
-		MaxCompletionTokens: maxToken,
+		MaxTokens:        maxToken,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
@@ -106,28 +97,6 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (c *OpenAIClient) GetName() string {
-	return openAIClientName
-}
-
-// OpenAIHeaderTransport is an http.RoundTripper that adds the given headers to each request.
-type OpenAIHeaderTransport struct {
-	Origin  http.RoundTripper
-	Headers []http.Header
-}
-
-// RoundTrip implements the http.RoundTripper interface.
-func (t *OpenAIHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Clone the request to avoid modifying the original request
-	clonedReq := req.Clone(req.Context())
-	for _, header := range t.Headers {
-		for key, values := range header {
-			// Possible values per header:  RFC 2616
-			for _, value := range values {
-				clonedReq.Header.Add(key, value)
-			}
-		}
-	}
-
-	return t.Origin.RoundTrip(clonedReq)
+func (c *GroqClient) GetName() string {
+	return groqAIClientName
 }
