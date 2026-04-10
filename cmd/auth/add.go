@@ -48,6 +48,9 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrock" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "amazonbedrockconverse" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 		if strings.ToLower(backend) == "ibmwatsonxai" {
 			_ = cmd.MarkFlagRequired("providerId")
 		}
@@ -140,6 +143,7 @@ var addCmd = &cobra.Command{
 			TopP:           topP,
 			TopK:           topK,
 			MaxTokens:      maxTokens,
+			StopSequences:  stopSequences,
 			OrganizationId: organizationId,
 		}
 
@@ -173,12 +177,14 @@ func init() {
 	addCmd.Flags().Int32VarP(&topK, "topk", "c", 50, "Sampling Cutoff: Set a threshold (1-100) to restrict the sampling process to the top K most probable words at each step. Higher values lead to greater variability, lower values increases predictability.")
 	// max tokens
 	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
+	// stop sequences
+	addCmd.Flags().StringSliceVarP(&stopSequences, "stopsequences", "s", []string{}, "Stop Sequences: Define specific tokens or phrases that signal the model to stop generating text.")
 	// add flag for temperature
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, googlevertexai backend)")
 	//add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
 	//add flag for OCI Compartment ID
