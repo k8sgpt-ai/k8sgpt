@@ -2,24 +2,24 @@ module github.com/k8sgpt-ai/k8sgpt
 
 go 1.24.1
 
-toolchain go1.24.11
+toolchain go1.26.2
 
 require (
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/kedacore/keda/v2 v2.16.0
-	github.com/magiconair/properties v1.8.9
-	github.com/mittwald/go-helm-client v0.12.14
-	github.com/ollama/ollama v0.13.4
-	github.com/sashabaranov/go-openai v1.36.0
-	github.com/schollz/progressbar/v3 v3.17.1
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/viper v1.19.0
+	github.com/magiconair/properties v1.8.10
+	github.com/mittwald/go-helm-client v0.12.19
+	github.com/ollama/ollama v0.20.6
+	github.com/sashabaranov/go-openai v1.41.2
+	github.com/schollz/progressbar/v3 v3.19.0
+	github.com/spf13/cobra v1.10.2
+	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/term v0.38.0
+	golang.org/x/term v0.42.0
 	helm.sh/helm/v3 v3.17.4
-	k8s.io/api v0.32.3
-	k8s.io/apimachinery v0.32.3
-	k8s.io/client-go v0.32.3
+	k8s.io/api v0.35.3
+	k8s.io/apimachinery v0.35.3
+	k8s.io/client-go v0.35.3
 	k8s.io/kubectl v0.32.2 // indirect
 
 )
@@ -27,38 +27,38 @@ require (
 require github.com/adrg/xdg v0.5.3
 
 require (
-	buf.build/gen/go/interplex-ai/schemas/grpc/go v1.5.1-20241117203254-a91193b62179.1
-	buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go v1.35.2-20241117203254-a91193b62179.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.24.0-20241118152629-1379a5a1889d.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.5.1-20241118152629-1379a5a1889d.1
-	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.35.2-20241118152629-1379a5a1889d.1
-	cloud.google.com/go/storage v1.50.0
-	cloud.google.com/go/vertexai v0.13.2
-	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.10.1
-	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.5.0
-	github.com/IBM/watsonx-go v1.0.1
-	github.com/agiledragon/gomonkey/v2 v2.13.0
-	github.com/aws/aws-sdk-go v1.55.7
-	github.com/aws/aws-sdk-go-v2 v1.36.3
-	github.com/aws/aws-sdk-go-v2/config v1.29.14
-	github.com/aws/aws-sdk-go-v2/service/bedrock v1.33.0
+	buf.build/gen/go/interplex-ai/schemas/grpc/go v1.6.1-20241117203254-a91193b62179.1
+	buf.build/gen/go/interplex-ai/schemas/protocolbuffers/go v1.36.11-20241117203254-a91193b62179.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc-ecosystem/gateway/v2 v2.28.0-20241118152629-1379a5a1889d.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go v1.6.1-20241118152629-1379a5a1889d.1
+	buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go v1.36.11-20241118152629-1379a5a1889d.1
+	cloud.google.com/go/storage v1.62.0
+	cloud.google.com/go/vertexai v0.19.0
+	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.13.1
+	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.4
+	github.com/IBM/watsonx-go v1.0.2
+	github.com/agiledragon/gomonkey/v2 v2.14.0
+	github.com/aws/aws-sdk-go v1.55.8
+	github.com/aws/aws-sdk-go-v2 v1.41.5
+	github.com/aws/aws-sdk-go-v2/config v1.32.14
+	github.com/aws/aws-sdk-go-v2/service/bedrock v1.59.0
 	github.com/aws/aws-sdk-go-v2/service/bedrockruntime v1.30.0
-	github.com/aws/smithy-go v1.22.2
-	github.com/cohere-ai/cohere-go/v2 v2.12.2
+	github.com/aws/smithy-go v1.24.3
+	github.com/cohere-ai/cohere-go/v2 v2.18.0
 	github.com/go-logr/zapr v1.3.0
-	github.com/google/generative-ai-go v0.19.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
+	github.com/google/generative-ai-go v0.20.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
-	github.com/mark3labs/mcp-go v0.36.0
+	github.com/mark3labs/mcp-go v0.47.1
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/oracle/oci-go-sdk/v65 v65.79.0
-	github.com/prometheus/prometheus v0.306.0
-	github.com/pterm/pterm v0.12.80
-	google.golang.org/api v0.239.0
+	github.com/oracle/oci-go-sdk/v65 v65.111.0
+	github.com/prometheus/prometheus v0.311.1
+	github.com/pterm/pterm v0.12.83
+	google.golang.org/api v0.275.0
 	gopkg.in/yaml.v2 v2.4.0
-	sigs.k8s.io/controller-runtime v0.19.3
-	sigs.k8s.io/gateway-api v1.2.1
+	sigs.k8s.io/controller-runtime v0.23.3
+	sigs.k8s.io/gateway-api v1.5.1
 )
 
 require (
@@ -198,7 +198,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
-	github.com/google/gnostic v0.7.0
+	github.com/google/gnostic v0.7.1
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
@@ -241,7 +241,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/prometheus/client_golang v1.23.0-rc.1
+	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.65.1-0.20250703115700-7f8b2a0d32d3 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
@@ -262,20 +262,20 @@ require (
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
-	golang.org/x/net v0.48.0
+	golang.org/x/net v0.53.0
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	google.golang.org/grpc v1.79.3
+	google.golang.org/grpc v1.80.0
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	k8s.io/apiextensions-apiserver v0.32.2
+	k8s.io/apiextensions-apiserver v0.35.3
 	k8s.io/apiserver v0.32.2 // indirect
 	k8s.io/cli-runtime v0.32.2 // indirect
 	k8s.io/component-base v0.32.2 // indirect
@@ -293,6 +293,6 @@ require (
 // v1.2.0 is taken from github.com/open-policy-agent/opa v0.42.0
 // v1.2.0 incompatible with github.com/docker/docker v23.0.0-rc.1+incompatible
 //replace oras.land/oras-go => oras.land/oras-go v1.2.4
-replace github.com/docker/docker => github.com/docker/docker v28.0.4+incompatible
+replace github.com/docker/docker => github.com/docker/docker v28.5.2+incompatible
 
-replace dario.cat/mergo => github.com/imdario/mergo v1.0.1
+replace dario.cat/mergo => github.com/imdario/mergo v1.0.2
