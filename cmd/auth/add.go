@@ -21,6 +21,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
@@ -66,11 +67,21 @@ var addCmd = &cobra.Command{
 			return false
 		}
 
-		// check if backend is not empty and a valid value
-		if backend == "" {
+		switch backend {
+		case "": // check if backend is not empty and a valid value
 			color.Yellow(fmt.Sprintf("Warning: backend input is empty, will use the default value: %s", defaultBackend))
 			backend = defaultBackend
-		} else {
+		case "azureopenai":
+			azureAPIType, _ := cmd.Flags().GetString("azureAPIType")
+
+			switch openai.APIType(azureAPIType) {
+			case "", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure:
+				// valid types
+			default:
+				color.Red("Error: Valid values of azureAPIType for azureopenai backends are AZURE, AZURE_AD or CLOUDFLARE_AZURE")
+				os.Exit(1)
+			}
+		default:
 			if !validBackend(ai.Backends, backend) {
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
 				os.Exit(1)
@@ -145,6 +156,7 @@ var addCmd = &cobra.Command{
 			MaxTokens:      maxTokens,
 			StopSequences:  stopSequences,
 			OrganizationId: organizationId,
+			AzureAPIType:   azureAPIType,
 		}
 
 		if providerIndex == -1 {
@@ -191,4 +203,6 @@ func init() {
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
+	// add flag for azure open ai APIType name
+	addCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
 }
