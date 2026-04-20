@@ -344,6 +344,51 @@ func TestPodAnalyzer(t *testing.T) {
 			},
 		},
 		{
+			name: "Succeeded pod with non-zero exit code container should not be reported",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "Pod1",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								// Completed Job pod: phase is Succeeded even if a sidecar
+								// container exited with a non-zero code on shutdown.
+								Phase: v1.PodSucceeded,
+								ContainerStatuses: []v1.ContainerStatus{
+									{
+										Name:  "main",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 0,
+												Reason:   "Completed",
+											},
+										},
+									},
+									{
+										Name:  "sidecar",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 255,
+												Reason:   "Error",
+											},
+										},
+									},
+								},
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			// No failures expected: the pod completed successfully.
+		},
+		{
 			name: "Terminated container with non-zero exit code",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
