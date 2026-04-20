@@ -91,6 +91,7 @@ type IAIConfig interface {
 	GetProviderId() string
 	GetCompartmentId() string
 	GetOrganizationId() string
+	GetAzureAPIType() string
 	GetCustomHeaders() []http.Header
 }
 
@@ -127,6 +128,7 @@ type AIProvider struct {
 	MaxTokens      int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
 	StopSequences  []string      `mapstructure:"stopsequences" yaml:"stopsequences,omitempty"`
 	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
+	AzureAPIType   string        `mapstructure:"azureapitype" yaml:"azureapitype,omitempty"`
 	CustomHeaders  []http.Header `mapstructure:"customHeaders"`
 }
 
@@ -187,6 +189,10 @@ func (p *AIProvider) GetCompartmentId() string {
 
 func (p *AIProvider) GetOrganizationId() string {
 	return p.OrganizationId
+}
+
+func (p *AIProvider) GetAzureAPIType() string {
+	return p.AzureAPIType
 }
 
 func (p *AIProvider) GetCustomHeaders() []http.Header {

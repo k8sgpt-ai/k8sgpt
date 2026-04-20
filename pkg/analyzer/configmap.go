@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -80,6 +81,17 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, cm := range configMaps.Items {
 		var failures []common.Failure
 
+		// Check if ConfigMap is dynamically loaded by sidecars
+		if isKnownSidecarPattern(cm) {
+			usedConfigMaps[cm.Name] = true
+			continue
+		}
+
+		// Check if usage check should be skipped
+		if shouldSkipUsageCheck(cm) {
+			continue
+		}
+
 		// Check for unused ConfigMaps
 		if !usedConfigMaps[cm.Name] {
 			failures = append(failures, common.Failure{
@@ -122,4 +134,34 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return results, nil
+}
+
+// isKnownSidecarPattern detects ConfigMaps that are dynamically loaded by sidecar containers
+// These ConfigMaps are not directly referenced in Pod specs but are watched via Kubernetes API
+func isKnownSidecarPattern(cm v1.ConfigMap) bool {
+	// Common sidecar patterns
+	knownLabels := []string{
+		"grafana_dashboard",  // Grafana sidecar dashboard loader
+		"grafana_datasource", // Grafana sidecar datasource loader
+		"prometheus_rule",    // Prometheus operator rule loader
+		"fluentd_config",     // Fluentd config reloader
+	}
+
+	for _, label := range knownLabels {
+		if _, exists := cm.Labels[label]; exists {
+			return true
+		}
+	}
+
+	// User-defined marker for dynamically loaded ConfigMaps
+	if cm.Labels["k8sgpt.ai/dynamically-loaded"] == "true" {
+		return true
+	}
+
+	return false
+}
+
+// shouldSkipUsageCheck allows users to opt-out of usage checking
+func shouldSkipUsageCheck(cm v1.ConfigMap) bool {
+	return cm.Annotations["k8sgpt.ai/skip-usage-check"] == "true"
 }
