@@ -120,6 +120,66 @@ func TestPodAnalyzer(t *testing.T) {
 			},
 		},
 		{
+			name: "Evicted pod with message",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "EvictedPod",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Reason:  "Evicted",
+								Message: "Pod was rejected: The node had condition: [DiskPressure]. ",
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/EvictedPod",
+					failuresCount: 1,
+				},
+			},
+		},
+		{
+			name: "Evicted pod without message",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "EvictedPod",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Reason:  "Evicted",
+								Message: "",
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/EvictedPod",
+					failuresCount: 1,
+				},
+			},
+		},
+		{
 			name: "readiness probe failure without any event",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{

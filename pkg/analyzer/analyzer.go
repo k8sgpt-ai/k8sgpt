@@ -33,6 +33,7 @@ var (
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Pod":                            PodAnalyzer{},
+	"DaemonSet":                      DaemonSetAnalyzer{},
 	"Deployment":                     DeploymentAnalyzer{},
 	"ReplicaSet":                     ReplicaSetAnalyzer{},
 	"PersistentVolumeClaim":          PvcAnalyzer{},

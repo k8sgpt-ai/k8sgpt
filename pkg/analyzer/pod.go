@@ -68,6 +68,20 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 
+		// Check for evicted pods
+		if pod.Status.Reason == "Evicted" {
+			failure := common.Failure{
+				Text:      fmt.Sprintf("Pod %s has been evicted", pod.Name),
+				Sensitive: []common.Sensitive{},
+			}
+
+			if pod.Status.Message != "" {
+				failure.Text = pod.Status.Message
+			}
+
+			failures = append(failures, failure)
+		}
+
 		// Check for errors in the init containers.
 		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.InitContainerStatuses, pod.Name, pod.Namespace, string(pod.Status.Phase))...)
 
