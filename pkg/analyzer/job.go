@@ -70,7 +70,8 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		}
 		if Job.Status.Failed > 0 {
 			doc := apiDoc.GetApiDocV2("status.failed")
-			failures = append(failures, common.Failure{
+
+			failure := common.Failure{
 				Text:          fmt.Sprintf("Job %s has failed", Job.Name),
 				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
@@ -83,7 +84,16 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 						Masked:   util.MaskString(Job.Name),
 					},
 				},
-			})
+			}
+
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, Job.Namespace, Job.Name)
+
+			// Check for Event BackoffLimitExceeded
+			if evt != nil && err == nil && evt.Reason == "BackoffLimitExceeded" && evt.Message != "" {
+				failure.Text = evt.Message
+			}
+
+			failures = append(failures, failure)
 		}
 
 		if len(failures) > 0 {

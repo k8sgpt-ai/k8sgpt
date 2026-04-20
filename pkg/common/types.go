@@ -50,6 +50,7 @@ type Analyzer struct {
 type PreAnalysis struct {
 	Pod                      v1.Pod
 	FailureDetails           []Failure
+	DaemonSet                appsv1.DaemonSet
 	Deployment               appsv1.Deployment
 	ReplicaSet               appsv1.ReplicaSet
 	PersistentVolumeClaim    v1.PersistentVolumeClaim
