@@ -203,7 +203,24 @@ func NewAnalysis(
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
-	customHeaders := util.NewHeaders(httpHeaders)
+
+	var headerStrings []string
+
+	// If AI provider has custom headers in config, use those first
+	if len(aiProvider.CustomHeaders) > 0 {
+		for _, header := range aiProvider.CustomHeaders {
+			for key, values := range header {
+				for _, value := range values {
+					headerStrings = append(headerStrings, fmt.Sprintf("%s:%s", key, value))
+				}
+			}
+		}
+	} else if len(httpHeaders) > 0 {
+		headerStrings = httpHeaders
+	}
+
+	customHeaders := util.NewHeaders(headerStrings)
+
 	aiProvider.CustomHeaders = customHeaders
 	if verbose {
 		fmt.Println("Debug: Checking AI client initialization.")

@@ -34,6 +34,7 @@ var (
 	maxTokens      int
 	stopSequences  []string
 	organizationId string
+	azureAPIType   string
 )
 
 var configAI ai.AIConfiguration
