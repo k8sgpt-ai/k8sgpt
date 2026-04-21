@@ -22,6 +22,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
 	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
@@ -169,6 +170,56 @@ func TestJobAnalyzer(t *testing.T) {
 				require.Equal(t, expectation.name, results[i].Name)
 				require.Len(t, results[i].Error, expectation.failuresCount)
 			}
+		})
+	}
+}
+
+func TestJobAnalyzerEventFailure(t *testing.T) {
+	tests := map[string]struct {
+		config       common.Analyzer
+		expectedText string
+	}{
+		"Failed Job with BackoffLimitExceeded Event": {
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&batchv1.Job{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "backoff-job",
+								Namespace: "default",
+							},
+							Spec: batchv1.JobSpec{},
+							Status: batchv1.JobStatus{
+								Failed: 1,
+							},
+						},
+						&corev1.Event{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "backoff-event",
+								Namespace: "default",
+							},
+							Reason:  "BackoffLimitExceeded",
+							Message: "Job has reached the specified backoff limit",
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectedText: "Job has reached the specified backoff limit",
+		},
+	}
+
+	for testName, tt := range tests {
+		t.Run(testName, func(t *testing.T) {
+			analyzer := JobAnalyzer{}
+			results, err := analyzer.Analyze(tt.config)
+			require.NoError(t, err)
+			require.Len(t, results, 1)
+			require.Equal(t, "default/backoff-job", results[0].Name)
+			require.Len(t, results[0].Error, 1)
+
+			require.Contains(t, results[0].Error[0].Text, tt.expectedText)
 		})
 	}
 }
