@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.31...v0.4.32) (2026-04-21)
+
+
+### Features
+
+* add Azure API Type Support and add Custom HTTP Header ([#1638](https://github.com/k8sgpt-ai/k8sgpt/issues/1638)) ([28fe196](https://github.com/k8sgpt-ai/k8sgpt/commit/28fe196d47ca43cf984f6b07a78cc3f877dc3cc2))
+* add daemonset analyzer and special cases for pod and job ([#1636](https://github.com/k8sgpt-ai/k8sgpt/issues/1636)) ([ac329d1](https://github.com/k8sgpt-ai/k8sgpt/commit/ac329d18909d61e67d16fe07e6fda22b84a7e689))
+
+
+### Bug Fixes
+
+* amazonbedrockconverse claude models temp and topp ([#1629](https://github.com/k8sgpt-ai/k8sgpt/issues/1629)) ([c87a31a](https://github.com/k8sgpt-ai/k8sgpt/commit/c87a31aee13a60b343dae4abef6e1ee6eed148c9))
+* **deps:** update module google.golang.org/grpc to v1.79.3 [security] ([#1626](https://github.com/k8sgpt-ai/k8sgpt/issues/1626)) ([97fbf04](https://github.com/k8sgpt-ai/k8sgpt/commit/97fbf04e331b4a6f37c494b8becd8c6f0687af8b))
+* improve ConfigMap usage detection for sidecar patterns ([#1602](https://github.com/k8sgpt-ai/k8sgpt/issues/1602)) ([ca0d3eb](https://github.com/k8sgpt-ai/k8sgpt/commit/ca0d3eba3faaf1b786e62b1a5cabad02ae799d6d))
+* recognize GKE built-in ingress classes 'gce' and 'gce-internal' ([#1599](https://github.com/k8sgpt-ai/k8sgpt/issues/1599)) ([6ba8fb2](https://github.com/k8sgpt-ai/k8sgpt/commit/6ba8fb217d874e41d5737161a1f8fb1fd1acf4d4))
+
 ## [0.4.31](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.30...v0.4.31) (2026-03-24)
 
 
