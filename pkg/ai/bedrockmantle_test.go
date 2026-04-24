@@ -116,7 +116,7 @@ func TestBedrockMantleGetCompletion_Success(t *testing.T) {
 			"choices": []map[string]interface{}{{"index": 0, "message": map[string]string{"role": "assistant", "content": "mock response"}, "finish_reason": "stop"}},
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer server.Close()
 
@@ -138,7 +138,7 @@ func TestBedrockMantleGetCompletion_Error(t *testing.T) {
 	t.Setenv("AWS_BEARER_TOKEN_BEDROCK", "test-key")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
 			"error": map[string]string{"message": "model error", "type": "server_error"},
 		})
 	}))
