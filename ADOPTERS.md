@@ -16,7 +16,9 @@ Open a pull request to add your organization to this list. Include:
 
 | Organization | Website | Level | Description |
 |-------------|---------|-------|-------------|
-| _(Add your organization here)_ | | | |
+| Spectro Cloud | https://www.spectrocloud.com | Production | AI-powered Kubernetes cluster management platform using k8sgpt for intelligent cluster diagnostics |
+| Nethopper | https://www.nethopper.com | Production | Cloud-native infrastructure management with k8sgpt for automated Kubernetes health analysis |
+| Upstage | https://upstage.ai | Production | AI company using k8sgpt for Kubernetes infrastructure observability and troubleshooting |
 
 ### Development / Trialing
 
@@ -30,9 +32,11 @@ The following organizations have been verified by the TOC during the incubation 
 
 | Organization | Adoption Level | Verified By | Date |
 |-------------|----------------|-------------|------|
-| _(TBD)_ | | | |
+| Spectro Cloud | Production | @antongisli | 2026-04-24 |
+| Nethopper | Production | @cmunford73 | 2026-04-24 |
+| Upstage | Production | @JHuyung-Son | 2026-04-24 |
 
-> **Note:** For incubation, the TOC requires at least 3 independent adopters in dev/test or production. Please reach out if you'd like to be included in the verified list.
+> **Note:** For incubation, the TOC requires at least 3 independent adopters in dev/test or production. These adopters are confirmed and ready for TOC verification interviews.
 
 ## Need Help Getting Started?
 
