@@ -53,7 +53,7 @@ require (
 	github.com/mark3labs/mcp-go v0.36.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/oracle/oci-go-sdk/v65 v65.79.0
-	github.com/prometheus/prometheus v0.306.0
+	github.com/prometheus/prometheus v0.311.2
 	github.com/pterm/pterm v0.12.80
 	google.golang.org/api v0.239.0
 	gopkg.in/yaml.v2 v2.4.0
