@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.32...v0.4.33) (2026-04-25)
+
+
+### Docs
+
+* prepare governance docs for CNCF incubation ([#1642](https://github.com/k8sgpt-ai/k8sgpt/issues/1642)) ([c82da09](https://github.com/k8sgpt-ai/k8sgpt/commit/c82da099843060ceb831b6cd3433cf1b50d1865d))
+* remove FOSSA license badge and check ([#1644](https://github.com/k8sgpt-ai/k8sgpt/issues/1644)) ([30463af](https://github.com/k8sgpt-ai/k8sgpt/commit/30463afe5f0fe3334d3f20058c89cdb2366646ab))
+
 ## [0.4.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.31...v0.4.32) (2026-04-21)
 
 
