@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Boxes -->
+  <rect x="50" y="50" width="150" height="60" fill="#f0f0f0" stroke="#333"/>
+  <text x="125" y="85" font-family="sans-serif" font-size="14" text-anchor="middle">k8sgpt Core</text>
+  
+  <rect x="300" y="30" width="150" height="60" fill="#f0f0f0" stroke="#333"/>
+  <text x="375" y="65" font-family="sans-serif" font-size="14" text-anchor="middle">AI Backends</text>
+  
+  <rect x="300" y="150" width="150" height="60" fill="#f0f0f0" stroke="#333"/>
+  <text x="375" y="185" font-family="sans-serif" font-size="14" text-anchor="middle">k8sgpt Operator</text>
+  
+  <rect x="550" y="90" width="150" height="60" fill="#f0f0f0" stroke="#333"/>
+  <text x="625" y="125" font-family="sans-serif" font-size="14" text-anchor="middle">Helm Chart</text>
+  
+  <rect x="550" y="210" width="150" height="60" fill="#f0f0f0" stroke="#333"/>
+  <text x="625" y="245" font-family="sans-serif" font-size="14" text-anchor="middle">Website UI</text>
+  
+  <!-- Arrows -->
+  <line x1="200" y1="80" x2="300" y2="60" stroke="#000" marker-end="url(#arrow)"/>
+  <line x1="200" y1="80" x2="300" y2="180" stroke="#000" marker-end="url(#arrow)"/>
+  <line x1="450" y1="60" x2="550" y2="120" stroke="#000" marker-end="url(#arrow)"/>
+  <line x1="450" y1="180" x2="550" y2="240" stroke="#000" marker-end="url(#arrow)"/>
+  
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto" markerUnits="strokeWidth">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
+    </marker>
+  </defs>
+</svg>
