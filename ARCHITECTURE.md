@@ -15,3 +15,4 @@ This document provides a high‑level overview of the k8sgpt system architecture
 - **Website UI** – The Next.js website that displays analysis results, dashboards, and documentation.
 
 The diagram above shows the data flow: the operator watches cluster resources, forwards them to the core, which calls the selected AI backend. Results are stored and optionally displayed via the UI.
+
