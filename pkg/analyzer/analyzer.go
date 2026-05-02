@@ -57,6 +57,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"Gateway":                 GatewayAnalyzer{},
 	"HTTPRoute":               HTTPRouteAnalyzer{},
 	"Storage":                 StorageAnalyzer{},
+	"Resources":               ResourcesAnalyzer{},
 	"Security":                SecurityAnalyzer{},
 	"ClusterCatalog":          ClusterCatalogAnalyzer{},
 	"ClusterExtension":        ClusterExtensionAnalyzer{},
