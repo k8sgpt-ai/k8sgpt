@@ -112,8 +112,9 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			model = defaultModel
-			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
+			backendDefaultModel := defaultModelForBackend(backend)
+			model = backendDefaultModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", backendDefaultModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
@@ -205,4 +206,13 @@ func init() {
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
 	// add flag for azure open ai APIType name
 	addCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
+}
+
+func defaultModelForBackend(backend string) string {
+	switch strings.ToLower(backend) {
+	case "openairesponses":
+		return "gpt-5-nano"
+	default:
+		return defaultModel
+	}
 }
