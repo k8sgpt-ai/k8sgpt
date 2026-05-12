@@ -247,6 +247,39 @@ func TestIngressAnalyzerLabelSelector(t *testing.T) {
 	require.Equal(t, "default/ingress-with-label", results[0].Name)
 }
 
+func TestIngressAnalyzerSkipsEmptyTLSSecretName(t *testing.T) {
+	ingressClassName := "gce"
+	clientSet := fake.NewSimpleClientset(
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "default-certificate-ingress",
+				Namespace: "default",
+			},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				TLS: []networkingv1.IngressTLS{
+					{
+						Hosts: []string{"example.com"},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := IngressAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
 func TestIsGKEBuiltInIngressClass(t *testing.T) {
 	tests := []struct {
 		name      string
