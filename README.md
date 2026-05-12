@@ -474,6 +474,7 @@ Default:
 Active:
 Unused:
 > openai
+> openairesponses
 > localai
 > ollama
 > azureopenai
