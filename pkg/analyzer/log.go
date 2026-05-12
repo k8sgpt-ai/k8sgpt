@@ -49,37 +49,11 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// Iterate through each pod
 
 	for _, pod := range list.Items {
-		podName := pod.Name
 		for _, c := range pod.Spec.Containers {
 			var failures []common.Failure
-			podLogOptions := v1.PodLogOptions{
-				TailLines: &tailLines,
-				Container: c.Name,
-			}
-			podLogs, err := a.Client.Client.CoreV1().Pods(pod.Namespace).GetLogs(podName, &podLogOptions).DoRaw(a.Context)
-			if err != nil {
-				failures = append(failures, common.Failure{
-					Text: fmt.Sprintf("Error %s from Pod %s", err.Error(), pod.Name),
-					Sensitive: []common.Sensitive{
-						{
-							Unmasked: pod.Name,
-							Masked:   util.MaskString(pod.Name),
-						},
-					},
-				})
-			} else {
-				rawlogs := string(podLogs)
-				if errorPattern.MatchString(strings.ToLower(rawlogs)) {
-					failures = append(failures, common.Failure{
-						Text: printErrorLines(rawlogs, errorPattern),
-						Sensitive: []common.Sensitive{
-							{
-								Unmasked: pod.Name,
-								Masked:   util.MaskString(pod.Name),
-							},
-						},
-					})
-				}
+			failures = append(failures, analyzeLogs(a, pod, c.Name, false, true)...)
+			if containerHasRestarted(pod.Status.ContainerStatuses, c.Name) {
+				failures = append(failures, analyzeLogs(a, pod, c.Name, true, false)...)
 			}
 			if len(failures) > 0 {
 				preAnalysis[fmt.Sprintf("%s/%s/%s", pod.Namespace, pod.Name, c.Name)] = common.PreAnalysis{
@@ -105,6 +79,62 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	return a.Results, nil
 }
+
+func analyzeLogs(a common.Analyzer, pod v1.Pod, containerName string, previous bool, reportLogErrors bool) []common.Failure {
+	podLogOptions := v1.PodLogOptions{
+		TailLines: &tailLines,
+		Container: containerName,
+		Previous:  previous,
+	}
+	podLogs, err := a.Client.Client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOptions).DoRaw(a.Context)
+	if err != nil {
+		if !reportLogErrors {
+			return nil
+		}
+		return []common.Failure{
+			{
+				Text: fmt.Sprintf("Error %s from Pod %s", err.Error(), pod.Name),
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: pod.Name,
+						Masked:   util.MaskString(pod.Name),
+					},
+				},
+			},
+		}
+	}
+
+	rawlogs := string(podLogs)
+	if !errorPattern.MatchString(strings.ToLower(rawlogs)) {
+		return nil
+	}
+
+	failureText := printErrorLines(rawlogs, errorPattern)
+	if previous {
+		failureText = fmt.Sprintf("previous container logs: %s", failureText)
+	}
+	return []common.Failure{
+		{
+			Text: failureText,
+			Sensitive: []common.Sensitive{
+				{
+					Unmasked: pod.Name,
+					Masked:   util.MaskString(pod.Name),
+				},
+			},
+		},
+	}
+}
+
+func containerHasRestarted(statuses []v1.ContainerStatus, containerName string) bool {
+	for _, status := range statuses {
+		if status.Name == containerName && status.RestartCount > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func printErrorLines(logs string, errorPattern *regexp.Regexp) string {
 	// Split the logs into lines
 	logLines := strings.Split(logs, "\n")
