@@ -129,6 +129,9 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		for _, tls := range ing.Spec.TLS {
+			if tls.SecretName == "" {
+				continue
+			}
 			_, err := a.Client.GetClient().CoreV1().Secrets(ing.Namespace).Get(a.Context, tls.SecretName, metav1.GetOptions{})
 			if err != nil {
 				doc := apiDoc.GetApiDocV2("spec.tls.secretName")
