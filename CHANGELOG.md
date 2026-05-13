@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.32...v0.4.33) (2026-05-13)
+
+
+### Features
+
+* analyze previous logs for restarted containers ([#1648](https://github.com/k8sgpt-ai/k8sgpt/issues/1648)) ([234926f](https://github.com/k8sgpt-ai/k8sgpt/commit/234926fe981c916dfb0389b9d7275f3396870d28))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/ollama/ollama to v0.17.1 [security] ([#1647](https://github.com/k8sgpt-ai/k8sgpt/issues/1647)) ([ebce557](https://github.com/k8sgpt-ai/k8sgpt/commit/ebce55773488f5606b3727059d16805a9cdff6d3))
+* skip empty ingress tls secret names ([#1649](https://github.com/k8sgpt-ai/k8sgpt/issues/1649)) ([c4f42c2](https://github.com/k8sgpt-ai/k8sgpt/commit/c4f42c2491e1bf23ac5e8ca413cabb45030a72d3))
+
+
+### Docs
+
+* prepare governance docs for CNCF incubation ([#1642](https://github.com/k8sgpt-ai/k8sgpt/issues/1642)) ([c82da09](https://github.com/k8sgpt-ai/k8sgpt/commit/c82da099843060ceb831b6cd3433cf1b50d1865d))
+* remove FOSSA license badge and check ([#1644](https://github.com/k8sgpt-ai/k8sgpt/issues/1644)) ([30463af](https://github.com/k8sgpt-ai/k8sgpt/commit/30463afe5f0fe3334d3f20058c89cdb2366646ab))
+
 ## [0.4.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.31...v0.4.32) (2026-04-21)
 
 
