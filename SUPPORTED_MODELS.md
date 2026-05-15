@@ -81,6 +81,28 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 ### Groq
 - **Model:** User-configurable (any model supported by Groq, e.g., `llama-3.3-70b-versatile`, `mixtral-8x7b-32768`)
 
+### Amazon Bedrock Mantle (OpenAI-compatible)
+- **Auth:** Reads the API key from the `AWS_BEARER_TOKEN_BEDROCK` environment variable
+- **Region:** Required — the endpoint is auto-constructed as `https://bedrock-mantle.{region}.api.aws/v1`
+- **API:** Uses the OpenAI-compatible Chat Completions API (`/v1/chat/completions`)
+- **Supported Models:**
+
+  | Provider | Models |
+  |---|---|
+  | Anthropic | Claude Mythos Preview, Claude Opus 4.7 |
+  | DeepSeek | DeepSeek V3.2, DeepSeek-V3.1 |
+  | Google | Gemma 3 4B IT, Gemma 3 12B IT, Gemma 3 27B PT |
+  | MiniMax | MiniMax M2, M2.1, M2.5 |
+  | Mistral AI | Devstral 2 123B, Magistral Small 2509, Ministral 14B 3.0, Ministral 3 8B, Ministral 3B, Mistral Large 3, Voxtral Mini 3B, Voxtral Small 24B |
+  | Moonshot AI | Kimi K2 Thinking, Kimi K2.5 |
+  | NVIDIA | Nemotron Nano 9B v2, Nemotron Nano 12B v2 VL, Nemotron Nano 3 30B, Nemotron 3 Super 120B |
+  | OpenAI | gpt-oss-120b, gpt-oss-20b, GPT OSS Safeguard 120B, GPT OSS Safeguard 20B |
+  | Qwen | Qwen3 235B, Qwen3 32B, Qwen3 Coder 480B, Qwen3 Coder Next, Qwen3 Next 80B, Qwen3 VL 235B, Qwen3-Coder-30B |
+  | Writer | Palmyra Vision 7B |
+  | Z.AI | GLM 4.7, GLM 4.7 Flash, GLM 5 |
+
+  > **Note:** For the latest model availability, see [Endpoint availability](https://docs.aws.amazon.com/bedrock/latest/userguide/models-endpoint-availability.html).
+
 ---
 
 For more details on configuring each provider and model, refer to the official K8sGPT documentation and the provider's own documentation. 
