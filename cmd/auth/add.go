@@ -140,24 +140,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// create new provider object
-		newProvider := ai.AIProvider{
-			Name:           backend,
-			Model:          model,
-			Password:       password,
-			BaseURL:        baseURL,
-			EndpointName:   endpointName,
-			Engine:         engine,
-			Temperature:    temperature,
-			ProviderRegion: providerRegion,
-			ProviderId:     providerId,
-			CompartmentId:  compartmentId,
-			TopP:           topP,
-			TopK:           topK,
-			MaxTokens:      maxTokens,
-			StopSequences:  stopSequences,
-			OrganizationId: organizationId,
-			AzureAPIType:   azureAPIType,
-		}
+		newProvider := newAIProviderFromAuthFlags(backend)
 
 		if providerIndex == -1 {
 			// provider with same name does not exist, add new provider to list
@@ -205,4 +188,6 @@ func init() {
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
 	// add flag for azure open ai APIType name
 	addCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
+	// add flag for azure open ai API version
+	addCmd.Flags().StringVarP(&azureAPIVersion, "azureAPIVersion", "", "", "AzureOpenAI API version, e.g. 2024-02-15-preview (only for azureopenai backend)")
 }

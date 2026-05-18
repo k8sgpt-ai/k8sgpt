@@ -11,6 +11,8 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 
 ### Azure OpenAI
 - **Model:** User-configurable (any model deployed in your Azure OpenAI resource)
+- **Deployment:** Use `--engine` to set the Azure deployment name when it differs from the model name.
+- **API version:** Use `--azureAPIVersion` or `K8SGPT_AZURE_API_VERSION` to override the Azure OpenAI API version.
 
 ### LocalAI
 - **Model:** User-configurable (default: `llama3`)

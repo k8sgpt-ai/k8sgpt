@@ -3,7 +3,6 @@ package ai
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -45,20 +44,16 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
 	orgId := config.GetOrganizationId()
 	azureAPIType := config.GetAzureAPIType()
+	azureAPIVersion := config.GetAzureAPIVersion()
 
-	defaultConfig.AzureModelMapperFunc = func(model string) string {
-		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
-		azureModelMapping := map[string]string{
-			model: engine,
+	if engine != "" {
+		defaultConfig.AzureModelMapperFunc = func(model string) string {
+			return engine
 		}
-		return azureModelMapping[model]
-
 	}
 
 	customHeaders := config.GetCustomHeaders()
-	fmt.Println("azureopenai.go Custom Headers:", customHeaders)
 	if len(customHeaders) > 0 {
-		fmt.Println("azureopenai.go ( customHeaders > 0 ) Custom Headers:", customHeaders)
 		transport := &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 		}
@@ -83,6 +78,9 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	}
 	if orgId != "" {
 		defaultConfig.OrgID = orgId
+	}
+	if azureAPIVersion != "" {
+		defaultConfig.APIVersion = azureAPIVersion
 	}
 
 	switch azureAPIType {
