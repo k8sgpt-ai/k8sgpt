@@ -44,7 +44,7 @@ var (
 	mcpPort     string
 	mcpHTTP     bool
 	// filters can be injected into the server (repeatable flag)
-	filters     []string
+	filters []string
 )
 
 var ServeCmd = &cobra.Command{
@@ -140,34 +140,11 @@ var ServeCmd = &cobra.Command{
 				}
 				return []http.Header{header}
 			}
-			// Check for env injection
-			backend = os.Getenv("K8SGPT_BACKEND")
-			password := os.Getenv("K8SGPT_PASSWORD")
-			model := os.Getenv("K8SGPT_MODEL")
-			baseURL := os.Getenv("K8SGPT_BASEURL")
-			engine := os.Getenv("K8SGPT_ENGINE")
-			azureAPIType := os.Getenv("K8SGPT_AZURE_API_TYPE")
-			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
-			providerId := os.Getenv("K8SGPT_PROVIDER_ID")
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
-			envIsSet := backend != "" || password != "" || model != ""
+			envProvider, envIsSet := providerFromEnv(parseCustomHeaders, temperature, topP, topK, maxTokens)
 			if envIsSet {
-				aiProvider = &ai.AIProvider{
-					Name:          backend,
-					Password:      password,
-					Model:         model,
-					BaseURL:       baseURL,
-					Engine:        engine,
-					AzureAPIType:  azureAPIType,
-					CustomHeaders: parseCustomHeaders(),
-					ProxyEndpoint: proxyEndpoint,
-					ProviderId:    providerId,
-					Temperature:   temperature(),
-					TopP:          topP(),
-					TopK:          topK(),
-					MaxTokens:     maxTokens(),
-				}
+				aiProvider = envProvider
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
 
@@ -257,6 +234,46 @@ var ServeCmd = &cobra.Command{
 		// Wait for both servers to exit
 		select {}
 	},
+}
+
+func providerFromEnv(
+	parseCustomHeaders func() []http.Header,
+	temperature func() float32,
+	topP func() float32,
+	topK func() int32,
+	maxTokens func() int,
+) (*ai.AIProvider, bool) {
+	backend = os.Getenv("K8SGPT_BACKEND")
+	password := os.Getenv("K8SGPT_PASSWORD")
+	model := os.Getenv("K8SGPT_MODEL")
+	baseURL := os.Getenv("K8SGPT_BASEURL")
+	engine := os.Getenv("K8SGPT_ENGINE")
+	azureAPIType := os.Getenv("K8SGPT_AZURE_API_TYPE")
+	azureAPIVersion := os.Getenv("K8SGPT_AZURE_API_VERSION")
+	proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
+	providerId := os.Getenv("K8SGPT_PROVIDER_ID")
+
+	envIsSet := backend != "" || password != "" || model != ""
+	if !envIsSet {
+		return nil, false
+	}
+
+	return &ai.AIProvider{
+		Name:            backend,
+		Password:        password,
+		Model:           model,
+		BaseURL:         baseURL,
+		Engine:          engine,
+		AzureAPIType:    azureAPIType,
+		AzureAPIVersion: azureAPIVersion,
+		CustomHeaders:   parseCustomHeaders(),
+		ProxyEndpoint:   proxyEndpoint,
+		ProviderId:      providerId,
+		Temperature:     temperature(),
+		TopP:            topP(),
+		TopK:            topK(),
+		MaxTokens:       maxTokens(),
+	}, true
 }
 
 func init() {

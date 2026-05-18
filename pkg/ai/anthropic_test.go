@@ -39,6 +39,7 @@ func (m *anthropicMockConfig) GetProviderId() string           { return "" }
 func (m *anthropicMockConfig) GetCompartmentId() string        { return "" }
 func (m *anthropicMockConfig) GetOrganizationId() string       { return "" }
 func (m *anthropicMockConfig) GetAzureAPIType() string         { return "" }
+func (m *anthropicMockConfig) GetAzureAPIVersion() string      { return "" }
 func (m *anthropicMockConfig) GetCustomHeaders() []http.Header { return m.customHeaders }
 
 func TestAnthropicClientGetCompletion(t *testing.T) {
