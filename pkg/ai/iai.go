@@ -92,6 +92,7 @@ type IAIConfig interface {
 	GetCompartmentId() string
 	GetOrganizationId() string
 	GetAzureAPIType() string
+	GetAzureAPIVersion() string
 	GetCustomHeaders() []http.Header
 }
 
@@ -111,25 +112,26 @@ type AIConfiguration struct {
 }
 
 type AIProvider struct {
-	Name           string        `mapstructure:"name"`
-	Model          string        `mapstructure:"model"`
-	Password       string        `mapstructure:"password" yaml:"password,omitempty"`
-	BaseURL        string        `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
-	ProxyEndpoint  string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
-	ProxyPort      string        `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
-	EndpointName   string        `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
-	Engine         string        `mapstructure:"engine" yaml:"engine,omitempty"`
-	Temperature    float32       `mapstructure:"temperature" yaml:"temperature,omitempty"`
-	ProviderRegion string        `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
-	ProviderId     string        `mapstructure:"providerid" yaml:"providerid,omitempty"`
-	CompartmentId  string        `mapstructure:"compartmentid" yaml:"compartmentid,omitempty"`
-	TopP           float32       `mapstructure:"topp" yaml:"topp,omitempty"`
-	TopK           int32         `mapstructure:"topk" yaml:"topk,omitempty"`
-	MaxTokens      int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
-	StopSequences  []string      `mapstructure:"stopsequences" yaml:"stopsequences,omitempty"`
-	OrganizationId string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
-	AzureAPIType   string        `mapstructure:"azureapitype" yaml:"azureapitype,omitempty"`
-	CustomHeaders  []http.Header `mapstructure:"customHeaders"`
+	Name            string        `mapstructure:"name"`
+	Model           string        `mapstructure:"model"`
+	Password        string        `mapstructure:"password" yaml:"password,omitempty"`
+	BaseURL         string        `mapstructure:"baseurl" yaml:"baseurl,omitempty"`
+	ProxyEndpoint   string        `mapstructure:"proxyEndpoint" yaml:"proxyEndpoint,omitempty"`
+	ProxyPort       string        `mapstructure:"proxyPort" yaml:"proxyPort,omitempty"`
+	EndpointName    string        `mapstructure:"endpointname" yaml:"endpointname,omitempty"`
+	Engine          string        `mapstructure:"engine" yaml:"engine,omitempty"`
+	Temperature     float32       `mapstructure:"temperature" yaml:"temperature,omitempty"`
+	ProviderRegion  string        `mapstructure:"providerregion" yaml:"providerregion,omitempty"`
+	ProviderId      string        `mapstructure:"providerid" yaml:"providerid,omitempty"`
+	CompartmentId   string        `mapstructure:"compartmentid" yaml:"compartmentid,omitempty"`
+	TopP            float32       `mapstructure:"topp" yaml:"topp,omitempty"`
+	TopK            int32         `mapstructure:"topk" yaml:"topk,omitempty"`
+	MaxTokens       int           `mapstructure:"maxtokens" yaml:"maxtokens,omitempty"`
+	StopSequences   []string      `mapstructure:"stopsequences" yaml:"stopsequences,omitempty"`
+	OrganizationId  string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
+	AzureAPIType    string        `mapstructure:"azureapitype" yaml:"azureapitype,omitempty"`
+	AzureAPIVersion string        `mapstructure:"azureapiversion" yaml:"azureapiversion,omitempty"`
+	CustomHeaders   []http.Header `mapstructure:"customHeaders"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -193,6 +195,10 @@ func (p *AIProvider) GetOrganizationId() string {
 
 func (p *AIProvider) GetAzureAPIType() string {
 	return p.AzureAPIType
+}
+
+func (p *AIProvider) GetAzureAPIVersion() string {
+	return p.AzureAPIVersion
 }
 
 func (p *AIProvider) GetCustomHeaders() []http.Header {
