@@ -21,6 +21,7 @@ import (
 var (
 	clients = []IAI{
 		&OpenAIClient{},
+		&AnthropicClient{},
 		&AzureAIClient{},
 		&LocalAIClient{},
 		&OllamaClient{},
@@ -39,6 +40,7 @@ var (
 	}
 	Backends = []string{
 		openAIClientName,
+		anthropicClientName,
 		localAIClientName,
 		ollamaClientName,
 		azureAIClientName,

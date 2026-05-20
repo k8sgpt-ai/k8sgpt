@@ -20,16 +20,18 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 )
 
 const (
-	defaultBackend = "openai"
-	defaultModel   = "gpt-4o"
+	defaultBackend        = "openai"
+	defaultModel          = "gpt-4o"
+	anthropicDefaultModel = "claude-3-5-sonnet-latest"
 )
 
 var addCmd = &cobra.Command{
@@ -112,8 +114,12 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			model = defaultModel
-			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
+			fallbackModel := defaultModel
+			if backend == "anthropic" {
+				fallbackModel = anthropicDefaultModel
+			}
+			model = fallbackModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", fallbackModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
@@ -195,11 +201,11 @@ func init() {
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
-	//add flag for amazonbedrock region name
+	// add flag for amazonbedrock region name
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, googlevertexai backend)")
-	//add flag for vertexAI/WatsonxAI Project ID
+	// add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
-	//add flag for OCI Compartment ID
+	// add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
