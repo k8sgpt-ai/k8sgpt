@@ -12,30 +12,32 @@ import (
 
 // azureMockConfig implements IAIConfig for Azure OpenAI tests.
 type azureMockConfig struct {
-	baseURL       string
-	azureAPIType  string
-	customHeaders []http.Header
-	engine        string
-	proxyEndpoint string
-	organizationId string
+	baseURL         string
+	azureAPIType    string
+	azureAPIVersion string
+	customHeaders   []http.Header
+	engine          string
+	proxyEndpoint   string
+	organizationId  string
 }
 
-func (m *azureMockConfig) GetPassword() string        { return "test-token" }
-func (m *azureMockConfig) GetModel() string            { return "gpt-4" }
-func (m *azureMockConfig) GetBaseURL() string          { return m.baseURL }
-func (m *azureMockConfig) GetProxyEndpoint() string    { return m.proxyEndpoint }
-func (m *azureMockConfig) GetEndpointName() string     { return "" }
-func (m *azureMockConfig) GetEngine() string           { return m.engine }
-func (m *azureMockConfig) GetTemperature() float32     { return 0.0 }
-func (m *azureMockConfig) GetProviderRegion() string   { return "" }
-func (m *azureMockConfig) GetTopP() float32            { return 0.0 }
-func (m *azureMockConfig) GetTopK() int32              { return 0 }
-func (m *azureMockConfig) GetMaxTokens() int           { return 0 }
-func (m *azureMockConfig) GetStopSequences() []string  { return nil }
-func (m *azureMockConfig) GetProviderId() string       { return "" }
-func (m *azureMockConfig) GetCompartmentId() string    { return "" }
-func (m *azureMockConfig) GetOrganizationId() string   { return m.organizationId }
-func (m *azureMockConfig) GetAzureAPIType() string     { return m.azureAPIType }
+func (m *azureMockConfig) GetPassword() string             { return "test-token" }
+func (m *azureMockConfig) GetModel() string                { return "gpt-4" }
+func (m *azureMockConfig) GetBaseURL() string              { return m.baseURL }
+func (m *azureMockConfig) GetProxyEndpoint() string        { return m.proxyEndpoint }
+func (m *azureMockConfig) GetEndpointName() string         { return "" }
+func (m *azureMockConfig) GetEngine() string               { return m.engine }
+func (m *azureMockConfig) GetTemperature() float32         { return 0.0 }
+func (m *azureMockConfig) GetProviderRegion() string       { return "" }
+func (m *azureMockConfig) GetTopP() float32                { return 0.0 }
+func (m *azureMockConfig) GetTopK() int32                  { return 0 }
+func (m *azureMockConfig) GetMaxTokens() int               { return 0 }
+func (m *azureMockConfig) GetStopSequences() []string      { return nil }
+func (m *azureMockConfig) GetProviderId() string           { return "" }
+func (m *azureMockConfig) GetCompartmentId() string        { return "" }
+func (m *azureMockConfig) GetOrganizationId() string       { return m.organizationId }
+func (m *azureMockConfig) GetAzureAPIType() string         { return m.azureAPIType }
+func (m *azureMockConfig) GetAzureAPIVersion() string      { return m.azureAPIVersion }
 func (m *azureMockConfig) GetCustomHeaders() []http.Header { return m.customHeaders }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +176,35 @@ func TestAzureAIClient_Configure_APIType(t *testing.T) {
 			assert.NoError(t, err)
 		})
 	}
+}
+
+func TestAzureAIClient_GetCompletion_UsesConfiguredAPIVersion(t *testing.T) {
+	requestReceived := make(chan *http.Request, 1)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestReceived <- r
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"choices": [{"message": {"content": "versioned response"}}]}`))
+	}))
+	defer server.Close()
+
+	config := &azureMockConfig{
+		baseURL:         server.URL,
+		engine:          "k8sgpt-deployment",
+		azureAPIVersion: "2024-02-15-preview",
+	}
+
+	client := &AzureAIClient{}
+	err := client.Configure(config)
+	require.NoError(t, err)
+
+	result, err := client.GetCompletion(context.Background(), "test prompt")
+	require.NoError(t, err)
+	assert.Equal(t, "versioned response", result)
+
+	request := <-requestReceived
+	assert.Equal(t, "2024-02-15-preview", request.URL.Query().Get("api-version"))
+	assert.Contains(t, request.URL.Path, "/openai/deployments/k8sgpt-deployment/chat/completions")
 }
 
 func TestAzureAIClient_Configure_CustomHeaders(t *testing.T) {
