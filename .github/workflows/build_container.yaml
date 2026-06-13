@@ -40,7 +40,7 @@ jobs:
 
       - name: Extract branch name
         id: extract_branch
-        uses: keptn/gh-action-extract-branch-name@main
+        uses: keptn/gh-action-extract-branch-name@6ca4fe061da10c66b2d7341fd1fb12962ad911b2 # main
 
       - name: Get current date and time
         id: get_datetime
