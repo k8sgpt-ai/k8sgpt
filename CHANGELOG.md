@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.34](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.33...v0.4.34) (2026-06-18)
+
+
+### Features
+
+* add Anthropic API support ([#1652](https://github.com/k8sgpt-ai/k8sgpt/issues/1652)) ([1c4e77a](https://github.com/k8sgpt-ai/k8sgpt/commit/1c4e77a55e05a6bc7ea6a4eb17fd7e81db0d273a))
+
+
+### Bug Fixes
+
+* allow Azure OpenAI API version override ([#1650](https://github.com/k8sgpt-ai/k8sgpt/issues/1650)) ([1b7d1f0](https://github.com/k8sgpt-ai/k8sgpt/commit/1b7d1f06c7208454a05d58afc4321eff822a25ed))
+* **deps:** update k8s.io/utils digest to a95e086 ([#1656](https://github.com/k8sgpt-ai/k8sgpt/issues/1656)) ([8da4716](https://github.com/k8sgpt-ai/k8sgpt/commit/8da4716f26c11ff4f13229672d8bc07c2d8a482c))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/service/bedrockruntime to v1.50.4 [security] ([#1633](https://github.com/k8sgpt-ai/k8sgpt/issues/1633)) ([a81295f](https://github.com/k8sgpt-ai/k8sgpt/commit/a81295f2d3a2923c1ef43bddd86641dade6969b7))
+* **deps:** update module github.com/kedacore/keda/v2 to v2.17.3 [security] ([#1612](https://github.com/k8sgpt-ai/k8sgpt/issues/1612)) ([5a24c5c](https://github.com/k8sgpt-ai/k8sgpt/commit/5a24c5ca943a18f983c978674411449d1f3f901d))
+* **deps:** update module github.com/olekukonko/tablewriter to v1 ([#1502](https://github.com/k8sgpt-ai/k8sgpt/issues/1502)) ([5483339](https://github.com/k8sgpt-ai/k8sgpt/commit/548333971674c63b25820540faedab106e8c1d66))
+
+
+### Other
+
+* **deps:** pin dependencies ([#1630](https://github.com/k8sgpt-ai/k8sgpt/issues/1630)) ([11cb747](https://github.com/k8sgpt-ai/k8sgpt/commit/11cb747538ba8d5f138ad0723dc54375aa67e440))
+* **deps:** replace google-github-actions/release-please-action action with googleapis/release-please-action v4.1.1 ([#1631](https://github.com/k8sgpt-ai/k8sgpt/issues/1631)) ([edfb58b](https://github.com/k8sgpt-ai/k8sgpt/commit/edfb58bd7acadf9a9e3f4176151be676e5313cb9))
+* **deps:** update codecov/codecov-action action to v7 ([#1659](https://github.com/k8sgpt-ai/k8sgpt/issues/1659)) ([7dc2c4f](https://github.com/k8sgpt-ai/k8sgpt/commit/7dc2c4f6c52cdbd42e4ecfb934c0800f3140c781))
+* **deps:** update codecov/codecov-action digest to 0fb7174 ([#1571](https://github.com/k8sgpt-ai/k8sgpt/issues/1571)) ([09f7de5](https://github.com/k8sgpt-ai/k8sgpt/commit/09f7de5014fa9048cad75492d07caf1471831574))
+* **deps:** update docker/login-action digest to c94ce9f ([#1580](https://github.com/k8sgpt-ai/k8sgpt/issues/1580)) ([15bfd4b](https://github.com/k8sgpt-ai/k8sgpt/commit/15bfd4b17a9dfa8f1f586ea20e2e08e45255cff0))
+* **deps:** update docker/metadata-action digest to c299e40 ([#1558](https://github.com/k8sgpt-ai/k8sgpt/issues/1558)) ([2fa65f7](https://github.com/k8sgpt-ai/k8sgpt/commit/2fa65f712b7073142cff78b819dff9be8eeee7dc))
+* **deps:** update docker/setup-buildx-action digest to 8d2750c ([#1596](https://github.com/k8sgpt-ai/k8sgpt/issues/1596)) ([55a1a2f](https://github.com/k8sgpt-ai/k8sgpt/commit/55a1a2f37ddcd30e281e15ee3ec56c9e20b573ef))
+* **deps:** update softprops/action-gh-release digest to 3bb1273 ([#1578](https://github.com/k8sgpt-ai/k8sgpt/issues/1578)) ([6dbda1a](https://github.com/k8sgpt-ai/k8sgpt/commit/6dbda1a2472b27b9d03401c69bbd5ef657188986))
+
 ## [0.4.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.32...v0.4.33) (2026-05-13)
 
 
