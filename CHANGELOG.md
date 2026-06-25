@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.34...v0.4.35) (2026-06-25)
+
+
+### Other
+
+* **deps:** update docker/build-push-action digest to 10e90e3 ([#1654](https://github.com/k8sgpt-ai/k8sgpt/issues/1654)) ([96523ee](https://github.com/k8sgpt-ai/k8sgpt/commit/96523ee062aa3ab8dde19728b670a4eaa335d329))
+* **deps:** update docker/metadata-action action to v6 ([#1663](https://github.com/k8sgpt-ai/k8sgpt/issues/1663)) ([43227ac](https://github.com/k8sgpt-ai/k8sgpt/commit/43227aca37e917403cee44ae4b510436b3eb7e59))
+* **deps:** update docker/setup-qemu-action digest to c7c5346 ([#1655](https://github.com/k8sgpt-ai/k8sgpt/issues/1655)) ([6ad7585](https://github.com/k8sgpt-ai/k8sgpt/commit/6ad758503b4ba188156d72791891584d9bec984a))
+
 ## [0.4.34](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.33...v0.4.34) (2026-06-18)
 
 
