@@ -91,6 +91,49 @@ func TestGatewayAnalyzer(t *testing.T) {
 
 }
 
+func TestEmptyConditionsGatewayAnalyzer(t *testing.T) {
+	ClassName := gtwapi.ObjectName("exists")
+	AcceptedStatus := metav1.ConditionTrue
+	GatewayClass := BuildGatewayClass(string(ClassName))
+
+	Gateway := BuildGateway(ClassName, AcceptedStatus, nil)
+	// A freshly created Gateway (or one whose controller has not reported yet)
+	// has no status conditions; the analyzer must not panic on it.
+	Gateway.Status.Conditions = nil
+	// Create a Gateway Analyzer instance with the fake client
+	scheme := scheme.Scheme
+
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&Gateway,
+		&GatewayClass,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := GatewayAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+
+}
+
 func TestMissingClassGatewayAnalyzer(t *testing.T) {
 	ClassName := gtwapi.ObjectName("non-existed")
 	AcceptedStatus := metav1.ConditionTrue
