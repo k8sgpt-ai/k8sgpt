@@ -1,0 +1,45 @@
+# Example K8sGPT Configuration with CRD Analyzer
+# Place this file at ~/.config/k8sgpt/k8sgpt.yaml
+
+# CRD Analyzer Configuration
+crd_analyzer:
+  enabled: true
+  
+  # Specific CRD configurations with custom health checks
+  include:
+    # cert-manager certificates
+    - name: certificates.cert-manager.io
+      readyCondition:
+        type: "Ready"
+        expectedStatus: "True"
+    
+    # ArgoCD applications  
+    - name: applications.argoproj.io
+      statusPath: ".status.health.status"
+      expectedValue: "Healthy"
+    
+    # Strimzi Kafka clusters
+    - name: kafkas.kafka.strimzi.io
+      readyCondition:
+        type: "Ready"
+        expectedStatus: "True"
+    
+    # Prometheus instances
+    - name: prometheuses.monitoring.coreos.com
+      readyCondition:
+        type: "Available"
+        expectedStatus: "True"
+  
+  # CRDs to skip during analysis
+  exclude:
+    - name: kafkatopics.kafka.strimzi.io
+    - name: servicemonitors.monitoring.coreos.com
+    - name: podmonitors.monitoring.coreos.com
+    - name: prometheusrules.monitoring.coreos.com
+
+# Other K8sGPT configuration...
+# ai:
+#   providers:
+#     - name: openai
+#       model: gpt-4
+#       # ... other AI config
