@@ -57,6 +57,16 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						})
 					}
 				}
+				if containerStatus.Type == v1.PodScheduled && containerStatus.Reason == v1.PodReasonSchedulingGated {
+					text := containerStatus.Message
+					if text == "" {
+						text = fmt.Sprintf("Pod %s/%s is in a SchedulingGated state and is blocked from scheduling due to non-empty scheduling gates", pod.Namespace, pod.Name)
+					}
+					failures = append(failures, common.Failure{
+						Text:      text,
+						Sensitive: []common.Sensitive{},
+					})
+				}
 			}
 		}
 
