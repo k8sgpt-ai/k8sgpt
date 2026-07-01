@@ -121,6 +121,53 @@ func TestServiceAnalyzer(t *testing.T) {
 			},
 		},
 		{
+			name: "Service with not ready endpoints with nil TargetRef",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Endpoints{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Subsets: []v1.EndpointSubset{
+								{
+									// Not-ready address with no TargetRef (bare-IP /
+									// manually-created Endpoints, not backed by a Pod).
+									NotReadyAddresses: []v1.EndpointAddress{
+										{
+											IP: "10.0.0.1",
+										},
+									},
+								},
+							},
+						},
+						&v1.Service{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "test-service",
+								Namespace: "default",
+							},
+							Spec: v1.ServiceSpec{
+								Selector: map[string]string{
+									"app": "test",
+								},
+							},
+						},
+					),
+				},
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/test-service",
+					failuresCount: 1, // One failure for not ready endpoints
+				},
+			},
+		},
+		{
 			name: "Service with warning events",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{
