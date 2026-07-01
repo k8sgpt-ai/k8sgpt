@@ -56,6 +56,41 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 
 }
 
+// A GatewayClass with no status conditions (newly created, or no controller
+// installed) must not panic the analyzer.
+func TestEmptyConditionsGatewayClassAnalyzer(t *testing.T) {
+	GatewayClass := &gtwapi.GatewayClass{}
+	GatewayClass.Name = "foobar"
+	GatewayClass.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	// Create a GatewayClassAnalyzer instance with the fake client
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(GatewayClass).Build()
+
+	analyzerInstance := GatewayClassAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+
+}
+
 func TestGatewayClassAnalyzerLabelSelectorFiltering(t *testing.T) {
 	condition := metav1.Condition{
 		Type:    "Accepted",
