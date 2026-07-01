@@ -53,7 +53,7 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 		gcName := gc.GetName()
 		// Check only the current condition
-		if gc.Status.Conditions[0].Status != metav1.ConditionTrue {
+		if len(gc.Status.Conditions) > 0 && gc.Status.Conditions[0].Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
 					"GatewayClass '%s' with a controller name '%s' is not accepted. Message: '%s'.",
