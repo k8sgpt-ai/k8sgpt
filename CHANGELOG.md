@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.35...v0.4.36) (2026-07-01)
+
+
+### Bug Fixes
+
+* send temperature or top_p exclusively for Anthropic models ([#1675](https://github.com/k8sgpt-ai/k8sgpt/issues/1675)) ([2cda9d8](https://github.com/k8sgpt-ai/k8sgpt/commit/2cda9d80693543fcfb6dcda963ff6e70c5e209d0))
+
+
+### Other
+
+* **deps:** update docker/setup-qemu-action action to v4 ([#1666](https://github.com/k8sgpt-ai/k8sgpt/issues/1666)) ([8f6852c](https://github.com/k8sgpt-ai/k8sgpt/commit/8f6852cf17fdc7621d899a33b4942548465fe8a1))
+
 ## [0.4.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.34...v0.4.35) (2026-07-01)
 
 
