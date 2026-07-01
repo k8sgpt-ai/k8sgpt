@@ -94,11 +94,15 @@ func (c *AnthropicClient) Configure(config IAIConfig) error {
 
 func (c *AnthropicClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	params := anthropic.MessageNewParams{
-		Model:       c.model,
-		MaxTokens:   int64(c.maxTokens),
-		Messages:    []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(prompt))},
-		Temperature: anthropic.Float(float64(c.temperature)),
-		TopP:        anthropic.Float(float64(c.topP)),
+		Model:     c.model,
+		MaxTokens: int64(c.maxTokens),
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock(prompt))},
+	}
+	// Anthropic models only support temperature OR top_p, not both. Prefer temperature.
+	if c.topP > 0 && c.temperature == 0 {
+		params.TopP = anthropic.Float(float64(c.topP))
+	} else {
+		params.Temperature = anthropic.Float(float64(c.temperature))
 	}
 	if c.topK > 0 {
 		params.TopK = anthropic.Int(int64(c.topK))
