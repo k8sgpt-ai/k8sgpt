@@ -501,6 +501,128 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 	}
 }
 
+func TestHPAAnalyzerScalingLimitedTooFewReplicasAtMinIgnored(t *testing.T) {
+	// An HPA idling at its minimum replica floor reports
+	// ScalingLimited=True, reason=TooFewReplicas. This is normal, healthy
+	// behavior and must not be flagged as a failure. See issue #1667.
+	minReplicas := int32(2)
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				MinReplicas: &minReplicas,
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					Kind: "Deployment",
+					Name: "example",
+				},
+			},
+			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
+				DesiredReplicas: minReplicas,
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
+					{
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  "True",
+						Reason:  "TooFewReplicas",
+						Message: "the desired replica count is less than the minimum replica count",
+					},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu":    resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu":    resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	// The HPA is healthy, so it should produce no analysis results at all.
+	assert.Equal(t, len(analysisResults), 0)
+}
+
+func TestHPAAnalyzerScalingLimitedTooFewReplicasAboveMinFlagged(t *testing.T) {
+	// TooFewReplicas while desired > min is not the routine idle case and
+	// should still be surfaced.
+	minReplicas := int32(2)
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				MinReplicas: &minReplicas,
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					Kind: "Deployment",
+					Name: "example",
+				},
+			},
+			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
+				DesiredReplicas: 4,
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
+					{
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  "True",
+						Reason:  "TooFewReplicas",
+						Message: "the desired replica count is less than the minimum replica count",
+					},
+				},
+			},
+		})
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+}
+
 func TestHPAAnalyzerNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{

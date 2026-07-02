@@ -60,7 +60,14 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#appendix-horizontal-pod-autoscaler-status-conditions
 			switch condition.Type {
 			case autoscalingv2.ScalingLimited:
-				if condition.Status == corev1.ConditionTrue {
+				// ScalingLimited=True is a routine status indicator, not inherently an
+				// error. In particular, TooFewReplicas fires whenever the HPA is idling
+				// at its minimum replica floor (desired == min), which is expected and
+				// healthy. Only flag it when it reflects an actionable limitation.
+				atMinReplicas := hpa.Spec.MinReplicas != nil &&
+					hpa.Status.DesiredReplicas == *hpa.Spec.MinReplicas
+				idleAtFloor := condition.Reason == "TooFewReplicas" && atMinReplicas
+				if condition.Status == corev1.ConditionTrue && !idleAtFloor {
 					failures = append(failures, common.Failure{
 						Text:      condition.Message,
 						Sensitive: []common.Sensitive{},
