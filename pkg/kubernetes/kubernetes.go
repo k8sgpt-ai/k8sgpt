@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
+	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 func (c *Client) GetConfig() *rest.Config {
@@ -66,6 +67,14 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 
 	ctrlClient, err := ctrl.New(config, ctrl.Options{})
 	if err != nil {
+		return nil, err
+	}
+
+	// Register the gateway-api types on the shared client scheme once, here,
+	// instead of inside each analyzer's Analyze(). The gateway analyzers run
+	// concurrently against this single client, and registering into the scheme
+	// on the hot path races on the scheme's internal maps (issue #1063).
+	if err := gtwapi.Install(ctrlClient.Scheme()); err != nil {
 		return nil, err
 	}
 
