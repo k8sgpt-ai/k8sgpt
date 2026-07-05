@@ -141,6 +141,59 @@ func TestApplyAIProviderUpdatesIncludesAzureAPIVersion(t *testing.T) {
 	}
 }
 
+func TestAddCommandModelDefaultPerBackend(t *testing.T) {
+	tests := []struct {
+		name          string
+		backend       string
+		expectedModel string
+	}{
+		{
+			name:          "anthropic backend falls back to anthropic default model",
+			backend:       "anthropic",
+			expectedModel: anthropicDefaultModel,
+		},
+		{
+			name:          "openai backend falls back to openai default model",
+			backend:       "openai",
+			expectedModel: defaultModel,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			configureTestViper(t)
+			resetAuthFlagState(t)
+			configAI = ai.AIConfiguration{}
+
+			// Seed the model variable with the value cobra binds when --model is
+			// omitted (the flag's registered default). This reproduces a real
+			// `k8sgpt auth add -b <backend>` invocation without --model so the
+			// per-backend fallback in add.go is exercised.
+			model = addCmd.Flags().Lookup("model").DefValue
+
+			setFlag(t, addCmd, "backend", tt.backend)
+			setFlag(t, addCmd, "password", "token")
+			setFlag(t, addCmd, "temperature", "0.7")
+			setFlag(t, addCmd, "topp", "0.5")
+			setFlag(t, addCmd, "topk", "50")
+			setFlag(t, addCmd, "maxtokens", "2048")
+
+			addCmd.Run(addCmd, nil)
+
+			var cfg ai.AIConfiguration
+			if err := viper.UnmarshalKey("ai", &cfg); err != nil {
+				t.Fatalf("failed to unmarshal ai config: %v", err)
+			}
+			if len(cfg.Providers) != 1 {
+				t.Fatalf("expected one provider, got %d", len(cfg.Providers))
+			}
+			if cfg.Providers[0].Model != tt.expectedModel {
+				t.Fatalf("expected model %q for backend %q, got %q", tt.expectedModel, tt.backend, cfg.Providers[0].Model)
+			}
+		})
+	}
+}
+
 func resetAuthFlagState(t *testing.T) {
 	t.Helper()
 

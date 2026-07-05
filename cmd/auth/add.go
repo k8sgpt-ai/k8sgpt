@@ -165,7 +165,7 @@ func init() {
 	// add flag for backend
 	addCmd.Flags().StringVarP(&backend, "backend", "b", defaultBackend, "Backend AI provider")
 	// add flag for model
-	addCmd.Flags().StringVarP(&model, "model", "m", defaultModel, "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", "", "Backend AI model")
 	// add flag for password
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
