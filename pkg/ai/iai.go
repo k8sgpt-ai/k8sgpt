@@ -19,24 +19,28 @@ import (
 )
 
 var (
-	clients = []IAI{
-		&OpenAIClient{},
-		&AnthropicClient{},
-		&AzureAIClient{},
-		&LocalAIClient{},
-		&OllamaClient{},
-		&NoOpAIClient{},
-		&CohereClient{},
-		&AmazonBedRockClient{},
-		&AmazonBedrockConverseClient{},
-		&SageMakerAIClient{},
-		&GoogleGenAIClient{},
-		&HuggingfaceClient{},
-		&GoogleVertexAIClient{},
-		&OCIGenAIClient{},
-		&CustomRestClient{},
-		&IBMWatsonxAIClient{},
-		&GroqClient{},
+	// clients maps each backend to a constructor that returns a fresh client.
+	// NewClient must hand back a new instance per call so that concurrent
+	// callers (e.g. server-mode Analyze requests) do not share and race on a
+	// single client's fields via Configure.
+	clients = []func() IAI{
+		func() IAI { return &OpenAIClient{} },
+		func() IAI { return &AnthropicClient{} },
+		func() IAI { return &AzureAIClient{} },
+		func() IAI { return &LocalAIClient{} },
+		func() IAI { return &OllamaClient{} },
+		func() IAI { return &NoOpAIClient{} },
+		func() IAI { return &CohereClient{} },
+		func() IAI { return &AmazonBedRockClient{} },
+		func() IAI { return &AmazonBedrockConverseClient{} },
+		func() IAI { return &SageMakerAIClient{} },
+		func() IAI { return &GoogleGenAIClient{} },
+		func() IAI { return &HuggingfaceClient{} },
+		func() IAI { return &GoogleVertexAIClient{} },
+		func() IAI { return &OCIGenAIClient{} },
+		func() IAI { return &CustomRestClient{} },
+		func() IAI { return &IBMWatsonxAIClient{} },
+		func() IAI { return &GroqClient{} },
 	}
 	Backends = []string{
 		openAIClientName,
@@ -99,8 +103,8 @@ type IAIConfig interface {
 }
 
 func NewClient(provider string) IAI {
-	for _, c := range clients {
-		if provider == c.GetName() {
+	for _, newClient := range clients {
+		if c := newClient(); provider == c.GetName() {
 			return c
 		}
 	}

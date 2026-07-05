@@ -13,7 +13,10 @@ limitations under the License.
 
 package ai
 
-import "testing"
+import (
+	"sync"
+	"testing"
+)
 
 func TestAIProviderGetAzureAPIVersion(t *testing.T) {
 	provider := AIProvider{AzureAPIVersion: "2024-02-15-preview"}
@@ -21,4 +24,46 @@ func TestAIProviderGetAzureAPIVersion(t *testing.T) {
 	if got := provider.GetAzureAPIVersion(); got != "2024-02-15-preview" {
 		t.Fatalf("expected Azure API version to be returned, got %q", got)
 	}
+}
+
+// TestNewClientReturnsFreshInstance ensures NewClient hands back a new client on
+// every call rather than a shared package-level singleton. A shared instance
+// would let concurrent callers overwrite each other's configuration.
+func TestNewClientReturnsFreshInstance(t *testing.T) {
+	first := NewClient(openAIClientName)
+	second := NewClient(openAIClientName)
+
+	if first == second {
+		t.Fatalf("expected distinct clients per call, got the same instance %p", first)
+	}
+}
+
+// TestNewClientConcurrentConfigure runs concurrent Configure calls on clients
+// obtained from NewClient. Under the race detector this fails if NewClient
+// returns a shared instance whose fields are mutated by Configure. Run with:
+// go test -race ./pkg/ai/ -run TestNewClientConcurrentConfigure
+func TestNewClientConcurrentConfigure(t *testing.T) {
+	const goroutines = 8
+	const iterations = 50
+
+	var wg sync.WaitGroup
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			provider := &AIProvider{
+				Model:       "model-" + string(rune('A'+id)),
+				Password:    "token-" + string(rune('A'+id)),
+				Temperature: float32(id),
+			}
+			for j := 0; j < iterations; j++ {
+				c := NewClient(openAIClientName)
+				if err := c.Configure(provider); err != nil {
+					t.Errorf("Configure failed: %v", err)
+					return
+				}
+			}
+		}(i)
+	}
+	wg.Wait()
 }
