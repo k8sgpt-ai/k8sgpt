@@ -41,7 +41,7 @@ func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
 	// Access your API key as an environment variable (see "Set up your API key" above)
 	token := config.GetPassword()
 	authOption := option.WithAPIKey(token)
-	if token[0] == '{' {
+	if len(token) > 0 && token[0] == '{' {
 		authOption = option.WithCredentialsJSON([]byte(token))
 	}
 
