@@ -31,10 +31,9 @@ func TestServe(t *testing.T) {
 		EnableHttp: false,
 	}
 
+	serveErr := make(chan error, 1)
 	go func() {
-		err := s.Serve()
-		time.Sleep(time.Second * 2)
-		assert.NoError(t, err, "Serve should not return an error")
+		serveErr <- s.Serve()
 	}()
 
 	// Wait until the server is ready to accept connections
@@ -60,6 +59,16 @@ func TestServe(t *testing.T) {
 	// Cleanup
 	err = s.Shutdown()
 	assert.NoError(t, err, "Shutdown should not return an error")
+
+	// Shutdown closes the listener, which unblocks Serve. Assert synchronously
+	// that Serve returned only because of that shutdown and not for another
+	// reason.
+	select {
+	case err := <-serveErr:
+		assert.ErrorIs(t, err, net.ErrClosed, "Serve should return only due to the listener being closed on shutdown")
+	case <-time.After(5 * time.Second):
+		t.Error("Serve did not return after shutdown")
+	}
 }
 
 // TestMCPServerCreation tests the creation of an MCP server
