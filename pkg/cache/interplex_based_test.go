@@ -68,6 +68,36 @@ func TestInterplexCache(t *testing.T) {
 	})
 }
 
+// TestInterplexCacheClientError ensures Store and Load return the connection
+// error instead of panicking when grpc.NewClient fails. On error grpc.NewClient
+// returns a nil *ClientConn, so a deferred conn.Close() placed before the error
+// check dereferences nil.
+func TestInterplexCacheClientError(t *testing.T) {
+	// Store/Load overwrite the connection string with localhost:8084 when
+	// INTERPLEX_LOCAL_MODE is set, which would bypass grpc.NewClient. Pin it empty
+	// so the invalid connection string is exercised regardless of the environment.
+	t.Setenv("INTERPLEX_LOCAL_MODE", "")
+
+	// An invalid URL escape makes grpc.NewClient fail and return a nil conn.
+	cache := &InterplexCache{
+		configuration: InterplexCacheConfiguration{
+			ConnectionString: "dns://%zz",
+		},
+	}
+
+	t.Run("Store", func(t *testing.T) {
+		if err := cache.Store("key1", "value1"); err == nil {
+			t.Error("expected an error for an invalid connection string, got nil")
+		}
+	})
+
+	t.Run("Load", func(t *testing.T) {
+		if _, err := cache.Load("key1"); err == nil {
+			t.Error("expected an error for an invalid connection string, got nil")
+		}
+	})
+}
+
 type mockCacheService struct {
 	rpc.UnimplementedCacheServiceServer
 	data map[string]string
