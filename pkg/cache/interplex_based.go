@@ -44,10 +44,11 @@ func (c *InterplexCache) Store(key string, data string) error {
 	}
 
 	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
-	defer conn.Close()
 	if err != nil {
 		return err
 	}
+	// Best-effort cleanup: nothing meaningful to do with a close error here.
+	defer func() { _ = conn.Close() }()
 	serviceClient := rpc.NewCacheServiceClient(conn)
 	c.cacheServiceClient = serviceClient
 	req := schemav1.SetRequest{
@@ -67,10 +68,11 @@ func (c *InterplexCache) Load(key string) (string, error) {
 	}
 
 	conn, err := grpc.NewClient(c.configuration.ConnectionString, grpc.WithInsecure(), grpc.WithBlock())
-	defer conn.Close()
 	if err != nil {
 		return "", err
 	}
+	// Best-effort cleanup: nothing meaningful to do with a close error here.
+	defer func() { _ = conn.Close() }()
 	serviceClient := rpc.NewCacheServiceClient(conn)
 	c.cacheServiceClient = serviceClient
 	req := schemav1.GetRequest{
