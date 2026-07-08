@@ -74,7 +74,7 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// Check only the current conditions
 		// TODO: maybe check other statuses Listeners, addresses?
-		if gtw.Status.Conditions[0].Status != metav1.ConditionTrue {
+		if len(gtw.Status.Conditions) > 0 && gtw.Status.Conditions[0].Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf("Gateway '%s/%s' is not accepted. Message: '%s'.",
 					gtwNamespace,

@@ -96,7 +96,9 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				if len(epSubset.NotReadyAddresses) > 0 {
 					for _, addresses := range epSubset.NotReadyAddresses {
 						count++
-						pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
+						if addresses.TargetRef != nil {
+							pods = append(pods, addresses.TargetRef.Kind+"/"+addresses.TargetRef.Name)
+						}
 					}
 				}
 			}

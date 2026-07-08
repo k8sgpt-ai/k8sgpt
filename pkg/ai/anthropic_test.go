@@ -59,49 +59,81 @@ func TestAnthropicClientGetCompletion(t *testing.T) {
 		} `json:"messages"`
 	}
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, "/v1/messages", r.URL.Path)
-		assert.Equal(t, "test-token", r.Header.Get("X-Api-Key"))
-		assert.NotEmpty(t, r.Header.Get("Anthropic-Version"))
-		assert.Equal(t, "test-value", r.Header.Get("X-Test-Header"))
+	// When temperature is set it takes priority; top_p must not be sent.
+	t.Run("temperature takes priority over top_p", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assert.Equal(t, "/v1/messages", r.URL.Path)
+			assert.Equal(t, "test-token", r.Header.Get("X-Api-Key"))
+			assert.NotEmpty(t, r.Header.Get("Anthropic-Version"))
+			assert.Equal(t, "test-value", r.Header.Get("X-Test-Header"))
 
-		var body requestBody
-		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
-		assert.Equal(t, "claude-test", body.Model)
-		assert.Equal(t, 1024, body.MaxTokens)
-		assert.Equal(t, float32(0.1), body.Temperature)
-		assert.Equal(t, float32(0.8), body.TopP)
-		assert.Equal(t, int32(25), body.TopK)
-		assert.Equal(t, []string{"STOP"}, body.StopSequences)
-		require.Len(t, body.Messages, 1)
-		assert.Equal(t, "user", body.Messages[0].Role)
-		require.Len(t, body.Messages[0].Content, 1)
-		assert.Equal(t, "text", body.Messages[0].Content[0].Type)
-		assert.Equal(t, "hello cluster", body.Messages[0].Content[0].Text)
+			var body requestBody
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			assert.Equal(t, "claude-test", body.Model)
+			assert.Equal(t, 1024, body.MaxTokens)
+			assert.Equal(t, float32(0.1), body.Temperature)
+			assert.Equal(t, float32(0), body.TopP)
+			assert.Equal(t, int32(25), body.TopK)
+			assert.Equal(t, []string{"STOP"}, body.StopSequences)
+			require.Len(t, body.Messages, 1)
+			assert.Equal(t, "user", body.Messages[0].Role)
+			require.Len(t, body.Messages[0].Content, 1)
+			assert.Equal(t, "text", body.Messages[0].Content[0].Type)
+			assert.Equal(t, "hello cluster", body.Messages[0].Content[0].Text)
 
-		w.Header().Set("Content-Type", "application/json")
-		_, err := w.Write([]byte(`{"content":[{"type":"text","text":"diagnosis"}]}`))
+			w.Header().Set("Content-Type", "application/json")
+			_, err := w.Write([]byte(`{"content":[{"type":"text","text":"diagnosis"}]}`))
+			require.NoError(t, err)
+		}))
+		defer server.Close()
+
+		client := &AnthropicClient{}
+		err := client.Configure(&anthropicMockConfig{
+			baseURL:       server.URL,
+			password:      "test-token",
+			model:         "claude-test",
+			temperature:   0.1,
+			topP:          0.8,
+			topK:          25,
+			maxTokens:     1024,
+			stopSequences: []string{"STOP"},
+			customHeaders: []http.Header{{"X-Test-Header": []string{"test-value"}}},
+		})
 		require.NoError(t, err)
-	}))
-	defer server.Close()
 
-	client := &AnthropicClient{}
-	err := client.Configure(&anthropicMockConfig{
-		baseURL:       server.URL,
-		password:      "test-token",
-		model:         "claude-test",
-		temperature:   0.1,
-		topP:          0.8,
-		topK:          25,
-		maxTokens:     1024,
-		stopSequences: []string{"STOP"},
-		customHeaders: []http.Header{{"X-Test-Header": []string{"test-value"}}},
+		completion, err := client.GetCompletion(context.Background(), "hello cluster")
+		require.NoError(t, err)
+		assert.Equal(t, "diagnosis", completion)
 	})
-	require.NoError(t, err)
 
-	completion, err := client.GetCompletion(context.Background(), "hello cluster")
-	require.NoError(t, err)
-	assert.Equal(t, "diagnosis", completion)
+	// When temperature is zero, top_p is used instead.
+	t.Run("top_p used when temperature is zero", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var body requestBody
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+			assert.Equal(t, float32(0), body.Temperature)
+			assert.Equal(t, float32(0.9), body.TopP)
+
+			w.Header().Set("Content-Type", "application/json")
+			_, err := w.Write([]byte(`{"content":[{"type":"text","text":"ok"}]}`))
+			require.NoError(t, err)
+		}))
+		defer server.Close()
+
+		client := &AnthropicClient{}
+		err := client.Configure(&anthropicMockConfig{
+			baseURL:   server.URL,
+			password:  "test-token",
+			model:     "claude-test",
+			topP:      0.9,
+			maxTokens: 512,
+		})
+		require.NoError(t, err)
+
+		completion, err := client.GetCompletion(context.Background(), "hello cluster")
+		require.NoError(t, err)
+		assert.Equal(t, "ok", completion)
+	})
 }
 
 func TestAnthropicClientHonorsExplicitMessagesURLAndDefaultModel(t *testing.T) {
