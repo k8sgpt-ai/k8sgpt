@@ -1,8 +1,8 @@
 module github.com/k8sgpt-ai/k8sgpt
 
-go 1.24.1
+go 1.26.3
 
-toolchain go1.24.11
+toolchain go1.26.5
 
 require (
 	github.com/fatih/color v1.18.0
