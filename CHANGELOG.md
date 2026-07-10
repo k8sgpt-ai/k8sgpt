@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.35...v0.4.36) (2026-07-10)
+
+
+### Bug Fixes
+
+* correct Vertex AI legacy model ids by removing stray asterisk ([#1684](https://github.com/k8sgpt-ai/k8sgpt/issues/1684)) ([60a9794](https://github.com/k8sgpt-ai/k8sgpt/commit/60a9794363f082c8697acac9075f1bb0dfdd0b09)), closes [#1516](https://github.com/k8sgpt-ai/k8sgpt/issues/1516)
+* **deps:** update k8s.io/utils digest to be93311 ([#1674](https://github.com/k8sgpt-ai/k8sgpt/issues/1674)) ([de01885](https://github.com/k8sgpt-ai/k8sgpt/commit/de01885ceace970126c87f5dabad47931ea0826a))
+* **deps:** update module golang.org/x/net to v0.55.0 [security] ([#1678](https://github.com/k8sgpt-ai/k8sgpt/issues/1678)) ([2e57a6f](https://github.com/k8sgpt-ai/k8sgpt/commit/2e57a6f231f9dd9318afc5ef3edc644d2fb0ac23))
+* guard interplex cache Store and Load against nil grpc conn ([#1682](https://github.com/k8sgpt-ai/k8sgpt/issues/1682)) ([238a97a](https://github.com/k8sgpt-ai/k8sgpt/commit/238a97af1c786ce68402db1f6685bb4eded9a3f1))
+* send temperature or top_p exclusively for Anthropic models ([#1675](https://github.com/k8sgpt-ai/k8sgpt/issues/1675)) ([2cda9d8](https://github.com/k8sgpt-ai/k8sgpt/commit/2cda9d80693543fcfb6dcda963ff6e70c5e209d0))
+
+
+### Other
+
+* **deps:** update docker/login-action action to v4 ([#1662](https://github.com/k8sgpt-ai/k8sgpt/issues/1662)) ([60268ca](https://github.com/k8sgpt-ai/k8sgpt/commit/60268ca5525e45ea11b19b8e43c4503418269f93))
+* **deps:** update docker/metadata-action digest to dc80280 ([#1681](https://github.com/k8sgpt-ai/k8sgpt/issues/1681)) ([53ac3c1](https://github.com/k8sgpt-ai/k8sgpt/commit/53ac3c1de7c6b9ac5914b5e60dbcd3e0b415affc))
+* **deps:** update docker/setup-buildx-action action to v4 ([#1665](https://github.com/k8sgpt-ai/k8sgpt/issues/1665)) ([59ff7a9](https://github.com/k8sgpt-ai/k8sgpt/commit/59ff7a98ede8714ea897e34ac41c9faae020399d))
+* **deps:** update docker/setup-qemu-action action to v4 ([#1666](https://github.com/k8sgpt-ai/k8sgpt/issues/1666)) ([8f6852c](https://github.com/k8sgpt-ai/k8sgpt/commit/8f6852cf17fdc7621d899a33b4942548465fe8a1))
+* **deps:** update golang docker tag to v1.26 ([#1657](https://github.com/k8sgpt-ai/k8sgpt/issues/1657)) ([2229640](https://github.com/k8sgpt-ai/k8sgpt/commit/22296405a5b21de2c0d06ad5a7460d2c52b5b752))
+* **deps:** update googleapis/release-please-action action to v5 ([#1693](https://github.com/k8sgpt-ai/k8sgpt/issues/1693)) ([a2a0180](https://github.com/k8sgpt-ai/k8sgpt/commit/a2a01805ddf8dd28a3da98114b15b8254ed0185a))
+* migrate to Go 1.26 and golangci-lint v2.12.2 ([#1689](https://github.com/k8sgpt-ai/k8sgpt/issues/1689)) ([3353acd](https://github.com/k8sgpt-ai/k8sgpt/commit/3353acdde9c8ae1a75528ebeed641462859e53b7))
+
 ## [0.4.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.34...v0.4.35) (2026-07-01)
 
 
