@@ -2291,8 +2291,8 @@ k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 h1:hcha5B1kVACrLujCKLbr8X
 k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7/go.mod h1:GewRfANuJ70iYzvn+i4lezLDAFzvjxZYK1gn1lWcfas=
 k8s.io/kubectl v0.32.2 h1:TAkag6+XfSBgkqK9I7ZvwtF0WVtUAvK8ZqTt+5zi1Us=
 k8s.io/kubectl v0.32.2/go.mod h1:+h/NQFSPxiDZYX/WZaWw9fwYezGLISP0ud8nQKg+3g8=
-k8s.io/utils v0.0.0-20260626114624-be93311217bd h1:Ea7fgQ5we8Y9T0OX5o0dAHzQOBRI07D/dEYRaB9ZZEs=
-k8s.io/utils v0.0.0-20260626114624-be93311217bd/go.mod h1:xDxuJ0whA3d0I4mf/C4ppKHxXynQ+fxnkmQH0vTHnuk=
+k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3 h1:jVkFFVfXdXP74B/zbO3hM3hpSFD0xvhQ5U686DPurkE=
+k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3/go.mod h1:M2s5JB1lIYP3jzZdorPLHXIPJzt9vv2muW5a6L9DtNM=
 knative.dev/pkg v0.0.0-20250326102644-9f3e60a9244c h1:6IZwH1QHGfWlmfdy7svgDCPhRqWpisWK/Gcp8wdAwE0=
 knative.dev/pkg v0.0.0-20250326102644-9f3e60a9244c/go.mod h1:gx7Pp9NPcKYApNhR8m0KSOeg71pqhwPWhuhUJ6xCa2g=
 lukechampine.com/uint128 v1.1.1/go.mod h1:c4eWIwlEGaxC/+H1VguhU4PHXNWDCDMUlWdIWl2j1gk=
