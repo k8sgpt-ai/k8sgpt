@@ -66,8 +66,8 @@ const (
 	ModelGeminiFlashV2_5   = "gemini-2.5-flash"      // Latest Stable Model
 	ModelGeminiFlashV2     = "gemini-2.0-flash"      // Latest Stable Model
 	ModelGeminiFlashLiteV2 = "gemini-2.0-flash-lite" // Latest Stable Model
-	ModelGeminiProV1_5     = "gemini-1.5-pro-002*"   // Legacy Stable Model
-	ModelGeminiFlashV1_5   = "gemini-1.5-flash-002*" // Legacy Stable Model
+	ModelGeminiProV1_5     = "gemini-1.5-pro-002"    // Legacy Stable Model
+	ModelGeminiFlashV1_5   = "gemini-1.5-flash-002"  // Legacy Stable Model
 )
 
 var VERTEXAI_MODELS = []string{
