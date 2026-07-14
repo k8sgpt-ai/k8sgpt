@@ -22,12 +22,9 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 	_ = map[string]common.PreAnalysis{}
 	svc := eks.New(e.session)
 	// Get the name of the current cluster
-	var kubeconfig string
-	kubeconfigFromPath := viper.GetString("kubeconfig")
-	if kubeconfigFromPath != "" {
-		kubeconfig = kubeconfigFromPath
-	} else {
-		kubeconfig = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	kubeconfig, err := getKubeconfigPath()
+	if err != nil {
+		return cr, err
 	}
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
@@ -77,4 +74,22 @@ func (e *EKSAnalyzer) Analyze(analysis common.Analyzer) ([]common.Result, error)
 		}
 	}
 	return cr, nil
+}
+
+// getKubeconfigPath returns the kubeconfig path to use for EKS cluster
+// detection. An explicit --kubeconfig (via viper) takes precedence; otherwise
+// it falls back to $HOME/.kube/config, resolving the home directory with
+// os.UserHomeDir() so the default works across platforms (on Windows the HOME
+// environment variable is typically unset).
+func getKubeconfigPath() (string, error) {
+	if kubeconfig := viper.GetString("kubeconfig"); kubeconfig != "" {
+		return kubeconfig, nil
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(home, ".kube", "config"), nil
 }
