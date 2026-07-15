@@ -9,10 +9,10 @@
       "draft": false,
       "extra-files": [
         "README.md",
-        "deploy/manifest.yaml",
-        "chart/Chart.yaml",
-        "chart/values.yaml",
-        "container/manifests/deployment.yaml"
+        {
+          "type": "generic",
+          "path": "charts/k8sgpt/Chart.yaml"
+        }
       ],
       "changelog-sections": [
         {
