@@ -54,7 +54,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
-		if *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
+		if deployment.Spec.Replicas != nil && *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
 			if  deployment.Status.Replicas > *deployment.Spec.Replicas {
 				doc := apiDoc.GetApiDocV2("spec.replicas")
 

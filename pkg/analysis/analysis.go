@@ -260,7 +260,16 @@ func (a *Analysis) RunCustomAnalysis() {
 		return
 	}
 
-	semaphore := make(chan struct{}, a.MaxConcurrency)
+	// Set a reasonable maximum for concurrency to prevent excessive memory allocation
+	const maxAllowedConcurrency = 100
+	concurrency := a.MaxConcurrency
+	if concurrency <= 0 {
+		concurrency = 10 // Default value if not set
+	} else if concurrency > maxAllowedConcurrency {
+		concurrency = maxAllowedConcurrency // Cap at a reasonable maximum
+	}
+
+	semaphore := make(chan struct{}, concurrency)
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	verbose := viper.GetBool("verbose")

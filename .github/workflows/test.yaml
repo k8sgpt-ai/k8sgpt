@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  GO_VERSION: "~1.24"
+  GO_VERSION: "~1.26"
 
 jobs:
   build:
@@ -25,6 +25,6 @@ jobs:
       - name: Run test
         run: go test ./... -coverprofile=coverage.txt
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

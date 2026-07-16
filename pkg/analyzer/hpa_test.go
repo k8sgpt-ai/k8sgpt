@@ -491,13 +491,13 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 				errorFound = true
 				break
 			}
-			if errorFound {
-				break
-			}
 		}
-		if !errorFound {
-			t.Error("expected error 'does not have resource configured.' not found in analysis results")
+		if errorFound {
+			break
 		}
+	}
+	if !errorFound {
+		t.Error("expected error 'does not have resource configured.' not found in analysis results")
 	}
 }
 

@@ -20,16 +20,18 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 )
 
 const (
-	defaultBackend = "openai"
-	defaultModel   = "gpt-4o"
+	defaultBackend        = "openai"
+	defaultModel          = "gpt-4o"
+	anthropicDefaultModel = "claude-3-5-sonnet-latest"
 )
 
 var addCmd = &cobra.Command{
@@ -115,8 +117,12 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			model = defaultModel
-			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
+			fallbackModel := defaultModel
+			if backend == "anthropic" {
+				fallbackModel = anthropicDefaultModel
+			}
+			model = fallbackModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", fallbackModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
@@ -143,24 +149,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// create new provider object
-		newProvider := ai.AIProvider{
-			Name:           backend,
-			Model:          model,
-			Password:       password,
-			BaseURL:        baseURL,
-			EndpointName:   endpointName,
-			Engine:         engine,
-			Temperature:    temperature,
-			ProviderRegion: providerRegion,
-			ProviderId:     providerId,
-			CompartmentId:  compartmentId,
-			TopP:           topP,
-			TopK:           topK,
-			MaxTokens:      maxTokens,
-			StopSequences:  stopSequences,
-			OrganizationId: organizationId,
-			AzureAPIType:   azureAPIType,
-		}
+		newProvider := newAIProviderFromAuthFlags(backend)
 
 		if providerIndex == -1 {
 			// provider with same name does not exist, add new provider to list
@@ -202,10 +191,12 @@ func init() {
 	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, bedrockmantle, googlevertexai backend)")
 	//add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
-	//add flag for OCI Compartment ID
+	// add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
 	// add flag for azure open ai APIType name
 	addCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
+	// add flag for azure open ai API version
+	addCmd.Flags().StringVarP(&azureAPIVersion, "azureAPIVersion", "", "", "AzureOpenAI API version, e.g. 2024-02-15-preview (only for azureopenai backend)")
 }

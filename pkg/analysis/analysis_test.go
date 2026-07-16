@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -632,6 +633,48 @@ func TestVerbose_RunCustomAnalysisWithCustomAnalyzer(t *testing.T) {
 			t.Errorf("Expected output to contain: '%s', but got output: '%s'", expected, output)
 		}
 	}
+}
+
+// Test: RunCustomAnalysis must not deadlock when MaxConcurrency is 0.
+// A non-positive value previously produced an unbuffered semaphore whose only
+// receiver is launched after the blocking send, hanging the command forever.
+func TestRunCustomAnalysisZeroConcurrency(t *testing.T) {
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{
+			"name":       "TestCustomAnalyzer",
+			"connection": map[string]interface{}{"url": "127.0.0.1", "port": "2333"},
+		},
+	})
+
+	analysisObj := &Analysis{
+		MaxConcurrency: 0,
+	}
+
+	done := make(chan struct{})
+	go func() {
+		analysisObj.RunCustomAnalysis()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(10 * time.Second):
+		t.Fatal("RunCustomAnalysis deadlocked with MaxConcurrency=0")
+	}
+}
+
+// Test: RunCustomAnalysis must not panic when MaxConcurrency is negative.
+// make(chan struct{}, negative) previously panicked with "makechan: size out of range".
+func TestRunCustomAnalysisNegativeConcurrency(t *testing.T) {
+	viper.Set("custom_analyzers", []interface{}{})
+
+	analysisObj := &Analysis{
+		MaxConcurrency: -1,
+	}
+
+	require.NotPanics(t, func() {
+		analysisObj.RunCustomAnalysis()
+	})
 }
 
 // Test: Verbose output in GetAIResults

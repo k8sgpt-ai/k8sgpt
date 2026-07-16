@@ -84,6 +84,10 @@ func (m *mockConfig) GetAzureAPIType() string {
 	return ""
 }
 
+func (m *mockConfig) GetAzureAPIVersion() string {
+	return ""
+}
+
 func TestOpenAIClient_CustomHeaders(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "Value1", r.Header.Get("X-Custom-Header-1"))
