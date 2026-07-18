@@ -18,46 +18,49 @@ import (
 	"net/http"
 )
 
-var (
-	clients = []IAI{
-		&OpenAIClient{},
-		&AnthropicClient{},
-		&AzureAIClient{},
-		&LocalAIClient{},
-		&OllamaClient{},
-		&NoOpAIClient{},
-		&CohereClient{},
-		&AmazonBedRockClient{},
-		&AmazonBedrockConverseClient{},
-		&SageMakerAIClient{},
-		&GoogleGenAIClient{},
-		&HuggingfaceClient{},
-		&GoogleVertexAIClient{},
-		&OCIGenAIClient{},
-		&CustomRestClient{},
-		&IBMWatsonxAIClient{},
-		&GroqClient{},
-	}
-	Backends = []string{
-		openAIClientName,
-		anthropicClientName,
-		localAIClientName,
-		ollamaClientName,
-		azureAIClientName,
-		cohereAIClientName,
-		amazonbedrockAIClientName,
-		amazonBedrockConverseClientName,
-		amazonsagemakerAIClientName,
-		googleAIClientName,
-		noopAIClientName,
-		huggingfaceAIClientName,
-		googleVertexAIClientName,
-		ociClientName,
-		CustomRestClientName,
-		ibmWatsonxAIClientName,
-		groqAIClientName,
-	}
-)
+// clientConstructors maps each backend name to a constructor that returns a
+// fresh, zero-value client instance on every call. This replaces the previous
+// package-level slice of shared pointers, which caused a data race when
+// concurrent gRPC Query requests called Configure() on the same instance.
+var clientConstructors = map[string]func() IAI{
+	openAIClientName:                func() IAI { return &OpenAIClient{} },
+	anthropicClientName:             func() IAI { return &AnthropicClient{} },
+	azureAIClientName:               func() IAI { return &AzureAIClient{} },
+	localAIClientName:               func() IAI { return &LocalAIClient{} },
+	ollamaClientName:                func() IAI { return &OllamaClient{} },
+	noopAIClientName:                func() IAI { return &NoOpAIClient{} },
+	cohereAIClientName:              func() IAI { return &CohereClient{} },
+	amazonbedrockAIClientName:       func() IAI { return &AmazonBedRockClient{} },
+	amazonBedrockConverseClientName: func() IAI { return &AmazonBedrockConverseClient{} },
+	amazonsagemakerAIClientName:     func() IAI { return &SageMakerAIClient{} },
+	googleAIClientName:              func() IAI { return &GoogleGenAIClient{} },
+	huggingfaceAIClientName:         func() IAI { return &HuggingfaceClient{} },
+	googleVertexAIClientName:        func() IAI { return &GoogleVertexAIClient{} },
+	ociClientName:                   func() IAI { return &OCIGenAIClient{} },
+	CustomRestClientName:            func() IAI { return &CustomRestClient{} },
+	ibmWatsonxAIClientName:          func() IAI { return &IBMWatsonxAIClient{} },
+	groqAIClientName:                func() IAI { return &GroqClient{} },
+}
+
+var Backends = []string{
+	openAIClientName,
+	anthropicClientName,
+	localAIClientName,
+	ollamaClientName,
+	azureAIClientName,
+	cohereAIClientName,
+	amazonbedrockAIClientName,
+	amazonBedrockConverseClientName,
+	amazonsagemakerAIClientName,
+	googleAIClientName,
+	noopAIClientName,
+	huggingfaceAIClientName,
+	googleVertexAIClientName,
+	ociClientName,
+	CustomRestClientName,
+	ibmWatsonxAIClientName,
+	groqAIClientName,
+}
 
 // IAI is an interface all clients (representing backends) share.
 type IAI interface {
@@ -98,11 +101,12 @@ type IAIConfig interface {
 	GetCustomHeaders() []http.Header
 }
 
+// NewClient returns a fresh IAI instance for the given provider name on every
+// invocation. Callers (including concurrent gRPC handlers) may safely call
+// Configure() on the returned value without any shared-state data race.
 func NewClient(provider string) IAI {
-	for _, c := range clients {
-		if provider == c.GetName() {
-			return c
-		}
+	if constructor, ok := clientConstructors[provider]; ok {
+		return constructor()
 	}
 	// default client
 	return &OpenAIClient{}
