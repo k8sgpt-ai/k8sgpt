@@ -33,6 +33,7 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 - [Overview](#k8sgpt)
 - [Installation](#cli-installation)
 - [Quick Start](#quick-start)
+- [Using with Claude Desktop](#using-with-claude-desktop)
 - [Analyzers](#analyzers)
 - [Examples](#examples)
 - [LLM AI Backends](#llm-ai-backends)
