@@ -47,6 +47,11 @@ func getTypeName(i interface{}) string {
 // helper function: run analysis with filter
 func analysis_RunAnalysisFilterTester(t *testing.T, filterFlag string) []common.Result {
 	clientset := fake.NewSimpleClientset(
+		&v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "default",
+			},
+		},
 		&v1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
