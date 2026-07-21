@@ -176,5 +176,5 @@ func init() {
 	// label selector flag
 	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
 	// print stats
-	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats. This option disables errors display.")
+	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats (time taken per analyzer) in addition to the normal output.")
 }
