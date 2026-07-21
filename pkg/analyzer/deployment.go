@@ -14,7 +14,6 @@ limitations under the License.
 package analyzer
 
 import (
-	"context"
 	"fmt"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,7 +45,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
+	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(a.Context, v1.ListOptions{LabelSelector: a.LabelSelector})
 	if err != nil {
 		return nil, err
 	}
