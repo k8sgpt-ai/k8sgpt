@@ -329,6 +329,16 @@ func (a *Analysis) RunCustomAnalysis() {
 }
 
 func (a *Analysis) RunAnalysis() {
+	// Validate namespace if specified; otherwise a typo'd namespace silently
+	// yields empty results from every analyzer, misreporting a clean cluster.
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	activeFilters := viper.GetStringSlice("active_filters")
 	verbose := viper.GetBool("verbose")
 
