@@ -60,7 +60,7 @@ func (c *CustomRestClient) Configure(config IAIConfig) error {
 	c.base = baseClientURL
 
 	proxyEndpoint := config.GetProxyEndpoint()
-	c.client = http.DefaultClient
+	c.client = &http.Client{Timeout: defaultHTTPTimeout}
 	if proxyEndpoint != "" {
 		proxyUrl, err := url.Parse(proxyEndpoint)
 		if err != nil {
@@ -71,6 +71,7 @@ func (c *CustomRestClient) Configure(config IAIConfig) error {
 		}
 
 		c.client = &http.Client{
+			Timeout:   defaultHTTPTimeout,
 			Transport: transport,
 		}
 	}
