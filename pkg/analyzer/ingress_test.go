@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -22,8 +23,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
@@ -422,6 +427,70 @@ func TestIngressAnalyzerGKEIngressClass(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIngressAnalyzerIngressClassVerification(t *testing.T) {
+	className := "alb"
+
+	ingressWithClass := func(name string) *networkingv1.Ingress {
+		return &networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: "default",
+			},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &className,
+			},
+		}
+	}
+
+	t.Run("existing ingress class reports no failure", func(t *testing.T) {
+		clientset := fake.NewSimpleClientset(
+			&networkingv1.IngressClass{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: className,
+				},
+			},
+			ingressWithClass("alb-ingress"),
+		)
+
+		config := common.Analyzer{
+			Client: &kubernetes.Client{
+				Client: clientset,
+			},
+			Context:   context.Background(),
+			Namespace: "default",
+		}
+
+		analyzer := IngressAnalyzer{}
+		results, err := analyzer.Analyze(config)
+		require.NoError(t, err)
+		assert.Empty(t, results, "Expected no errors when the ingress class exists")
+	})
+
+	t.Run("forbidden ingress class lookup is not reported as missing", func(t *testing.T) {
+		clientset := fake.NewSimpleClientset(ingressWithClass("alb-ingress"))
+		clientset.PrependReactor("get", "ingressclasses", func(action k8stesting.Action) (bool, runtime.Object, error) {
+			return true, nil, apierrors.NewForbidden(
+				schema.GroupResource{Group: "networking.k8s.io", Resource: "ingressclasses"},
+				className,
+				fmt.Errorf("no cluster-scoped ingressclasses access"),
+			)
+		})
+
+		config := common.Analyzer{
+			Client: &kubernetes.Client{
+				Client: clientset,
+			},
+			Context:   context.Background(),
+			Namespace: "default",
+		}
+
+		analyzer := IngressAnalyzer{}
+		results, err := analyzer.Analyze(config)
+		require.NoError(t, err)
+		assert.Empty(t, results, "Expected no errors when the class lookup fails for a reason other than NotFound")
+	})
 }
 
 // Helper functions
