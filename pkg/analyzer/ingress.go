@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -83,7 +84,12 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// an IngressClass resource (they are recognized by the GKE ingress controller)
 			if !isGKEBuiltInIngressClass(*ingressClassName) {
 				_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
-				if err != nil {
+				// Only flag the ingress when the IngressClass genuinely does not
+				// exist. Any other error (e.g. RBAC Forbidden, API timeouts) must
+				// not be misreported as a missing IngressClass, which produced
+				// false positives for cloud-provider classes such as the AWS Load
+				// Balancer Controller's "alb". See issue #1668.
+				if apierrors.IsNotFound(err) {
 					doc := apiDoc.GetApiDocV2("spec.ingressClassName")
 
 					failures = append(failures, common.Failure{

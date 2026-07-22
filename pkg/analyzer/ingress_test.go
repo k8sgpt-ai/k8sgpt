@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -22,8 +23,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
@@ -422,6 +427,68 @@ func TestIngressAnalyzerGKEIngressClass(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A present IngressClass (e.g. the AWS Load Balancer Controller's "alb") must
+// not be flagged, and a non-NotFound error from the API server (e.g. RBAC
+// Forbidden) must not be misreported as a missing IngressClass. See issue #1668.
+func TestIngressAnalyzerIngressClassGetError(t *testing.T) {
+	albClassName := "alb"
+	ingress := &networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "alb-ingress",
+			Namespace: "default",
+		},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: &albClassName,
+		},
+	}
+
+	t.Run("existing alb IngressClass reports no error", func(t *testing.T) {
+		ctx := context.Background()
+		clientset := fake.NewSimpleClientset(
+			&networkingv1.IngressClass{
+				ObjectMeta: metav1.ObjectMeta{Name: albClassName},
+			},
+			ingress,
+		)
+
+		config := common.Analyzer{
+			Client:    &kubernetes.Client{Client: clientset},
+			Context:   ctx,
+			Namespace: ingress.Namespace,
+		}
+
+		results, err := IngressAnalyzer{}.Analyze(config)
+		require.NoError(t, err)
+		assert.Len(t, results, 0, "existing IngressClass should not be flagged")
+	})
+
+	t.Run("Forbidden error is not reported as missing IngressClass", func(t *testing.T) {
+		ctx := context.Background()
+		clientset := fake.NewSimpleClientset(ingress)
+		clientset.PrependReactor("get", "ingressclasses",
+			func(action k8stesting.Action) (bool, runtime.Object, error) {
+				return true, nil, apierrors.NewForbidden(
+					schema.GroupResource{Group: "networking.k8s.io", Resource: "ingressclasses"},
+					albClassName, fmt.Errorf("forbidden"))
+			})
+
+		config := common.Analyzer{
+			Client:    &kubernetes.Client{Client: clientset},
+			Context:   ctx,
+			Namespace: ingress.Namespace,
+		}
+
+		results, err := IngressAnalyzer{}.Analyze(config)
+		require.NoError(t, err)
+		for _, res := range results {
+			for _, failure := range res.Error {
+				assert.NotContains(t, failure.Text, "which does not exist",
+					"Forbidden error must not be reported as a missing IngressClass")
+			}
+		}
+	})
 }
 
 // Helper functions
