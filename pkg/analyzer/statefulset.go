@@ -116,11 +116,11 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Text: fmt.Sprintf("Statefulset pod %s in the namespace %s is not in running state.", pod.Name, pod.Namespace),
 						Sensitive: []common.Sensitive{
 							{
-								Unmasked: sts.Namespace,
+								Unmasked: pod.Name,
 								Masked:   util.MaskString(pod.Name),
 							},
 							{
-								Unmasked: serviceName,
+								Unmasked: pod.Namespace,
 								Masked:   util.MaskString(pod.Namespace),
 							},
 						},

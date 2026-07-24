@@ -15,10 +15,12 @@ package analyzer
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/magiconair/properties/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -400,5 +402,81 @@ func TestStatefulSetAnalyzerUnavailableReplicaWithPodInitialized(t *testing.T) {
 	}
 	if !errorFound {
 		t.Errorf("Error expected: '%v', not found in StatefulSet's analysis results", want)
+	}
+}
+
+func TestStatefulSetAnalyzerNotRunningPodSensitiveMasking(t *testing.T) {
+	replicas := int32(3)
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+				Replicas:    &replicas,
+			},
+			Status: appsv1.StatefulSetStatus{
+				AvailableReplicas: 0,
+			},
+		},
+		&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-svc",
+				Namespace: "default",
+			},
+		},
+		&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-0",
+				Namespace: "default",
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodPending,
+			},
+		},
+	)
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	want := "Statefulset pod example-0 in the namespace default is not in running state."
+
+	var failure *common.Failure
+	for i := range analysisResults {
+		for j := range analysisResults[i].Error {
+			if analysisResults[i].Error[j].Text == want {
+				failure = &analysisResults[i].Error[j]
+			}
+		}
+	}
+	if failure == nil {
+		t.Fatalf("Error expected: '%v', not found in StatefulSet's analysis results", want)
+	}
+
+	// Every Sensitive.Unmasked must be present in the failure text, otherwise it is
+	// never masked and the real value leaks to the LLM when --anonymize is used.
+	// Apply the same masking as analysis.GetAIResults and assert the raw pod name
+	// and namespace no longer appear.
+	masked := failure.Text
+	for _, s := range failure.Sensitive {
+		masked = util.ReplaceIfMatch(masked, s.Unmasked, s.Masked)
+	}
+	if strings.Contains(masked, "example-0") {
+		t.Errorf("pod name leaked after masking: %q still contains %q", masked, "example-0")
+	}
+	if strings.Contains(masked, "namespace default") {
+		t.Errorf("pod namespace leaked after masking: %q still contains %q", masked, "namespace default")
 	}
 }
