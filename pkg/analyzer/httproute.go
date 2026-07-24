@@ -177,6 +177,11 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						},
 					})
 				} else {
+					// Port is optional on a backendRef; skip the port check when
+					// it is unset rather than dereferencing a nil pointer.
+					if backend.Port == nil {
+						continue
+					}
 					portMatch := false
 					for _, svcPort := range service.Spec.Ports {
 						if int32(*backend.Port) == svcPort.Port {
