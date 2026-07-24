@@ -82,7 +82,7 @@ func (ClusterCatalogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error
 			Error: value.FailureDetails,
 		}
 
-		parent, found := util.GetParent(a.Client, value.Node.ObjectMeta)
+		parent, found := util.GetParent(a.Client, value.Catalog.ObjectMeta)
 		if found {
 			currentAnalysis.ParentObject = parent
 		}

@@ -21,6 +21,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -176,4 +178,67 @@ func TestClusterExtensionAnalyzer(t *testing.T) {
 	}
 	require.NoError(t, err)
 	require.Equal(t, 2, len(results))
+}
+
+// TestClusterExtensionAnalyzerParentObject ensures the analyzer resolves the
+// parent from the stored ClusterExtension object. A previous copy-paste left it
+// reading value.Node.ObjectMeta, which is always empty for this analyzer, so
+// ParentObject was never populated.
+func TestClusterExtensionAnalyzerParentObject(t *testing.T) {
+	gvr := schema.GroupVersionResource{
+		Group:    "olm.operatorframework.io",
+		Version:  "v1",
+		Resource: "clusterextensions",
+	}
+
+	scheme := runtime.NewScheme()
+
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		scheme,
+		map[schema.GroupVersionResource]string{
+			gvr: "ClusterExtensionList",
+		},
+		&unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "olm.operatorframework.io/v1",
+				"kind":       "ClusterExtension",
+				"metadata": map[string]interface{}{
+					"name": "Invalid UpgradeConstraintPolicy",
+					"ownerReferences": []interface{}{
+						map[string]interface{}{
+							"apiVersion": "apps/v1",
+							"kind":       "Deployment",
+							"name":       "extension-owner",
+						},
+					},
+				},
+				"spec": map[string]interface{}{
+					"source": map[string]interface{}{
+						"sourceType": "Catalog",
+						"catalog": map[string]interface{}{
+							"upgradeConstraintPolicy": "InvalidPolicy",
+						},
+					},
+				},
+			},
+		},
+	)
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "extension-owner",
+				},
+			}),
+			DynamicClient: dynamicClient,
+		},
+		Context:   context.Background(),
+		Namespace: "test",
+	}
+
+	ceAnalyzer := ClusterExtensionAnalyzer{}
+	results, err := ceAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Deployment/extension-owner", results[0].ParentObject)
 }
