@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.36...v0.4.37) (2026-07-24)
+
+
+### Features
+
+* add Amazon Bedrock Mantle (OpenAI-compatible) AI provider ([#1640](https://github.com/k8sgpt-ai/k8sgpt/issues/1640)) ([bdbc3c7](https://github.com/k8sgpt-ai/k8sgpt/commit/bdbc3c7796ad111344da0bf193832ec09459bac0))
+
+
+### Bug Fixes
+
+* clamp max-concurrency in custom analysis to avoid deadlock and panic ([#1700](https://github.com/k8sgpt-ai/k8sgpt/issues/1700)) ([6859e9c](https://github.com/k8sgpt-ai/k8sgpt/commit/6859e9c035986b89a1ff2a8fc5e504e8eccfb593))
+* **deps:** update k8s.io/utils digest to cf1189d ([#1688](https://github.com/k8sgpt-ai/k8sgpt/issues/1688)) ([8bda53b](https://github.com/k8sgpt-ai/k8sgpt/commit/8bda53be10743a532005db0e3c0087673900d5ae))
+* guard against nil spec.replicas in deployment analyzer ([#1683](https://github.com/k8sgpt-ai/k8sgpt/issues/1683)) ([58ab921](https://github.com/k8sgpt-ai/k8sgpt/commit/58ab921e9183e92fbc8501795c1047aea5c4b700))
+* point release-please extra-files at the real chart path ([#1697](https://github.com/k8sgpt-ai/k8sgpt/issues/1697)) ([133dbe6](https://github.com/k8sgpt-ai/k8sgpt/commit/133dbe6f23d89de7c9c7c0c83fa2ba9ab3729d6a))
+* resolve EKS default kubeconfig path across platforms ([#1686](https://github.com/k8sgpt-ai/k8sgpt/issues/1686)) ([f247b3f](https://github.com/k8sgpt-ai/k8sgpt/commit/f247b3ffb73613fdf76ab761d0594cee718012a9))
+
+
+### Other
+
+* **deps:** update golangci/golangci-lint-action action to v9 ([#1692](https://github.com/k8sgpt-ai/k8sgpt/issues/1692)) ([77cf9d9](https://github.com/k8sgpt-ai/k8sgpt/commit/77cf9d97ae54562af28e2fb6bb4df9ffbcd9403d))
+* **deps:** update goreleaser/goreleaser-action action to v7 ([#1694](https://github.com/k8sgpt-ai/k8sgpt/issues/1694)) ([c35c84e](https://github.com/k8sgpt-ai/k8sgpt/commit/c35c84ec6742b278c77319af1888d0943a22406d))
+
 ## [0.4.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.35...v0.4.36) (2026-07-10)
 
 
