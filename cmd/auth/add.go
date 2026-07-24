@@ -54,6 +54,9 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrockconverse" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "bedrockmantle" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 		if strings.ToLower(backend) == "ibmwatsonxai" {
 			_ = cmd.MarkFlagRequired("providerId")
 		}
@@ -184,9 +187,9 @@ func init() {
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
-	// add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, googlevertexai backend)")
-	// add flag for vertexAI/WatsonxAI Project ID
+	//add flag for amazonbedrock region name
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, bedrockmantle, googlevertexai backend)")
+	//add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
 	// add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
