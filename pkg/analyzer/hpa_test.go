@@ -819,3 +819,77 @@ func TestHPAAnalyzerStatusScalingLimitedError(t *testing.T) {
 		t.Errorf("Expected message, <%v> , not found in HorizontalPodAutoscaler's analysis results", want)
 	}
 }
+
+func TestHPAAnalyzerScalingLimitedTooFewReplicasAtMinIgnored(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					Kind: "Deployment",
+					Name: "example",
+				},
+				MinReplicas: func() *int32 { i := int32(2); return &i }(),
+				MaxReplicas: 6,
+			},
+			Status: autoscalingv2.HorizontalPodAutoscalerStatus{
+				CurrentReplicas: 2,
+				DesiredReplicas: 2,
+				Conditions: []autoscalingv2.HorizontalPodAutoscalerCondition{
+					{
+						Type:    autoscalingv2.ScalingLimited,
+						Status:  corev1.ConditionTrue,
+						Reason:  "TooFewReplicas",
+						Message: "the desired replica count is less than the minimum replica count",
+					},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "example",
+				Namespace:   "default",
+				Annotations: map[string]string{},
+			},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  "example",
+								Image: "nginx",
+								Resources: corev1.ResourceRequirements{
+									Requests: corev1.ResourceList{
+										"cpu":    resource.MustParse("100m"),
+										"memory": resource.MustParse("128Mi"),
+									},
+									Limits: corev1.ResourceList{
+										"cpu":    resource.MustParse("200m"),
+										"memory": resource.MustParse("256Mi"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+}
