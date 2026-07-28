@@ -35,7 +35,7 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	gcList := &gtwapi.GatewayClassList{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
+	err := ensureGatewayScheme(client.Scheme())
 	if err != nil {
 		return nil, err
 	}

@@ -38,7 +38,7 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtw := &gtwapi.Gateway{}
 	service := &corev1.Service{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
+	err := ensureGatewayScheme(client.Scheme())
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +157,15 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// Check if the Backends are valid services and ports are matching with services Ports
 		for _, rule := range route.Spec.Rules {
 			for _, backend := range rule.BackendRefs {
+				// Only core Kubernetes Services are validated here. Backends that
+				// reference a different Group/Kind (e.g. Envoy Gateway's
+				// gateway.envoyproxy.io/Backend, or GRPC backends) are not Services
+				// and must be skipped, otherwise they are falsely reported as
+				// missing Services.
+				if (backend.Group != nil && *backend.Group != "") ||
+					(backend.Kind != nil && *backend.Kind != "Service") {
+					continue
+				}
 				err := client.Get(a.Context, ctrl.ObjectKey{Namespace: route.Namespace, Name: string(backend.Name)}, service, &ctrl.GetOptions{})
 				if errors.IsNotFound(err) {
 					failures = append(failures, common.Failure{
@@ -177,6 +186,9 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						},
 					})
 				} else {
+					if backend.Port == nil {
+						continue
+					}
 					portMatch := false
 					for _, svcPort := range service.Spec.Ports {
 						if int32(*backend.Port) == svcPort.Port {

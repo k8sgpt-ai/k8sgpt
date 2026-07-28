@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -400,5 +401,57 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 
 	if !errorFound {
 		t.Errorf("Expected message, <%s> , not found in HTTPRoute's analysis results", want)
+	}
+}
+
+func BuildHTTPRouteWithBackendRef(backendName, gtwName gtwapi.ObjectName, gtwNamespace gtwapi.Namespace, group *gtwapi.Group, kind *gtwapi.Kind, svcPort *gtwapi.PortNumber, namespace string) gtwapi.HTTPRoute {
+	route := BuildHTTPRoute(backendName, gtwName, gtwNamespace, svcPort, namespace)
+	ref := &route.Spec.Rules[0].BackendRefs[0].BackendObjectReference
+	ref.Group = group
+	ref.Kind = kind
+	return route
+}
+
+// A backendRef that references a non-Service Group/Kind (e.g. Envoy Gateway's
+// gateway.envoyproxy.io/Backend) must not be validated as a core Service,
+// otherwise it is falsely reported as a missing Service.
+func TestGWNonServiceBackendHTTPRouteAnalyzer(t *testing.T) {
+	backendName := gtwapi.ObjectName("charles-closeli-cn")
+	gtwName := gtwapi.ObjectName("gatewayname")
+	gtwNamespace := gtwapi.Namespace("default")
+	httpRouteNamespace := "default"
+	group := gtwapi.Group("gateway.envoyproxy.io")
+	kind := gtwapi.Kind("Backend")
+
+	HTTPRoute := BuildHTTPRouteWithBackendRef(backendName, gtwName, gtwNamespace, &group, &kind, nil, httpRouteNamespace)
+	Gateway := BuildRouteGateway("default", "gatewayname", "All")
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Error(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{&HTTPRoute, &Gateway}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := HTTPRouteAnalyzer{}
+	config := common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			if strings.Contains(got.Text, "uses the Service") {
+				t.Errorf("non-Service backend falsely reported as missing Service: %s", got.Text)
+			}
+		}
 	}
 }
