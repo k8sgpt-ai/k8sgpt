@@ -101,3 +101,18 @@ func TestLiteLLMClient_GetCompletion(t *testing.T) {
 	assert.Equal(t, "Bearer sk-litellm-virtual-key", gotAuth)
 	assert.Equal(t, "/v1/chat/completions", gotPath)
 }
+
+func TestLiteLLMClient_GetCompletionNoChoices(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"choices": []map[string]any{}})
+	}))
+	defer server.Close()
+
+	c := &LiteLLMClient{}
+	require.NoError(t, c.Configure(&litellmMockConfig{baseURL: server.URL + "/v1", model: "gpt-4o"}))
+
+	_, err := c.GetCompletion(context.Background(), "why is my pod crashing?")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no completion choices")
+}
