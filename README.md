@@ -487,9 +487,24 @@ Unused:
 > watsonxai
 > customrest
 > ibmwatsonxai
+> litellm
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
+
+_Using LiteLLM (route to 100+ providers through one proxy)_
+
+The `litellm` backend talks to a [LiteLLM proxy](https://docs.litellm.ai/docs/simple_proxy),
+which exposes an OpenAI-compatible API in front of 100+ providers (OpenAI, Azure,
+Anthropic, Bedrock, Gemini, ...). It defaults to the proxy's standard local
+endpoint (`http://localhost:4000/v1`); use `--model` to pick a model configured
+in your proxy, and `--baseurl` to point at a remote proxy. A password is only
+needed if your proxy enforces a virtual key.
+
+```
+k8sgpt auth add --backend litellm --model gpt-4o
+k8sgpt analyze --explain --backend litellm
+```
 
 _To set a new default provider_
 
