@@ -64,12 +64,12 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
-							Unmasked: webhookConfig.Namespace,
-							Masked:   util.MaskString(webhookConfig.Namespace),
-						},
-						{
 							Unmasked: svc.Name,
 							Masked:   util.MaskString(svc.Name),
+						},
+						{
+							Unmasked: webhook.Name,
+							Masked:   util.MaskString(webhook.Name),
 						},
 					},
 				})
@@ -99,8 +99,12 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
-							Unmasked: webhookConfig.Namespace,
-							Masked:   util.MaskString(webhookConfig.Namespace),
+							Unmasked: svc.Name,
+							Masked:   util.MaskString(svc.Name),
+						},
+						{
+							Unmasked: webhook.Name,
+							Masked:   util.MaskString(webhook.Name),
 						},
 					},
 				})
@@ -117,10 +121,6 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 						),
 						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
-							{
-								Unmasked: webhookConfig.Namespace,
-								Masked:   util.MaskString(webhookConfig.Namespace),
-							},
 							{
 								Unmasked: webhook.Name,
 								Masked:   util.MaskString(webhook.Name),
