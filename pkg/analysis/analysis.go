@@ -301,6 +301,27 @@ func (a *Analysis) RunCustomAnalysis() {
 			}
 
 			result, err := canClient.Run()
+			if err == nil && result.Name == "" && len(result.Error) == 0 {
+				// The analyzer returned RunResponse.Result == nil, i.e. "I ran and found nothing".
+				// custom.Client.Run() only populates its result when Result != nil, so what we hold
+				// here is the zero value: no Name, no Error.
+				//
+				// Appending it produces a result no consumer can use, and it is actively harmful to
+				// k8sgpt-operator: MapResults derives Result.metadata.name from result.Name, so an
+				// empty Name yields an object that fails CRD validation ("metadata.name: Required
+				// value, spec.error: Required value"). processRawResults returns on the first such
+				// failure, so ONE analyzer with no findings aborts the reconcile before the
+				// remaining results are written — and because it ranges over a map, the subset that
+				// survives differs every cycle.
+				//
+				// Skipping it is also what the CLI already implies: a custom analyzer with nothing
+				// to report should contribute nothing, not an empty entry.
+				if verbose {
+					fmt.Printf("Debug: %s completed with no findings.\n", cAnalyzer.Name)
+				}
+				<-semaphore
+				return
+			}
 			if result.Kind == "" {
 				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
 				//and must start and end with an alphanumeric character (e.g. 'example.com',
