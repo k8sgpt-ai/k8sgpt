@@ -2,10 +2,12 @@ package analyzer
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -400,5 +402,141 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 
 	if !errorFound {
 		t.Errorf("Expected message, <%s> , not found in HTTPRoute's analysis results", want)
+	}
+}
+
+func runHTTPRouteAnalyzer(t *testing.T, objects ...runtime.Object) []common.Result {
+	t.Helper()
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Error(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Error(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+	analyzerInstance := HTTPRouteAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	results, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	return results
+}
+
+func gatewayPtr(gateway gtwapi.Gateway) *gtwapi.Gateway {
+	return &gateway
+}
+
+func TestHTTPRouteAnalyzerSensitiveMasking(t *testing.T) {
+	svcPort := gtwapi.PortNumber(1027)
+	backendName := gtwapi.ObjectName("portsvc")
+	tests := []struct {
+		name     string
+		route    gtwapi.HTTPRoute
+		gateway  *gtwapi.Gateway
+		service  *corev1.Service
+		wantText string
+		leaked   []string
+	}{
+		{
+			name: "gateway missing",
+			route: BuildHTTPRoute(
+				gtwapi.ObjectName("svcname"),
+				gtwapi.ObjectName("gtwmissing"),
+				gtwapi.Namespace("missingns"),
+				&svcPort,
+				"default",
+			),
+			wantText: "HTTPRoute uses the Gateway 'missingns/gtwmissing' which does not exist in the same namespace.",
+			leaked:   []string{"missingns", "gtwmissing"},
+		},
+		{
+			name: "service missing",
+			route: BuildHTTPRoute(
+				gtwapi.ObjectName("svcmissing"),
+				gtwapi.ObjectName("gtwpresent"),
+				gtwapi.Namespace("default"),
+				&svcPort,
+				"default",
+			),
+			gateway:  gatewayPtr(BuildRouteGateway("default", "gtwpresent", "Same")),
+			wantText: "HTTPRoute uses the Service 'default/svcmissing' which does not exist.",
+			leaked:   []string{"svcmissing", "default"},
+		},
+		{
+			name: "service port mismatch",
+			route: BuildHTTPRoute(
+				backendName,
+				gtwapi.ObjectName("gtwpresent"),
+				gtwapi.Namespace("default"),
+				&svcPort,
+				"default",
+			),
+			gateway: gatewayPtr(BuildRouteGateway("default", "gtwpresent", "Same")),
+			service: &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "portsvc",
+					Namespace: "default",
+				},
+				Spec: corev1.ServiceSpec{
+					Ports: []corev1.ServicePort{
+						{
+							Name:       "http",
+							Protocol:   "TCP",
+							Port:       80,
+							TargetPort: intstr.FromInt(8080),
+						},
+					},
+				},
+			},
+			wantText: "HTTPRoute's backend service 'portsvc' is using port '1027' but the corresponding K8s service 'default/portsvc' isn't configured with the same port.",
+			leaked:   []string{"portsvc", "default"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			objects := []runtime.Object{&tt.route}
+			if tt.gateway != nil {
+				objects = append(objects, tt.gateway)
+			}
+			if tt.service != nil {
+				objects = append(objects, tt.service)
+			}
+			results := runHTTPRouteAnalyzer(t, objects...)
+
+			var failure *common.Failure
+			for i := range results {
+				for j := range results[i].Error {
+					if results[i].Error[j].Text == tt.wantText {
+						failure = &results[i].Error[j]
+					}
+				}
+			}
+			if failure == nil {
+				t.Fatalf("Expected message <%s> not found in HTTPRoute's analysis results", tt.wantText)
+			}
+
+			for _, s := range failure.Sensitive {
+				if !strings.Contains(failure.Text, s.Unmasked) {
+					t.Errorf("Sensitive.Unmasked %q not found in failure text %q; masking is ineffective", s.Unmasked, failure.Text)
+				}
+			}
+			masked := failure.Text
+			for _, s := range failure.Sensitive {
+				masked = util.ReplaceIfMatch(masked, s.Unmasked, s.Masked)
+			}
+			for _, value := range tt.leaked {
+				if strings.Contains(masked, value) {
+					t.Errorf("value %q leaked after masking: %q still contains %q", value, masked, value)
+				}
+			}
+		})
 	}
 }
