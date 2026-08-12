@@ -207,6 +207,73 @@ func TestGWConfigSameHTTRouteAnalyzer(t *testing.T) {
 		t.Errorf("Expected message, <%s> , not found in HTTPRoute's analysis results", want)
 	}
 }
+
+func TestSvcNilPortHTTRouteAnalyzer(t *testing.T) {
+	// Service the backendRef points to, so analysis reaches the port-match loop.
+	Service := corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foobackend",
+			Namespace: "default",
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{
+				"app": "example-app",
+			},
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "http",
+					Protocol:   "TCP",
+					Port:       80,
+					TargetPort: intstr.FromInt(8080),
+				},
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+	backendName := gtwapi.ObjectName("foobackend")
+	gtwName := gtwapi.ObjectName("gatewayname")
+	gtwNamespace := gtwapi.Namespace("default")
+	httpRouteNamespace := "default"
+
+	// backendRef with no Port set. Port is optional on BackendObjectReference,
+	// so a nil port must not panic the analyze run.
+	HTTPRoute := BuildHTTPRoute(backendName, gtwName, gtwNamespace, nil, httpRouteNamespace)
+
+	Gateway := BuildRouteGateway("default", "gatewayname", "Same")
+	// Create a Gateway Analyzer instance with the fake client
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&HTTPRoute,
+		&Gateway,
+		&Service,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := HTTPRouteAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	// A backendRef without a port must be skipped for the port check rather
+	// than dereferencing a nil pointer, so Analyze returns without panicking.
+	_, err = analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestGWConfigSelectorHTTRouteAnalyzer(t *testing.T) {
 	backendName := gtwapi.ObjectName("foobackend")
 	gtwName := gtwapi.ObjectName("gatewayname")
