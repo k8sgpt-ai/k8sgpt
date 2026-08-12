@@ -23,6 +23,8 @@ import (
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
+var installGatewayAPI = gtwapi.Install
+
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config
 }
@@ -74,7 +76,7 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 	// instead of inside each analyzer's Analyze(). The gateway analyzers run
 	// concurrently against this single client, and registering into the scheme
 	// on the hot path races on the scheme's internal maps (issue #1063).
-	if err := gtwapi.Install(ctrlClient.Scheme()); err != nil {
+	if err := installGatewayAPI(ctrlClient.Scheme()); err != nil {
 		return nil, err
 	}
 

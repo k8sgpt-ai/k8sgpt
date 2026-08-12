@@ -15,12 +15,14 @@ package kubernetes
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/tools/clientcmd"
@@ -55,4 +57,31 @@ func TestNewClientRegistersGatewayAPIScheme(t *testing.T) {
 		Version: gtwapi.GroupVersion.Version,
 		Kind:    "Gateway",
 	})
+}
+
+func TestNewClientReturnsGatewayAPIInstallError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(&version.Info{GitVersion: "v1.32.0"})
+	}))
+	t.Cleanup(server.Close)
+
+	kubeconfig := filepath.Join(t.TempDir(), "config")
+	require.NoError(t, clientcmd.WriteToFile(clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			"test": {Server: server.URL},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			"test": {Cluster: "test"},
+		},
+		CurrentContext: "test",
+	}, kubeconfig))
+
+	sentinel := errors.New("gateway API install failed")
+	original := installGatewayAPI
+	installGatewayAPI = func(*runtime.Scheme) error { return sentinel }
+	t.Cleanup(func() { installGatewayAPI = original })
+
+	client, err := NewClient("", kubeconfig)
+	require.Nil(t, client)
+	require.ErrorIs(t, err, sentinel)
 }
