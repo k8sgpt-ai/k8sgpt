@@ -27,9 +27,10 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-var resourceBackendAPIGroup = "k8s.example.com"
-
 func TestIngressAnalyzer(t *testing.T) {
+	// only exists to give the resource backend's APIGroup something addressable
+	resourceBackendAPIGroup := "k8s.example.com"
+
 	// Create test cases
 	testCases := []struct {
 		name           string
