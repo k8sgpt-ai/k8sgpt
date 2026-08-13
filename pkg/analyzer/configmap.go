@@ -60,6 +60,22 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 
+		// Check environment variables in init containers
+		for _, container := range pod.Spec.InitContainers {
+			for _, env := range container.EnvFrom {
+				if env.ConfigMapRef != nil {
+					usedConfigMaps[env.ConfigMapRef.Name] = true
+					configMapUsage[env.ConfigMapRef.Name] = append(configMapUsage[env.ConfigMapRef.Name], pod.Name)
+				}
+			}
+			for _, env := range container.Env {
+				if env.ValueFrom != nil && env.ValueFrom.ConfigMapKeyRef != nil {
+					usedConfigMaps[env.ValueFrom.ConfigMapKeyRef.Name] = true
+					configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name] = append(configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name], pod.Name)
+				}
+			}
+		}
+
 		// Check environment variables
 		for _, container := range pod.Spec.Containers {
 			for _, env := range container.EnvFrom {
