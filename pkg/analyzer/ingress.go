@@ -105,6 +105,10 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// loop over HTTP paths
 			if rule.HTTP != nil {
 				for _, path := range rule.HTTP.Paths {
+					if path.Backend.Service == nil {
+						// Backend uses a custom resource (e.g. path.Backend.Resource) instead of a Service; nothing to validate here.
+						continue
+					}
 					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
 					if err != nil {
 						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
