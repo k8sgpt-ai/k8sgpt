@@ -35,10 +35,6 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	gcList := &gtwapi.GatewayClassList{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
 	if err := client.List(a.Context, gcList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
