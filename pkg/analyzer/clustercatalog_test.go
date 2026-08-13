@@ -21,6 +21,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -179,4 +181,78 @@ func TestClusterCatalogAnalyzer(t *testing.T) {
 	}
 	require.NoError(t, err)
 	require.Equal(t, 3, len(results))
+}
+
+// TestClusterCatalogAnalyzerParentObject ensures the analyzer resolves the
+// parent from the stored ClusterCatalog object. A previous copy-paste left it
+// reading value.Node.ObjectMeta, which is always empty for this analyzer, so
+// ParentObject was never populated.
+func TestClusterCatalogAnalyzerParentObject(t *testing.T) {
+	gvr := schema.GroupVersionResource{
+		Group:    "olm.operatorframework.io",
+		Version:  "v1",
+		Resource: "clustercatalogs",
+	}
+
+	scheme := runtime.NewScheme()
+
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		scheme,
+		map[schema.GroupVersionResource]string{
+			gvr: "ClusterCatalogList",
+		},
+		&unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "olm.operatorframework.io/v1",
+				"kind":       "ClusterCatalog",
+				"metadata": map[string]interface{}{
+					"name": "ClusterCatalog with owner",
+					"ownerReferences": []interface{}{
+						map[string]interface{}{
+							"apiVersion": "apps/v1",
+							"kind":       "Deployment",
+							"name":       "catalog-owner",
+						},
+					},
+				},
+				"spec": map[string]interface{}{
+					"availabilityMode": "Available",
+					"source": map[string]interface{}{
+						"type": "Image",
+						"image": map[string]interface{}{
+							"ref":                 "registry.redhat.io/redhat/community-operator-index:v4.19",
+							"pollIntervalMinutes": float64(10),
+						},
+					},
+				},
+				"status": map[string]interface{}{
+					"conditions": []interface{}{
+						map[string]interface{}{
+							"type":   "Progressing",
+							"status": "True",
+							"reason": "Retrying",
+						},
+					},
+				},
+			},
+		},
+	)
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&appsv1.Deployment{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "catalog-owner",
+				},
+			}),
+			DynamicClient: dynamicClient,
+		},
+		Context:   context.Background(),
+		Namespace: "test",
+	}
+
+	ccAnalyzer := ClusterCatalogAnalyzer{}
+	results, err := ccAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Deployment/catalog-owner", results[0].ParentObject)
 }
