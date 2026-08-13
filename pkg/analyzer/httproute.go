@@ -38,10 +38,6 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtw := &gtwapi.Gateway{}
 	service := &corev1.Service{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
 	if err := client.List(a.Context, routeList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
@@ -177,6 +173,11 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						},
 					})
 				} else {
+					// Port is optional on a backendRef; skip the port check when
+					// it is unset rather than dereferencing a nil pointer.
+					if backend.Port == nil {
+						continue
+					}
 					portMatch := false
 					for _, svcPort := range service.Spec.Ports {
 						if int32(*backend.Port) == svcPort.Port {
