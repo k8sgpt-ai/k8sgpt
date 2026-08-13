@@ -68,14 +68,23 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			})
 		}
 
-		// Check only the current conditions
-		// TODO: maybe check other statuses Listeners, addresses?
-		if len(gtw.Status.Conditions) > 0 && gtw.Status.Conditions[0].Status != metav1.ConditionTrue {
+		// Inspect Accepted and Programmed by type. Listener/address status is out of scope.
+		for _, cond := range gtw.Status.Conditions {
+			if cond.Type != string(gtwapi.GatewayConditionAccepted) &&
+				cond.Type != string(gtwapi.GatewayConditionProgrammed) {
+				continue
+			}
+			if cond.Status == metav1.ConditionTrue {
+				continue
+			}
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Gateway '%s/%s' is not accepted. Message: '%s'.",
+				Text: fmt.Sprintf("Gateway '%s/%s' has condition %s=%s, reason %s: %s",
 					gtwNamespace,
 					gtwName,
-					gtw.Status.Conditions[0].Message,
+					cond.Type,
+					cond.Status,
+					cond.Reason,
+					cond.Message,
 				),
 				Sensitive: []common.Sensitive{
 					{
