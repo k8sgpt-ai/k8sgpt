@@ -7,9 +7,156 @@ metadata:
     {{- include "k8sgpt.labels" . | nindent 4 }}
 rules:
 - apiGroups:
-  - '*'
+  - ""
   resources:
-  - '*'
+  - nodes
+  - nodes/status
+  - namespaces
+  - namespaces/status
+  - pods
+  - pods/status
+  - pods/log
+  - replicationcontrollers/scale
+  - replicationcontrollers/status
+  - services
+  - services/proxy
+  - services/status
+  - configmaps
+  - endpoints
+  - persistentvolumes
+  - persistentvolumes/status
+  - persistentvolumeclaims
+  - persistentvolumeclaims/status
+  - events
+  - componentstatuses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  - replicasets/scale
+  - replicasets/status
+  - deployments
+  - deployments/scale
+  - deployments/status
+  - daemonsets
+  - daemonsets/status
+  - statefulsets
+  - statefulsets/scale
+  - statefulsets/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - jobs/status
+  - cronjobs
+  - cronjobs/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  - horizontalpodautoscalers/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  - ingresses/status
+  - ingressclasses
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets
+  - poddisruptionbudgets/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - events.k8s.io
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gateways
+  - gateways/status
+  - gatewayclasses
+  - gatewayclasses/status
+  - httproutes
+  - httproutes/status
+  - grpcroutes
+  - grpcroutes/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - keda.sh
+  resources:
+  - scaledjobs
+  - scaledjobs/status
+  - scaledobjects
+  - scaledobjects/status
+  - clustertriggerauthentications
+  - triggerauthentications
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - aquasecurity.github.io
+  resources:
+  - vulnerabilityreports
+  - clustervulnerabilityreports
+  - configauditreports
+  - clusterconfigauditreports
   verbs:
   - get
   - list
