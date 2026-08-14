@@ -21,12 +21,16 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
+	// only exists to give the resource backend's APIGroup something addressable
+	resourceBackendAPIGroup := "k8s.example.com"
+
 	// Create test cases
 	testCases := []struct {
 		name           string
@@ -156,6 +160,41 @@ func TestIngressAnalyzer(t *testing.T) {
 				"Ingress default/test-ingress-multi does not specify an Ingress class.",
 				"Ingress uses the service default/non-existent-service which does not exist.",
 				"Ingress uses the secret default/non-existent-secret as a TLS certificate which does not exist.",
+			},
+		},
+		{
+			name: "Resource backend instead of a service backend",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-resource-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "example.com",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path: "/static",
+											Backend: networkingv1.IngressBackend{
+												Resource: &corev1.TypedLocalObjectReference{
+													APIGroup: &resourceBackendAPIGroup,
+													Kind:     "StorageBucket",
+													Name:     "static-assets",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-resource-backend does not specify an Ingress class.",
 			},
 		},
 	}
