@@ -105,6 +105,11 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// loop over HTTP paths
 			if rule.HTTP != nil {
 				for _, path := range rule.HTTP.Paths {
+					// a path can point at a resource backend instead, in which case
+					// there is no service to look up
+					if path.Backend.Service == nil {
+						continue
+					}
 					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
 					if err != nil {
 						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
