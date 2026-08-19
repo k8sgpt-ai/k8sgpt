@@ -112,11 +112,7 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			}
 
 			evt, err := util.FetchLatestEvent(a.Context, a.Client, so.Namespace, so.Name)
-			if err != nil || evt == nil {
-				continue
-			}
-
-			if evt.Type != "Normal" {
+			if err == nil && evt != nil && evt.Type != "Normal" {
 				failures = append(failures, common.Failure{
 					Text: evt.Message,
 					Sensitive: []common.Sensitive{
