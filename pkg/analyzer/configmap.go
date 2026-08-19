@@ -52,11 +52,20 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	// Analyze ConfigMap usage in Pods
 	for _, pod := range pods.Items {
-		// Check volume mounts
+		// Check volume mounts, including projected ConfigMap sources.
 		for _, volume := range pod.Spec.Volumes {
 			if volume.ConfigMap != nil {
 				usedConfigMaps[volume.ConfigMap.Name] = true
 				configMapUsage[volume.ConfigMap.Name] = append(configMapUsage[volume.ConfigMap.Name], pod.Name)
+			}
+			if volume.Projected == nil {
+				continue
+			}
+			for _, source := range volume.Projected.Sources {
+				if source.ConfigMap != nil && source.ConfigMap.Name != "" {
+					usedConfigMaps[source.ConfigMap.Name] = true
+					configMapUsage[source.ConfigMap.Name] = append(configMapUsage[source.ConfigMap.Name], pod.Name)
+				}
 			}
 		}
 
