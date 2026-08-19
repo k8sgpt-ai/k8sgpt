@@ -45,6 +45,13 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, pod := range list.Items {
 		var failures []common.Failure
 
+		// Skip succeeded pods: the pod completed on purpose, and any non-zero
+		// exit code left in a container status (e.g. a sidecar killed at job
+		// completion) is not a failure.
+		if pod.Status.Phase == v1.PodSucceeded {
+			continue
+		}
+
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
 			// Check through container status to check for crashes
