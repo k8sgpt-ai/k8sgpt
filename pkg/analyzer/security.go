@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -115,17 +116,32 @@ func analyzeRoleBindings(a common.Analyzer) ([]common.Result, error) {
 
 	for _, rb := range rbs.Items {
 		var failures []common.Failure
+		var rules []rbacv1.PolicyRule
+		roleKind := rb.RoleRef.Kind
 
 		// Check for wildcards in role references
-		role, err := a.Client.GetClient().RbacV1().Roles(rb.Namespace).Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
-		if err != nil {
+		switch roleKind {
+		case "", "Role":
+			role, err := a.Client.GetClient().RbacV1().Roles(rb.Namespace).Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
+			if err != nil {
+				continue
+			}
+			rules = role.Rules
+			roleKind = "Role"
+		case "ClusterRole":
+			clusterRole, err := a.Client.GetClient().RbacV1().ClusterRoles().Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
+			if err != nil {
+				continue
+			}
+			rules = clusterRole.Rules
+		default:
 			continue
 		}
 
-		for _, rule := range role.Rules {
+		for _, rule := range rules {
 			if containsWildcard(rule.Verbs) || containsWildcard(rule.Resources) {
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("RoleBinding %s references Role %s which contains wildcard permissions - this is not recommended for security best practices", rb.Name, role.Name),
+					Text:      fmt.Sprintf("RoleBinding %s references %s %s which contains wildcard permissions - this is not recommended for security best practices", rb.Name, roleKind, rb.RoleRef.Name),
 					Sensitive: []common.Sensitive{},
 				})
 			}
