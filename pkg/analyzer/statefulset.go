@@ -95,11 +95,15 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 		if sts.Spec.Replicas != nil && *(sts.Spec.Replicas) != sts.Status.AvailableReplicas {
-			for i := int32(0); i < *(sts.Spec.Replicas); i++ {
+			startOrdinal := int32(0)
+			if sts.Spec.Ordinals != nil {
+				startOrdinal = sts.Spec.Ordinals.Start
+			}
+			for i := startOrdinal; i < startOrdinal+*(sts.Spec.Replicas); i++ {
 				podName := sts.Name + "-" + fmt.Sprint(i)
 				pod, err := a.Client.GetClient().CoreV1().Pods(sts.Namespace).Get(a.Context, podName, metav1.GetOptions{})
 				if err != nil {
-					if errors.IsNotFound(err) && i == 0 {
+					if errors.IsNotFound(err) && i == startOrdinal {
 						evt, err := util.FetchLatestEvent(a.Context, a.Client, sts.Namespace, sts.Name)
 						if err != nil || evt == nil || evt.Type == "Normal" {
 							break
