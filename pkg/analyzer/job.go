@@ -19,6 +19,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -68,7 +70,11 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				},
 			})
 		}
-		if Job.Status.Failed > 0 {
+		// A Job that has reached a successful terminal state (Complete or
+		// SuccessCriteriaMet) should not be reported as failed even when
+		// Status.Failed is non-zero: failed attempts that were retried within
+		// backoffLimit are normal and the Job is healthy.
+		if Job.Status.Failed > 0 && !jobHasSucceeded(Job) {
 			doc := apiDoc.GetApiDocV2("status.failed")
 
 			failure := common.Failure{
@@ -114,4 +120,17 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 
 	return a.Results, nil
+}
+
+// jobHasSucceeded reports whether the Job has reached a successful terminal
+// state. Kubernetes records a Complete condition when all pods succeed, and a
+// SuccessCriteriaMet condition when the Job's success policy is met.
+func jobHasSucceeded(job batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue &&
+			(condition.Type == batchv1.JobComplete || condition.Type == batchv1.JobSuccessCriteriaMet) {
+			return true
+		}
+	}
+	return false
 }

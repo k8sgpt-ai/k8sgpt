@@ -26,6 +26,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// scalingLimitedTooFewReplicas is the reason the HPA controller sets on the
+// ScalingLimited condition when the raw replica calculation is below
+// spec.minReplicas. Kubernetes does not export these reason strings, so the
+// value is mirrored here.
+const scalingLimitedTooFewReplicas = "TooFewReplicas"
+
 type HpaAnalyzer struct{}
 
 func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
@@ -60,12 +66,21 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#appendix-horizontal-pod-autoscaler-status-conditions
 			switch condition.Type {
 			case autoscalingv2.ScalingLimited:
-				if condition.Status == corev1.ConditionTrue {
-					failures = append(failures, common.Failure{
-						Text:      condition.Message,
-						Sensitive: []common.Sensitive{},
-					})
+				if condition.Status != corev1.ConditionTrue {
+					break
 				}
+				// An HPA sitting at its minimum replica count always reports
+				// ScalingLimited=True with reason TooFewReplicas. That is the
+				// replica floor working as designed, not a fault.
+				atMinReplicas := hpa.Spec.MinReplicas != nil &&
+					hpa.Status.DesiredReplicas == *hpa.Spec.MinReplicas
+				if condition.Reason == scalingLimitedTooFewReplicas && atMinReplicas {
+					break
+				}
+				failures = append(failures, common.Failure{
+					Text:      condition.Message,
+					Sensitive: []common.Sensitive{},
+				})
 			default:
 				if condition.Status == corev1.ConditionFalse {
 					failures = append(failures, common.Failure{

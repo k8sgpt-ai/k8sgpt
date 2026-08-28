@@ -208,7 +208,7 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 		t.Error(err)
 	}
 	var errorFound bool
-	want := "Gateway 'default/foobar' is not accepted. Message: 'An expected message'."
+	want := "Gateway 'default/foobar' has condition Accepted=Unknown, reason Test: An expected message"
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
 			if want == got.Text {
@@ -223,6 +223,185 @@ func TestStatusGatewayAnalyzer(t *testing.T) {
 	if !errorFound {
 		t.Errorf("Expected message, <%v> , not found in Gateway's analysis results", want)
 	}
+}
+
+func TestProgrammedFalseGatewayAnalyzer(t *testing.T) {
+	ClassName := gtwapi.ObjectName("exists")
+	GatewayClass := BuildGatewayClass(string(ClassName))
+
+	Gateway := BuildGateway(ClassName, metav1.ConditionTrue, nil)
+	Gateway.Status.Conditions = []metav1.Condition{
+		{
+			Type:    string(gtwapi.GatewayConditionAccepted),
+			Status:  metav1.ConditionTrue,
+			Reason:  "Accepted",
+			Message: "Gateway accepted",
+		},
+		{
+			Type:    string(gtwapi.GatewayConditionProgrammed),
+			Status:  metav1.ConditionFalse,
+			Reason:  "AddressNotAssigned",
+			Message: "No addresses have been assigned",
+		},
+	}
+
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&Gateway,
+		&GatewayClass,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := GatewayAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+
+	want := "Gateway 'default/foobar' has condition Programmed=False, reason AddressNotAssigned: No addresses have been assigned"
+	var errorFound bool
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			if want == got.Text {
+				errorFound = true
+			}
+		}
+	}
+	if !errorFound {
+		t.Errorf("Expected message, <%v> , not found in Gateway's analysis results", want)
+	}
+}
+
+func TestAcceptedFalseNotAtIndexZeroGatewayAnalyzer(t *testing.T) {
+	ClassName := gtwapi.ObjectName("exists")
+	GatewayClass := BuildGatewayClass(string(ClassName))
+
+	Gateway := BuildGateway(ClassName, metav1.ConditionTrue, nil)
+	Gateway.Status.Conditions = []metav1.Condition{
+		{
+			Type:    string(gtwapi.GatewayConditionProgrammed),
+			Status:  metav1.ConditionTrue,
+			Reason:  "Programmed",
+			Message: "Configured",
+		},
+		{
+			Type:    string(gtwapi.GatewayConditionAccepted),
+			Status:  metav1.ConditionFalse,
+			Reason:  "NotAccepted",
+			Message: "Listeners not valid",
+		},
+	}
+
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&Gateway,
+		&GatewayClass,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := GatewayAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+
+	want := "Gateway 'default/foobar' has condition Accepted=False, reason NotAccepted: Listeners not valid"
+	var errorFound bool
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			if want == got.Text {
+				errorFound = true
+			}
+		}
+	}
+	if !errorFound {
+		t.Errorf("Expected message, <%v> , not found in Gateway's analysis results", want)
+	}
+}
+
+func TestAcceptedAndProgrammedTrueGatewayAnalyzer(t *testing.T) {
+	ClassName := gtwapi.ObjectName("exists")
+	GatewayClass := BuildGatewayClass(string(ClassName))
+
+	Gateway := BuildGateway(ClassName, metav1.ConditionTrue, nil)
+	Gateway.Status.Conditions = []metav1.Condition{
+		{
+			Type:    string(gtwapi.GatewayConditionAccepted),
+			Status:  metav1.ConditionTrue,
+			Reason:  "Accepted",
+			Message: "Gateway accepted",
+		},
+		{
+			Type:    string(gtwapi.GatewayConditionProgrammed),
+			Status:  metav1.ConditionTrue,
+			Reason:  "Programmed",
+			Message: "Configured",
+		},
+	}
+
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	objects := []runtime.Object{
+		&Gateway,
+		&GatewayClass,
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(objects...).Build()
+
+	analyzerInstance := GatewayAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
 }
 
 func TestGatewayAnalyzerLabelSelectorFiltering(t *testing.T) {

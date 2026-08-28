@@ -264,3 +264,74 @@ func TestJobAnalyzerLabelSelector(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/job-with-label", results[0].Name)
 }
+
+func TestJobAnalyzerSucceededAfterRetries(t *testing.T) {
+	// A Job that failed some pods but eventually completed successfully.
+	// Status.Failed remains > 0 even though the Job succeeded (condition Complete=True).
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "retried-job",
+			Namespace: "default",
+		},
+		Spec: batchv1.JobSpec{},
+		Status: batchv1.JobStatus{
+			Failed:    2,
+			Succeeded: 1,
+			Conditions: []batchv1.JobCondition{
+				{
+					Type:   batchv1.JobComplete,
+					Status: corev1.ConditionTrue,
+				},
+			},
+		},
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(job),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := JobAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 0, "a Job that completed successfully after retries should not be reported as failed")
+}
+
+func TestJobAnalyzerFailedConditionOverridesRetries(t *testing.T) {
+	// A Job that exhausted its backoff limit: Failed condition is True even
+	// though some pods may have succeeded. Must still be reported.
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "failed-job",
+			Namespace: "default",
+		},
+		Spec: batchv1.JobSpec{},
+		Status: batchv1.JobStatus{
+			Failed:    3,
+			Succeeded: 1,
+			Conditions: []batchv1.JobCondition{
+				{
+					Type:   batchv1.JobFailed,
+					Status: corev1.ConditionTrue,
+				},
+			},
+		},
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(job),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := JobAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1, "a Job with Failed condition should still be reported")
+	require.Equal(t, "default/failed-job", results[0].Name)
+}
