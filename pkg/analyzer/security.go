@@ -58,9 +58,7 @@ func (SecurityAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 func analyzeServiceAccounts(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	sas, err := a.Client.GetClient().CoreV1().ServiceAccounts(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	sas, err := a.Client.GetClient().CoreV1().ServiceAccounts(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -106,9 +104,7 @@ func analyzeServiceAccounts(a common.Analyzer) ([]common.Result, error) {
 func analyzeRoleBindings(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	rbs, err := a.Client.GetClient().RbacV1().RoleBindings(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	rbs, err := a.Client.GetClient().RbacV1().RoleBindings(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -147,9 +143,7 @@ func analyzeRoleBindings(a common.Analyzer) ([]common.Result, error) {
 func analyzePodSecurityContexts(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

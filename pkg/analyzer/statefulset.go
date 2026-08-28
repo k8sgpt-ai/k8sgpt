@@ -42,7 +42,7 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().AppsV1().StatefulSets(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -48,7 +47,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
+	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

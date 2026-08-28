@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/fatih/color"
@@ -35,6 +36,7 @@ var (
 	nocache         bool
 	namespace       string
 	labelSelector   string
+	resource        string
 	anonymize       bool
 	maxConcurrency  int
 	withDoc         bool
@@ -52,6 +54,23 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// --resource Kind/Name narrows the analysis to a single object. The kind
+		// half selects the analyzer (same mechanism as --filter) and the name half
+		// becomes a field selector on the list call, so the API server returns just
+		// that object rather than the analyzer trimming a wide result set.
+		var resourceName string
+		if resource != "" {
+			kind, name, found := strings.Cut(resource, "/")
+			if !found || kind == "" || name == "" {
+				color.Red("Error: --resource must be in Kind/Name format (e.g. Deployment/my-app)")
+				os.Exit(1)
+			}
+			if len(filters) == 0 {
+				filters = []string{kind}
+			}
+			resourceName = name
+		}
+
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -67,6 +86,11 @@ var AnalyzeCmd = &cobra.Command{
 			customHeaders,
 			withStats,
 		)
+		// Set after construction so NewAnalysis keeps its signature and the server
+		// and MCP callers are untouched by this change.
+		if config != nil {
+			config.ResourceName = resourceName
+		}
 
 		verbose := viper.GetBool("verbose")
 		if verbose {
@@ -175,6 +199,8 @@ func init() {
 	AnalyzeCmd.Flags().StringSliceVarP(&customHeaders, "custom-headers", "r", []string{}, "Custom Headers, <key>:<value> (e.g CustomHeaderKey:CustomHeaderValue AnotherHeader:AnotherValue)")
 	// label selector flag
 	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
+	// resource flag
+	AnalyzeCmd.Flags().StringVar(&resource, "resource", "", "Analyze a single resource in Kind/Name format (e.g. Deployment/my-app). Combine with -n to scope the namespace.")
 	// print stats
 	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats (time taken per analyzer) in addition to the normal output.")
 }

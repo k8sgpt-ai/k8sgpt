@@ -49,6 +49,7 @@ type Analysis struct {
 	Errors             []string
 	Namespace          string
 	LabelSelector      string
+	ResourceName       string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -392,6 +393,7 @@ func (a *Analysis) RunAnalysis() {
 		Context:       a.Context,
 		Namespace:     a.Namespace,
 		LabelSelector: a.LabelSelector,
+		ResourceName:  a.ResourceName,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}

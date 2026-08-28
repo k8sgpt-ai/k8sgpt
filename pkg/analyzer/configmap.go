@@ -31,9 +31,7 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// Get all ConfigMaps in the namespace
-	configMaps, err := a.Client.GetClient().CoreV1().ConfigMaps(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	configMaps, err := a.Client.GetClient().CoreV1().ConfigMaps(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
