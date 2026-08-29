@@ -54,22 +54,12 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// --resource Kind/Name narrows the analysis to a single object. The kind
-		// half selects the analyzer (same mechanism as --filter) and the name half
-		// becomes a field selector on the list call, so the API server returns just
-		// that object rather than the analyzer trimming a wide result set.
-		var resourceName string
-		if resource != "" {
-			kind, name, found := strings.Cut(resource, "/")
-			if !found || kind == "" || name == "" {
-				color.Red("Error: --resource must be in Kind/Name format (e.g. Deployment/my-app)")
-				os.Exit(1)
-			}
-			if len(filters) == 0 {
-				filters = []string{kind}
-			}
-			resourceName = name
+		selectedFilters, resourceName, err := resolveResourceSelection(resource, filters)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
 		}
+		filters = selectedFilters
 
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
@@ -168,6 +158,40 @@ var AnalyzeCmd = &cobra.Command{
 			}
 		}
 	},
+}
+
+// resolveResourceSelection reconciles --resource with --filter and returns the
+// filters to run plus the resource name to select on.
+//
+// --resource Kind/Name narrows the analysis to a single object: the kind half
+// picks the analyzer (the mechanism --filter already provides) and the name half
+// becomes a field selector on the list call.
+//
+// The two flags must agree. The resource name is handed to every analyzer that
+// runs, so allowing an unrelated --filter alongside --resource would make those
+// analyzers query metadata.name for a kind the user never asked about - e.g.
+// `--resource Deployment/foo --filter Deployment,Service` would also report a
+// Service named "foo". Rather than silently discarding the user's --filter, a
+// contradictory combination is rejected.
+func resolveResourceSelection(resource string, filters []string) ([]string, string, error) {
+	if resource == "" {
+		return filters, "", nil
+	}
+	kind, name, found := strings.Cut(resource, "/")
+	if !found || kind == "" || name == "" {
+		return nil, "", fmt.Errorf("--resource must be in Kind/Name format (e.g. Deployment/my-app)")
+	}
+	if len(filters) == 0 {
+		return []string{kind}, name, nil
+	}
+	for _, f := range filters {
+		if !strings.EqualFold(strings.TrimSpace(f), kind) {
+			return nil, "", fmt.Errorf(
+				"--resource %s selects only %s, but --filter also requests %q; drop --filter or set it to %s",
+				resource, kind, strings.TrimSpace(f), kind)
+		}
+	}
+	return []string{kind}, name, nil
 }
 
 func init() {
