@@ -245,3 +245,123 @@ func TestDeploymentAnalyzerLabelSelectorFiltering(t *testing.T) {
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
+
+func TestDeploymentAnalyzerProgressDeadlineExceeded(t *testing.T) {
+	replicas := int32(1)
+	clientset := fake.NewSimpleClientset(&appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "example",
+			Namespace: "default",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:  "example-container",
+							Image: "nginx",
+						},
+					},
+				},
+			},
+		},
+		Status: appsv1.DeploymentStatus{
+			Replicas:          1,
+			ReadyReplicas:     1,
+			AvailableReplicas: 1,
+			Conditions: []appsv1.DeploymentCondition{
+				{
+					Type:    appsv1.DeploymentAvailable,
+					Status:  v1.ConditionTrue,
+					Reason:  "MinimumReplicasAvailable",
+					Message: "Deployment has minimum availability.",
+				},
+				{
+					Type:    appsv1.DeploymentProgressing,
+					Status:  v1.ConditionFalse,
+					Reason:  "ProgressDeadlineExceeded",
+					Message: `ReplicaSet "example-6b7f8c9d5" has timed out progressing.`,
+				},
+			},
+		},
+	})
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	deploymentAnalyzer := DeploymentAnalyzer{}
+	analysisResults, err := deploymentAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 1)
+	if len(analysisResults) != 1 {
+		return
+	}
+	assert.Equal(t, analysisResults[0].Kind, "Deployment")
+	assert.Equal(t, analysisResults[0].Name, "default/example")
+	assert.Equal(t, analysisResults[0].Error[0].Text, "Deployment default/example has condition Progressing=False, reason ProgressDeadlineExceeded: ReplicaSet \"example-6b7f8c9d5\" has timed out progressing.")
+}
+
+func TestDeploymentAnalyzerProgressingTrueNotReported(t *testing.T) {
+	replicas := int32(1)
+	clientset := fake.NewSimpleClientset(&appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "example",
+			Namespace: "default",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &replicas,
+			Template: v1.PodTemplateSpec{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name:  "example-container",
+							Image: "nginx",
+						},
+					},
+				},
+			},
+		},
+		Status: appsv1.DeploymentStatus{
+			Replicas:          1,
+			ReadyReplicas:     1,
+			AvailableReplicas: 1,
+			Conditions: []appsv1.DeploymentCondition{
+				{
+					Type:    appsv1.DeploymentAvailable,
+					Status:  v1.ConditionTrue,
+					Reason:  "MinimumReplicasAvailable",
+					Message: "Deployment has minimum availability.",
+				},
+				{
+					Type:    appsv1.DeploymentProgressing,
+					Status:  v1.ConditionTrue,
+					Reason:  "NewReplicaSetAvailable",
+					Message: `ReplicaSet "example-6b7f8c9d5" has successfully progressed.`,
+				},
+			},
+		},
+	})
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	deploymentAnalyzer := DeploymentAnalyzer{}
+	analysisResults, err := deploymentAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+}

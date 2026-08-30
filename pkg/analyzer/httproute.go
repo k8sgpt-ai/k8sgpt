@@ -38,10 +38,6 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtw := &gtwapi.Gateway{}
 	service := &corev1.Service{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
 	if err := client.List(a.Context, routeList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {

@@ -39,9 +39,13 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 // helper function: get type name of an analyzer
@@ -52,6 +56,11 @@ func getTypeName(i interface{}) string {
 // helper function: run analysis with filter
 func analysis_RunAnalysisFilterTester(t *testing.T, filterFlag string) []common.Result {
 	clientset := fake.NewSimpleClientset(
+		&v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "default",
+			},
+		},
 		&v1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
@@ -157,6 +166,86 @@ func TestAnalysis_RunAnalysisActiveFilter(t *testing.T) {
 	// Invalid filter
 	results = analysis_RunAnalysisFilterTester(t, "invalid")
 	assert.Equal(t, len(results), 0)
+}
+
+// Test: a nonexistent (e.g. typo'd) --namespace aborts the analysis with an
+// error instead of silently reporting a clean cluster.
+func TestAnalysis_RunAnalysisNamespaceNotFound(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&v1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "default",
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Status: v1.PodStatus{
+				Phase: v1.PodPending,
+			},
+		},
+	)
+
+	analysis := Analysis{
+		Context:        context.Background(),
+		Results:        []common.Result{},
+		Namespace:      "typo-namespace",
+		MaxConcurrency: 1,
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+	}
+	analysis.RunAnalysis()
+
+	require.Empty(t, analysis.Results, "no analyzers should have run against a nonexistent namespace")
+	require.Len(t, analysis.Errors, 1)
+	require.Contains(t, analysis.Errors[0], `namespace "typo-namespace" not found`)
+}
+
+// Test: a Forbidden error when checking whether the namespace exists (e.g. a
+// service account scoped to a single namespace, which typically cannot Get
+// the Namespace object itself) must not block an analysis that would
+// otherwise succeed.
+func TestAnalysis_RunAnalysisNamespaceForbidden(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Status: v1.PodStatus{
+				Phase: v1.PodPending,
+				Conditions: []v1.PodCondition{
+					{
+						Type:    v1.PodScheduled,
+						Reason:  "Unschedulable",
+						Message: "0/1 nodes are available: 1 node(s) had taint {node-role.kubernetes.io/master: }, that the pod didn't tolerate.",
+					},
+				},
+			},
+		},
+	)
+	clientset.PrependReactor("get", "namespaces", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(
+			schema.GroupResource{Resource: "namespaces"}, "default", fmt.Errorf("user cannot get namespaces"))
+	})
+
+	analysis := Analysis{
+		Context:        context.Background(),
+		Results:        []common.Result{},
+		Namespace:      "default",
+		MaxConcurrency: 1,
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Filters: []string{"Pod"},
+	}
+	analysis.RunAnalysis()
+
+	require.Empty(t, analysis.Errors, "a Forbidden namespace check must not abort the analysis")
+	require.Len(t, analysis.Results, 1)
 }
 
 func TestAnalysis_NoProblemJsonOutput(t *testing.T) {

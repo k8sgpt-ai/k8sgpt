@@ -17,6 +17,8 @@ import (
 	"context"
 	"fmt"
 
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -55,7 +57,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
 		if deployment.Spec.Replicas != nil && *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
-			if  deployment.Status.Replicas > *deployment.Spec.Replicas {
+			if deployment.Status.Replicas > *deployment.Spec.Replicas {
 				doc := apiDoc.GetApiDocV2("spec.replicas")
 
 				failures = append(failures, common.Failure{
@@ -88,7 +90,34 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 							Masked:   util.MaskString(deployment.Name),
 						},
 					}})
-				}
+			}
+		}
+		for _, cond := range deployment.Status.Conditions {
+			if cond.Type != appsv1.DeploymentProgressing || cond.Status != corev1.ConditionFalse {
+				continue
+			}
+			doc := apiDoc.GetApiDocV2("status.conditions")
+			failures = append(failures, common.Failure{
+				Text: fmt.Sprintf("Deployment %s/%s has condition %s=%s, reason %s: %s",
+					deployment.Namespace,
+					deployment.Name,
+					cond.Type,
+					cond.Status,
+					cond.Reason,
+					cond.Message,
+				),
+				KubernetesDoc: doc,
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: deployment.Namespace,
+						Masked:   util.MaskString(deployment.Namespace),
+					},
+					{
+						Unmasked: deployment.Name,
+						Masked:   util.MaskString(deployment.Name),
+					},
+				},
+			})
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{
