@@ -14,10 +14,14 @@ limitations under the License.
 package ai
 
 import (
+	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 
 	ollama "github.com/ollama/ollama/api"
 )
@@ -77,6 +81,43 @@ func (c *OllamaClient) Configure(config IAIConfig) error {
 	return nil
 }
 func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+	listResp, err := c.client.List(ctx)
+	if err != nil {
+		return "", err
+	}
+	modelExists := false
+	for _, m := range listResp.Models {
+		if m.Name == c.model || m.Name == c.model+":latest" {
+			modelExists = true
+			break
+		}
+	}
+	if !modelExists {
+		fmt.Printf("\n[Ollama] Model '%s' is not installed locally.\n", c.model)
+		fmt.Printf("Do you want to download it now? This may take a while. (y/N): ")
+
+		reader := bufio.NewReader(os.Stdin)
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(strings.ToLower(input))
+
+		if input != "y" && input != "yes" {
+			return "", fmt.Errorf("model '%s' is required but not installed; user declined to download", c.model)
+		}
+
+		fmt.Printf("Pulling model %s... Please wait.\n", c.model)
+
+		pullReq := &ollama.PullRequest{Model: c.model}
+		progressFunc := func(resp ollama.ProgressResponse) error {
+			return nil
+		}
+		err := c.client.Pull(ctx, pullReq, progressFunc)
+		if err != nil {
+			return "", fmt.Errorf("failed to pull model: %v", err)
+		}
+
+		fmt.Printf("Successfully pulled model %s!\n", c.model)
+	}
+
 	req := &ollama.GenerateRequest{
 		Model:  c.model,
 		Prompt: prompt,
@@ -91,7 +132,7 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 		completion = resp.Response
 		return nil
 	}
-	err := c.client.Generate(ctx, req, respFunc)
+	err = c.client.Generate(ctx, req, respFunc)
 	if err != nil {
 		return "", err
 	}
