@@ -45,7 +45,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().CoreV1().Endpoints(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

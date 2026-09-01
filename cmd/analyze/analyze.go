@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/fatih/color"
@@ -35,6 +36,7 @@ var (
 	nocache         bool
 	namespace       string
 	labelSelector   string
+	resource        string
 	anonymize       bool
 	maxConcurrency  int
 	withDoc         bool
@@ -52,6 +54,13 @@ var AnalyzeCmd = &cobra.Command{
 	Long: `This command will find problems within your Kubernetes cluster and
 	provide you with a list of issues that need to be resolved`,
 	Run: func(cmd *cobra.Command, args []string) {
+		selectedFilters, resourceName, err := resolveResourceSelection(resource, filters)
+		if err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
+		filters = selectedFilters
+
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
@@ -67,6 +76,11 @@ var AnalyzeCmd = &cobra.Command{
 			customHeaders,
 			withStats,
 		)
+		// Set after construction so NewAnalysis keeps its signature and the server
+		// and MCP callers are untouched by this change.
+		if config != nil {
+			config.ResourceName = resourceName
+		}
 
 		verbose := viper.GetBool("verbose")
 		if verbose {
@@ -146,6 +160,40 @@ var AnalyzeCmd = &cobra.Command{
 	},
 }
 
+// resolveResourceSelection reconciles --resource with --filter and returns the
+// filters to run plus the resource name to select on.
+//
+// --resource Kind/Name narrows the analysis to a single object: the kind half
+// picks the analyzer (the mechanism --filter already provides) and the name half
+// becomes a field selector on the list call.
+//
+// The two flags must agree. The resource name is handed to every analyzer that
+// runs, so allowing an unrelated --filter alongside --resource would make those
+// analyzers query metadata.name for a kind the user never asked about - e.g.
+// `--resource Deployment/foo --filter Deployment,Service` would also report a
+// Service named "foo". Rather than silently discarding the user's --filter, a
+// contradictory combination is rejected.
+func resolveResourceSelection(resource string, filters []string) ([]string, string, error) {
+	if resource == "" {
+		return filters, "", nil
+	}
+	kind, name, found := strings.Cut(resource, "/")
+	if !found || kind == "" || name == "" {
+		return nil, "", fmt.Errorf("--resource must be in Kind/Name format (e.g. Deployment/my-app)")
+	}
+	if len(filters) == 0 {
+		return []string{kind}, name, nil
+	}
+	for _, f := range filters {
+		if !strings.EqualFold(strings.TrimSpace(f), kind) {
+			return nil, "", fmt.Errorf(
+				"--resource %s selects only %s, but --filter also requests %q; drop --filter or set it to %s",
+				resource, kind, strings.TrimSpace(f), kind)
+		}
+	}
+	return []string{kind}, name, nil
+}
+
 func init() {
 	// namespace flag
 	AnalyzeCmd.Flags().StringVarP(&namespace, "namespace", "n", "", "Namespace to analyze")
@@ -175,6 +223,8 @@ func init() {
 	AnalyzeCmd.Flags().StringSliceVarP(&customHeaders, "custom-headers", "r", []string{}, "Custom Headers, <key>:<value> (e.g CustomHeaderKey:CustomHeaderValue AnotherHeader:AnotherValue)")
 	// label selector flag
 	AnalyzeCmd.Flags().StringVarP(&labelSelector, "selector", "L", "", "Label selector (label query) to filter on, supports '=', '==', and '!='. (e.g. -L key1=value1,key2=value2). Matching objects must satisfy all of the specified label constraints.")
+	// resource flag
+	AnalyzeCmd.Flags().StringVar(&resource, "resource", "", "Analyze a single resource in Kind/Name format (e.g. Deployment/my-app). Combine with -n to scope the namespace.")
 	// print stats
 	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats (time taken per analyzer) in addition to the normal output.")
 }
