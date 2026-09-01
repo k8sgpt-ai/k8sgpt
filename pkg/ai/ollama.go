@@ -14,14 +14,12 @@ limitations under the License.
 package ai
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 
 	ollama "github.com/ollama/ollama/api"
 )
@@ -93,21 +91,19 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 		}
 	}
 	if !modelExists {
-		fmt.Printf("\n[Ollama] Model '%s' is not installed locally.\n", c.model)
-		fmt.Printf("Do you want to download it now? This may take a while. (y/N): ")
-
-		reader := bufio.NewReader(os.Stdin)
-		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(strings.ToLower(input))
-
-		if input != "y" && input != "yes" {
-			return "", fmt.Errorf("model '%s' is required but not installed; user declined to download", c.model)
+		if os.Getenv("K8SGPT_OLLAMA_AUTO_PULL") != "true" {
+			return "", fmt.Errorf("model '%s' is required but not installed; set K8SGPT_OLLAMA_AUTO_PULL=true to download automatically", c.model)
 		}
 
-		fmt.Printf("Pulling model %s... Please wait.\n", c.model)
+		fmt.Printf("\n[Ollama] Pulling model %s... Please wait.\n", c.model)
 
 		pullReq := &ollama.PullRequest{Model: c.model}
 		progressFunc := func(resp ollama.ProgressResponse) error {
+			if resp.Total > 0 {
+				fmt.Printf("\r[Ollama] Status: %s (%.2f%%)", resp.Status, float64(resp.Completed)/float64(resp.Total)*100)
+			} else {
+				fmt.Printf("\r[Ollama] Status: %s", resp.Status)
+			}
 			return nil
 		}
 		err := c.client.Pull(ctx, pullReq, progressFunc)
@@ -115,7 +111,7 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 			return "", fmt.Errorf("failed to pull model: %v", err)
 		}
 
-		fmt.Printf("Successfully pulled model %s!\n", c.model)
+		fmt.Printf("\n[Ollama] Successfully pulled model %s!\n", c.model)
 	}
 
 	req := &ollama.GenerateRequest{
