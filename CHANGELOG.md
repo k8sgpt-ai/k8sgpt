@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-01)
+
+
+### Features
+
+* add --resource flag to analyze a single resource ([#1761](https://github.com/k8sgpt-ai/k8sgpt/issues/1761)) ([6863057](https://github.com/k8sgpt-ai/k8sgpt/commit/6863057fa31bc74da396d25c3b527fedf5dde95e))
+
+
+### Other
+
+* **deps:** update golang docker tag to v1.27 ([#1745](https://github.com/k8sgpt-ai/k8sgpt/issues/1745)) ([731a6c9](https://github.com/k8sgpt-ai/k8sgpt/commit/731a6c90749e8e62b9325e41712c39c0d72510c4))
+
 ## [0.4.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.37...v0.4.38) (2026-09-01)
 
 
