@@ -16,7 +16,7 @@ func TestOllamaGetCompletionMissingModel(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/tags" {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"models": []}`))
+			_, _ = w.Write([]byte(`{"models": []}`))
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
