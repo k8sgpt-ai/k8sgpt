@@ -41,20 +41,19 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, rs := range list.Items {
 		var failures []common.Failure
 
-		// Check for empty rs
-		if rs.Status.Replicas == 0 {
-
-			// Check through container status to check for crashes
-			for _, rsStatus := range rs.Status.Conditions {
-				if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
-					failures = append(failures, common.Failure{
-						Text:      rsStatus.Message,
-						Sensitive: []common.Sensitive{},
-					})
-
-				}
+		// ReplicaFailure is reported by the ReplicaSet controller when a Pod
+		// fails to be created, independent of how many Pods already exist.
+		// Evaluate it regardless of the current replica count so a partially
+		// fulfilled ReplicaSet can still surface a failed scale-up.
+		for _, rsStatus := range rs.Status.Conditions {
+			if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
+				failures = append(failures, common.Failure{
+					Text:      rsStatus.Message,
+					Sensitive: []common.Sensitive{},
+				})
 			}
 		}
+
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = common.PreAnalysis{
 				ReplicaSet:     rs,
