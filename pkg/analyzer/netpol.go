@@ -68,7 +68,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			})
 		} else {
 			// Check if policy is not applied to any pods
-			podList, err := util.GetPodListByLabels(a.Client.GetClient(), a.Namespace, policy.Spec.PodSelector.MatchLabels)
+			podList, err := util.GetPodListByLabels(a.Client.GetClient(), policy.Namespace, policy.Spec.PodSelector.MatchLabels)
 			if err != nil {
 				return nil, err
 			}

@@ -134,6 +134,59 @@ func TestNetpolWithPod(t *testing.T) {
 	assert.Equal(t, len(results), 0)
 }
 
+func TestNetpolNoPodsUsesPolicyNamespace(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "worker-policy",
+				Namespace: "team-a",
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app": "worker",
+					},
+				},
+			},
+		},
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "worker",
+				Namespace: "team-b",
+				Labels: map[string]string{
+					"app": "worker",
+				},
+			},
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name:  "worker",
+						Image: "example",
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context: context.Background(),
+	}
+
+	analyzer := NetworkPolicyAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(results) != 1 {
+		t.Fatalf("expected one result for the policy in its own namespace, got %v", results)
+	}
+	assert.Equal(t, results[0].Name, "team-a/worker-policy")
+}
+
 func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&networkingv1.NetworkPolicy{
