@@ -581,7 +581,7 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	inputKey := strings.Join(texts, " ")
 	// Check for cached data.
 	// TODO(bwplotka): This might depend on model too (or even other client configuration pieces), fix it in later PRs.
-	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, inputKey)
+	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, promptTmpl+inputKey)
 
 	if !a.Cache.IsCacheDisabled() && a.Cache.Exists(cacheKey) {
 		response, err := a.Cache.Load(cacheKey)
@@ -591,10 +591,13 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 		if response != "" {
 			output, err := base64.StdEncoding.DecodeString(response)
-			if err == nil {
+			if err != nil {
+				color.Red("error decoding cached data; ignoring cache item: %v", err)
+			} else if strings.TrimSpace(string(output)) != "" {
 				return string(output), nil
+			} else {
+				color.Red("cached data is empty; ignoring cache item")
 			}
-			color.Red("error decoding cached data; ignoring cache item: %v", err)
 		}
 	}
 
