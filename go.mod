@@ -50,7 +50,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/hupe1980/go-huggingface v0.0.15
 	github.com/kyverno/policy-reporter-kyverno-plugin v1.6.4
-	github.com/mark3labs/mcp-go v0.36.0
+	github.com/mark3labs/mcp-go v1.0.0
 	github.com/olekukonko/tablewriter v1.1.4
 	github.com/oracle/oci-go-sdk/v65 v65.79.0
 	github.com/prometheus/prometheus v0.306.0
@@ -117,6 +117,7 @@ require (
 	github.com/gofrs/flock v0.12.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
+	github.com/google/jsonschema-go v0.4.2 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
@@ -139,6 +140,7 @@ require (
 	github.com/prometheus/sigv4 v0.2.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/segmentio/fasthash v1.0.3 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/sony/gobreaker v0.5.0 // indirect
