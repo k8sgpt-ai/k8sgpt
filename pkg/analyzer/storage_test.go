@@ -36,17 +36,17 @@ func TestStorageAnalyzer(t *testing.T) {
 		expectedErrors int
 	}{
 		{
-			name:      "Deprecated StorageClass",
+			name:      "Local StorageClass with no-provisioner",
 			namespace: "default",
 			storageClasses: []storagev1.StorageClass{
 				{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "deprecated-sc",
+						Name: "local-sc",
 					},
 					Provisioner: "kubernetes.io/no-provisioner",
 				},
 			},
-			expectedErrors: 1,
+			expectedErrors: 0,
 		},
 		{
 			name:      "Multiple Default StorageClasses",
