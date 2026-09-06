@@ -508,6 +508,58 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	<-semaphore
 }
 
+// resourceSensitive derives masking pairs from a result's own identity.
+//
+// Result.Name is the path the analyzer keyed the resource on: "namespace/name"
+// for namespaced resources, "namespace/pod/container" for the container-level
+// analyzers, and a bare name for cluster-scoped ones such as Node. Those
+// segments are exactly the identifiers that appear verbatim inside Kubernetes
+// event messages and status conditions, which analyzers copy straight into
+// Failure.Text with an empty Failure.Sensitive, so they reach the AI provider
+// unmasked even under --anonymize (issue #560).
+//
+// Deriving them here covers every analyzer at once, including the ones that
+// never populated Sensitive and any added later. Analyzers that do declare
+// their own entries keep working: the two sets compose.
+func resourceSensitive(name string) []common.Sensitive {
+	var sensitive []common.Sensitive
+	for _, segment := range strings.Split(name, "/") {
+		// Masking the empty string would match everywhere and shred the text
+		// in both directions.
+		if segment == "" {
+			continue
+		}
+		sensitive = append(sensitive, common.Sensitive{
+			Unmasked: segment,
+			Masked:   util.MaskString(segment),
+		})
+	}
+	return sensitive
+}
+
+func maskText(text string, sets ...[]common.Sensitive) string {
+	for _, set := range sets {
+		for _, s := range set {
+			text = util.ReplaceIfMatch(text, s.Unmasked, s.Masked)
+		}
+	}
+	return text
+}
+
+func unmaskText(text string, sets ...[]common.Sensitive) string {
+	for _, set := range sets {
+		for _, s := range set {
+			// strings.ReplaceAll with an empty needle inserts the replacement
+			// between every character.
+			if s.Masked == "" {
+				continue
+			}
+			text = strings.ReplaceAll(text, s.Masked, s.Unmasked)
+		}
+	}
+	return text
+}
+
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
@@ -526,15 +578,21 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	for index, analysis := range a.Results {
 		var texts []string
 
+		// Analyzers only mask what they explicitly declare in Failure.Sensitive,
+		// and most declare nothing for event-derived failures, so mask the
+		// resource's own identity as well. See resourceSensitive.
+		var identity []common.Sensitive
+		if anonymize {
+			identity = resourceSensitive(analysis.Name)
+		}
+
 		if bar != nil && verbose {
 			bar.Describe(fmt.Sprintf("Analyzing %s", analysis.Kind))
 		}
 
 		for _, failure := range analysis.Error {
 			if anonymize {
-				for _, s := range failure.Sensitive {
-					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
-				}
+				failure.Text = maskText(failure.Text, identity, failure.Sensitive)
 			}
 			texts = append(texts, failure.Text)
 		}
@@ -562,10 +620,9 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 
 		if anonymize {
 			for _, failure := range analysis.Error {
-				for _, s := range failure.Sensitive {
-					result = strings.ReplaceAll(result, s.Masked, s.Unmasked)
-				}
+				result = unmaskText(result, failure.Sensitive)
 			}
+			result = unmaskText(result, identity)
 		}
 
 		analysis.Details = result

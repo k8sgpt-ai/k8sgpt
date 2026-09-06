@@ -251,6 +251,42 @@ func TestReplaceIfMatch(t *testing.T) {
 			replacement:    "day",
 			expectedOutput: "new day",
 		},
+		{
+			// An empty pattern compiles to `(\b)`, which matches at every word
+			// boundary and would rewrite the whole text.
+			text:           "new value",
+			pattern:        "",
+			replacement:    "X",
+			expectedOutput: "new value",
+		},
+		{
+			// The pattern is a literal to redact, not a regex: "." must not
+			// match an arbitrary character.
+			text:           "abc",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "abc",
+		},
+		{
+			text:           "a.c",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "X",
+		},
+		{
+			// Node names are routinely FQDNs; the dots must be literal.
+			text:           "node ip-10-0-1-2.ec2.internal is NotReady",
+			pattern:        "ip-10-0-1-2.ec2.internal",
+			replacement:    "MASKED",
+			expectedOutput: "node MASKED is NotReady",
+		},
+		{
+			// An unescaped "[" is an invalid regex and would panic MustCompile.
+			text:           "a[b value",
+			pattern:        "a[b",
+			replacement:    "X",
+			expectedOutput: "X value",
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
