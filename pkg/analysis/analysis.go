@@ -35,6 +35,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,6 +49,7 @@ type Analysis struct {
 	Errors             []string
 	Namespace          string
 	LabelSelector      string
+	ResourceName       string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -350,6 +352,20 @@ func (a *Analysis) RunCustomAnalysis() {
 }
 
 func (a *Analysis) RunAnalysis() {
+	// Validate namespace if specified; otherwise a typo'd namespace silently
+	// yields empty results from every analyzer, misreporting a clean cluster.
+	// Only abort on a confirmed NotFound: a service account scoped to a single
+	// namespace often cannot Get the Namespace object itself, and that
+	// Forbidden (or any other transient) error must not block an analysis
+	// that would otherwise succeed.
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	activeFilters := viper.GetStringSlice("active_filters")
 	verbose := viper.GetBool("verbose")
 
@@ -377,6 +393,7 @@ func (a *Analysis) RunAnalysis() {
 		Context:       a.Context,
 		Namespace:     a.Namespace,
 		LabelSelector: a.LabelSelector,
+		ResourceName:  a.ResourceName,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
