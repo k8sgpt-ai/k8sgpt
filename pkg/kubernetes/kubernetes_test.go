@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	policyreport "github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -30,7 +31,11 @@ import (
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
-func TestNewClientRegistersGatewayAPIScheme(t *testing.T) {
+// writeTestKubeconfig stands up a stub API server that only answers the version
+// discovery call NewClient makes, and writes a kubeconfig pointing at it.
+func writeTestKubeconfig(t *testing.T) string {
+	t.Helper()
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_ = json.NewEncoder(w).Encode(&version.Info{GitVersion: "v1.32.0"})
 	}))
@@ -47,41 +52,67 @@ func TestNewClientRegistersGatewayAPIScheme(t *testing.T) {
 		CurrentContext: "test",
 	}, kubeconfig))
 
-	client, err := NewClient("", kubeconfig)
-	require.NoError(t, err)
-
-	kinds, _, err := client.CtrlClient.Scheme().ObjectKinds(&gtwapi.Gateway{})
-	require.NoError(t, err)
-	require.Contains(t, kinds, schema.GroupVersionKind{
-		Group:   gtwapi.GroupVersion.Group,
-		Version: gtwapi.GroupVersion.Version,
-		Kind:    "Gateway",
-	})
+	return kubeconfig
 }
 
-func TestNewClientReturnsGatewayAPIInstallError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_ = json.NewEncoder(w).Encode(&version.Info{GitVersion: "v1.32.0"})
-	}))
-	t.Cleanup(server.Close)
+// TestNewClientRegistersSchemes checks that the CRD types the analyzers need are
+// on the shared scheme by the time NewClient returns. Registering them lazily
+// from inside a concurrently-running Analyze() is what caused issue #1063.
+func TestNewClientRegistersSchemes(t *testing.T) {
+	client, err := NewClient("", writeTestKubeconfig(t))
+	require.NoError(t, err)
 
-	kubeconfig := filepath.Join(t.TempDir(), "config")
-	require.NoError(t, clientcmd.WriteToFile(clientcmdapi.Config{
-		Clusters: map[string]*clientcmdapi.Cluster{
-			"test": {Server: server.URL},
+	for _, tc := range []struct {
+		obj runtime.Object
+		gvk schema.GroupVersionKind
+	}{
+		{
+			obj: &gtwapi.Gateway{},
+			gvk: schema.GroupVersionKind{
+				Group:   gtwapi.GroupVersion.Group,
+				Version: gtwapi.GroupVersion.Version,
+				Kind:    "Gateway",
+			},
 		},
-		Contexts: map[string]*clientcmdapi.Context{
-			"test": {Cluster: "test"},
+		{
+			obj: &policyreport.PolicyReport{},
+			gvk: policyreport.SchemeGroupVersion.WithKind("PolicyReport"),
 		},
-		CurrentContext: "test",
-	}, kubeconfig))
+		{
+			obj: &policyreport.ClusterPolicyReport{},
+			gvk: policyreport.SchemeGroupVersion.WithKind("ClusterPolicyReport"),
+		},
+	} {
+		t.Run(tc.gvk.Kind, func(t *testing.T) {
+			kinds, _, err := client.CtrlClient.Scheme().ObjectKinds(tc.obj)
+			require.NoError(t, err)
+			require.Contains(t, kinds, tc.gvk)
+		})
+	}
+}
 
-	sentinel := errors.New("gateway API install failed")
-	original := installGatewayAPI
-	installGatewayAPI = func(*runtime.Scheme) error { return sentinel }
-	t.Cleanup(func() { installGatewayAPI = original })
+func TestNewClientReturnsSchemeInstallError(t *testing.T) {
+	for name, swap := range map[string]func(func(*runtime.Scheme) error) func(){
+		"gateway API": func(stub func(*runtime.Scheme) error) func() {
+			original := installGatewayAPI
+			installGatewayAPI = stub
+			return func() { installGatewayAPI = original }
+		},
+		"policy report": func(stub func(*runtime.Scheme) error) func() {
+			original := installPolicyReport
+			installPolicyReport = stub
+			return func() { installPolicyReport = original }
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			kubeconfig := writeTestKubeconfig(t)
 
-	client, err := NewClient("", kubeconfig)
-	require.Nil(t, client)
-	require.ErrorIs(t, err, sentinel)
+			sentinel := errors.New(name + " install failed")
+			t.Cleanup(swap(func(*runtime.Scheme) error { return sentinel }))
+
+			client, err := NewClient("", kubeconfig)
+			require.Nil(t, client)
+			require.ErrorIs(t, err, sentinel)
+		})
+	}
 }

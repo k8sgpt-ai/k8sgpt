@@ -14,6 +14,7 @@ limitations under the License.
 package kubernetes
 
 import (
+	policyreport "github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -23,7 +24,10 @@ import (
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
-var installGatewayAPI = gtwapi.Install
+var (
+	installGatewayAPI   = gtwapi.Install
+	installPolicyReport = policyreport.AddToScheme
+)
 
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config
@@ -72,11 +76,15 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
-	// Register the gateway-api types on the shared client scheme once, here,
-	// instead of inside each analyzer's Analyze(). The gateway analyzers run
-	// concurrently against this single client, and registering into the scheme
-	// on the hot path races on the scheme's internal maps (issue #1063).
+	// Register the gateway-api and kyverno policy-report types on the shared
+	// client scheme once, here, instead of inside each analyzer's Analyze().
+	// Analyzers run concurrently against this single client, and registering
+	// into the scheme on the hot path races on the scheme's internal maps
+	// (issue #1063).
 	if err := installGatewayAPI(ctrlClient.Scheme()); err != nil {
+		return nil, err
+	}
+	if err := installPolicyReport(ctrlClient.Scheme()); err != nil {
 		return nil, err
 	}
 
