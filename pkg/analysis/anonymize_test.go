@@ -109,6 +109,131 @@ func TestGetAIResultsCombinesDeclaredAndDerivedSensitive(t *testing.T) {
 	require.Contains(t, a.Results[0].Details, "default")
 }
 
+// Derived identifiers overlap each other: a pod named after its own namespace
+// contains it as a suffix. Masking the namespace first would consume that
+// suffix and leave the "api-" stem of the pod name in the prompt.
+func TestGetAIResultsAnonymizesOverlappingNamespaceAndResource(t *testing.T) {
+	client := &recordingAIClient{}
+	a := Analysis{
+		AIClient: client,
+		Cache:    newDisabledCache(),
+		Results: []common.Result{
+			{
+				Kind: "Pod",
+				Name: "prod/api-prod",
+				Error: []common.Failure{
+					{
+						Text:      "Back-off restarting failed container of pod api-prod in namespace prod",
+						Sensitive: []common.Sensitive{},
+					},
+				},
+			},
+		},
+	}
+
+	require.NoError(t, a.GetAIResults("json", true))
+
+	require.NotContains(t, client.prompt, "api-prod", "pod name leaked")
+	require.NotContains(t, client.prompt, "api-", "pod name was masked in pieces")
+	require.NotContains(t, client.prompt, "prod", "namespace leaked")
+
+	require.Contains(t, a.Results[0].Details, "pod api-prod")
+	require.Contains(t, a.Results[0].Details, "namespace prod")
+}
+
+// A declared value can contain a derived one just as well: an analyzer points
+// at another resource, here a backend service named after the namespace it
+// lives in. Masking the namespace out of it first leaves the "billing" stem in
+// the prompt, since nothing else covers it.
+func TestGetAIResultsAnonymizesDeclaredValueContainingDerivedOne(t *testing.T) {
+	client := &recordingAIClient{}
+	a := Analysis{
+		AIClient: client,
+		Cache:    newDisabledCache(),
+		Results: []common.Result{
+			{
+				Kind: "Ingress",
+				Name: "prod/api",
+				Error: []common.Failure{
+					{
+						Text: "Ingress uses the service billing-prod which does not exist in namespace prod",
+						Sensitive: []common.Sensitive{
+							{Unmasked: "billing-prod", Masked: "MASKED-SVC"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	require.NoError(t, a.GetAIResults("json", true))
+
+	require.NotContains(t, client.prompt, "billing-prod", "declared value leaked")
+	require.NotContains(t, client.prompt, "billing", "declared value was masked in pieces")
+	require.NotContains(t, client.prompt, "prod", "derived namespace leaked")
+
+	require.Contains(t, a.Results[0].Details, "service billing-prod")
+	require.Contains(t, a.Results[0].Details, "namespace prod")
+}
+
+// The two ways overlapping values used to go wrong, at the level of the
+// replacement itself: the shorter value eating the tail of the longer one and
+// leaving its stem in the prompt, or eating its head and splitting one
+// identifier across two masks.
+func TestMaskTextReplacesCompleteLongestMatch(t *testing.T) {
+	for name, tc := range map[string]struct {
+		pod      string
+		text     string
+		expected string
+	}{
+		"shorter value is a suffix": {
+			"api-prod",
+			"pod api-prod in namespace prod",
+			"pod POD in namespace NS",
+		},
+		"shorter value is a prefix": {
+			"prod-api",
+			"pod prod-api in namespace prod",
+			"pod POD in namespace NS",
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			mapping := sensitiveMapping(
+				// Declared first, and deliberately the shorter value, so the
+				// order the pairs arrive in cannot be what makes this pass.
+				[]common.Sensitive{{Unmasked: "prod", Masked: "NS"}},
+				[]common.Sensitive{{Unmasked: tc.pod, Masked: "POD"}},
+			)
+
+			require.Equal(t, tc.expected, maskText(tc.text, mapping))
+			require.Equal(t, tc.text, unmaskText(maskText(tc.text, mapping), mapping))
+		})
+	}
+}
+
+// The mapping is what makes the overlapping cases above resolve: one entry per
+// unmasked value, longest first.
+func TestSensitiveMapping(t *testing.T) {
+	declared := []common.Sensitive{
+		{Unmasked: "checkout-prod", Masked: "DECLARED"},
+		{Unmasked: "", Masked: "EMPTY-VALUE"},
+		{Unmasked: "no-mask", Masked: ""},
+	}
+	derived := []common.Sensitive{
+		{Unmasked: "prod", Masked: "DERIVED-NS"},
+		// Already declared above: the analyzer's own mask must win, and the
+		// value must not appear twice.
+		{Unmasked: "checkout-prod", Masked: "DERIVED-DUPLICATE"},
+	}
+
+	mapping := sensitiveMapping(declared, derived)
+
+	require.Equal(t, []common.Sensitive{
+		{Unmasked: "checkout-prod", Masked: "DECLARED"},
+		{Unmasked: "prod", Masked: "DERIVED-NS"},
+	}, mapping)
+}
+
 // A cluster-scoped result has a bare name with no "/" separator, and a name
 // with a leading separator must not produce an empty mask: masking the empty
 // string matches everywhere and would shred the text in both directions.

@@ -20,6 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -537,27 +539,93 @@ func resourceSensitive(name string) []common.Sensitive {
 	return sensitive
 }
 
-func maskText(text string, sets ...[]common.Sensitive) string {
+// sensitiveMapping merges the pairs the analyzers declared with the ones
+// derived from the result's identity into a single deduplicated set, ordered
+// longest unmasked value first.
+//
+// The values overlap. A result named "prod/api-prod" derives both "prod" and
+// "api-prod", and a declared value can contain a derived one the same way.
+// Applying the pairs one at a time in declaration order masks the "prod"
+// suffix inside the pod name first, after which "api-prod" no longer matches
+// and "api-" is left in the prompt. Ordering longest first and replacing in a
+// single pass (see maskText) matches the complete identifier instead.
+//
+// Deduplicating on the unmasked value also keeps one identifier from having
+// two different masks, which would only be reversed by whichever pair the
+// unmasking happened to reach first.
+func sensitiveMapping(sets ...[]common.Sensitive) []common.Sensitive {
+	seen := make(map[string]bool)
+	var mapping []common.Sensitive
 	for _, set := range sets {
 		for _, s := range set {
-			text = util.ReplaceIfMatch(text, s.Unmasked, s.Masked)
-		}
-	}
-	return text
-}
-
-func unmaskText(text string, sets ...[]common.Sensitive) string {
-	for _, set := range sets {
-		for _, s := range set {
-			// strings.ReplaceAll with an empty needle inserts the replacement
-			// between every character.
-			if s.Masked == "" {
+			// An empty value matches at every position and would shred the
+			// text in either direction.
+			if s.Unmasked == "" || s.Masked == "" || seen[s.Unmasked] {
 				continue
 			}
-			text = strings.ReplaceAll(text, s.Masked, s.Unmasked)
+			seen[s.Unmasked] = true
+			mapping = append(mapping, s)
 		}
 	}
-	return text
+	sort.SliceStable(mapping, func(i, j int) bool {
+		return len(mapping[i].Unmasked) > len(mapping[j].Unmasked)
+	})
+	return mapping
+}
+
+// replaceLongestFirst rewrites every needle in one left-to-right pass, so a
+// replacement it just wrote is never itself rewritten by a later pair.
+//
+// Go's regexp prefers the earliest alternative that matches at a position, so
+// listing the needles longest first is what makes a complete identifier win
+// over a shorter one nested in it. The needles are literal values, not
+// patterns, hence QuoteMeta: node names are routinely FQDNs whose "." would
+// otherwise match any character, and masks are base64 that can contain "+"
+// and "/".
+func replaceLongestFirst(text string, needles []string, replacement map[string]string, suffix string) string {
+	if len(needles) == 0 {
+		return text
+	}
+	alternatives := make([]string, 0, len(needles))
+	for _, needle := range needles {
+		alternatives = append(alternatives, regexp.QuoteMeta(needle))
+	}
+	re := regexp.MustCompile(`(?:` + strings.Join(alternatives, "|") + `)` + suffix)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		return replacement[match]
+	})
+}
+
+func maskText(text string, mapping []common.Sensitive) string {
+	needles := make([]string, 0, len(mapping))
+	masked := make(map[string]string, len(mapping))
+	for _, s := range mapping {
+		needles = append(needles, s.Unmasked)
+		masked[s.Unmasked] = s.Masked
+	}
+	// The trailing boundary preserves the behaviour of util.ReplaceIfMatch: a
+	// value is redacted where it ends a word, not in the middle of a longer
+	// identifier that merely starts with it.
+	return replaceLongestFirst(text, needles, masked, `\b`)
+}
+
+func unmaskText(text string, mapping []common.Sensitive) string {
+	ordered := make([]common.Sensitive, len(mapping))
+	copy(ordered, mapping)
+	// Longest first again, this time on the masks, since an analyzer is free
+	// to declare a mask that contains another one.
+	sort.SliceStable(ordered, func(i, j int) bool {
+		return len(ordered[i].Masked) > len(ordered[j].Masked)
+	})
+
+	needles := make([]string, 0, len(ordered))
+	unmasked := make(map[string]string, len(ordered))
+	for _, s := range ordered {
+		needles = append(needles, s.Masked)
+		unmasked[s.Masked] = s.Unmasked
+	}
+	// No boundary on the way back: base64 masks can end in "=".
+	return replaceLongestFirst(text, needles, unmasked, "")
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
@@ -580,10 +648,16 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 
 		// Analyzers only mask what they explicitly declare in Failure.Sensitive,
 		// and most declare nothing for event-derived failures, so mask the
-		// resource's own identity as well. See resourceSensitive.
-		var identity []common.Sensitive
+		// resource's own identity as well. See resourceSensitive. One mapping
+		// covers the whole result in both directions, so overlapping values
+		// resolve the same way going out and coming back.
+		var mapping []common.Sensitive
 		if anonymize {
-			identity = resourceSensitive(analysis.Name)
+			sets := make([][]common.Sensitive, 0, len(analysis.Error)+1)
+			for _, failure := range analysis.Error {
+				sets = append(sets, failure.Sensitive)
+			}
+			mapping = sensitiveMapping(append(sets, resourceSensitive(analysis.Name))...)
 		}
 
 		if bar != nil && verbose {
@@ -592,7 +666,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 
 		for _, failure := range analysis.Error {
 			if anonymize {
-				failure.Text = maskText(failure.Text, identity, failure.Sensitive)
+				failure.Text = maskText(failure.Text, mapping)
 			}
 			texts = append(texts, failure.Text)
 		}
@@ -619,10 +693,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		}
 
 		if anonymize {
-			for _, failure := range analysis.Error {
-				result = unmaskText(result, failure.Sensitive)
-			}
-			result = unmaskText(result, identity)
+			result = unmaskText(result, mapping)
 		}
 
 		analysis.Details = result
