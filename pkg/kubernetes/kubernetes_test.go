@@ -19,13 +19,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	policyreport "github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/stretchr/testify/require"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/version"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
@@ -58,6 +62,10 @@ func writeTestKubeconfig(t *testing.T) string {
 // TestNewClientRegistersSchemes checks that the CRD types the analyzers need are
 // on the shared scheme by the time NewClient returns. Registering them lazily
 // from inside a concurrently-running Analyze() is what caused issue #1063.
+//
+// The built-in types are covered too: the client no longer uses
+// controller-runtime's package-global default scheme, so nothing else puts
+// them there.
 func TestNewClientRegistersSchemes(t *testing.T) {
 	client, err := NewClient("", writeTestKubeconfig(t))
 	require.NoError(t, err)
@@ -66,6 +74,14 @@ func TestNewClientRegistersSchemes(t *testing.T) {
 		obj runtime.Object
 		gvk schema.GroupVersionKind
 	}{
+		{
+			obj: &corev1.Pod{},
+			gvk: corev1.SchemeGroupVersion.WithKind("Pod"),
+		},
+		{
+			obj: &appsv1.Deployment{},
+			gvk: appsv1.SchemeGroupVersion.WithKind("Deployment"),
+		},
 		{
 			obj: &gtwapi.Gateway{},
 			gvk: schema.GroupVersionKind{
@@ -91,8 +107,56 @@ func TestNewClientRegistersSchemes(t *testing.T) {
 	}
 }
 
+// TestNewClientDoesNotShareSchemeState is the other half of issue #1063.
+// Moving registration out of Analyze() is not enough on its own: ctrl.New falls
+// back to controller-runtime's package-global scheme when Options.Scheme is
+// nil, so installing the CRD types from NewClient made client construction a
+// writer of the very maps a running analysis reads through
+// Scheme().ObjectKinds() on every List call. Building a fresh client while an
+// existing one is in use crashed with "concurrent map read and map write".
+func TestNewClientDoesNotShareSchemeState(t *testing.T) {
+	kubeconfig := writeTestKubeconfig(t)
+
+	// A client already built and mid-analysis while more are constructed.
+	inUse, err := NewClient("", kubeconfig)
+	require.NoError(t, err)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			if _, err := NewClient("", kubeconfig); err != nil {
+				t.Errorf("NewClient returned an unexpected error: %v", err)
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			// The scheme lookup client.List performs before every request.
+			if _, _, err := inUse.CtrlClient.Scheme().ObjectKinds(&policyreport.PolicyReport{}); err != nil {
+				t.Errorf("ObjectKinds returned an unexpected error: %v", err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	// Each client owns its scheme, so one cannot be written from under another.
+	other, err := NewClient("", kubeconfig)
+	require.NoError(t, err)
+	require.NotSame(t, inUse.CtrlClient.Scheme(), other.CtrlClient.Scheme())
+	require.NotSame(t, clientgoscheme.Scheme, inUse.CtrlClient.Scheme(),
+		"client is still using the controller-runtime package-global scheme")
+}
+
 func TestNewClientReturnsSchemeInstallError(t *testing.T) {
 	for name, swap := range map[string]func(func(*runtime.Scheme) error) func(){
+		"client-go": func(stub func(*runtime.Scheme) error) func() {
+			original := installClientGo
+			installClientGo = stub
+			return func() { installClientGo = original }
+		},
 		"gateway API": func(stub func(*runtime.Scheme) error) func() {
 			original := installGatewayAPI
 			installGatewayAPI = stub
