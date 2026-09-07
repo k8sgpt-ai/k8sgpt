@@ -27,8 +27,13 @@ import (
 // analyzers and so run in parallel goroutines against one shared client. Both
 // used to call v1alpha2.AddToScheme() from inside Analyze(), which writes the
 // scheme's unguarded maps and crashed with "fatal error: concurrent map
-// writes". The types are now registered once when the client is built. Run with
-// -race to catch a regression.
+// writes". The types are now registered once when the client is built.
+//
+// This covers the analyzer side only, against a client that is already built.
+// The other side — building a client while an existing one is being analyzed —
+// is covered by TestNewClientDoesNotShareSchemeState in pkg/kubernetes, where
+// NewClient lives. Neither needs -race: Go's map implementation traps
+// concurrent access on its own, so both fail under a plain `go test`.
 func TestKyvernoAnalyzersConcurrentScheme(t *testing.T) {
 	// The scheme is populated once, up front, the same way NewClient does it
 	// when the real client is constructed.
