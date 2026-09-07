@@ -6,7 +6,7 @@ toolchain go1.26.5
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/kedacore/keda/v2 v2.17.3
+	github.com/kedacore/keda/v2 v2.20.0
 	github.com/magiconair/properties v1.8.9
 	github.com/mittwald/go-helm-client v0.12.14
 	github.com/ollama/ollama v0.17.1
