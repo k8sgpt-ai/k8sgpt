@@ -159,9 +159,7 @@ func analyzePersistentVolumes(a common.Analyzer) ([]common.Result, error) {
 func analyzePersistentVolumeClaims(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	pvcs, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	pvcs, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

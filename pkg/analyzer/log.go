@@ -21,7 +21,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -41,7 +40,7 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

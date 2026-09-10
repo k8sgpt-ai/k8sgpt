@@ -19,7 +19,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -41,7 +40,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().PolicyV1().PodDisruptionBudgets(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().PolicyV1().PodDisruptionBudgets(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
