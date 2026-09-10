@@ -12,7 +12,6 @@ import (
 )
 
 func TestOllamaGetCompletionMissingModel(t *testing.T) {
-	// Create a mock server that returns an empty model list
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/tags" {
 			w.WriteHeader(http.StatusOK)
@@ -23,10 +22,8 @@ func TestOllamaGetCompletionMissingModel(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// Ensure the auto-pull env var is explicitly not set for this test
 	os.Unsetenv("K8SGPT_OLLAMA_AUTO_PULL")
 
-	// Initialize the OllamaClient using the mock server
 	client := &OllamaClient{}
 	config := &mockIAIConfig{
 		baseURL:     server.URL,
@@ -38,16 +35,87 @@ func TestOllamaGetCompletionMissingModel(t *testing.T) {
 	err := client.Configure(config)
 	assert.NoError(t, err)
 
-	// Attempt to get completion, which should fail due to the missing model
 	_, err = client.GetCompletion(context.Background(), "Hello")
 
-	// Verify that it gracefully returns an error without hanging (no TTY required)
 	assert.Error(t, err)
 	expectedErr := fmt.Sprintf("model '%s' is required but not installed; set K8SGPT_OLLAMA_AUTO_PULL=true to download automatically", config.model)
 	assert.Contains(t, err.Error(), expectedErr)
 }
 
-// mockIAIConfig is a simple mock for IAIConfig used in tests
+func TestOllamaGetCompletionAutoPull(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/tags" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"models": []}`))
+			return
+		}
+		if r.URL.Path == "/api/pull" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"status": "success", "total": 100, "completed": 50}` + "\n" + `{"status": "success", "total": 100, "completed": 100}` + "\n"))
+			return
+		}
+		if r.URL.Path == "/api/generate" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"response": "Here is a response", "done": true}` + "\n"))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	os.Setenv("K8SGPT_OLLAMA_AUTO_PULL", "true")
+	defer os.Unsetenv("K8SGPT_OLLAMA_AUTO_PULL")
+
+	client := &OllamaClient{}
+	config := &mockIAIConfig{
+		baseURL:     server.URL,
+		model:       "missing-model",
+		temperature: 0.7,
+		topP:        1.0,
+	}
+
+	err := client.Configure(config)
+	assert.NoError(t, err)
+
+	resp, err := client.GetCompletion(context.Background(), "Hello")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Here is a response", resp)
+}
+
+func TestOllamaGetCompletionModelExists(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/tags" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"models": [{"name": "existing-model"}]}`))
+			return
+		}
+		if r.URL.Path == "/api/generate" {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"response": "Here is a response for existing model", "done": true}` + "\n"))
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer server.Close()
+
+	client := &OllamaClient{}
+	config := &mockIAIConfig{
+		baseURL:     server.URL,
+		model:       "existing-model",
+		temperature: 0.7,
+		topP:        1.0,
+	}
+
+	err := client.Configure(config)
+	assert.NoError(t, err)
+
+	resp, err := client.GetCompletion(context.Background(), "Hello")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Here is a response for existing model", resp)
+}
+
 type mockIAIConfig struct {
 	baseURL     string
 	model       string
