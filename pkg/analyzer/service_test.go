@@ -402,3 +402,76 @@ func TestServiceAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/Endpoint1", results[0].Name)
 }
+
+func TestServiceAnalyzerIgnoresEventsForOtherKinds(t *testing.T) {
+	clientSet := fake.NewSimpleClientset(
+		&v1.Endpoints{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "api",
+				Namespace: "default",
+			},
+			Subsets: []v1.EndpointSubset{{
+				Addresses: []v1.EndpointAddress{{
+					IP: "10.0.0.1",
+				}},
+			}},
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "pod-warning",
+				Namespace: "default",
+			},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Pod",
+				Name:      "api",
+				Namespace: "default",
+			},
+			Type:    "Warning",
+			Message: "unrelated Pod warning",
+		},
+	)
+
+	results, err := (ServiceAnalyzer{}).Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{Client: clientSet},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
+func TestServiceAnalyzerScopesEventsToEndpointNamespace(t *testing.T) {
+	clientSet := fake.NewSimpleClientset(
+		&v1.Endpoints{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "api",
+				Namespace: "team-a",
+			},
+			Subsets: []v1.EndpointSubset{{
+				Addresses: []v1.EndpointAddress{{
+					IP: "10.0.0.1",
+				}},
+			}},
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "service-warning",
+				Namespace: "team-b",
+			},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Service",
+				Name:      "api",
+				Namespace: "team-b",
+			},
+			Type:    "Warning",
+			Message: "unrelated Service warning",
+		},
+	)
+
+	results, err := (ServiceAnalyzer{}).Analyze(common.Analyzer{
+		Client:  &kubernetes.Client{Client: clientSet},
+		Context: context.Background(),
+	})
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
