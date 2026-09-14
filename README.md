@@ -282,6 +282,7 @@ you will be able to write your own analyzers.
 - [x] InstallPlan
 - [x] Subscription
 - [x] ValidatingAdmissionPolicy
+- [x] ResourceClaim
 
 ## Examples
 
