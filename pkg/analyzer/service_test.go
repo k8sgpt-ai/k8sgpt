@@ -23,7 +23,9 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestServiceAnalyzer(t *testing.T) {
@@ -298,6 +300,155 @@ func TestServiceAnalyzer(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServiceAnalyzer_EventKindFiltering(t *testing.T) {
+	// Create a clientset with reactor to properly emulate API server field selector behavior
+	cs := fake.NewSimpleClientset()
+
+	// Create test objects
+	testEndpoint := &v1.Endpoints{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ollama",
+			Namespace: "k8sgpt",
+		},
+		Subsets: []v1.EndpointSubset{
+			{
+				Addresses: []v1.EndpointAddress{
+					{
+						IP: "10.0.0.1",
+						TargetRef: &v1.ObjectReference{
+							Kind: "Pod",
+							Name: "ollama-pod",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	testService := &v1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ollama",
+			Namespace: "k8sgpt",
+		},
+		Spec: v1.ServiceSpec{
+			Selector: map[string]string{
+				"app": "k8sgpt",
+			},
+		},
+	}
+
+	// Event on the K8sGPT CR (wrong kind - should NOT be attributed to Service)
+	k8sgptCREvent := &v1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "k8sgpt-cr-event",
+			Namespace: "k8sgpt",
+		},
+		InvolvedObject: v1.ObjectReference{
+			Kind:      "K8sGPT",
+			Name:      "ollama",
+			Namespace: "k8sgpt",
+		},
+		Type:    "Warning",
+		Reason:  "AnalysisFailed",
+		Message: "failed to call Analyze RPC: rpc error: code = Unavailable desc = error reading from server: EOF",
+	}
+
+	// Event on the Service itself (correct kind - SHOULD be attributed)
+	serviceEvent := &v1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "service-event",
+			Namespace: "k8sgpt",
+		},
+		InvolvedObject: v1.ObjectReference{
+			Kind:      "Service",
+			Name:      "ollama",
+			Namespace: "k8sgpt",
+		},
+		Type:    "Warning",
+		Reason:  "ServiceIssue",
+		Message: "actual service warning",
+	}
+
+	_, err := cs.CoreV1().Endpoints("k8sgpt").Create(context.Background(), testEndpoint, metav1.CreateOptions{})
+	require.NoError(t, err)
+	_, err = cs.CoreV1().Services("k8sgpt").Create(context.Background(), testService, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	// Capture the field selector sent to the API
+	capturedFieldSelector := ""
+
+	// Add reactor to emulate API server field selector behavior
+	// The fake clientset does NOT filter by field selector, so we must do it manually
+	cs.PrependReactor("list", "events", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		listAction, ok := action.(k8stesting.ListAction)
+		if !ok {
+			return false, nil, nil
+		}
+
+		fieldSel := listAction.GetListRestrictions().Fields
+		capturedFieldSelector = fieldSel.String()
+
+		// Manually filter events based on field selector
+		allEvents := &v1.EventList{}
+		allEvents.Items = append(allEvents.Items, *k8sgptCREvent, *serviceEvent)
+
+		filteredEvents := &v1.EventList{}
+		for _, event := range allEvents.Items {
+			match := true
+
+			// Check involvedObject.kind
+			if kindVal, found := fieldSel.RequiresExactMatch("involvedObject.kind"); found {
+				if event.InvolvedObject.Kind != kindVal {
+					match = false
+				}
+			}
+
+			// Check involvedObject.name
+			if nameVal, found := fieldSel.RequiresExactMatch("involvedObject.name"); found {
+				if event.InvolvedObject.Name != nameVal {
+					match = false
+				}
+			}
+
+			if match {
+				filteredEvents.Items = append(filteredEvents.Items, event)
+			}
+		}
+
+		return true, filteredEvents, nil
+	})
+
+	// Run the analyzer
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: cs,
+		},
+		Context:   context.Background(),
+		Namespace: "k8sgpt",
+	}
+
+	analyzer := ServiceAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+
+	// Verify the field selector includes kind filter
+	require.Contains(t, capturedFieldSelector, "involvedObject.kind=Service",
+		"Field selector should filter by involvedObject.kind=Service")
+	require.Contains(t, capturedFieldSelector, "involvedObject.name=ollama",
+		"Field selector should filter by involvedObject.name")
+
+	// Should have exactly 1 result (Service with 1 failure from the Service event only)
+	require.Len(t, results, 1, "Should have 1 result for the Service")
+	require.Equal(t, "k8sgpt/ollama", results[0].Name)
+
+	// Should have exactly 1 failure (the Service event, not the K8sGPT CR event)
+	require.Len(t, results[0].Error, 1, "Should have 1 failure from the Service event only")
+	require.Contains(t, results[0].Error[0].Text, "actual service warning",
+		"Failure should be from the Service event, not the K8sGPT CR event")
+	require.NotContains(t, results[0].Error[0].Text, "failed to call Analyze RPC",
+		"Should not include the K8sGPT CR event")
 }
 
 func TestServiceAnalyzerLabelSelectorFiltering(t *testing.T) {
