@@ -103,6 +103,9 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	if err != nil {
 		return "", err
 	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned from the AI provider")
+	}
 	return resp.Choices[0].Message.Content, nil
 }
 
