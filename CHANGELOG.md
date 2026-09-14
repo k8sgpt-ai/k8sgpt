@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.37...v0.4.38) (2026-09-01)
+
+
+### Bug Fixes
+
+* correct --with-stat flag description ([#1734](https://github.com/k8sgpt-ai/k8sgpt/issues/1734)) ([ebd79ac](https://github.com/k8sgpt-ai/k8sgpt/commit/ebd79aca39d4d65b0d42c11eec7235e4e87832ff))
+* validate namespace exists before running core analyzers ([#1735](https://github.com/k8sgpt-ai/k8sgpt/issues/1735)) ([c7e91c0](https://github.com/k8sgpt-ai/k8sgpt/commit/c7e91c0dc9d5febe068b61d9b9cf7f0f29dab4f8))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to 37fe631 ([#1744](https://github.com/k8sgpt-ai/k8sgpt/issues/1744)) ([92c0091](https://github.com/k8sgpt-ai/k8sgpt/commit/92c00917f36f89e4343feb0372e59855207d3719))
+* **deps:** update softprops/action-gh-release digest to efb3536 ([#1763](https://github.com/k8sgpt-ai/k8sgpt/issues/1763)) ([7e4e955](https://github.com/k8sgpt-ai/k8sgpt/commit/7e4e955f6e4d0efd9946080ec94e2d3244ebd3b0))
+
 ## [0.4.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.36...v0.4.37) (2026-08-19)
 
 
