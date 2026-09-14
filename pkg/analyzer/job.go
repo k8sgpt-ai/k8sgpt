@@ -21,7 +21,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -43,7 +42,7 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	JobList, err := a.Client.GetClient().BatchV1().Jobs(a.Namespace).List(a.Context, v1.ListOptions{LabelSelector: a.LabelSelector})
+	JobList, err := a.Client.GetClient().BatchV1().Jobs(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

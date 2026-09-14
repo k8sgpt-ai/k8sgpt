@@ -1045,3 +1045,51 @@ func TestHPAAnalyzerScalingLimitedTooManyReplicasReported(t *testing.T) {
 	assert.Equal(t, len(analysisResults[0].Error), 1)
 	assert.Equal(t, analysisResults[0].Error[0].Text, "the desired replica count is more than the maximum replica count")
 }
+
+func TestHPAAnalyzerUnsupportedScaleTargetRefReportedOnce(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					Kind: "unsupported",
+					Name: "foo",
+				},
+			},
+		})
+
+	hpaAnalyzer := HpaAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(analysisResults) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(analysisResults))
+	}
+
+	// an unsupported kind is never looked up, so it must not also be reported
+	// as a target that does not exist
+	failures := analysisResults[0].Error
+	if len(failures) != 1 {
+		var texts []string
+		for _, f := range failures {
+			texts = append(texts, f.Text)
+		}
+		t.Fatalf("expected 1 failure, got %d: %v", len(failures), texts)
+	}
+	if !strings.Contains(failures[0].Text, "which is not an option.") {
+		t.Errorf("unexpected failure text: %s", failures[0].Text)
+	}
+}
