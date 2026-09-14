@@ -94,6 +94,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
 		var podInfo PodInfo
+		supportedKind := true
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
@@ -117,6 +118,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				podInfo = StatefulSetInfo{ss}
 			}
 		default:
+			supportedKind = false
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
 				Sensitive: []common.Sensitive{},
@@ -124,18 +126,22 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		if podInfo == nil {
-			doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
+			// an unsupported kind was never looked up, so it is not a missing
+			// target and the failure for it has already been recorded
+			if supportedKind {
+				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
 
-			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
-				KubernetesDoc: doc,
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: scaleTargetRef.Name,
-						Masked:   util.MaskString(scaleTargetRef.Name),
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: scaleTargetRef.Name,
+							Masked:   util.MaskString(scaleTargetRef.Name),
+						},
 					},
-				},
-			})
+				})
+			}
 		} else {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {
