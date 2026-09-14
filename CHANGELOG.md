@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-14)
+
+
+### Features
+
+* add --resource flag to analyze a single resource ([#1761](https://github.com/k8sgpt-ai/k8sgpt/issues/1761)) ([6863057](https://github.com/k8sgpt-ai/k8sgpt/commit/6863057fa31bc74da396d25c3b527fedf5dde95e))
+* add ValidatingAdmissionPolicy analyzer ([#1765](https://github.com/k8sgpt-ai/k8sgpt/issues/1765)) ([c520d4a](https://github.com/k8sgpt-ai/k8sgpt/commit/c520d4a1c0da6eb88fa0cfc506a5917a031b1813))
+
+
+### Bug Fixes
+
+* anonymise resource names in event-derived failures ([#1778](https://github.com/k8sgpt-ai/k8sgpt/issues/1778)) ([1813838](https://github.com/k8sgpt-ai/k8sgpt/commit/1813838297972137eb5b3219ab7356d309027557))
+* **deps:** update module google.golang.org/grpc to v1.83.1 [security] ([#1772](https://github.com/k8sgpt-ai/k8sgpt/issues/1772)) ([e69dbc7](https://github.com/k8sgpt-ai/k8sgpt/commit/e69dbc79d11a0bbf8a28bff6fbeff5b01ad9cf60))
+* **deps:** update module google.golang.org/grpc to v1.83.2 [security] ([#1780](https://github.com/k8sgpt-ai/k8sgpt/issues/1780)) ([9c515b0](https://github.com/k8sgpt-ai/k8sgpt/commit/9c515b05addb5501c0fbe31ee3230ad07c6e8d47))
+* do not also report an unsupported scaleTargetRef as missing ([#1729](https://github.com/k8sgpt-ai/k8sgpt/issues/1729)) ([48737a8](https://github.com/k8sgpt-ai/k8sgpt/commit/48737a88a7ba4e7e773c8fb9dde964ea31035ebe))
+* filter service events by involved object kind ([#1783](https://github.com/k8sgpt-ai/k8sgpt/issues/1783)) ([7b91b07](https://github.com/k8sgpt-ai/k8sgpt/commit/7b91b078b68edc9a8f66128eb0e6c621e091dbc9))
+* guard against empty completion choices in OpenAIClient ([#1781](https://github.com/k8sgpt-ai/k8sgpt/issues/1781)) ([ddcc509](https://github.com/k8sgpt-ai/k8sgpt/commit/ddcc5094190146b6ea740188bfd3fd0e2e075bf1))
+* report ReplicaFailure regardless of replica count ([#1750](https://github.com/k8sgpt-ai/k8sgpt/issues/1750)) ([40970ea](https://github.com/k8sgpt-ai/k8sgpt/commit/40970ea6a1e447d40061814255be0ba1739a5d6b))
+* resolve ClusterRole references in RoleBindings ([#1755](https://github.com/k8sgpt-ai/k8sgpt/issues/1755)) ([4c31811](https://github.com/k8sgpt-ai/k8sgpt/commit/4c318115210b8614bedc4d093474c42381d683f2))
+
+
+### Other
+
+* **deps:** update actions/checkout action to v7 ([#1661](https://github.com/k8sgpt-ai/k8sgpt/issues/1661)) ([0d32bac](https://github.com/k8sgpt-ai/k8sgpt/commit/0d32bacb846e954a0d946cc2e3c2aaf8e0fe308d))
+* **deps:** update golang docker tag to v1.27 ([#1745](https://github.com/k8sgpt-ai/k8sgpt/issues/1745)) ([731a6c9](https://github.com/k8sgpt-ai/k8sgpt/commit/731a6c90749e8e62b9325e41712c39c0d72510c4))
+
 ## [0.4.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.37...v0.4.38) (2026-09-01)
 
 
