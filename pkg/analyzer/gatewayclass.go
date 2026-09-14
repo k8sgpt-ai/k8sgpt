@@ -16,6 +16,8 @@ package analyzer
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/fields"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +39,13 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	client := a.Client.CtrlClient
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
-	if err := client.List(a.Context, gcList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
+	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
+	// Same push-down as the typed analyzers: the CtrlClient is a direct
+	// (uncached) client, so a field selector is served by the API server.
+	if a.ResourceName != "" {
+		listOpts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName)
+	}
+	if err := client.List(a.Context, gcList, listOpts); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
