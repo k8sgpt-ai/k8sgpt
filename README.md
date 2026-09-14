@@ -281,6 +281,7 @@ you will be able to write your own analyzers.
 - [x] OperatorGroup
 - [x] InstallPlan
 - [x] Subscription
+- [x] ValidatingAdmissionPolicy
 
 ## Examples
 
