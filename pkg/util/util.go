@@ -161,7 +161,16 @@ func MaskString(input string) string {
 }
 
 func ReplaceIfMatch(text string, pattern string, replacement string) string {
-	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, pattern))
+	// An empty pattern compiles to `(\b)`, which matches at every word boundary
+	// and would rewrite the whole text.
+	if pattern == "" {
+		return text
+	}
+	// Callers pass literal values to redact (resource names, node hostnames),
+	// not regexes. Node names are routinely FQDNs, so an unescaped "." would
+	// match any character, and a value containing "+" or "(" would panic
+	// MustCompile.
+	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, regexp.QuoteMeta(pattern)))
 	if re.MatchString(text) {
 		text = re.ReplaceAllString(text, replacement)
 	}
