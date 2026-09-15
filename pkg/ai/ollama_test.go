@@ -22,7 +22,7 @@ func TestOllamaGetCompletionMissingModel(t *testing.T) {
 	}))
 	defer server.Close()
 
-	os.Unsetenv("K8SGPT_OLLAMA_AUTO_PULL")
+	t.Setenv("K8SGPT_OLLAMA_AUTO_PULL", "")
 
 	client := &OllamaClient{}
 	config := &mockIAIConfig{
@@ -63,8 +63,7 @@ func TestOllamaGetCompletionAutoPull(t *testing.T) {
 	}))
 	defer server.Close()
 
-	os.Setenv("K8SGPT_OLLAMA_AUTO_PULL", "true")
-	defer os.Unsetenv("K8SGPT_OLLAMA_AUTO_PULL")
+	t.Setenv("K8SGPT_OLLAMA_AUTO_PULL", "true")
 
 	client := &OllamaClient{}
 	config := &mockIAIConfig{
