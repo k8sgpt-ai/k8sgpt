@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -83,7 +84,12 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// an IngressClass resource (they are recognized by the GKE ingress controller)
 			if !isGKEBuiltInIngressClass(*ingressClassName) {
 				_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
-				if err != nil {
+				// Only report a missing class on an actual NotFound. Any other
+				// error (RBAC forbidden — e.g. a service account without
+				// cluster-scoped ingressclasses access — or a transient API
+				// failure) means the class could not be verified, and reporting
+				// it as non-existent would be a false positive (#1668).
+				if apierrors.IsNotFound(err) {
 					doc := apiDoc.GetApiDocV2("spec.ingressClassName")
 
 					failures = append(failures, common.Failure{
