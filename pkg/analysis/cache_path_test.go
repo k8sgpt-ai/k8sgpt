@@ -10,10 +10,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// cache.New falls back to FileBasedCache when the type is unrecognised, and
+// that implementation writes real files under the user's XDG cache directory.
+// Removing what a test put there keeps a CI runner from accumulating entries
+// between runs, and stops one test's leftovers from being visible to another.
+func cleanupKey(t *testing.T, c cache.ICache, key string) {
+	t.Helper()
+	t.Cleanup(func() { _ = c.Remove(key) })
+}
+
 func seedCache(t *testing.T, c cache.ICache, key, raw string) {
 	t.Helper()
 	require.NoError(t, c.Store(key, base64.StdEncoding.EncodeToString([]byte(raw))))
 	require.True(t, c.Exists(key))
+	cleanupKey(t, c, key)
 }
 
 // Cache-hit empty guard: a cached-but-empty entry must be treated as a miss
@@ -72,6 +82,9 @@ func TestGetAIResult_PromptVersionedKeyInvalidatesStale(t *testing.T) {
 
 	newKey := util.GetCacheKey(aiClient.GetName(), a.Language, newTmpl+inputKey)
 	require.NotEqual(t, staleKey, newKey)
+	// the analysis regenerates and stores under newKey, so that entry needs
+	// removing too, not just the one this test seeded
+	cleanupKey(t, c, newKey)
 
 	out, err := a.getAIResultForSanitizedFailures(texts, newTmpl)
 	require.NoError(t, err)
