@@ -14,9 +14,11 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
@@ -26,8 +28,69 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
+
+func TestFetchLatestEventScopesToObjectIdentity(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(1, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "pod-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Pod",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("pod-uid"),
+			},
+			Reason:        "FailedMount",
+			LastTimestamp: metav1.NewTime(time.Unix(2, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "stale-job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("old-job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(3, 0)),
+		},
+	)
+	kubeClient := &kubernetes.Client{Client: clientset}
+
+	event, err := FetchLatestEvent(context.Background(), kubeClient, v1.ObjectReference{
+		Kind:      "Job",
+		Namespace: "default",
+		Name:      "worker",
+		UID:       types.UID("job-uid"),
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, event)
+	require.Equal(t, "job-event", event.Name)
+	require.Len(t, clientset.Actions(), 1)
+	listAction, ok := clientset.Actions()[0].(interface {
+		GetListRestrictions() k8stesting.ListRestrictions
+	})
+	require.True(t, ok)
+	require.Equal(t,
+		"involvedObject.kind=Job,involvedObject.name=worker,involvedObject.uid=job-uid",
+		listAction.GetListRestrictions().Fields.String(),
+	)
+}
 
 func TestGetParent(t *testing.T) {
 	ownerName := "test-name"
