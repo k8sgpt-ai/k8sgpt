@@ -91,7 +91,12 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				},
 			}
 
-			evt, err := util.FetchLatestEvent(a.Context, a.Client, Job.Namespace, Job.Name)
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
+				Kind:      kind,
+				Namespace: Job.Namespace,
+				Name:      Job.Name,
+				UID:       Job.UID,
+			})
 
 			// Check for Event BackoffLimitExceeded
 			if evt != nil && err == nil && evt.Reason == "BackoffLimitExceeded" && evt.Message != "" {
