@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.39...v0.4.40) (2026-09-17)
+
+
+### Bug Fixes
+
+* scope analyzer events to object identity ([#1790](https://github.com/k8sgpt-ai/k8sgpt/issues/1790)) ([09c5098](https://github.com/k8sgpt-ai/k8sgpt/commit/09c5098b88824aca037380a408d25cfca9638645))
+* scope service events to endpoint namespace ([#1795](https://github.com/k8sgpt-ai/k8sgpt/issues/1795)) ([8cb270e](https://github.com/k8sgpt-ai/k8sgpt/commit/8cb270e0800e9195d0ba4540fab1f458cac15117))
+* send involvedObject filters as a field selector in MCP list-events ([#1792](https://github.com/k8sgpt-ai/k8sgpt/issues/1792)) ([42d6447](https://github.com/k8sgpt-ai/k8sgpt/commit/42d64476eac4f0157e736f708a6c01755158c560))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 303a32d ([#1785](https://github.com/k8sgpt-ai/k8sgpt/issues/1785)) ([10c438c](https://github.com/k8sgpt-ai/k8sgpt/commit/10c438cc68bfba5d9bbad5b407e3510958607aa0))
+
 ## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-14)
 
 
