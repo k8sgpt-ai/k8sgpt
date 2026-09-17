@@ -155,7 +155,7 @@ func TestScaledObjectAnalyzerReportsWarningEvent(t *testing.T) {
 		},
 		&corev1.Event{
 			ObjectMeta:     metav1.ObjectMeta{Name: "example.event", Namespace: "default"},
-			InvolvedObject: corev1.ObjectReference{Name: "example", Namespace: "default"},
+			InvolvedObject: corev1.ObjectReference{Kind: "ScaledObject", Name: "example", Namespace: "default"},
 			LastTimestamp:  metav1.Now(),
 			Type:           "Warning",
 			Message:        "ScaledObject doesn't have correct scaleTargetRef specification",

@@ -111,7 +111,12 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				})
 			}
 
-			evt, err := util.FetchLatestEvent(a.Context, a.Client, so.Namespace, so.Name)
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
+				Kind:      kind,
+				Namespace: so.Namespace,
+				Name:      so.Name,
+				UID:       so.UID,
+			})
 			if err == nil && evt != nil && evt.Type != "Normal" {
 				failures = append(failures, common.Failure{
 					Text: evt.Message,
