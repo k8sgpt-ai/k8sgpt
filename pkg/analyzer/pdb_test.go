@@ -98,7 +98,8 @@ func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 							},
 						},
 					},
-					// Match Labels Empty.
+					// An empty selector selects every pod in the namespace, so a
+					// blocked PDB using one is reported like any other.
 					Spec: policyv1.PodDisruptionBudgetSpec{
 						Selector: &metav1.LabelSelector{},
 					},
@@ -112,8 +113,12 @@ func TestPodDisruptionBudgetAnalyzer(t *testing.T) {
 	pdbAnalyzer := PdbAnalyzer{}
 	results, err := pdbAnalyzer.Analyze(config)
 	require.NoError(t, err)
-	require.Equal(t, 1, len(results))
-	require.Equal(t, "test/PDB3", results[0].Name)
+	names := make([]string, 0, len(results))
+	for _, r := range results {
+		names = append(names, r.Name)
+	}
+	// Results are collected from a map, so assert on the set rather than order.
+	require.ElementsMatch(t, []string{"test/PDB3", "test/PDB4"}, names)
 }
 
 func TestPodDisruptionBudgetAnalyzerLabelSelectorFiltering(t *testing.T) {
@@ -205,4 +210,94 @@ func TestPodDisruptionBudgetAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/PDB1", results[0].Name)
+}
+
+func TestPodDisruptionBudgetAnalyzerNonMatchLabelsSelectors(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "empty-selector",
+						Namespace: "test",
+					},
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "InsufficientPods",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MinAvailable: &intstr.IntOrString{Type: intstr.Int, IntVal: 1},
+						// An empty selector selects every pod in the namespace,
+						// so a blocked PDB here has the widest blast radius.
+						Selector: &metav1.LabelSelector{},
+					},
+				},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "match-expressions",
+						Namespace: "test",
+					},
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "InsufficientPods",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MinAvailable: &intstr.IntOrString{Type: intstr.Int, IntVal: 1},
+						Selector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: metav1.LabelSelectorOpIn,
+									Values:   []string{"web"},
+								},
+							},
+						},
+					},
+				},
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "nil-selector",
+						Namespace: "test",
+					},
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "InsufficientPods",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MinAvailable: &intstr.IntOrString{Type: intstr.Int, IntVal: 1},
+						// A nil selector matches no pods, so it cannot block
+						// an eviction and must not be reported.
+						Selector: nil,
+					},
+				},
+			),
+		},
+		Context:   context.Background(),
+		Namespace: "test",
+	}
+
+	pdbAnalyzer := PdbAnalyzer{}
+	results, err := pdbAnalyzer.Analyze(config)
+	require.NoError(t, err)
+
+	names := make([]string, 0, len(results))
+	for _, r := range results {
+		names = append(names, r.Name)
+	}
+	require.ElementsMatch(t, []string{"test/empty-selector", "test/match-expressions"}, names)
 }
