@@ -375,3 +375,69 @@ func TestPodDisruptionBudgetAnalyzerNonMatchLabelsSelectors(t *testing.T) {
 	}
 	require.ElementsMatch(t, []string{"test/empty-selector", "test/match-expressions"}, names)
 }
+
+func TestPodDisruptionBudgetAnalyzerMatchExpressionOperatorPhrasing(t *testing.T) {
+	pdbFor := func(name string, req metav1.LabelSelectorRequirement) *policyv1.PodDisruptionBudget {
+		return &policyv1.PodDisruptionBudget{
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "test"},
+			Status: policyv1.PodDisruptionBudgetStatus{
+				Conditions: []metav1.Condition{
+					{
+						Type:   "DisruptionAllowed",
+						Status: "False",
+						Reason: "InsufficientPods",
+					},
+				},
+			},
+			Spec: policyv1.PodDisruptionBudgetSpec{
+				MinAvailable: &intstr.IntOrString{Type: intstr.Int, IntVal: 1},
+				Selector: &metav1.LabelSelector{
+					MatchExpressions: []metav1.LabelSelectorRequirement{req},
+				},
+			},
+		}
+	}
+
+	tests := []struct {
+		name     string
+		req      metav1.LabelSelectorRequirement
+		expected string
+	}{
+		{
+			name:     "in",
+			req:      metav1.LabelSelectorRequirement{Key: "app", Operator: metav1.LabelSelectorOpIn, Values: []string{"web"}},
+			expected: "InsufficientPods, expected pdb pod label app in (web)",
+		},
+		{
+			name:     "not in",
+			req:      metav1.LabelSelectorRequirement{Key: "app", Operator: metav1.LabelSelectorOpNotIn, Values: []string{"web"}},
+			expected: "InsufficientPods, expected pdb pod label app not in (web)",
+		},
+		{
+			name:     "exists",
+			req:      metav1.LabelSelectorRequirement{Key: "app", Operator: metav1.LabelSelectorOpExists},
+			expected: "InsufficientPods, expected pdb pod label app exists",
+		},
+		{
+			name:     "does not exist",
+			req:      metav1.LabelSelectorRequirement{Key: "app", Operator: metav1.LabelSelectorOpDoesNotExist},
+			expected: "InsufficientPods, expected pdb pod label app does not exist",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := common.Analyzer{
+				Client:    &kubernetes.Client{Client: fake.NewSimpleClientset(pdbFor("pdb", tt.req))},
+				Context:   context.Background(),
+				Namespace: "test",
+			}
+
+			results, err := PdbAnalyzer{}.Analyze(config)
+			require.NoError(t, err)
+			require.Len(t, results, 1)
+			require.Len(t, results[0].Error, 1)
+			require.Equal(t, tt.expected, results[0].Error[0].Text)
+		})
+	}
+}
