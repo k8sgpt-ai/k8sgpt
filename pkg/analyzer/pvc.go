@@ -46,7 +46,12 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		if pvc.Status.Phase == appsv1.ClaimPending {
 
 			// parse the event log and append details
-			evt, err := util.FetchLatestEvent(a.Context, a.Client, pvc.Namespace, pvc.Name)
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, appsv1.ObjectReference{
+				Kind:      kind,
+				Namespace: pvc.Namespace,
+				Name:      pvc.Name,
+				UID:       pvc.UID,
+			})
 			if err != nil || evt == nil {
 				continue
 			}
