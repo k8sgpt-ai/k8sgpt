@@ -29,7 +29,7 @@ func (DaemonSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	daemonsets, err := a.Client.GetClient().AppsV1().DaemonSets(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	daemonsets, err := a.Client.GetClient().AppsV1().DaemonSets(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

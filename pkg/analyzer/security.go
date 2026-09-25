@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -58,9 +59,7 @@ func (SecurityAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 func analyzeServiceAccounts(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	sas, err := a.Client.GetClient().CoreV1().ServiceAccounts(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	sas, err := a.Client.GetClient().CoreV1().ServiceAccounts(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -106,26 +105,39 @@ func analyzeServiceAccounts(a common.Analyzer) ([]common.Result, error) {
 func analyzeRoleBindings(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	rbs, err := a.Client.GetClient().RbacV1().RoleBindings(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	rbs, err := a.Client.GetClient().RbacV1().RoleBindings(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
 
 	for _, rb := range rbs.Items {
 		var failures []common.Failure
+		var rules []rbacv1.PolicyRule
+		roleKind := rb.RoleRef.Kind
 
 		// Check for wildcards in role references
-		role, err := a.Client.GetClient().RbacV1().Roles(rb.Namespace).Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
-		if err != nil {
+		switch roleKind {
+		case "", "Role":
+			role, err := a.Client.GetClient().RbacV1().Roles(rb.Namespace).Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
+			if err != nil {
+				continue
+			}
+			rules = role.Rules
+			roleKind = "Role"
+		case "ClusterRole":
+			clusterRole, err := a.Client.GetClient().RbacV1().ClusterRoles().Get(a.Context, rb.RoleRef.Name, metav1.GetOptions{})
+			if err != nil {
+				continue
+			}
+			rules = clusterRole.Rules
+		default:
 			continue
 		}
 
-		for _, rule := range role.Rules {
+		for _, rule := range rules {
 			if containsWildcard(rule.Verbs) || containsWildcard(rule.Resources) {
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("RoleBinding %s references Role %s which contains wildcard permissions - this is not recommended for security best practices", rb.Name, role.Name),
+					Text:      fmt.Sprintf("RoleBinding %s references %s %s which contains wildcard permissions - this is not recommended for security best practices", rb.Name, roleKind, rb.RoleRef.Name),
 					Sensitive: []common.Sensitive{},
 				})
 			}
@@ -147,9 +159,7 @@ func analyzeRoleBindings(a common.Analyzer) ([]common.Result, error) {
 func analyzePodSecurityContexts(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	pods, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

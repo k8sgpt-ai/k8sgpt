@@ -18,7 +18,6 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ReplicaSetAnalyzer struct{}
@@ -32,7 +31,7 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().AppsV1().ReplicaSets(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -42,20 +41,19 @@ func (ReplicaSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, rs := range list.Items {
 		var failures []common.Failure
 
-		// Check for empty rs
-		if rs.Status.Replicas == 0 {
-
-			// Check through container status to check for crashes
-			for _, rsStatus := range rs.Status.Conditions {
-				if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
-					failures = append(failures, common.Failure{
-						Text:      rsStatus.Message,
-						Sensitive: []common.Sensitive{},
-					})
-
-				}
+		// ReplicaFailure is reported by the ReplicaSet controller when a Pod
+		// fails to be created, independent of how many Pods already exist.
+		// Evaluate it regardless of the current replica count so a partially
+		// fulfilled ReplicaSet can still surface a failed scale-up.
+		for _, rsStatus := range rs.Status.Conditions {
+			if rsStatus.Type == "ReplicaFailure" && rsStatus.Reason == "FailedCreate" {
+				failures = append(failures, common.Failure{
+					Text:      rsStatus.Message,
+					Sensitive: []common.Sensitive{},
+				})
 			}
 		}
+
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", rs.Namespace, rs.Name)] = common.PreAnalysis{
 				ReplicaSet:     rs,
