@@ -19,7 +19,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	appsv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type PvcAnalyzer struct{}
@@ -33,7 +32,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +46,12 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		if pvc.Status.Phase == appsv1.ClaimPending {
 
 			// parse the event log and append details
-			evt, err := util.FetchLatestEvent(a.Context, a.Client, pvc.Namespace, pvc.Name)
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, appsv1.ObjectReference{
+				Kind:      kind,
+				Namespace: pvc.Namespace,
+				Name:      pvc.Name,
+				UID:       pvc.UID,
+			})
 			if err != nil || evt == nil {
 				continue
 			}

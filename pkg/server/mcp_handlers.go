@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/viper"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 )
 
 const (
@@ -363,24 +364,27 @@ func (s *K8sGptMCPServer) handleListEvents(ctx context.Context, request mcp.Call
 		Limit: req.Limit,
 	}
 
+	// Apply the involved-object filters as a field selector on the API request
+	// itself, rather than filtering the returned page locally. Otherwise a page
+	// of unrelated events consumed by Limit can hide a matching event that the
+	// API would have returned.
+	fieldSet := fields.Set{}
+	if req.InvolvedObjectName != "" {
+		fieldSet["involvedObject.name"] = req.InvolvedObjectName
+	}
+	if req.InvolvedObjectKind != "" {
+		fieldSet["involvedObject.kind"] = req.InvolvedObjectKind
+	}
+	if len(fieldSet) > 0 {
+		listOptions.FieldSelector = fieldSet.AsSelector().String()
+	}
+
 	events, err := client.Client.CoreV1().Events(req.Namespace).List(ctx, listOptions)
 	if err != nil {
 		return mcp.NewToolResultErrorf("Failed to list events: %v", err), nil
 	}
 
-	// Filter events if needed
-	filteredEvents := []corev1.Event{}
-	for _, event := range events.Items {
-		if req.InvolvedObjectName != "" && event.InvolvedObject.Name != req.InvolvedObjectName {
-			continue
-		}
-		if req.InvolvedObjectKind != "" && event.InvolvedObject.Kind != req.InvolvedObjectKind {
-			continue
-		}
-		filteredEvents = append(filteredEvents, event)
-	}
-
-	resultJSON, err := marshalJSON(filteredEvents)
+	resultJSON, err := marshalJSON(events.Items)
 	if err != nil {
 		return mcp.NewToolResultErrorf("Failed to serialize result: %v", err), nil
 	}

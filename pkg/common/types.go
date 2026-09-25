@@ -29,6 +29,7 @@ import (
 	networkv1 "k8s.io/api/networking/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -41,10 +42,24 @@ type Analyzer struct {
 	Context       context.Context
 	Namespace     string
 	LabelSelector string
+	ResourceName  string
 	AIClient      ai.IAI
 	PreAnalysis   map[string]PreAnalysis
 	Results       []Result
 	OpenapiSchema *openapi_v2.Document
+}
+
+// ListOptions builds the list options every analyzer should use when fetching
+// objects. When ResourceName is set it adds a metadata.name field selector, so
+// the API server returns just that object instead of the analyzer filtering a
+// cluster- or namespace-wide result set locally. With ResourceName empty the
+// options are exactly what they were before, so existing behaviour is unchanged.
+func (a *Analyzer) ListOptions() metav1.ListOptions {
+	opts := metav1.ListOptions{LabelSelector: a.LabelSelector}
+	if a.ResourceName != "" {
+		opts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName).String()
+	}
+	return opts
 }
 
 type PreAnalysis struct {
