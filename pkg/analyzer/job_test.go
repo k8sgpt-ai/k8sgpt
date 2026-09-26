@@ -198,6 +198,11 @@ func TestJobAnalyzerEventFailure(t *testing.T) {
 								Name:      "backoff-event",
 								Namespace: "default",
 							},
+							InvolvedObject: corev1.ObjectReference{
+								Kind:      "Job",
+								Name:      "backoff-job",
+								Namespace: "default",
+							},
 							Reason:  "BackoffLimitExceeded",
 							Message: "Job has reached the specified backoff limit",
 						},
