@@ -872,3 +872,46 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Kind, "Kind should default to the analyzer name")
 	require.Len(t, a.Results[0].Error, 1)
 }
+
+func TestRunCustomAnalysisFiltersByAnalyzerName(t *testing.T) {
+	firstHost, firstPort := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{Name: "first", Error: []*schemav1.ErrorDetail{{Text: "first finding"}}},
+	})
+	secondHost, secondPort := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{Name: "second", Error: []*schemav1.ErrorDetail{{Text: "second finding"}}},
+	})
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "first", "connection": map[string]interface{}{"url": firstHost, "port": firstPort}},
+		{"name": "second", "connection": map[string]interface{}{"url": secondHost, "port": secondPort}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	a := &Analysis{MaxConcurrency: 1, Filters: []string{"second"}}
+	matched := a.RunCustomAnalysis()
+
+	require.Equal(t, []string{"second"}, matched)
+	require.Empty(t, a.Errors)
+	require.Len(t, a.Results, 1)
+	require.Equal(t, "second", a.Results[0].Name)
+}
+
+func TestRunCustomAnalysisCoreOnlyFilterStillRunsAllCustomAnalyzers(t *testing.T) {
+	firstHost, firstPort := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{Name: "first", Error: []*schemav1.ErrorDetail{{Text: "first finding"}}},
+	})
+	secondHost, secondPort := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{Name: "second", Error: []*schemav1.ErrorDetail{{Text: "second finding"}}},
+	})
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "first", "connection": map[string]interface{}{"url": firstHost, "port": firstPort}},
+		{"name": "second", "connection": map[string]interface{}{"url": secondHost, "port": secondPort}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	a := &Analysis{MaxConcurrency: 1, Filters: []string{"Pod"}}
+	matched := a.RunCustomAnalysis()
+
+	require.Empty(t, matched)
+	require.Empty(t, a.Errors)
+	require.Len(t, a.Results, 2)
+}

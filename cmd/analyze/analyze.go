@@ -95,15 +95,34 @@ var AnalyzeCmd = &cobra.Command{
 		}
 		defer config.Close()
 
+		matchedCustomFilters := []string(nil)
 		if customAnalysis {
-			config.RunCustomAnalysis()
+			matchedCustomFilters = config.RunCustomAnalysis()
 			if verbose {
 				fmt.Println("Debug: All custom analyzers completed.")
 			}
 		}
-		config.RunAnalysis()
-		if verbose {
-			fmt.Println("Debug: All core analyzers completed.")
+
+		coreFilters := config.Filters
+		if len(matchedCustomFilters) > 0 {
+			customFilterSet := make(map[string]struct{}, len(matchedCustomFilters))
+			for _, filter := range matchedCustomFilters {
+				customFilterSet[filter] = struct{}{}
+			}
+			coreFilters = make([]string, 0, len(config.Filters))
+			for _, filter := range config.Filters {
+				if _, isCustom := customFilterSet[filter]; !isCustom {
+					coreFilters = append(coreFilters, filter)
+				}
+			}
+		}
+
+		if len(matchedCustomFilters) == 0 || len(coreFilters) > 0 {
+			config.Filters = coreFilters
+			config.RunAnalysis()
+			if verbose {
+				fmt.Println("Debug: All core analyzers completed.")
+			}
 		}
 
 		if explain {

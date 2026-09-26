@@ -248,20 +248,36 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 	return len(customAnalyzers) > 0
 }
 
-func (a *Analysis) RunCustomAnalysis() {
+func (a *Analysis) RunCustomAnalysis() []string {
 	// Validate namespace if specified, consistent with built-in filter behavior
 	if a.Namespace != "" && a.Client != nil {
 		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
 		if err != nil {
 			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
-			return
+			return nil
 		}
 	}
 
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
-		return
+		return nil
+	}
+
+	filterSet := make(map[string]struct{}, len(a.Filters))
+	for _, filter := range a.Filters {
+		filterSet[filter] = struct{}{}
+	}
+	selected := make([]custom.CustomAnalyzer, 0, len(customAnalyzers))
+	matchedFilters := make([]string, 0, len(customAnalyzers))
+	for _, customAnalyzer := range customAnalyzers {
+		if _, ok := filterSet[customAnalyzer.Name]; ok {
+			selected = append(selected, customAnalyzer)
+			matchedFilters = append(matchedFilters, customAnalyzer.Name)
+		}
+	}
+	if len(matchedFilters) > 0 {
+		customAnalyzers = selected
 	}
 
 	// Set a reasonable maximum for concurrency to prevent excessive memory allocation
@@ -351,6 +367,7 @@ func (a *Analysis) RunCustomAnalysis() {
 		}(cAnalyzer, &wg, semaphore)
 	}
 	wg.Wait()
+	return matchedFilters
 }
 
 func (a *Analysis) RunAnalysis() {
