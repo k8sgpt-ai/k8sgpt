@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.4.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.39...v0.4.40) (2026-09-26)
+
+
+### Features
+
+* add ResourceClaim analyzer for missing DeviceClasses ([#1768](https://github.com/k8sgpt-ai/k8sgpt/issues/1768)) ([f2dd92e](https://github.com/k8sgpt-ai/k8sgpt/commit/f2dd92e40ace4a6aa0e341b8907d9da312e53a76))
+
+
+### Bug Fixes
+
+* ignore in-progress Deployment replica mismatches ([#1743](https://github.com/k8sgpt-ai/k8sgpt/issues/1743)) ([cbaae54](https://github.com/k8sgpt-ai/k8sgpt/commit/cbaae54ed3890f6728ee4668dbff4f20041493e6))
+* scope analyzer events to object identity ([#1790](https://github.com/k8sgpt-ai/k8sgpt/issues/1790)) ([09c5098](https://github.com/k8sgpt-ai/k8sgpt/commit/09c5098b88824aca037380a408d25cfca9638645))
+* scope NetworkPolicy pod lookup to policy namespace ([#1747](https://github.com/k8sgpt-ai/k8sgpt/issues/1747)) ([432ebaa](https://github.com/k8sgpt-ai/k8sgpt/commit/432ebaa7d4940f1cca8246214bbce39e45ebc089))
+* scope service events to endpoint namespace ([#1795](https://github.com/k8sgpt-ai/k8sgpt/issues/1795)) ([8cb270e](https://github.com/k8sgpt-ai/k8sgpt/commit/8cb270e0800e9195d0ba4540fab1f458cac15117))
+* send involvedObject filters as a field selector in MCP list-events ([#1792](https://github.com/k8sgpt-ai/k8sgpt/issues/1792)) ([42d6447](https://github.com/k8sgpt-ai/k8sgpt/commit/42d64476eac4f0157e736f708a6c01755158c560))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 303a32d ([#1785](https://github.com/k8sgpt-ai/k8sgpt/issues/1785)) ([10c438c](https://github.com/k8sgpt-ai/k8sgpt/commit/10c438cc68bfba5d9bbad5b407e3510958607aa0))
+* **deps:** update docker/build-push-action digest to c3c9e26 ([#1786](https://github.com/k8sgpt-ai/k8sgpt/issues/1786)) ([3d90679](https://github.com/k8sgpt-ai/k8sgpt/commit/3d9067922c8056535d110d7cfa4c0ea5d2d19efd))
+* **deps:** update docker/setup-buildx-action digest to f87e599 ([#1787](https://github.com/k8sgpt-ai/k8sgpt/issues/1787)) ([f7e30d5](https://github.com/k8sgpt-ai/k8sgpt/commit/f7e30d5ac56f22cb59d20b097318496e847e7763))
+* **deps:** update docker/setup-qemu-action digest to 9901266 ([#1771](https://github.com/k8sgpt-ai/k8sgpt/issues/1771)) ([367dc86](https://github.com/k8sgpt-ai/k8sgpt/commit/367dc8619674d6a5f20d7f8789a570b0bd751691))
+* **deps:** update jlumbroso/free-disk-space digest to 36e9a5a ([#1794](https://github.com/k8sgpt-ai/k8sgpt/issues/1794)) ([2cc7031](https://github.com/k8sgpt-ai/k8sgpt/commit/2cc7031a82c7d2a15a236908ab355cf68e4315b4))
+
+
+### Docs
+
+* point CONTRIBUTING.md at CNCF Slack ([#1799](https://github.com/k8sgpt-ai/k8sgpt/issues/1799)) ([b4e7fdc](https://github.com/k8sgpt-ai/k8sgpt/commit/b4e7fdca044419b0a346d1dfe82aabcc38938b8b))
+
 ## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-14)
 
 
