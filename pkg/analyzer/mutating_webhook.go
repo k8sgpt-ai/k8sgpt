@@ -32,7 +32,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 	apiDoc := kubernetes.K8sApiReference{
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
-			Group:   "apps",
+			Group:   "admissionregistration.k8s.io",
 			Version: "v1",
 		},
 		OpenapiSchema: a.OpenapiSchema,
@@ -63,7 +63,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				// If the service is not found, we can't check the pods
 				failures = append(failures, common.Failure{
 					Text:          fmt.Sprintf("Service %s not found as mapped to by Mutating Webhook %s", svc.Name, webhook.Name),
-					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					KubernetesDoc: apiDoc.GetApiDocV2("webhooks.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
@@ -98,7 +98,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			if len(pods.Items) == 0 {
 				failures = append(failures, common.Failure{
 					Text:          fmt.Sprintf("No active pods found within service %s as mapped to by Mutating Webhook %s", svc.Name, webhook.Name),
-					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					KubernetesDoc: apiDoc.GetApiDocV2("webhooks.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
@@ -110,7 +110,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			}
 			for _, pod := range pods.Items {
 				if pod.Status.Phase != "Running" {
-					doc := apiDoc.GetApiDocV2("spec.webhook")
+					doc := apiDoc.GetApiDocV2("webhooks")
 					failures = append(failures, common.Failure{
 						Text: fmt.Sprintf(
 							"Mutating Webhook (%s) is pointing to an inactive receiver pod (%s)",
