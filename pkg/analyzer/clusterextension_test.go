@@ -242,3 +242,37 @@ func TestClusterExtensionAnalyzerParentObject(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "Deployment/extension-owner", results[0].ParentObject)
 }
+
+func TestClusterExtensionAnalyzerNilCatalogSource(t *testing.T) {
+	gvr := schema.GroupVersionResource{
+		Group:    "olm.operatorframework.io",
+		Version:  "v1",
+		Resource: "clusterextensions",
+	}
+
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		runtime.NewScheme(),
+		map[schema.GroupVersionResource]string{gvr: "ClusterExtensionList"},
+		&unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "olm.operatorframework.io/v1",
+				"kind":       "ClusterExtension",
+				"metadata":   map[string]interface{}{"name": "no-catalog-source"},
+				// spec.source carries no catalog, so Spec.Source.Catalog is nil.
+				"spec": map[string]interface{}{
+					"source": map[string]interface{}{"sourceType": "Catalog"},
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client:  &kubernetes.Client{DynamicClient: dynamicClient},
+		Context: context.Background(),
+	}
+
+	require.NotPanics(t, func() {
+		_, _ = ClusterExtensionAnalyzer{}.Analyze(config)
+	})
+}

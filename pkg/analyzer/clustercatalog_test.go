@@ -256,3 +256,76 @@ func TestClusterCatalogAnalyzerParentObject(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "Deployment/catalog-owner", results[0].ParentObject)
 }
+
+func TestClusterCatalogAnalyzerNilImageSource(t *testing.T) {
+	gvr := schema.GroupVersionResource{
+		Group:    "olm.operatorframework.io",
+		Version:  "v1",
+		Resource: "clustercatalogs",
+	}
+
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		runtime.NewScheme(),
+		map[schema.GroupVersionResource]string{gvr: "ClusterCatalogList"},
+		&unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "olm.operatorframework.io/v1",
+				"kind":       "ClusterCatalog",
+				"metadata":   map[string]interface{}{"name": "no-image-source"},
+				// spec.source carries no image, so Spec.Source.Image is nil.
+				"spec": map[string]interface{}{
+					"source": map[string]interface{}{"type": "Unknown"},
+				},
+				"status": map[string]interface{}{},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client:  &kubernetes.Client{DynamicClient: dynamicClient},
+		Context: context.Background(),
+	}
+
+	require.NotPanics(t, func() {
+		_, _ = ClusterCatalogAnalyzer{}.Analyze(config)
+	})
+}
+
+func TestClusterCatalogAnalyzerNilResolvedSourceImage(t *testing.T) {
+	gvr := schema.GroupVersionResource{
+		Group:    "olm.operatorframework.io",
+		Version:  "v1",
+		Resource: "clustercatalogs",
+	}
+
+	dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		runtime.NewScheme(),
+		map[schema.GroupVersionResource]string{gvr: "ClusterCatalogList"},
+		&unstructured.Unstructured{
+			Object: map[string]interface{}{
+				"apiVersion": "olm.operatorframework.io/v1",
+				"kind":       "ClusterCatalog",
+				"metadata":   map[string]interface{}{"name": "resolved-without-image"},
+				"spec": map[string]interface{}{
+					"source": map[string]interface{}{
+						"type":  "Image",
+						"image": map[string]interface{}{"ref": "example.com/catalog:v1"},
+					},
+				},
+				// resolvedSource is present but carries no image.
+				"status": map[string]interface{}{
+					"resolvedSource": map[string]interface{}{"type": "Image"},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client:  &kubernetes.Client{DynamicClient: dynamicClient},
+		Context: context.Background(),
+	}
+
+	require.NotPanics(t, func() {
+		_, _ = ClusterCatalogAnalyzer{}.Analyze(config)
+	})
+}
