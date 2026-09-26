@@ -30,6 +30,15 @@ func NewClient(c Connection) (*Client, error) {
 	}, nil
 }
 
+// Close releases the underlying gRPC connection. Callers must invoke it once they are done with
+// the client; the connection is not reclaimed when the Client goes out of scope.
+func (cli *Client) Close() error {
+	if cli == nil || cli.c == nil {
+		return nil
+	}
+	return cli.c.Close()
+}
+
 func (cli *Client) Run() (common.Result, error) {
 	var result common.Result
 	req := &schemav1.RunRequest{}

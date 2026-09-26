@@ -300,6 +300,13 @@ func (a *Analysis) RunCustomAnalysis() {
 				mutex.Unlock()
 				return
 			}
+			defer func() {
+				if cerr := canClient.Close(); cerr != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("Client close error for %s analyzer", cAnalyzer.Name))
+					mutex.Unlock()
+				}
+			}()
 			if verbose {
 				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
 			}
