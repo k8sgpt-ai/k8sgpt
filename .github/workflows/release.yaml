@@ -6,6 +6,11 @@ on:
       - main
       - '[0-9]+.[0-9]+.x'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to backfill'
+        required: true
+        type: string
 
 defaults:
   run:
@@ -13,6 +18,7 @@ defaults:
 
 jobs:
   release-please:
+    if: "${{ github.event_name != 'workflow_dispatch' || inputs.release_tag == '' }}"
     permissions:
       contents: write  # for google-github-actions/release-please-action to create release commit
       pull-requests: write  # for google-github-actions/release-please-action to create release PR
@@ -24,20 +30,82 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-     
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
         with:
-          command: manifest
           token: ${{secrets.GITHUB_TOKEN}}
-          default-branch: main
+
+  release-target:
+    needs: release-please
+    if: "${{ always() && (github.event_name == 'workflow_dispatch' || needs.release-please.outputs.releases_created == 'true' || startsWith(github.event.head_commit.message, 'chore(main): release')) }}"
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      backfill: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve release tag
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+          git fetch --force origin main:refs/remotes/origin/main
+          if [ -n "$REQUESTED_TAG" ]; then
+            if [[ ! "$REQUESTED_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid release tag" >&2
+              exit 1
+            fi
+            if ! git show-ref --verify --quiet "refs/tags/$REQUESTED_TAG"; then
+              echo "Release tag not found" >&2
+              exit 1
+            fi
+            tag_commit="$(git rev-parse "$REQUESTED_TAG^{commit}")"
+            if ! git merge-base --is-ancestor "$tag_commit" refs/remotes/origin/main; then
+              echo "Release tag is not on main" >&2
+              exit 1
+            fi
+            if ! gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${REQUESTED_TAG}" >/dev/null; then
+              echo "GitHub release not found" >&2
+              exit 1
+            fi
+            tag="$REQUESTED_TAG"
+          else
+            git fetch --force --tags origin
+            if [ -n "$RELEASE_TAG" ]; then
+              if ! git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
+                echo "Release tag not found" >&2
+                exit 1
+              fi
+              tag="$RELEASE_TAG"
+            else
+              tags="$(git tag --points-at "$GITHUB_SHA" --sort=-version:refname)"
+              tag="${tags%%$'\n'*}"
+            fi
+          fi
+          test -n "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
   goreleaser:
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: ${{ needs.release-target.outputs.tag != '' }}
     permissions:
       contents: write
     needs:
-      - release-please
+      - release-target
     runs-on: ubuntu-latest
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -57,7 +125,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          ref: ${{ needs.release-target.outputs.tag }}
           fetch-depth: 0
+      - name: Use current GoReleaser configuration for backfill
+        if: ${{ needs.release-target.outputs.backfill == 'true' }}
+        run: |
+          set -euo pipefail
+          git fetch --force origin main:refs/remotes/origin/main
+          git show origin/main:.goreleaser.yaml > .goreleaser.yaml
+          if grep -q '^release:' .goreleaser.yaml; then
+            echo "unexpected release section in GoReleaser configuration" >&2
+            exit 1
+          fi
+          printf '\nrelease:\n  replace_existing_artifacts: true\n' >> .goreleaser.yaml
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
@@ -70,30 +150,30 @@ jobs:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --clean ${{ needs.release-target.outputs.backfill == 'true' && '--skip=announce,homebrew,before' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.K8SGPT_BOT_SECRET }}
-          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
 #      - name: Update new version in krew-index
 #        uses: rajatjindal/krew-release-bot@3d9faef30a82761d610544f62afddca00993eef9 # v0.0.47
 
   build-container:
-    if: needs.release-please.outputs.releases_created == 'true'
+    if: ${{ needs.release-target.outputs.tag != '' && needs.release-target.outputs.backfill != 'true' }}
     needs:
-      - release-please
+      - release-target
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
       id-token: write
     env:
-      IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-please.outputs.tag_name }}
+      IMAGE_TAG: ghcr.io/k8sgpt-ai/k8sgpt:${{ needs.release-target.outputs.tag }}
       IMAGE_NAME: k8sgpt
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           submodules: recursive
+          ref: ${{ needs.release-target.outputs.tag }}
 
       - name: Set up Docker Buildx
         id: buildx
@@ -107,7 +187,7 @@ jobs:
           password: ${{ secrets.K8SGPT_BOT_SECRET }}
 
       - name: Build Docker Image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           file: ./container/Dockerfile
@@ -130,5 +210,5 @@ jobs:
       - name: Attach SBOM to release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
-          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          tag_name: ${{ needs.release-target.outputs.tag }}
           files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
