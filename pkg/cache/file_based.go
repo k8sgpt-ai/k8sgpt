@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -13,6 +14,27 @@ var _ (ICache) = (*FileBasedCache)(nil)
 
 type FileBasedCache struct {
 	noCache bool
+}
+
+// cachePath resolves key to a path inside the k8sgpt cache directory,
+// rejecting keys (e.g. containing "..") that would otherwise let a caller
+// escape that directory via path traversal.
+func cachePath(key string) (string, error) {
+	baseDir, err := xdg.CacheFile("k8sgpt")
+	if err != nil {
+		return "", err
+	}
+
+	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	if err != nil {
+		return "", err
+	}
+
+	if path != baseDir && !strings.HasPrefix(path, baseDir+string(os.PathSeparator)) {
+		return "", fmt.Errorf("invalid cache key %q: resolves outside the cache directory", key)
+	}
+
+	return path, nil
 }
 
 func (f *FileBasedCache) Configure(cacheInfo CacheProvider) error {
@@ -50,7 +72,7 @@ func (*FileBasedCache) List() ([]CacheObjectDetails, error) {
 }
 
 func (*FileBasedCache) Exists(key string) bool {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "warning: error while testing if cache key exists:", err)
@@ -68,7 +90,7 @@ func (*FileBasedCache) Exists(key string) bool {
 }
 
 func (*FileBasedCache) Load(key string) (string, error) {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return "", err
@@ -84,7 +106,7 @@ func (*FileBasedCache) Load(key string) (string, error) {
 }
 
 func (*FileBasedCache) Remove(key string) error {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return err
@@ -98,7 +120,7 @@ func (*FileBasedCache) Remove(key string) error {
 }
 
 func (*FileBasedCache) Store(key string, data string) error {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return err
