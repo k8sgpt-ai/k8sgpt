@@ -19,7 +19,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -48,7 +47,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
+	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +55,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
-		if deployment.Spec.Replicas != nil && *deployment.Spec.Replicas != deployment.Status.ReadyReplicas {
+		if shouldReportReplicaMismatch(deployment) {
 			if deployment.Status.Replicas > *deployment.Spec.Replicas {
 				doc := apiDoc.GetApiDocV2("spec.replicas")
 
@@ -140,4 +139,36 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 
 	return a.Results, nil
+}
+
+// shouldReportReplicaMismatch ignores stale status and healthy in-progress rollouts.
+func shouldReportReplicaMismatch(deployment appsv1.Deployment) bool {
+	if deployment.Spec.Replicas == nil || *deployment.Spec.Replicas == deployment.Status.ReadyReplicas {
+		return false
+	}
+
+	if deployment.Status.ObservedGeneration < deployment.Generation {
+		return false
+	}
+
+	if hasHealthyProgress(deployment.Status.Conditions) {
+		return false
+	}
+
+	return true
+}
+
+func hasHealthyProgress(conditions []appsv1.DeploymentCondition) bool {
+	progressing := false
+	available := false
+	for _, condition := range conditions {
+		switch condition.Type {
+		case appsv1.DeploymentProgressing:
+			progressing = condition.Status == corev1.ConditionTrue
+		case appsv1.DeploymentAvailable:
+			available = condition.Status == corev1.ConditionTrue
+		}
+	}
+
+	return progressing && available
 }
