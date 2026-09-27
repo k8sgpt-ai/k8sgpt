@@ -22,6 +22,7 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 
 	config, err := analysis.NewAnalysis(
 		i.Backend,
+		"", // actionBackend: not exposed in server mode
 		i.Language,
 		i.Filters,
 		i.Namespace,
