@@ -895,6 +895,20 @@ func TestRunCustomAnalysisFiltersByAnalyzerName(t *testing.T) {
 	require.Equal(t, "second", a.Results[0].Name)
 }
 
+func TestCoreFiltersAfterCustomAllCustomSkipsCore(t *testing.T) {
+	filters := []string{"second"}
+	matched := []string{"second"}
+
+	require.Empty(t, CoreFiltersAfterCustom(filters, matched))
+}
+
+func TestCoreFiltersAfterCustomKeepsCoreFilters(t *testing.T) {
+	filters := []string{"Pod", "second"}
+	matched := []string{"second"}
+
+	require.Equal(t, []string{"Pod"}, CoreFiltersAfterCustom(filters, matched))
+}
+
 func TestRunCustomAnalysisCoreOnlyFilterStillRunsAllCustomAnalyzers(t *testing.T) {
 	firstHost, firstPort := serveFakeAnalyzer(t, &schemav1.RunResponse{
 		Result: &schemav1.Result{Name: "first", Error: []*schemav1.ErrorDetail{{Text: "first finding"}}},

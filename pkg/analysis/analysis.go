@@ -248,6 +248,24 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 	return len(customAnalyzers) > 0
 }
 
+// CoreFiltersAfterCustom removes filters already claimed by custom analyzers.
+func CoreFiltersAfterCustom(filters, matchedCustomFilters []string) []string {
+	if len(matchedCustomFilters) == 0 {
+		return filters
+	}
+	customFilterSet := make(map[string]struct{}, len(matchedCustomFilters))
+	for _, filter := range matchedCustomFilters {
+		customFilterSet[filter] = struct{}{}
+	}
+	coreFilters := make([]string, 0, len(filters))
+	for _, filter := range filters {
+		if _, isCustom := customFilterSet[filter]; !isCustom {
+			coreFilters = append(coreFilters, filter)
+		}
+	}
+	return coreFilters
+}
+
 func (a *Analysis) RunCustomAnalysis() []string {
 	// Validate namespace if specified, consistent with built-in filter behavior
 	if a.Namespace != "" && a.Client != nil {

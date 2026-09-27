@@ -103,19 +103,7 @@ var AnalyzeCmd = &cobra.Command{
 			}
 		}
 
-		coreFilters := config.Filters
-		if len(matchedCustomFilters) > 0 {
-			customFilterSet := make(map[string]struct{}, len(matchedCustomFilters))
-			for _, filter := range matchedCustomFilters {
-				customFilterSet[filter] = struct{}{}
-			}
-			coreFilters = make([]string, 0, len(config.Filters))
-			for _, filter := range config.Filters {
-				if _, isCustom := customFilterSet[filter]; !isCustom {
-					coreFilters = append(coreFilters, filter)
-				}
-			}
-		}
+		coreFilters := analysis.CoreFiltersAfterCustom(config.Filters, matchedCustomFilters)
 
 		if len(matchedCustomFilters) == 0 || len(coreFilters) > 0 {
 			config.Filters = coreFilters
