@@ -19,6 +19,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -50,11 +52,9 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, pdb := range list.Items {
 		var failures []common.Failure
 
-		// Before accessing the Conditions, check if they exist or not.
-		if len(pdb.Status.Conditions) == 0 {
-			continue
-		}
-		if pdb.Status.Conditions[0].Type == "DisruptionAllowed" && pdb.Status.Conditions[0].Status == "False" {
+		// Check the DisruptionAllowed condition
+		cond := apimeta.FindStatusCondition(pdb.Status.Conditions, "DisruptionAllowed")
+		if cond != nil && cond.Status == metav1.ConditionFalse {
 			var doc string
 			if pdb.Spec.MaxUnavailable != nil {
 				doc = apiDoc.GetApiDocV2("spec.maxUnavailable")
@@ -65,7 +65,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if pdb.Spec.Selector != nil && pdb.Spec.Selector.MatchLabels != nil {
 				for k, v := range pdb.Spec.Selector.MatchLabels {
 					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", pdb.Status.Conditions[0].Reason, k, v),
+						Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", cond.Reason, k, v),
 						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
 							{
