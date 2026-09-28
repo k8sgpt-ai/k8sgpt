@@ -16,6 +16,8 @@ package analyzer
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/fields"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -37,13 +39,15 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtwList := &gtwapi.GatewayList{}
 	gc := &gtwapi.GatewayClass{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
-	if err := client.List(a.Context, gtwList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
+	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
+	// Same push-down as the typed analyzers: the CtrlClient is a direct
+	// (uncached) client, so a field selector is served by the API server.
+	if a.ResourceName != "" {
+		listOpts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName)
+	}
+	if err := client.List(a.Context, gtwList, listOpts); err != nil {
 		return nil, err
 	}
 
@@ -72,14 +76,23 @@ func (GatewayAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			})
 		}
 
-		// Check only the current conditions
-		// TODO: maybe check other statuses Listeners, addresses?
-		if gtw.Status.Conditions[0].Status != metav1.ConditionTrue {
+		// Inspect Accepted and Programmed by type. Listener/address status is out of scope.
+		for _, cond := range gtw.Status.Conditions {
+			if cond.Type != string(gtwapi.GatewayConditionAccepted) &&
+				cond.Type != string(gtwapi.GatewayConditionProgrammed) {
+				continue
+			}
+			if cond.Status == metav1.ConditionTrue {
+				continue
+			}
 			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf("Gateway '%s/%s' is not accepted. Message: '%s'.",
+				Text: fmt.Sprintf("Gateway '%s/%s' has condition %s=%s, reason %s: %s",
 					gtwNamespace,
 					gtwName,
-					gtw.Status.Conditions[0].Message,
+					cond.Type,
+					cond.Status,
+					cond.Reason,
+					cond.Message,
 				),
 				Sensitive: []common.Sensitive{
 					{

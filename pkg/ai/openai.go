@@ -95,13 +95,16 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 			},
 		},
 		Temperature:      c.temperature,
-		MaxTokens:        maxToken,
+		MaxCompletionTokens: maxToken,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
 	})
 	if err != nil {
 		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned from the AI provider")
 	}
 	return resp.Choices[0].Message.Content, nil
 }

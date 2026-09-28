@@ -52,12 +52,18 @@ var listCmd = &cobra.Command{
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader(headers)
+		table.Header(headers)
 
 		for _, v := range names {
-			table.Append([]string{v.Name, v.UpdatedAt.String()})
+			if err := table.Append([]string{v.Name, v.UpdatedAt.String()}); err != nil {
+				color.Red("Error: %v", err)
+				os.Exit(1)
+			}
 		}
-		table.Render()
+		if err := table.Render(); err != nil {
+			color.Red("Error: %v", err)
+			os.Exit(1)
+		}
 	},
 }
 

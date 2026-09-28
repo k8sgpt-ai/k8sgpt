@@ -20,10 +20,17 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
+
+// scalingLimitedTooFewReplicas is the reason the HPA controller sets on the
+// ScalingLimited condition when the raw replica calculation is below
+// spec.minReplicas. Kubernetes does not export these reason strings, so the
+// value is mirrored here.
+const scalingLimitedTooFewReplicas = "TooFewReplicas"
 
 type HpaAnalyzer struct{}
 
@@ -34,7 +41,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
 			Group:   "autoscaling",
-			Version: "v1",
+			Version: "v2",
 		},
 		OpenapiSchema: a.OpenapiSchema,
 	}
@@ -43,7 +50,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().AutoscalingV2().HorizontalPodAutoscalers(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().AutoscalingV2().HorizontalPodAutoscalers(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -56,17 +63,38 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		//check the error from status field
 		conditions := hpa.Status.Conditions
 		for _, condition := range conditions {
-			if condition.Status != "True" {
+			// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#appendix-horizontal-pod-autoscaler-status-conditions
+			switch condition.Type {
+			case autoscalingv2.ScalingLimited:
+				if condition.Status != corev1.ConditionTrue {
+					break
+				}
+				// An HPA sitting at its minimum replica count always reports
+				// ScalingLimited=True with reason TooFewReplicas. That is the
+				// replica floor working as designed, not a fault.
+				atMinReplicas := hpa.Spec.MinReplicas != nil &&
+					hpa.Status.DesiredReplicas == *hpa.Spec.MinReplicas
+				if condition.Reason == scalingLimitedTooFewReplicas && atMinReplicas {
+					break
+				}
 				failures = append(failures, common.Failure{
 					Text:      condition.Message,
 					Sensitive: []common.Sensitive{},
 				})
+			default:
+				if condition.Status == corev1.ConditionFalse {
+					failures = append(failures, common.Failure{
+						Text:      condition.Message,
+						Sensitive: []common.Sensitive{},
+					})
+				}
 			}
 		}
 
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
 		var podInfo PodInfo
+		supportedKind := true
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
@@ -90,6 +118,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				podInfo = StatefulSetInfo{ss}
 			}
 		default:
+			supportedKind = false
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("HorizontalPodAutoscaler uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
 				Sensitive: []common.Sensitive{},
@@ -97,18 +126,22 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		if podInfo == nil {
-			doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
+			// an unsupported kind was never looked up, so it is not a missing
+			// target and the failure for it has already been recorded
+			if supportedKind {
+				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
 
-			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
-				KubernetesDoc: doc,
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: scaleTargetRef.Name,
-						Masked:   util.MaskString(scaleTargetRef.Name),
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("HorizontalPodAutoscaler uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: scaleTargetRef.Name,
+							Masked:   util.MaskString(scaleTargetRef.Name),
+						},
 					},
-				},
-			})
+				})
+			}
 		} else {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {

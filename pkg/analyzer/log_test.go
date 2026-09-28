@@ -25,6 +25,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+	clienttesting "k8s.io/client-go/testing"
 )
 
 func TestLogAnalyzer(t *testing.T) {
@@ -170,4 +171,73 @@ func TestLogAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/Pod1/test-container1", results[0].Name)
+}
+
+func TestLogAnalyzerReadsPreviousLogsForRestartedContainers(t *testing.T) {
+	oldPattern := errorPattern
+	errorPattern = regexp.MustCompile(`(fake logs)`)
+	t.Cleanup(func() {
+		errorPattern = oldPattern
+	})
+
+	clientSet := fake.NewSimpleClientset(
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "restarted-pod",
+				Namespace: "default",
+			},
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name: "app",
+					},
+				},
+			},
+			Status: v1.PodStatus{
+				ContainerStatuses: []v1.ContainerStatus{
+					{
+						Name:         "app",
+						RestartCount: 1,
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	logAnalyzer := LogAnalyzer{}
+	results, err := logAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Equal(t, "default/restarted-pod/app", results[0].Name)
+	require.Len(t, results[0].Error, 2)
+	require.Equal(t, "fake logs", results[0].Error[0].Text)
+	require.Equal(t, "previous container logs: fake logs", results[0].Error[1].Text)
+
+	var currentLogRequests int
+	var previousLogRequests int
+	for _, action := range clientSet.Actions() {
+		if !action.Matches("get", "pods") || action.GetSubresource() != "log" {
+			continue
+		}
+		genericAction, ok := action.(clienttesting.GenericAction)
+		require.True(t, ok)
+		logOptions, ok := genericAction.GetValue().(*v1.PodLogOptions)
+		require.True(t, ok)
+		if logOptions.Previous {
+			previousLogRequests++
+		} else {
+			currentLogRequests++
+		}
+	}
+
+	require.Equal(t, 1, currentLogRequests)
+	require.Equal(t, 1, previousLogRequests)
 }

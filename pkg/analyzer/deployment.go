@@ -17,7 +17,8 @@ import (
 	"context"
 	"fmt"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -46,7 +47,7 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), v1.ListOptions{LabelSelector: a.LabelSelector})
+	deployments, err := a.Client.GetClient().AppsV1().Deployments(a.Namespace).List(context.Background(), a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +55,56 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	for _, deployment := range deployments.Items {
 		var failures []common.Failure
-		if *deployment.Spec.Replicas != deployment.Status.Replicas {
-			doc := apiDoc.GetApiDocV2("spec.replicas")
+		if shouldReportReplicaMismatch(deployment) {
+			if deployment.Status.Replicas > *deployment.Spec.Replicas {
+				doc := apiDoc.GetApiDocV2("spec.replicas")
 
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas in spec but %d replicas in status because status field is not updated yet after scaling and %d replicas are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas, deployment.Status.ReadyReplicas),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: deployment.Namespace,
+							Masked:   util.MaskString(deployment.Namespace),
+						},
+						{
+							Unmasked: deployment.Name,
+							Masked:   util.MaskString(deployment.Name),
+						},
+					}})
+
+			} else {
+				doc := apiDoc.GetApiDocV2("spec.replicas")
+
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available with status running", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: deployment.Namespace,
+							Masked:   util.MaskString(deployment.Namespace),
+						},
+						{
+							Unmasked: deployment.Name,
+							Masked:   util.MaskString(deployment.Name),
+						},
+					}})
+			}
+		}
+		for _, cond := range deployment.Status.Conditions {
+			if cond.Type != appsv1.DeploymentProgressing || cond.Status != corev1.ConditionFalse {
+				continue
+			}
+			doc := apiDoc.GetApiDocV2("status.conditions")
 			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("Deployment %s/%s has %d replicas but %d are available", deployment.Namespace, deployment.Name, *deployment.Spec.Replicas, deployment.Status.Replicas),
+				Text: fmt.Sprintf("Deployment %s/%s has condition %s=%s, reason %s: %s",
+					deployment.Namespace,
+					deployment.Name,
+					cond.Type,
+					cond.Status,
+					cond.Reason,
+					cond.Message,
+				),
 				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
@@ -69,7 +115,8 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 						Unmasked: deployment.Name,
 						Masked:   util.MaskString(deployment.Name),
 					},
-				}})
+				},
+			})
 		}
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", deployment.Namespace, deployment.Name)] = common.PreAnalysis{
@@ -92,4 +139,36 @@ func (d DeploymentAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 
 	return a.Results, nil
+}
+
+// shouldReportReplicaMismatch ignores stale status and healthy in-progress rollouts.
+func shouldReportReplicaMismatch(deployment appsv1.Deployment) bool {
+	if deployment.Spec.Replicas == nil || *deployment.Spec.Replicas == deployment.Status.ReadyReplicas {
+		return false
+	}
+
+	if deployment.Status.ObservedGeneration < deployment.Generation {
+		return false
+	}
+
+	if hasHealthyProgress(deployment.Status.Conditions) {
+		return false
+	}
+
+	return true
+}
+
+func hasHealthyProgress(conditions []appsv1.DeploymentCondition) bool {
+	progressing := false
+	available := false
+	for _, condition := range conditions {
+		switch condition.Type {
+		case appsv1.DeploymentProgressing:
+			progressing = condition.Status == corev1.ConditionTrue
+		case appsv1.DeploymentAvailable:
+			available = condition.Status == corev1.ConditionTrue
+		}
+	}
+
+	return progressing && available
 }

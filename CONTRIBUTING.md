@@ -2,7 +2,7 @@
 We're happy that you want to contribute to this project. Please read the sections to make the process as smooth as possible.
 
 ## Requirements
-- Golang `1.20`
+- Golang `1.24+`
 - An OpenAI API key
   * OpenAI API keys can be obtained from [OpenAI](https://platform.openai.com/account/api-keys)
   * You can set the API key for k8sgpt using `./k8sgpt auth key`
@@ -17,7 +17,7 @@ We're happy that you want to contribute to this project. Please read the section
 - We are also happy to help you find something to work on. Just reach out to us.
 
 **Getting in touch with the community**
-* Join our [#k8sgpt slack channel](https://join.slack.com/t/k8sgpt/shared_invite/zt-1rwe5fpzq-VNtJK8DmYbbm~iWL1H34nw)
+* Join the [CNCF Slack](https://slack.cncf.io/) and find us in `#k8sgpt`
 * Introduce yourself on the slack channel or open an issue to let us know that you are interested in contributing
 
 **Discuss issues**

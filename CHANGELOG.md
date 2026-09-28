@@ -1,5 +1,677 @@
 # Changelog
 
+## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-14)
+
+
+### Features
+
+* add --resource flag to analyze a single resource ([#1761](https://github.com/k8sgpt-ai/k8sgpt/issues/1761)) ([6863057](https://github.com/k8sgpt-ai/k8sgpt/commit/6863057fa31bc74da396d25c3b527fedf5dde95e))
+* add ValidatingAdmissionPolicy analyzer ([#1765](https://github.com/k8sgpt-ai/k8sgpt/issues/1765)) ([c520d4a](https://github.com/k8sgpt-ai/k8sgpt/commit/c520d4a1c0da6eb88fa0cfc506a5917a031b1813))
+
+
+### Bug Fixes
+
+* anonymise resource names in event-derived failures ([#1778](https://github.com/k8sgpt-ai/k8sgpt/issues/1778)) ([1813838](https://github.com/k8sgpt-ai/k8sgpt/commit/1813838297972137eb5b3219ab7356d309027557))
+* **deps:** update module google.golang.org/grpc to v1.83.1 [security] ([#1772](https://github.com/k8sgpt-ai/k8sgpt/issues/1772)) ([e69dbc7](https://github.com/k8sgpt-ai/k8sgpt/commit/e69dbc79d11a0bbf8a28bff6fbeff5b01ad9cf60))
+* **deps:** update module google.golang.org/grpc to v1.83.2 [security] ([#1780](https://github.com/k8sgpt-ai/k8sgpt/issues/1780)) ([9c515b0](https://github.com/k8sgpt-ai/k8sgpt/commit/9c515b05addb5501c0fbe31ee3230ad07c6e8d47))
+* do not also report an unsupported scaleTargetRef as missing ([#1729](https://github.com/k8sgpt-ai/k8sgpt/issues/1729)) ([48737a8](https://github.com/k8sgpt-ai/k8sgpt/commit/48737a88a7ba4e7e773c8fb9dde964ea31035ebe))
+* filter service events by involved object kind ([#1783](https://github.com/k8sgpt-ai/k8sgpt/issues/1783)) ([7b91b07](https://github.com/k8sgpt-ai/k8sgpt/commit/7b91b078b68edc9a8f66128eb0e6c621e091dbc9))
+* guard against empty completion choices in OpenAIClient ([#1781](https://github.com/k8sgpt-ai/k8sgpt/issues/1781)) ([ddcc509](https://github.com/k8sgpt-ai/k8sgpt/commit/ddcc5094190146b6ea740188bfd3fd0e2e075bf1))
+* report ReplicaFailure regardless of replica count ([#1750](https://github.com/k8sgpt-ai/k8sgpt/issues/1750)) ([40970ea](https://github.com/k8sgpt-ai/k8sgpt/commit/40970ea6a1e447d40061814255be0ba1739a5d6b))
+* resolve ClusterRole references in RoleBindings ([#1755](https://github.com/k8sgpt-ai/k8sgpt/issues/1755)) ([4c31811](https://github.com/k8sgpt-ai/k8sgpt/commit/4c318115210b8614bedc4d093474c42381d683f2))
+
+
+### Other
+
+* **deps:** update actions/checkout action to v7 ([#1661](https://github.com/k8sgpt-ai/k8sgpt/issues/1661)) ([0d32bac](https://github.com/k8sgpt-ai/k8sgpt/commit/0d32bacb846e954a0d946cc2e3c2aaf8e0fe308d))
+* **deps:** update golang docker tag to v1.27 ([#1745](https://github.com/k8sgpt-ai/k8sgpt/issues/1745)) ([731a6c9](https://github.com/k8sgpt-ai/k8sgpt/commit/731a6c90749e8e62b9325e41712c39c0d72510c4))
+
+## [0.4.38](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.37...v0.4.38) (2026-09-01)
+
+
+### Bug Fixes
+
+* correct --with-stat flag description ([#1734](https://github.com/k8sgpt-ai/k8sgpt/issues/1734)) ([ebd79ac](https://github.com/k8sgpt-ai/k8sgpt/commit/ebd79aca39d4d65b0d42c11eec7235e4e87832ff))
+* validate namespace exists before running core analyzers ([#1735](https://github.com/k8sgpt-ai/k8sgpt/issues/1735)) ([c7e91c0](https://github.com/k8sgpt-ai/k8sgpt/commit/c7e91c0dc9d5febe068b61d9b9cf7f0f29dab4f8))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to 37fe631 ([#1744](https://github.com/k8sgpt-ai/k8sgpt/issues/1744)) ([92c0091](https://github.com/k8sgpt-ai/k8sgpt/commit/92c00917f36f89e4343feb0372e59855207d3719))
+* **deps:** update softprops/action-gh-release digest to efb3536 ([#1763](https://github.com/k8sgpt-ai/k8sgpt/issues/1763)) ([7e4e955](https://github.com/k8sgpt-ai/k8sgpt/commit/7e4e955f6e4d0efd9946080ec94e2d3244ebd3b0))
+
+## [0.4.37](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.36...v0.4.37) (2026-08-19)
+
+
+### Features
+
+* add Amazon Bedrock Mantle (OpenAI-compatible) AI provider ([#1640](https://github.com/k8sgpt-ai/k8sgpt/issues/1640)) ([bdbc3c7](https://github.com/k8sgpt-ai/k8sgpt/commit/bdbc3c7796ad111344da0bf193832ec09459bac0))
+* add LiteLLM backend ([#1719](https://github.com/k8sgpt-ai/k8sgpt/issues/1719)) ([47db90f](https://github.com/k8sgpt-ai/k8sgpt/commit/47db90f4b99f84b1348bf03bcd34b6d155324212))
+
+
+### Bug Fixes
+
+* clamp max-concurrency in custom analysis to avoid deadlock and panic ([#1700](https://github.com/k8sgpt-ai/k8sgpt/issues/1700)) ([6859e9c](https://github.com/k8sgpt-ai/k8sgpt/commit/6859e9c035986b89a1ff2a8fc5e504e8eccfb593))
+* **deps:** update k8s.io/utils digest to cf1189d ([#1688](https://github.com/k8sgpt-ai/k8sgpt/issues/1688)) ([8bda53b](https://github.com/k8sgpt-ai/k8sgpt/commit/8bda53be10743a532005db0e3c0087673900d5ae))
+* **deps:** update module google.golang.org/grpc to v1.82.1 [security] ([#1714](https://github.com/k8sgpt-ai/k8sgpt/issues/1714)) ([1c8a56c](https://github.com/k8sgpt-ai/k8sgpt/commit/1c8a56cf792db34cefa7c840bcacac7a2fcb9cdf))
+* do not panic on an Ingress path with a resource backend ([#1728](https://github.com/k8sgpt-ai/k8sgpt/issues/1728)) ([b4a86de](https://github.com/k8sgpt-ai/k8sgpt/commit/b4a86de490d780d0b5760b8bc01063d88504e0cf))
+* guard against nil backend port in HTTPRoute analyzer ([#1702](https://github.com/k8sgpt-ai/k8sgpt/issues/1702)) ([447f30e](https://github.com/k8sgpt-ai/k8sgpt/commit/447f30ec2126772c4d41e519d50a11d059125775))
+* guard against nil spec.replicas in deployment analyzer ([#1683](https://github.com/k8sgpt-ai/k8sgpt/issues/1683)) ([58ab921](https://github.com/k8sgpt-ai/k8sgpt/commit/58ab921e9183e92fbc8501795c1047aea5c4b700))
+* guard empty API key in Google GenAI client ([#1699](https://github.com/k8sgpt-ai/k8sgpt/issues/1699)) ([6efe5b5](https://github.com/k8sgpt-ai/k8sgpt/commit/6efe5b53cff0419611b5b18ba84f1248ae5066fe))
+* ignore HPA ScalingLimited TooFewReplicas at minReplicas ([#1716](https://github.com/k8sgpt-ai/k8sgpt/issues/1716)) ([63f0663](https://github.com/k8sgpt-ai/k8sgpt/commit/63f06631002831839cdb415e631697a37cb30451))
+* inspect Gateway Accepted and Programmed by type ([#1737](https://github.com/k8sgpt-ai/k8sgpt/issues/1737)) ([3936f70](https://github.com/k8sgpt-ai/k8sgpt/commit/3936f709fc03f1f578870eb1e6d1a6c9f33e49c3))
+* mask real pod name and namespace in statefulset analyzer ([#1703](https://github.com/k8sgpt-ai/k8sgpt/issues/1703)) ([4e7531b](https://github.com/k8sgpt-ai/k8sgpt/commit/4e7531b0398accfdbb4e4e3932b2ed48abf344a1))
+* point release-please extra-files at the real chart path ([#1697](https://github.com/k8sgpt-ai/k8sgpt/issues/1697)) ([133dbe6](https://github.com/k8sgpt-ai/k8sgpt/commit/133dbe6f23d89de7c9c7c0c83fa2ba9ab3729d6a))
+* populate ParentObject in ClusterCatalog and ClusterExtension analyzers ([#1707](https://github.com/k8sgpt-ai/k8sgpt/issues/1707)) ([1b4ef99](https://github.com/k8sgpt-ai/k8sgpt/commit/1b4ef998408f7b030c387cddab3dd8c790d4a796))
+* prevent nil prometheus config dereference on invalid gzipped config ([#1708](https://github.com/k8sgpt-ai/k8sgpt/issues/1708)) ([5347c41](https://github.com/k8sgpt-ai/k8sgpt/commit/5347c41dc28c537b2a546cf38f2ffd9db3698c93))
+* report Deployment ProgressDeadlineExceeded when replica counts still match ([#1740](https://github.com/k8sgpt-ai/k8sgpt/issues/1740)) ([05247a8](https://github.com/k8sgpt-ai/k8sgpt/commit/05247a851ba9292ca57e5070f1d0c4d3986b8d4c))
+* report keda scaledobject failures when no event exists ([#1706](https://github.com/k8sgpt-ai/k8sgpt/issues/1706)) ([c8ae792](https://github.com/k8sgpt-ai/k8sgpt/commit/c8ae7923b68c2bf71cd544e4a441870ca393f349))
+* resolve EKS default kubeconfig path across platforms ([#1686](https://github.com/k8sgpt-ai/k8sgpt/issues/1686)) ([f247b3f](https://github.com/k8sgpt-ai/k8sgpt/commit/f247b3ffb73613fdf76ab761d0594cee718012a9))
+* scan init containers for ConfigMap usage ([#1722](https://github.com/k8sgpt-ai/k8sgpt/issues/1722)) ([81ad200](https://github.com/k8sgpt-ai/k8sgpt/commit/81ad2009bc89e031b5257314e734592e16b09641))
+* scan projected volume sources for ConfigMap usage ([#1741](https://github.com/k8sgpt-ai/k8sgpt/issues/1741)) ([f5000a9](https://github.com/k8sgpt-ai/k8sgpt/commit/f5000a9db0929174b0d3da7ca0fc0c7e358ef9f6))
+* skip empty results from custom analyzers with no findings ([#1724](https://github.com/k8sgpt-ai/k8sgpt/issues/1724)) ([aee4bdc](https://github.com/k8sgpt-ai/k8sgpt/commit/aee4bdcffa8bf27213b49ae9e549bc1d9b036c8f))
+* skip failure report for jobs that completed successfully after retries ([#1725](https://github.com/k8sgpt-ai/k8sgpt/issues/1725)) ([e44878e](https://github.com/k8sgpt-ai/k8sgpt/commit/e44878ea4606a4effb88b13d582112a8b930e38d))
+* use empty default for auth add --model so per-backend fallback runs ([#1701](https://github.com/k8sgpt-ai/k8sgpt/issues/1701)) ([4fbd4bb](https://github.com/k8sgpt-ai/k8sgpt/commit/4fbd4bb60c375a117fa4256ad438fee3d3061ba7))
+
+
+### Other
+
+* **deps:** update actions/checkout digest to fbc6f39 ([#1711](https://github.com/k8sgpt-ai/k8sgpt/issues/1711)) ([3cf4098](https://github.com/k8sgpt-ai/k8sgpt/commit/3cf409884aca02b7da6b7a0cb73d0de4c8b6437b))
+* **deps:** update actions/setup-go action to v7 ([#1709](https://github.com/k8sgpt-ai/k8sgpt/issues/1709)) ([2656e61](https://github.com/k8sgpt-ai/k8sgpt/commit/2656e619d0fc01c00ae5f90cb365e14c011dd2c7))
+* **deps:** update docker/build-push-action digest to 53b7df9 ([#1677](https://github.com/k8sgpt-ai/k8sgpt/issues/1677)) ([9f493b4](https://github.com/k8sgpt-ai/k8sgpt/commit/9f493b427dd8b65eb7f408d47aa3a02fd36a4c6e))
+* **deps:** update docker/login-action digest to dbcb813 ([#1718](https://github.com/k8sgpt-ai/k8sgpt/issues/1718)) ([47350a0](https://github.com/k8sgpt-ai/k8sgpt/commit/47350a0e5267c6f4dfc6fc988303a588c35536c5))
+* **deps:** update golangci/golangci-lint-action action to v9 ([#1692](https://github.com/k8sgpt-ai/k8sgpt/issues/1692)) ([77cf9d9](https://github.com/k8sgpt-ai/k8sgpt/commit/77cf9d97ae54562af28e2fb6bb4df9ffbcd9403d))
+* **deps:** update goreleaser/goreleaser-action action to v7 ([#1694](https://github.com/k8sgpt-ai/k8sgpt/issues/1694)) ([c35c84e](https://github.com/k8sgpt-ai/k8sgpt/commit/c35c84ec6742b278c77319af1888d0943a22406d))
+* **deps:** update softprops/action-gh-release action to v3 ([#1696](https://github.com/k8sgpt-ai/k8sgpt/issues/1696)) ([4b5cacb](https://github.com/k8sgpt-ai/k8sgpt/commit/4b5cacb836b2af0dc09a8ba314fce0c3506280d6))
+
+## [0.4.36](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.35...v0.4.36) (2026-07-10)
+
+
+### Bug Fixes
+
+* correct Vertex AI legacy model ids by removing stray asterisk ([#1684](https://github.com/k8sgpt-ai/k8sgpt/issues/1684)) ([60a9794](https://github.com/k8sgpt-ai/k8sgpt/commit/60a9794363f082c8697acac9075f1bb0dfdd0b09)), closes [#1516](https://github.com/k8sgpt-ai/k8sgpt/issues/1516)
+* **deps:** update k8s.io/utils digest to be93311 ([#1674](https://github.com/k8sgpt-ai/k8sgpt/issues/1674)) ([de01885](https://github.com/k8sgpt-ai/k8sgpt/commit/de01885ceace970126c87f5dabad47931ea0826a))
+* **deps:** update module golang.org/x/net to v0.55.0 [security] ([#1678](https://github.com/k8sgpt-ai/k8sgpt/issues/1678)) ([2e57a6f](https://github.com/k8sgpt-ai/k8sgpt/commit/2e57a6f231f9dd9318afc5ef3edc644d2fb0ac23))
+* guard interplex cache Store and Load against nil grpc conn ([#1682](https://github.com/k8sgpt-ai/k8sgpt/issues/1682)) ([238a97a](https://github.com/k8sgpt-ai/k8sgpt/commit/238a97af1c786ce68402db1f6685bb4eded9a3f1))
+* send temperature or top_p exclusively for Anthropic models ([#1675](https://github.com/k8sgpt-ai/k8sgpt/issues/1675)) ([2cda9d8](https://github.com/k8sgpt-ai/k8sgpt/commit/2cda9d80693543fcfb6dcda963ff6e70c5e209d0))
+
+
+### Other
+
+* **deps:** update docker/login-action action to v4 ([#1662](https://github.com/k8sgpt-ai/k8sgpt/issues/1662)) ([60268ca](https://github.com/k8sgpt-ai/k8sgpt/commit/60268ca5525e45ea11b19b8e43c4503418269f93))
+* **deps:** update docker/metadata-action digest to dc80280 ([#1681](https://github.com/k8sgpt-ai/k8sgpt/issues/1681)) ([53ac3c1](https://github.com/k8sgpt-ai/k8sgpt/commit/53ac3c1de7c6b9ac5914b5e60dbcd3e0b415affc))
+* **deps:** update docker/setup-buildx-action action to v4 ([#1665](https://github.com/k8sgpt-ai/k8sgpt/issues/1665)) ([59ff7a9](https://github.com/k8sgpt-ai/k8sgpt/commit/59ff7a98ede8714ea897e34ac41c9faae020399d))
+* **deps:** update docker/setup-qemu-action action to v4 ([#1666](https://github.com/k8sgpt-ai/k8sgpt/issues/1666)) ([8f6852c](https://github.com/k8sgpt-ai/k8sgpt/commit/8f6852cf17fdc7621d899a33b4942548465fe8a1))
+* **deps:** update golang docker tag to v1.26 ([#1657](https://github.com/k8sgpt-ai/k8sgpt/issues/1657)) ([2229640](https://github.com/k8sgpt-ai/k8sgpt/commit/22296405a5b21de2c0d06ad5a7460d2c52b5b752))
+* **deps:** update googleapis/release-please-action action to v5 ([#1693](https://github.com/k8sgpt-ai/k8sgpt/issues/1693)) ([a2a0180](https://github.com/k8sgpt-ai/k8sgpt/commit/a2a01805ddf8dd28a3da98114b15b8254ed0185a))
+* migrate to Go 1.26 and golangci-lint v2.12.2 ([#1689](https://github.com/k8sgpt-ai/k8sgpt/issues/1689)) ([3353acd](https://github.com/k8sgpt-ai/k8sgpt/commit/3353acdde9c8ae1a75528ebeed641462859e53b7))
+
+## [0.4.35](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.34...v0.4.35) (2026-07-01)
+
+
+### Bug Fixes
+
+* detect SchedulingGated pods ([#1474](https://github.com/k8sgpt-ai/k8sgpt/issues/1474)) ([#1673](https://github.com/k8sgpt-ai/k8sgpt/issues/1673)) ([afdcc55](https://github.com/k8sgpt-ai/k8sgpt/commit/afdcc551a413c87adef79b98877bb8f076e51092))
+* guard against empty conditions in Gateway/GatewayClass analyzers ([#1670](https://github.com/k8sgpt-ai/k8sgpt/issues/1670)) ([716c48a](https://github.com/k8sgpt-ai/k8sgpt/commit/716c48aab916f9134ef8c6b4a8aa0da4ca110d2a))
+* guard against nil TargetRef in Service not-ready endpoints ([#1672](https://github.com/k8sgpt-ai/k8sgpt/issues/1672)) ([315d28d](https://github.com/k8sgpt-ai/k8sgpt/commit/315d28d06e2e8d52e13f0be647b292c280b8050e))
+
+
+### Other
+
+* **deps:** update docker/build-push-action action to v7 ([#1660](https://github.com/k8sgpt-ai/k8sgpt/issues/1660)) ([500d314](https://github.com/k8sgpt-ai/k8sgpt/commit/500d3140f82530239713139b53b2940594dc64a6))
+* **deps:** update docker/build-push-action digest to 10e90e3 ([#1654](https://github.com/k8sgpt-ai/k8sgpt/issues/1654)) ([96523ee](https://github.com/k8sgpt-ai/k8sgpt/commit/96523ee062aa3ab8dde19728b670a4eaa335d329))
+* **deps:** update docker/metadata-action action to v6 ([#1663](https://github.com/k8sgpt-ai/k8sgpt/issues/1663)) ([43227ac](https://github.com/k8sgpt-ai/k8sgpt/commit/43227aca37e917403cee44ae4b510436b3eb7e59))
+* **deps:** update docker/setup-qemu-action digest to c7c5346 ([#1655](https://github.com/k8sgpt-ai/k8sgpt/issues/1655)) ([6ad7585](https://github.com/k8sgpt-ai/k8sgpt/commit/6ad758503b4ba188156d72791891584d9bec984a))
+
+## [0.4.34](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.33...v0.4.34) (2026-06-18)
+
+
+### Features
+
+* add Anthropic API support ([#1652](https://github.com/k8sgpt-ai/k8sgpt/issues/1652)) ([1c4e77a](https://github.com/k8sgpt-ai/k8sgpt/commit/1c4e77a55e05a6bc7ea6a4eb17fd7e81db0d273a))
+
+
+### Bug Fixes
+
+* allow Azure OpenAI API version override ([#1650](https://github.com/k8sgpt-ai/k8sgpt/issues/1650)) ([1b7d1f0](https://github.com/k8sgpt-ai/k8sgpt/commit/1b7d1f06c7208454a05d58afc4321eff822a25ed))
+* **deps:** update k8s.io/utils digest to a95e086 ([#1656](https://github.com/k8sgpt-ai/k8sgpt/issues/1656)) ([8da4716](https://github.com/k8sgpt-ai/k8sgpt/commit/8da4716f26c11ff4f13229672d8bc07c2d8a482c))
+* **deps:** update module github.com/aws/aws-sdk-go-v2/service/bedrockruntime to v1.50.4 [security] ([#1633](https://github.com/k8sgpt-ai/k8sgpt/issues/1633)) ([a81295f](https://github.com/k8sgpt-ai/k8sgpt/commit/a81295f2d3a2923c1ef43bddd86641dade6969b7))
+* **deps:** update module github.com/kedacore/keda/v2 to v2.17.3 [security] ([#1612](https://github.com/k8sgpt-ai/k8sgpt/issues/1612)) ([5a24c5c](https://github.com/k8sgpt-ai/k8sgpt/commit/5a24c5ca943a18f983c978674411449d1f3f901d))
+* **deps:** update module github.com/olekukonko/tablewriter to v1 ([#1502](https://github.com/k8sgpt-ai/k8sgpt/issues/1502)) ([5483339](https://github.com/k8sgpt-ai/k8sgpt/commit/548333971674c63b25820540faedab106e8c1d66))
+
+
+### Other
+
+* **deps:** pin dependencies ([#1630](https://github.com/k8sgpt-ai/k8sgpt/issues/1630)) ([11cb747](https://github.com/k8sgpt-ai/k8sgpt/commit/11cb747538ba8d5f138ad0723dc54375aa67e440))
+* **deps:** replace google-github-actions/release-please-action action with googleapis/release-please-action v4.1.1 ([#1631](https://github.com/k8sgpt-ai/k8sgpt/issues/1631)) ([edfb58b](https://github.com/k8sgpt-ai/k8sgpt/commit/edfb58bd7acadf9a9e3f4176151be676e5313cb9))
+* **deps:** update codecov/codecov-action action to v7 ([#1659](https://github.com/k8sgpt-ai/k8sgpt/issues/1659)) ([7dc2c4f](https://github.com/k8sgpt-ai/k8sgpt/commit/7dc2c4f6c52cdbd42e4ecfb934c0800f3140c781))
+* **deps:** update codecov/codecov-action digest to 0fb7174 ([#1571](https://github.com/k8sgpt-ai/k8sgpt/issues/1571)) ([09f7de5](https://github.com/k8sgpt-ai/k8sgpt/commit/09f7de5014fa9048cad75492d07caf1471831574))
+* **deps:** update docker/login-action digest to c94ce9f ([#1580](https://github.com/k8sgpt-ai/k8sgpt/issues/1580)) ([15bfd4b](https://github.com/k8sgpt-ai/k8sgpt/commit/15bfd4b17a9dfa8f1f586ea20e2e08e45255cff0))
+* **deps:** update docker/metadata-action digest to c299e40 ([#1558](https://github.com/k8sgpt-ai/k8sgpt/issues/1558)) ([2fa65f7](https://github.com/k8sgpt-ai/k8sgpt/commit/2fa65f712b7073142cff78b819dff9be8eeee7dc))
+* **deps:** update docker/setup-buildx-action digest to 8d2750c ([#1596](https://github.com/k8sgpt-ai/k8sgpt/issues/1596)) ([55a1a2f](https://github.com/k8sgpt-ai/k8sgpt/commit/55a1a2f37ddcd30e281e15ee3ec56c9e20b573ef))
+* **deps:** update softprops/action-gh-release digest to 3bb1273 ([#1578](https://github.com/k8sgpt-ai/k8sgpt/issues/1578)) ([6dbda1a](https://github.com/k8sgpt-ai/k8sgpt/commit/6dbda1a2472b27b9d03401c69bbd5ef657188986))
+
+## [0.4.33](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.32...v0.4.33) (2026-05-13)
+
+
+### Features
+
+* analyze previous logs for restarted containers ([#1648](https://github.com/k8sgpt-ai/k8sgpt/issues/1648)) ([234926f](https://github.com/k8sgpt-ai/k8sgpt/commit/234926fe981c916dfb0389b9d7275f3396870d28))
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/ollama/ollama to v0.17.1 [security] ([#1647](https://github.com/k8sgpt-ai/k8sgpt/issues/1647)) ([ebce557](https://github.com/k8sgpt-ai/k8sgpt/commit/ebce55773488f5606b3727059d16805a9cdff6d3))
+* skip empty ingress tls secret names ([#1649](https://github.com/k8sgpt-ai/k8sgpt/issues/1649)) ([c4f42c2](https://github.com/k8sgpt-ai/k8sgpt/commit/c4f42c2491e1bf23ac5e8ca413cabb45030a72d3))
+
+
+### Docs
+
+* prepare governance docs for CNCF incubation ([#1642](https://github.com/k8sgpt-ai/k8sgpt/issues/1642)) ([c82da09](https://github.com/k8sgpt-ai/k8sgpt/commit/c82da099843060ceb831b6cd3433cf1b50d1865d))
+* remove FOSSA license badge and check ([#1644](https://github.com/k8sgpt-ai/k8sgpt/issues/1644)) ([30463af](https://github.com/k8sgpt-ai/k8sgpt/commit/30463afe5f0fe3334d3f20058c89cdb2366646ab))
+
+## [0.4.32](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.31...v0.4.32) (2026-04-21)
+
+
+### Features
+
+* add Azure API Type Support and add Custom HTTP Header ([#1638](https://github.com/k8sgpt-ai/k8sgpt/issues/1638)) ([28fe196](https://github.com/k8sgpt-ai/k8sgpt/commit/28fe196d47ca43cf984f6b07a78cc3f877dc3cc2))
+* add daemonset analyzer and special cases for pod and job ([#1636](https://github.com/k8sgpt-ai/k8sgpt/issues/1636)) ([ac329d1](https://github.com/k8sgpt-ai/k8sgpt/commit/ac329d18909d61e67d16fe07e6fda22b84a7e689))
+
+
+### Bug Fixes
+
+* amazonbedrockconverse claude models temp and topp ([#1629](https://github.com/k8sgpt-ai/k8sgpt/issues/1629)) ([c87a31a](https://github.com/k8sgpt-ai/k8sgpt/commit/c87a31aee13a60b343dae4abef6e1ee6eed148c9))
+* **deps:** update module google.golang.org/grpc to v1.79.3 [security] ([#1626](https://github.com/k8sgpt-ai/k8sgpt/issues/1626)) ([97fbf04](https://github.com/k8sgpt-ai/k8sgpt/commit/97fbf04e331b4a6f37c494b8becd8c6f0687af8b))
+* improve ConfigMap usage detection for sidecar patterns ([#1602](https://github.com/k8sgpt-ai/k8sgpt/issues/1602)) ([ca0d3eb](https://github.com/k8sgpt-ai/k8sgpt/commit/ca0d3eba3faaf1b786e62b1a5cabad02ae799d6d))
+* recognize GKE built-in ingress classes 'gce' and 'gce-internal' ([#1599](https://github.com/k8sgpt-ai/k8sgpt/issues/1599)) ([6ba8fb2](https://github.com/k8sgpt-ai/k8sgpt/commit/6ba8fb217d874e41d5737161a1f8fb1fd1acf4d4))
+
+## [0.4.31](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.30...v0.4.31) (2026-03-24)
+
+
+### Features
+
+* support amazonbedrock converse api ([#1627](https://github.com/k8sgpt-ai/k8sgpt/issues/1627)) ([fc6a83d](https://github.com/k8sgpt-ai/k8sgpt/commit/fc6a83d063e69293f4e3aa18bd887740401c8fe0))
+
+
+### Other
+
+* updated readme ([#1620](https://github.com/k8sgpt-ai/k8sgpt/issues/1620)) ([fd5bba6](https://github.com/k8sgpt-ai/k8sgpt/commit/fd5bba6ab3ad7a81ef982f1980ac9c9de23bc46c))
+
+
+### Docs
+
+* align Go version with go.mod toolchain ([#1609](https://github.com/k8sgpt-ai/k8sgpt/issues/1609)) ([19a172e](https://github.com/k8sgpt-ai/k8sgpt/commit/19a172e575ffba6cd89330479033731426358342))
+
+## [0.4.30](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.29...v0.4.30) (2026-02-20)
+
+
+### Bug Fixes
+
+* validate namespace before running custom analyzers ([#1617](https://github.com/k8sgpt-ai/k8sgpt/issues/1617)) ([458aa9d](https://github.com/k8sgpt-ai/k8sgpt/commit/458aa9debac7590eb0855ffd12141b702e999a36))
+
+## [0.4.29](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.28...v0.4.29) (2026-02-20)
+
+
+### Features
+
+* **serve:** add short flag and env var for metrics port ([#1616](https://github.com/k8sgpt-ai/k8sgpt/issues/1616)) ([4f63e97](https://github.com/k8sgpt-ai/k8sgpt/commit/4f63e9737c6a2306686bd3b6f37e81f210665949))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to b8788ab ([#1572](https://github.com/k8sgpt-ai/k8sgpt/issues/1572)) ([a56e478](https://github.com/k8sgpt-ai/k8sgpt/commit/a56e4788c3361a64df17175f163f33422a8fe606))
+* use proper JSON marshaling for customrest prompt to handle special characters ([#1615](https://github.com/k8sgpt-ai/k8sgpt/issues/1615)) ([99911fb](https://github.com/k8sgpt-ai/k8sgpt/commit/99911fbb3ac8c950fd7ee1b3210f8a9c2a6b0ad7)), closes [#1556](https://github.com/k8sgpt-ai/k8sgpt/issues/1556)
+
+
+### Refactoring
+
+* improve MCP server handlers with better error handling and pagination ([#1613](https://github.com/k8sgpt-ai/k8sgpt/issues/1613)) ([abc4647](https://github.com/k8sgpt-ai/k8sgpt/commit/abc46474e372bcd27201f1a64372c04269acee13))
+
+## [0.4.28](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.27...v0.4.28) (2026-02-15)
+
+
+### Features
+
+* add Groq as LLM provider ([#1600](https://github.com/k8sgpt-ai/k8sgpt/issues/1600)) ([867bce1](https://github.com/k8sgpt-ai/k8sgpt/commit/867bce1907f5dd3387128b72c694e98091d55554))
+* multiple security fixes. Prometheus: v0.302.1 → v0.306.0 ([#1597](https://github.com/k8sgpt-ai/k8sgpt/issues/1597)) ([f5fb2a7](https://github.com/k8sgpt-ai/k8sgpt/commit/f5fb2a7e12e14fad8107940aeead5e60b064add1))
+
+
+### Bug Fixes
+
+* align CI Go versions with go.mod to ensure consistency ([#1611](https://github.com/k8sgpt-ai/k8sgpt/issues/1611)) ([1f2ff98](https://github.com/k8sgpt-ai/k8sgpt/commit/1f2ff988342b8ef2aa3e3263eb845c0ee09fe24c))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1550](https://github.com/k8sgpt-ai/k8sgpt/issues/1550)) ([7fe3bdb](https://github.com/k8sgpt-ai/k8sgpt/commit/7fe3bdbd952bc9a1975121de5f21ad31dc1f691d))
+* use MaxCompletionTokens instead of deprecated MaxTokens for OpenAI ([#1604](https://github.com/k8sgpt-ai/k8sgpt/issues/1604)) ([c80b2e2](https://github.com/k8sgpt-ai/k8sgpt/commit/c80b2e2c346845336593ce515fe90fd501b1d0a7))
+
+
+### Other
+
+* **deps:** update actions/checkout digest to 93cb6ef ([#1592](https://github.com/k8sgpt-ai/k8sgpt/issues/1592)) ([40ffcbe](https://github.com/k8sgpt-ai/k8sgpt/commit/40ffcbec6b65e3a99e40be5f414a3f2c087bffbb))
+* **deps:** update actions/setup-go digest to 40f1582 ([#1593](https://github.com/k8sgpt-ai/k8sgpt/issues/1593)) ([a303ffa](https://github.com/k8sgpt-ai/k8sgpt/commit/a303ffa21c7ede3dd9391185bc91fb3b4e8276b6))
+* util tests ([#1594](https://github.com/k8sgpt-ai/k8sgpt/issues/1594)) ([21369c5](https://github.com/k8sgpt-ai/k8sgpt/commit/21369c5c0917fd2b6ae4173378b2e257e2b1de7b))
+
+## [0.4.27](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.26...v0.4.27) (2025-12-18)
+
+
+### Features
+
+* mcp v2 ([#1589](https://github.com/k8sgpt-ai/k8sgpt/issues/1589)) ([5480051](https://github.com/k8sgpt-ai/k8sgpt/commit/5480051230ce83b89c0382abd7992c7ecc4a85b8))
+
+## [0.4.26](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.25...v0.4.26) (2025-10-16)
+
+
+### Other
+
+* missing filter arg on serve ([#1583](https://github.com/k8sgpt-ai/k8sgpt/issues/1583)) ([f1d2e30](https://github.com/k8sgpt-ai/k8sgpt/commit/f1d2e306f32eb1e01a2788174084be29a7fa1282))
+
+## [0.4.25](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.24...v0.4.25) (2025-09-03)
+
+
+### Features
+
+* fix to broken inference ([#1575](https://github.com/k8sgpt-ai/k8sgpt/issues/1575)) ([291e42d](https://github.com/k8sgpt-ai/k8sgpt/commit/291e42dc4b81ffb0672c21fbb325ddebc5d531a3))
+
+## [0.4.24](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.23...v0.4.24) (2025-08-18)
+
+
+### Features
+
+* add ClusterServiceVersion, Subscription, InstallPlan, OperatorGroup, and CatalogSource analyzers ([#1564](https://github.com/k8sgpt-ai/k8sgpt/issues/1564)) ([0cf4cae](https://github.com/k8sgpt-ai/k8sgpt/commit/0cf4cae07e32a0025246abcf2d1a5a91f82d093a))
+* reintroduced inference code ([#1548](https://github.com/k8sgpt-ai/k8sgpt/issues/1548)) ([7e33276](https://github.com/k8sgpt-ai/k8sgpt/commit/7e332761d89d953989b4f33509208dd4db4d4b91))
+* update helm charts with mcp support and fix Google ADA issue  ([#1568](https://github.com/k8sgpt-ai/k8sgpt/issues/1568)) ([5334589](https://github.com/k8sgpt-ai/k8sgpt/commit/53345895deec4c74cac00ee3fd5e230f6a92cf4a))
+
+
+### Bug Fixes
+
+* migrated to more actively maintained mcp golang lib and added AI explain  ([#1557](https://github.com/k8sgpt-ai/k8sgpt/issues/1557)) ([c47ae59](https://github.com/k8sgpt-ai/k8sgpt/commit/c47ae595fb9fc5bf22afef3bc6764b3e87e4553d))
+
+
+### Other
+
+* **deps:** update actions/checkout action to v5 ([#1562](https://github.com/k8sgpt-ai/k8sgpt/issues/1562)) ([e385e77](https://github.com/k8sgpt-ai/k8sgpt/commit/e385e77da93a65fe52a152bf1f8f1415552698d5))
+* **deps:** update amannn/action-semantic-pull-request action to v6 ([#1565](https://github.com/k8sgpt-ai/k8sgpt/issues/1565)) ([c5c9135](https://github.com/k8sgpt-ai/k8sgpt/commit/c5c9135900ec6f95b63dac47df751269e7420e87))
+* **deps:** update docker/login-action digest to 184bdaa ([#1559](https://github.com/k8sgpt-ai/k8sgpt/issues/1559)) ([0239b2f](https://github.com/k8sgpt-ai/k8sgpt/commit/0239b2fe6e7105bbcf3256c559c30ec7065b25f3))
+* **deps:** update goreleaser/goreleaser-action digest to e435ccd ([#1569](https://github.com/k8sgpt-ai/k8sgpt/issues/1569)) ([5e86f49](https://github.com/k8sgpt-ai/k8sgpt/commit/5e86f4925c4209b0eb2959227229c2994cfc5b6f))
+
+## [0.4.23](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.22...v0.4.23) (2025-08-08)
+
+
+### Features
+
+* add ClusterCatalog and ClusterExtension analyzers ([#1555](https://github.com/k8sgpt-ai/k8sgpt/issues/1555)) ([a821814](https://github.com/k8sgpt-ai/k8sgpt/commit/a821814125e25c062ff2faebf9df1b880414c22c))
+* oci genai chat models ([#1337](https://github.com/k8sgpt-ai/k8sgpt/issues/1337)) ([290a4be](https://github.com/k8sgpt-ai/k8sgpt/commit/290a4be210fbb508214070c31218138781d96142))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1537](https://github.com/k8sgpt-ai/k8sgpt/issues/1537)) ([50d5d78](https://github.com/k8sgpt-ai/k8sgpt/commit/50d5d78c06e42d75a2448989528e5e6be12ea825))
+* **deps:** update module helm.sh/helm/v3 to v3.17.4 [security] ([#1541](https://github.com/k8sgpt-ai/k8sgpt/issues/1541)) ([5b42249](https://github.com/k8sgpt-ai/k8sgpt/commit/5b4224951e7348e9d78292dadc9b9786957117f1))
+
+## [0.4.22](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.21...v0.4.22) (2025-07-18)
+
+
+### Features
+
+* add APAC region Claude models support for Amazon Bedrock ([#1543](https://github.com/k8sgpt-ai/k8sgpt/issues/1543)) ([1819e6f](https://github.com/k8sgpt-ai/k8sgpt/commit/1819e6f410d078fce2bda8bbdb22054dfb4fc092))
+* add streamable-http support for MCP server ([#1546](https://github.com/k8sgpt-ai/k8sgpt/issues/1546)) ([3a1187a](https://github.com/k8sgpt-ai/k8sgpt/commit/3a1187ad5a190713b9216cf6d9d52d54cdb3e4da))
+
+## [0.4.21](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.20...v0.4.21) (2025-06-27)
+
+
+### Features
+
+* add latest and legacy stable models ([#1539](https://github.com/k8sgpt-ai/k8sgpt/issues/1539)) ([00c0799](https://github.com/k8sgpt-ai/k8sgpt/commit/00c07999e2290e70a6ecb95b255b4924f55ecd5f))
+* support for claude4 && model names listed ([#1540](https://github.com/k8sgpt-ai/k8sgpt/issues/1540)) ([8002d94](https://github.com/k8sgpt-ai/k8sgpt/commit/8002d943453aac8c3675d7072b25dfdc3aec1c1d))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1511](https://github.com/k8sgpt-ai/k8sgpt/issues/1511)) ([08f2855](https://github.com/k8sgpt-ai/k8sgpt/commit/08f2855a4d7e61f3422cb68b0966272a85f617a5))
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to e468171 ([#1527](https://github.com/k8sgpt-ai/k8sgpt/issues/1527)) ([0c917fc](https://github.com/k8sgpt-ai/k8sgpt/commit/0c917fc60115ef0dc775e858a55964382b20c5e1))
+
+## [0.4.20](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.19...v0.4.20) (2025-06-20)
+
+
+### Features
+
+* added cache purge ([#1532](https://github.com/k8sgpt-ai/k8sgpt/issues/1532)) ([74fbde0](https://github.com/k8sgpt-ai/k8sgpt/commit/74fbde00537e627c408b317ff9098227be11e2ad))
+
+
+### Other
+
+* model name ([#1535](https://github.com/k8sgpt-ai/k8sgpt/issues/1535)) ([0f700f0](https://github.com/k8sgpt-ai/k8sgpt/commit/0f700f0cd39bf5881d6c05240b842f4df7a6c016))
+
+## [0.4.19](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.18...v0.4.19) (2025-06-20)
+
+
+### Features
+
+* fixed haiku ([#1530](https://github.com/k8sgpt-ai/k8sgpt/issues/1530)) ([5636515](https://github.com/k8sgpt-ai/k8sgpt/commit/5636515db98b529689a214af5066d50b5e42d3a1))
+
+## [0.4.18](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.17...v0.4.18) (2025-06-20)
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 4c0f3b2 ([#1523](https://github.com/k8sgpt-ai/k8sgpt/issues/1523)) ([7d4cb26](https://github.com/k8sgpt-ai/k8sgpt/commit/7d4cb267130f60088350213482795f37594cb0bc))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1509](https://github.com/k8sgpt-ai/k8sgpt/issues/1509)) ([d7cb19a](https://github.com/k8sgpt-ai/k8sgpt/commit/d7cb19ad29c92eaba552ba723945c937fc3c42da))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 18283e0 ([#1513](https://github.com/k8sgpt-ai/k8sgpt/issues/1513)) ([42654e7](https://github.com/k8sgpt-ai/k8sgpt/commit/42654e7f55d7a9e9be5b664adaaa8979106e7298))
+* **deps:** update docker/build-push-action digest to 1dc7386 ([#1512](https://github.com/k8sgpt-ai/k8sgpt/issues/1512)) ([dfcc5dc](https://github.com/k8sgpt-ai/k8sgpt/commit/dfcc5dc5a15a3d59a7f6317944784e3ecd86fb50))
+* **deps:** update docker/build-push-action digest to 2634353 ([#1517](https://github.com/k8sgpt-ai/k8sgpt/issues/1517)) ([7dfe8be](https://github.com/k8sgpt-ai/k8sgpt/commit/7dfe8bef0face65f607475a6620923fdfed57961))
+* **deps:** update softprops/action-gh-release digest to 72f2c25 ([#1526](https://github.com/k8sgpt-ai/k8sgpt/issues/1526)) ([5947876](https://github.com/k8sgpt-ai/k8sgpt/commit/5947876e4942729eea883937faf5e2b47d1f16ec))
+* **deps:** update softprops/action-gh-release digest to d5382d3 ([#1525](https://github.com/k8sgpt-ai/k8sgpt/issues/1525)) ([6b9f346](https://github.com/k8sgpt-ai/k8sgpt/commit/6b9f346bf668ed3517b23b99000611ea14afafe2))
+* model access ([#1529](https://github.com/k8sgpt-ai/k8sgpt/issues/1529)) ([be4fb1c](https://github.com/k8sgpt-ai/k8sgpt/commit/be4fb1cc034d9c3843cf3e9912a26e05bd54c146))
+
+## [0.4.17](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.16...v0.4.17) (2025-05-14)
+
+
+### Features
+
+* adding fixes for Messages API issue 1391 ([#1504](https://github.com/k8sgpt-ai/k8sgpt/issues/1504)) ([b2241c0](https://github.com/k8sgpt-ai/k8sgpt/commit/b2241c03c975aeab02897d73e57cd351f60f3af3))
+* new job analyzer ([#1506](https://github.com/k8sgpt-ai/k8sgpt/issues/1506)) ([0b7ddf5](https://github.com/k8sgpt-ai/k8sgpt/commit/0b7ddf5e3b93e56ea92dfb6447e97c067cad9e54))
+
+
+### Bug Fixes
+
+* align documentation to reflect default analyzers properly ([#1498](https://github.com/k8sgpt-ai/k8sgpt/issues/1498)) ([7e375a3](https://github.com/k8sgpt-ai/k8sgpt/commit/7e375a30bee24198f9221e4a4aea17fcd2fe005c))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1454](https://github.com/k8sgpt-ai/k8sgpt/issues/1454)) ([d0f0364](https://github.com/k8sgpt-ai/k8sgpt/commit/d0f03641ae372a00cd0eca1f41ef30a988d436bc))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1500](https://github.com/k8sgpt-ai/k8sgpt/issues/1500)) ([d308c51](https://github.com/k8sgpt-ai/k8sgpt/commit/d308c511fbe06e012c641dfa08c4dcf4181b243a))
+* panic in k8sgpt auth update ([#1497](https://github.com/k8sgpt-ai/k8sgpt/issues/1497)) ([cae94e7](https://github.com/k8sgpt-ai/k8sgpt/commit/cae94e7b6df1684a3b61af3e7aa0f4e68e8df594))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to d35c59a ([#1495](https://github.com/k8sgpt-ai/k8sgpt/issues/1495)) ([e76bdb0](https://github.com/k8sgpt-ai/k8sgpt/commit/e76bdb0c23b7d23972d99661c8fe1bffe5f9f398))
+* **deps:** update golangci/golangci-lint-action action to v8 ([#1490](https://github.com/k8sgpt-ai/k8sgpt/issues/1490)) ([1e57b77](https://github.com/k8sgpt-ai/k8sgpt/commit/1e57b7774c20bda4ae0b0d765278bcd3504cfb33))
+* golangci lint ([#1508](https://github.com/k8sgpt-ai/k8sgpt/issues/1508)) ([4faf77d](https://github.com/k8sgpt-ai/k8sgpt/commit/4faf77d91a3da8fdd6166ec1c381a151e5846057))
+
+## [0.4.16](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.15...v0.4.16) (2025-05-06)
+
+
+### Features
+
+* add support for Amazon Bedrock Inference Profiles ([#1492](https://github.com/k8sgpt-ai/k8sgpt/issues/1492)) ([21bc76e](https://github.com/k8sgpt-ai/k8sgpt/commit/21bc76e5b77524b48f09ef6707204742dcd879a7))
+* enhancement of deployment analyzer ([#1406](https://github.com/k8sgpt-ai/k8sgpt/issues/1406)) ([61b60d5](https://github.com/k8sgpt-ai/k8sgpt/commit/61b60d5768b54f98232dcc415e89aa38987dc6e3))
+* supported regions govcloud ([#1483](https://github.com/k8sgpt-ai/k8sgpt/issues/1483)) ([752a16c](https://github.com/k8sgpt-ai/k8sgpt/commit/752a16c40728f42f10ab6c3177cb7e24f44db339))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 0f33e8f ([#1484](https://github.com/k8sgpt-ai/k8sgpt/issues/1484)) ([6a81d2c](https://github.com/k8sgpt-ai/k8sgpt/commit/6a81d2c140f00a405b651d6c6dae5e343ffddb4f))
+
+
+### Other
+
+* **deps:** update docker/build-push-action digest to 14487ce ([#1472](https://github.com/k8sgpt-ai/k8sgpt/issues/1472)) ([81da402](https://github.com/k8sgpt-ai/k8sgpt/commit/81da402d46e1a1db83a41b717dfb23eb07d2e919))
+* **deps:** update golangci/golangci-lint-action digest to 9fae48a ([#1489](https://github.com/k8sgpt-ai/k8sgpt/issues/1489)) ([d5341f3](https://github.com/k8sgpt-ai/k8sgpt/commit/d5341f3c0019c1114254ac05f00c743a0354ec0b))
+
+## [0.4.15](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.14...v0.4.15) (2025-04-29)
+
+
+### Features
+
+* added token for goreleaser ([#1476](https://github.com/k8sgpt-ai/k8sgpt/issues/1476)) ([85935a4](https://github.com/k8sgpt-ai/k8sgpt/commit/85935a46d8f137b0339435cf19ce7f83ead97f8c))
+
+## [0.4.14](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.13...v0.4.14) (2025-04-29)
+
+
+### Features
+
+* add MCP support ([#1471](https://github.com/k8sgpt-ai/k8sgpt/issues/1471)) ([e41ffd8](https://github.com/k8sgpt-ai/k8sgpt/commit/e41ffd80d01ce7ae1fac9ce7e07344020d8bf914))
+* using modelName will calling completion ([#1469](https://github.com/k8sgpt-ai/k8sgpt/issues/1469)) ([f603948](https://github.com/k8sgpt-ai/k8sgpt/commit/f603948935f1c4cb171378634714577205de7b08))
+
+## [0.4.13](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.12...v0.4.13) (2025-04-22)
+
+
+### Features
+
+* slack announce ([#1466](https://github.com/k8sgpt-ai/k8sgpt/issues/1466)) ([3b6ad06](https://github.com/k8sgpt-ai/k8sgpt/commit/3b6ad06de1121c870fb486e0fe2bd1f87be16627))
+
+
+### Bug Fixes
+
+* reverse hpa ScalingLimited error condition ([#1366](https://github.com/k8sgpt-ai/k8sgpt/issues/1366)) ([ebb0373](https://github.com/k8sgpt-ai/k8sgpt/commit/ebb0373f69ad64a6cc43d0695d07e1d076c6366e))
+
+
+### Other
+
+* **deps:** update softprops/action-gh-release digest to da05d55 ([#1464](https://github.com/k8sgpt-ai/k8sgpt/issues/1464)) ([4434699](https://github.com/k8sgpt-ai/k8sgpt/commit/443469960a6b6791e358ee0a97e4c1dc5c3018e6))
+
+## [0.4.12](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.11...v0.4.12) (2025-04-17)
+
+
+### Features
+
+* new analyzers ([#1459](https://github.com/k8sgpt-ai/k8sgpt/issues/1459)) ([a128906](https://github.com/k8sgpt-ai/k8sgpt/commit/a128906136431189812d4d2dea68ea98cbfe5eeb))
+
+
+### Bug Fixes
+
+* **deps:** update module golang.org/x/net to v0.38.0 [security] ([#1462](https://github.com/k8sgpt-ai/k8sgpt/issues/1462)) ([e588fc3](https://github.com/k8sgpt-ai/k8sgpt/commit/e588fc316d29a29a7dde6abe2302833b38f1d302))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to ad3126e ([#1456](https://github.com/k8sgpt-ai/k8sgpt/issues/1456)) ([0553b98](https://github.com/k8sgpt-ai/k8sgpt/commit/0553b984b7c87b345f171bf6e5d632d890db689c))
+
+## [0.4.11](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.10...v0.4.11) (2025-04-15)
+
+
+### Features
+
+* add verbose flag to enable detailed output ([#1420](https://github.com/k8sgpt-ai/k8sgpt/issues/1420)) ([a79224e](https://github.com/k8sgpt-ai/k8sgpt/commit/a79224e2bf96f458dbc96404c8f4847970e8d2ef))
+* call bedrock with inference profile ([#1449](https://github.com/k8sgpt-ai/k8sgpt/issues/1449)) ([91d423b](https://github.com/k8sgpt-ai/k8sgpt/commit/91d423b147ca18cda7d54ff19349938a894ecb85))
+* improved test coverage ([#1455](https://github.com/k8sgpt-ai/k8sgpt/issues/1455)) ([80904e3](https://github.com/k8sgpt-ai/k8sgpt/commit/80904e3063b00b0536171b7b62b938938b20825a))
+
+
+### Bug Fixes
+
+* config ai provider in query ([#1457](https://github.com/k8sgpt-ai/k8sgpt/issues/1457)) ([df17e3e](https://github.com/k8sgpt-ai/k8sgpt/commit/df17e3e728591e974703527dff86de882af17790))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1447](https://github.com/k8sgpt-ai/k8sgpt/issues/1447)) ([969fe99](https://github.com/k8sgpt-ai/k8sgpt/commit/969fe99b3320c313f1c97133cdffb668a00d5fb5))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1453](https://github.com/k8sgpt-ai/k8sgpt/issues/1453)) ([cf6f928](https://github.com/k8sgpt-ai/k8sgpt/commit/cf6f9289e13ee729c24968fd771c901f412e8db7))
+
+
+### Docs
+
+* fix the slack invite link ([#1450](https://github.com/k8sgpt-ai/k8sgpt/issues/1450)) ([9ce3346](https://github.com/k8sgpt-ai/k8sgpt/commit/9ce33469d85aa0829e995e4b404ae85734124fb4))
+
+## [0.4.10](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.9...v0.4.10) (2025-04-10)
+
+
+### Features
+
+* add a naive support of bedrock inference profile ([#1446](https://github.com/k8sgpt-ai/k8sgpt/issues/1446)) ([78ffa59](https://github.com/k8sgpt-ai/k8sgpt/commit/78ffa5904addf71caf04554966437b14351f21e5))
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1417](https://github.com/k8sgpt-ai/k8sgpt/issues/1417)) ([ce4b3c2](https://github.com/k8sgpt-ai/k8sgpt/commit/ce4b3c2e7d0762093506d9010eceb47a2dcdf5bc))
+* **deps:** update module helm.sh/helm/v3 to v3.17.3 [security] ([#1448](https://github.com/k8sgpt-ai/k8sgpt/issues/1448)) ([060a3b2](https://github.com/k8sgpt-ai/k8sgpt/commit/060a3b2a26f117827090697eb599cd51a44125e6))
+* pod analyzer catches errors when containers are in Terminated state ([#1438](https://github.com/k8sgpt-ai/k8sgpt/issues/1438)) ([dceda9a](https://github.com/k8sgpt-ai/k8sgpt/commit/dceda9a6a16a914b916c478ecd0b4c8ed0e19c40))
+
+## [0.4.9](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.8...v0.4.9) (2025-04-08)
+
+
+### Other
+
+* **deps:** pin dependencies ([#1440](https://github.com/k8sgpt-ai/k8sgpt/issues/1440)) ([a5574ee](https://github.com/k8sgpt-ai/k8sgpt/commit/a5574ee49d530960a515c419f4875cf02cb36fb3))
+* fixing ([#1437](https://github.com/k8sgpt-ai/k8sgpt/issues/1437)) ([f68ff0e](https://github.com/k8sgpt-ai/k8sgpt/commit/f68ff0efee9bad5f8368c83800611fa9acbc53d7))
+
+## [0.4.8](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.7...v0.4.8) (2025-04-07)
+
+
+### Other
+
+* removed krew release ([#1434](https://github.com/k8sgpt-ai/k8sgpt/issues/1434)) ([39ae2aa](https://github.com/k8sgpt-ai/k8sgpt/commit/39ae2aa6351d6a77e0b45ad15b0d10b86a33f3be))
+
+## [0.4.7](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.6...v0.4.7) (2025-04-07)
+
+
+### Other
+
+* **deps:** update actions/upload-artifact digest to ea165f8 ([#1425](https://github.com/k8sgpt-ai/k8sgpt/issues/1425)) ([9bffc7c](https://github.com/k8sgpt-ai/k8sgpt/commit/9bffc7cff776733f6d05669e6c02f594ee2db261))
+* fixing build ([#1431](https://github.com/k8sgpt-ai/k8sgpt/issues/1431)) ([c5fe2c6](https://github.com/k8sgpt-ai/k8sgpt/commit/c5fe2c68d18d4fd713b3e638066327ad586d1871))
+
+## [0.4.6](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.5...v0.4.6) (2025-04-07)
+
+
+### Other
+
+* **deps:** pin docker/build-push-action action to 471d1dc ([#1428](https://github.com/k8sgpt-ai/k8sgpt/issues/1428)) ([5086ccd](https://github.com/k8sgpt-ai/k8sgpt/commit/5086ccd65942ebb9a37bd2c3a48d16c4be99e8c1))
+* fixing docker build push action ([#1426](https://github.com/k8sgpt-ai/k8sgpt/issues/1426)) ([1681aad](https://github.com/k8sgpt-ai/k8sgpt/commit/1681aadac106c608de9774ebfd7ea9df20eed482))
+* updated actor for login ([#1430](https://github.com/k8sgpt-ai/k8sgpt/issues/1430)) ([b626102](https://github.com/k8sgpt-ai/k8sgpt/commit/b6261026f8b41e505359a52c18bebec7ef5079f9))
+
+## [0.4.5](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.4...v0.4.5) (2025-04-07)
+
+
+### Other
+
+* fix workflows ([#1423](https://github.com/k8sgpt-ai/k8sgpt/issues/1423)) ([3dbc9e1](https://github.com/k8sgpt-ai/k8sgpt/commit/3dbc9e1a20a3a55971733d990ecd39e798a804e9))
+
+## [0.4.4](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.3...v0.4.4) (2025-04-06)
+
+
+### Other
+
+* **deps:** update docker/setup-buildx-action digest to b5ca514 ([#1371](https://github.com/k8sgpt-ai/k8sgpt/issues/1371)) ([d4de5d9](https://github.com/k8sgpt-ai/k8sgpt/commit/d4de5d9e3fdd1cc4c7d6fc067a7426fef1d32c1d))
+* **deps:** update module github.com/docker/docker to v28 ([#1376](https://github.com/k8sgpt-ai/k8sgpt/issues/1376)) ([68ddac0](https://github.com/k8sgpt-ai/k8sgpt/commit/68ddac008955933ffa27c2c4e46d286d9a26e100))
+* updating deps ([#1422](https://github.com/k8sgpt-ai/k8sgpt/issues/1422)) ([5b7fb7e](https://github.com/k8sgpt-ai/k8sgpt/commit/5b7fb7e6199635e109c1bf7355bc11ff6f60071b))
+
+## [0.4.3](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.2...v0.4.3) (2025-04-04)
+
+
+### Bug Fixes
+
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1363](https://github.com/k8sgpt-ai/k8sgpt/issues/1363)) ([e4861e9](https://github.com/k8sgpt-ai/k8sgpt/commit/e4861e9e2d631652b82768567afb9ba174114134))
+* prometheus UTF8Validation ([#1404](https://github.com/k8sgpt-ai/k8sgpt/issues/1404)) ([3c353b0](https://github.com/k8sgpt-ai/k8sgpt/commit/3c353b0e931028f3be3b229518cf86d24422a29d))
+
+
+### Other
+
+* added new AmazonBedrock model  ([#1390](https://github.com/k8sgpt-ai/k8sgpt/issues/1390)) ([ad2c90a](https://github.com/k8sgpt-ai/k8sgpt/commit/ad2c90a129074a13dac4fdd8e918d8e26159c7a1))
+* **deps:** pin golangci/golangci-lint-action action to 1481404 ([#1415](https://github.com/k8sgpt-ai/k8sgpt/issues/1415)) ([e231032](https://github.com/k8sgpt-ai/k8sgpt/commit/e231032e1bec1d2d25cb03b35e701aa86a61d5ee))
+* **deps:** update goreleaser/goreleaser-action digest to 9c156ee ([#1411](https://github.com/k8sgpt-ai/k8sgpt/issues/1411)) ([c823de1](https://github.com/k8sgpt-ai/k8sgpt/commit/c823de12e6b6efcf9f5639665aac602ed85ae31d))
+* linter ([#1414](https://github.com/k8sgpt-ai/k8sgpt/issues/1414)) ([f0b18cf](https://github.com/k8sgpt-ai/k8sgpt/commit/f0b18cfb1cd418b94b448d3b9de43f03841c92bb))
+
+
+### Docs
+
+* add table of contents and cleanup ([#1413](https://github.com/k8sgpt-ai/k8sgpt/issues/1413)) ([a31d07c](https://github.com/k8sgpt-ai/k8sgpt/commit/a31d07c802694d3455b665382ff12a2abc3e0ef7))
+* remove extra dollar sign in README.md ([#1410](https://github.com/k8sgpt-ai/k8sgpt/issues/1410)) ([a962741](https://github.com/k8sgpt-ai/k8sgpt/commit/a962741220bf98e159f14895d01cd596a7691f87))
+
+## [0.4.2](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.1...v0.4.2) (2025-03-28)
+
+
+### Features
+
+* old sonnet ([#1408](https://github.com/k8sgpt-ai/k8sgpt/issues/1408)) ([e5817f9](https://github.com/k8sgpt-ai/k8sgpt/commit/e5817f9e557f4f97b016a0a7b7674342c3a1773e))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to 1f6e0b7 ([#1405](https://github.com/k8sgpt-ai/k8sgpt/issues/1405)) ([f5eaf81](https://github.com/k8sgpt-ai/k8sgpt/commit/f5eaf817f0cf2b732013e67e94c758a225c35ba6))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 0aaccfd ([#1401](https://github.com/k8sgpt-ai/k8sgpt/issues/1401)) ([81d4aaf](https://github.com/k8sgpt-ai/k8sgpt/commit/81d4aaf402647bf4bcbc618fd82f9518cf3a5b4d))
+* **deps:** update actions/upload-artifact digest to ea165f8 ([#1402](https://github.com/k8sgpt-ai/k8sgpt/issues/1402)) ([eb381b8](https://github.com/k8sgpt-ai/k8sgpt/commit/eb381b8087bbb3216d9bcdcc88a71fbad9e31e41))
+* **deps:** update docker/login-action digest to 74a5d14 ([#1397](https://github.com/k8sgpt-ai/k8sgpt/issues/1397)) ([fdf8e7a](https://github.com/k8sgpt-ai/k8sgpt/commit/fdf8e7a95a6667b782e1e347a3b1d2fb0f2aafde))
+* fix error ([#1403](https://github.com/k8sgpt-ai/k8sgpt/issues/1403)) ([288ca86](https://github.com/k8sgpt-ai/k8sgpt/commit/288ca862b3aaf942e58aa0dad0e15e2fda84780f))
+
+## [0.4.1](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.0...v0.4.1) (2025-03-17)
+
+
+### Features
+
+* add amazon bedrock nova pro and nova lite models ([#1383](https://github.com/k8sgpt-ai/k8sgpt/issues/1383)) ([aa1e237](https://github.com/k8sgpt-ai/k8sgpt/commit/aa1e237ebb8c816383561c9b3e6a1ca0ddea8f78))
+* add custom restful backend for complex scenarios (e.g, rag) ([#1228](https://github.com/k8sgpt-ai/k8sgpt/issues/1228)) ([7540e00](https://github.com/k8sgpt-ai/k8sgpt/commit/7540e0084e0c0c44fc52ed9a906b76f9f2e6a981))
+
+
+### Bug Fixes
+
+* **deps:** update default model to gpt-4o for improved performance and cost efficiency ([#1332](https://github.com/k8sgpt-ai/k8sgpt/issues/1332)) ([4e39cb6](https://github.com/k8sgpt-ai/k8sgpt/commit/4e39cb65b3a7fc0d1c057c647794346e072d3fd0))
+* **deps:** update module golang.org/x/net to v0.36.0 [security] ([#1395](https://github.com/k8sgpt-ai/k8sgpt/issues/1395)) ([eb7b36a](https://github.com/k8sgpt-ai/k8sgpt/commit/eb7b36aa2764bc460ffc29a0aee18abe3631c2ed))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to f111f33 ([#1364](https://github.com/k8sgpt-ai/k8sgpt/issues/1364)) ([f2fdfd8](https://github.com/k8sgpt-ai/k8sgpt/commit/f2fdfd8dcaae6f57378d50396c4746d738d38bf2))
+* **deps:** update goreleaser/goreleaser-action digest to 90a3faa ([#1308](https://github.com/k8sgpt-ai/k8sgpt/issues/1308)) ([d6d2e3b](https://github.com/k8sgpt-ai/k8sgpt/commit/d6d2e3bc4254877c8af61aba7386706e942e3fe9))
+* **deps:** update softprops/action-gh-release digest to c95fe14 ([#1359](https://github.com/k8sgpt-ai/k8sgpt/issues/1359)) ([db5e517](https://github.com/k8sgpt-ai/k8sgpt/commit/db5e517dbb23a4cb0f203427744f4007d6e9faa8))
+
+## [0.4.0](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.50...v0.4.0) (2025-03-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386))
+
+### Features
+
+* Removal of Trivy ([#1386](https://github.com/k8sgpt-ai/k8sgpt/issues/1386)) ([d1b2227](https://github.com/k8sgpt-ai/k8sgpt/commit/d1b2227ff9a8ef42bf63c83e289fbd801706821e))
+
+
+### Bug Fixes
+
+* [Bug] Filter PolicyReport ignores namespace flag ([#1355](https://github.com/k8sgpt-ai/k8sgpt/issues/1355)) ([9dcb21e](https://github.com/k8sgpt-ai/k8sgpt/commit/9dcb21e160233eb120ccf50f9b9b80c145d0e01a))
+
+
+### Other
+
+* Adding region ([#1388](https://github.com/k8sgpt-ai/k8sgpt/issues/1388)) ([4f4f4f1](https://github.com/k8sgpt-ai/k8sgpt/commit/4f4f4f13a065ca7add283088c93777f78dcea228))
+* **deps:** update actions/upload-artifact digest to 4cec3d8 ([#1378](https://github.com/k8sgpt-ai/k8sgpt/issues/1378)) ([093975e](https://github.com/k8sgpt-ai/k8sgpt/commit/093975e50ddadeab70a7c4f544df8351ac9758a2))
+* **deps:** update codecov/codecov-action digest to 0565863 ([#1387](https://github.com/k8sgpt-ai/k8sgpt/issues/1387)) ([2a6f485](https://github.com/k8sgpt-ai/k8sgpt/commit/2a6f48500c4567519453fc51ea070f5e407d3cfb))
+* **deps:** update docker/build-push-action digest to 471d1dc ([#1358](https://github.com/k8sgpt-ai/k8sgpt/issues/1358)) ([f2e3b9a](https://github.com/k8sgpt-ai/k8sgpt/commit/f2e3b9a8a72c4df32713197e50756e37e1302ff9))
+* remediating security issue ([#1381](https://github.com/k8sgpt-ai/k8sgpt/issues/1381)) ([1f95358](https://github.com/k8sgpt-ai/k8sgpt/commit/1f953585c91f8a208db3b37440e4d458b8d821eb))
+
+## [0.3.50](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.49...v0.3.50) (2025-02-24)
+
+
+### Features
+
+* rework to how bedrock data models are structured and accessed ([#1369](https://github.com/k8sgpt-ai/k8sgpt/issues/1369)) ([7dadea2](https://github.com/k8sgpt-ai/k8sgpt/commit/7dadea257007df64148f1e47f7960d1d30df67b2))
+
+## [0.3.49](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.48...v0.3.49) (2025-02-20)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#1335](https://github.com/k8sgpt-ai/k8sgpt/issues/1335)) ([8cd3b29](https://github.com/k8sgpt-ai/k8sgpt/commit/8cd3b2985e4cd61711497fb0436e72b6b8aa3162))
+* **deps:** update k8s.io/utils digest to 24370be ([#1344](https://github.com/k8sgpt-ai/k8sgpt/issues/1344)) ([fcc8563](https://github.com/k8sgpt-ai/k8sgpt/commit/fcc8563e4eba9bf45d49901b7287d311b93372c2))
+* **deps:** update module golang.org/x/net to v0.33.0 [security] ([#1354](https://github.com/k8sgpt-ai/k8sgpt/issues/1354)) ([5de4f77](https://github.com/k8sgpt-ai/k8sgpt/commit/5de4f7704a856fd7db7b2f800bda40c5beb9333b))
+* **deps:** update module gopkg.in/yaml.v2 to v3 ([#1336](https://github.com/k8sgpt-ai/k8sgpt/issues/1336)) ([19abbef](https://github.com/k8sgpt-ai/k8sgpt/commit/19abbef9a3112ceb060ac3fd772e2e4f62f19f84))
+* prevent npe by handling checking error in NewAnalysis call ([#1365](https://github.com/k8sgpt-ai/k8sgpt/issues/1365)) ([83672fa](https://github.com/k8sgpt-ai/k8sgpt/commit/83672fa768887dd1c6f4dc12a92c3444f100c4f6))
+
+
+### Other
+
+* **deps:** update actions/setup-go digest to 3041bf5 ([#1347](https://github.com/k8sgpt-ai/k8sgpt/issues/1347)) ([939e067](https://github.com/k8sgpt-ai/k8sgpt/commit/939e0672aaaa5538cd58bb171f1e5d1c07831651))
+* **deps:** update actions/upload-artifact digest to 65c4c4a ([#1350](https://github.com/k8sgpt-ai/k8sgpt/issues/1350)) ([c506a4b](https://github.com/k8sgpt-ai/k8sgpt/commit/c506a4b441e24052398c00c93d96806cec1b9f75))
+* **deps:** update codecov/codecov-action digest to 13ce06b ([#1342](https://github.com/k8sgpt-ai/k8sgpt/issues/1342)) ([990d723](https://github.com/k8sgpt-ai/k8sgpt/commit/990d7239091b368178e06af60e4dc0e897fc8236))
+* **deps:** update docker/setup-buildx-action digest to 6524bf6 ([#1349](https://github.com/k8sgpt-ai/k8sgpt/issues/1349)) ([2918556](https://github.com/k8sgpt-ai/k8sgpt/commit/2918556793316ea4f5a319c9aa51c1fec12ede85))
+* fix typo in "completion" ([#1362](https://github.com/k8sgpt-ai/k8sgpt/issues/1362)) ([06b8f78](https://github.com/k8sgpt-ai/k8sgpt/commit/06b8f78150308c1f6023747fa34826e038d6bc3a))
+
+
+### Docs
+
+* fix broken schema link in README.md ([#1373](https://github.com/k8sgpt-ai/k8sgpt/issues/1373)) ([076ca2f](https://github.com/k8sgpt-ai/k8sgpt/commit/076ca2f14832cf83e43c465c377ef21825218b2f))
+
+## [0.3.48](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.47...v0.3.48) (2024-12-04)
+
+
+### Features
+
+* fixed missing cache params ([#1340](https://github.com/k8sgpt-ai/k8sgpt/issues/1340)) ([1363219](https://github.com/k8sgpt-ai/k8sgpt/commit/1363219b1b94e157ef03c53eba8838b7cef559b4))
+
 ## [0.3.47](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.3.46...v0.3.47) (2024-12-02)
 
 

@@ -199,3 +199,58 @@ func TestReplicaSetAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/ReplicaSet1", results[0].Name)
 }
+
+// TestReplicaSetAnalyzerReplicaFailureWithExistingReplicas covers the case
+// where a ReplicaSet already has some replicas but is failing to create
+// additional Pods. ReplicaFailure must be reported regardless of the replica
+// count (see issue #1748).
+func TestReplicaSetAnalyzerReplicaFailureWithExistingReplicas(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&appsv1.ReplicaSet{
+					// Partially fulfilled ReplicaSet with a failed scale-up:
+					// one replica exists, but the controller reports
+					// ReplicaFailure=True/FailedCreate. This must be reported.
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "replicaset-failed-scale-up",
+						Namespace: "default",
+					},
+					Status: appsv1.ReplicaSetStatus{
+						Replicas: 1,
+						Conditions: []appsv1.ReplicaSetCondition{
+							{
+								Type:    appsv1.ReplicaSetReplicaFailure,
+								Reason:  "FailedCreate",
+								Message: "quota exceeded",
+							},
+						},
+					},
+				},
+				&appsv1.ReplicaSet{
+					// Healthy partially available ReplicaSet: some replicas are
+					// running and there is no ReplicaFailure condition. This is
+					// a control case and must not be reported.
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "replicaset-healthy-partial",
+						Namespace: "default",
+					},
+					Status: appsv1.ReplicaSetStatus{
+						Replicas: 1,
+					},
+				},
+			),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	rsAnalyzer := ReplicaSetAnalyzer{}
+	results, err := rsAnalyzer.Analyze(config)
+	require.NoError(t, err)
+
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/replicaset-failed-scale-up", results[0].Name)
+	require.Equal(t, 1, len(results[0].Error))
+	require.Equal(t, "quota exceeded", results[0].Error[0].Text)
+}

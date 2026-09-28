@@ -43,6 +43,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
 							LastTimestamp: metav1.Time{
 								Time: time.Date(2024, 3, 15, 10, 0, 0, 0, time.UTC),
 							},
@@ -60,6 +65,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 							// This is the latest event.
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "Event3",
+								Namespace: "default",
+							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC5",
 								Namespace: "default",
 							},
 							LastTimestamp: metav1.Time{
@@ -157,6 +167,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
 							// Any reason other than ProvisioningFailed won't result in failure.
 							Reason: "UnknownReason",
 						},
@@ -183,6 +198,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 						&appsv1.Event{
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "Event1",
+								Namespace: "default",
+							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
 								Namespace: "default",
 							},
 							// Event without any error message won't result in failure.
@@ -236,6 +256,11 @@ func TestPvcAnalyzerLabelSelectorFiltering(t *testing.T) {
 				&appsv1.Event{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "Event1",
+						Namespace: "default",
+					},
+					InvolvedObject: appsv1.ObjectReference{
+						Kind:      "PersistentVolumeClaim",
+						Name:      "PVC1",
 						Namespace: "default",
 					},
 					LastTimestamp: metav1.Time{

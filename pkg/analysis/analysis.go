@@ -16,8 +16,12 @@ package analysis
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -33,6 +37,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Analysis struct {
@@ -45,6 +51,7 @@ type Analysis struct {
 	Errors             []string
 	Namespace          string
 	LabelSelector      string
+	ResourceName       string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -89,19 +96,35 @@ func NewAnalysis(
 	// Get kubernetes client from viper.
 	kubecontext := viper.GetString("kubecontext")
 	kubeconfig := viper.GetString("kubeconfig")
+	verbose := viper.GetBool("verbose")
 	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
+	if verbose {
+		fmt.Println("Debug: Checking kubernetes client initialization.")
+	}
 	if err != nil {
 		return nil, fmt.Errorf("initialising kubernetes client: %w", err)
+	}
+	if verbose {
+		fmt.Printf("Debug: Kubernetes client initialized, server=%s.\n", client.Config.Host)
 	}
 
 	// Load remote cache if it is configured.
 	cache, err := cache.GetCacheConfiguration()
+	if verbose {
+		fmt.Println("Debug: Checking cache configuration.")
+	}
 	if err != nil {
 		return nil, err
+	}
+	if verbose {
+		fmt.Printf("Debug: Cache configuration loaded, type=%s.\n", cache.GetName())
 	}
 
 	if noCache {
 		cache.DisableCache()
+		if verbose {
+			fmt.Println("Debug: Cache disabled.")
+		}
 	}
 
 	a := &Analysis{
@@ -117,12 +140,31 @@ func NewAnalysis(
 		WithDoc:        withDoc,
 		WithStats:      withStats,
 	}
+	if verbose {
+		fmt.Print("Debug: Analysis configuration loaded, ")
+		fmt.Printf("filters=%v, language=%s, ", filters, language)
+		if namespace == "" {
+			fmt.Printf("namespace=none, ")
+		} else {
+			fmt.Printf("namespace=%s, ", namespace)
+		}
+		if labelSelector == "" {
+			fmt.Printf("labelSelector=none, ")
+		} else {
+			fmt.Printf("labelSelector=%s, ", labelSelector)
+		}
+		fmt.Printf("explain=%t, maxConcurrency=%d, ", explain, maxConcurrency)
+		fmt.Printf("withDoc=%t, withStats=%t.\n", withDoc, withStats)
+	}
 	if !explain {
 		// Return early if AI use was not requested.
 		return a, nil
 	}
 
 	var configAI ai.AIConfiguration
+	if verbose {
+		fmt.Println("Debug: Checking AI configuration.")
+	}
 	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
 		return nil, err
 	}
@@ -135,10 +177,16 @@ func NewAnalysis(
 	// Hence, use the default provider only if the backend is not specified by the user.
 	if configAI.DefaultProvider != "" && backend == "" {
 		backend = configAI.DefaultProvider
+		if verbose {
+			fmt.Printf("Debug: Using default AI provider %s.\n", backend)
+		}
 	}
 
 	if backend == "" {
 		backend = "openai"
+		if verbose {
+			fmt.Printf("Debug: Using default AI provider %s.\n", backend)
+		}
 	}
 
 	var aiProvider ai.AIProvider
@@ -153,11 +201,23 @@ func NewAnalysis(
 		return nil, fmt.Errorf("AI provider %s not specified in configuration. Please run k8sgpt auth", backend)
 	}
 
+	if verbose {
+		fmt.Printf("Debug: AI configuration loaded, provider=%s, ", backend)
+		fmt.Printf("baseUrl=%s, model=%s.\n", aiProvider.BaseURL, aiProvider.Model)
+	}
+
 	aiClient := ai.NewClient(aiProvider.Name)
+
 	customHeaders := util.NewHeaders(httpHeaders)
 	aiProvider.CustomHeaders = append(aiProvider.CustomHeaders, customHeaders...)
+	if verbose {
+		fmt.Println("Debug: Checking AI client initialization.")
+	}
 	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
+	}
+	if verbose {
+		fmt.Println("Debug: AI client initialized.")
 	}
 	a.AIClient = aiClient
 	a.AnalysisAIProvider = aiProvider.Name
@@ -173,15 +233,45 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 }
 
 func (a *Analysis) RunCustomAnalysis() {
+	// Validate namespace if specified, consistent with built-in filter behavior
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if err != nil {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	var customAnalyzers []custom.CustomAnalyzer
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
 		return
 	}
 
-	semaphore := make(chan struct{}, a.MaxConcurrency)
+	// Set a reasonable maximum for concurrency to prevent excessive memory allocation
+	const maxAllowedConcurrency = 100
+	concurrency := a.MaxConcurrency
+	if concurrency <= 0 {
+		concurrency = 10 // Default value if not set
+	} else if concurrency > maxAllowedConcurrency {
+		concurrency = maxAllowedConcurrency // Cap at a reasonable maximum
+	}
+
+	semaphore := make(chan struct{}, concurrency)
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
+	verbose := viper.GetBool("verbose")
+	if verbose {
+		if len(customAnalyzers) == 0 {
+			fmt.Println("Debug: No custom analyzers found.")
+		} else {
+			cAnalyzerNames := make([]string, len(customAnalyzers))
+			for i, cAnalyzer := range customAnalyzers {
+				cAnalyzerNames[i] = cAnalyzer.Name
+			}
+			fmt.Printf("Debug: Found custom analyzers %v.\n", cAnalyzerNames)
+		}
+	}
 	for _, cAnalyzer := range customAnalyzers {
 		wg.Add(1)
 		semaphore <- struct{}{}
@@ -194,8 +284,32 @@ func (a *Analysis) RunCustomAnalysis() {
 				mutex.Unlock()
 				return
 			}
+			if verbose {
+				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
+			}
 
 			result, err := canClient.Run()
+			if err == nil && result.Name == "" && len(result.Error) == 0 {
+				// The analyzer returned RunResponse.Result == nil, i.e. "I ran and found nothing".
+				// custom.Client.Run() only populates its result when Result != nil, so what we hold
+				// here is the zero value: no Name, no Error.
+				//
+				// Appending it produces a result no consumer can use, and it is actively harmful to
+				// k8sgpt-operator: MapResults derives Result.metadata.name from result.Name, so an
+				// empty Name yields an object that fails CRD validation ("metadata.name: Required
+				// value, spec.error: Required value"). processRawResults returns on the first such
+				// failure, so ONE analyzer with no findings aborts the reconcile before the
+				// remaining results are written — and because it ranges over a map, the subset that
+				// survives differs every cycle.
+				//
+				// Skipping it is also what the CLI already implies: a custom analyzer with nothing
+				// to report should contribute nothing, not an empty entry.
+				if verbose {
+					fmt.Printf("Debug: %s completed with no findings.\n", cAnalyzer.Name)
+				}
+				<-semaphore
+				return
+			}
 			if result.Kind == "" {
 				// for custom analyzer name, we must use a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.',
 				//and must start and end with an alphanumeric character (e.g. 'example.com',
@@ -206,10 +320,16 @@ func (a *Analysis) RunCustomAnalysis() {
 				mutex.Lock()
 				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
 				mutex.Unlock()
+				if verbose {
+					fmt.Printf("Debug: %s completed with errors.\n", cAnalyzer.Name)
+				}
 			} else {
 				mutex.Lock()
 				a.Results = append(a.Results, result)
 				mutex.Unlock()
+				if verbose {
+					fmt.Printf("Debug: %s completed without errors.\n", cAnalyzer.Name)
+				}
 			}
 			<-semaphore
 		}(cAnalyzer, &wg, semaphore)
@@ -218,7 +338,22 @@ func (a *Analysis) RunCustomAnalysis() {
 }
 
 func (a *Analysis) RunAnalysis() {
+	// Validate namespace if specified; otherwise a typo'd namespace silently
+	// yields empty results from every analyzer, misreporting a clean cluster.
+	// Only abort on a confirmed NotFound: a service account scoped to a single
+	// namespace often cannot Get the Namespace object itself, and that
+	// Forbidden (or any other transient) error must not block an analysis
+	// that would otherwise succeed.
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	activeFilters := viper.GetStringSlice("active_filters")
+	verbose := viper.GetBool("verbose")
 
 	coreAnalyzerMap, analyzerMap := analyzer.GetAnalyzerMap()
 
@@ -227,7 +362,13 @@ func (a *Analysis) RunAnalysis() {
 	if a.WithDoc {
 		var openApiErr error
 
+		if verbose {
+			fmt.Println("Debug: Fetching Kubernetes docs.")
+		}
 		openapiSchema, openApiErr = a.Client.Client.Discovery().OpenAPISchema()
+		if verbose {
+			fmt.Println("Debug: Checking Kubernetes docs.")
+		}
 		if openApiErr != nil {
 			a.Errors = append(a.Errors, fmt.Sprintf("[KubernetesDoc] %s", openApiErr))
 		}
@@ -238,15 +379,28 @@ func (a *Analysis) RunAnalysis() {
 		Context:       a.Context,
 		Namespace:     a.Namespace,
 		LabelSelector: a.LabelSelector,
+		ResourceName:  a.ResourceName,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
 
-	semaphore := make(chan struct{}, a.MaxConcurrency)
+	// Set a reasonable maximum for concurrency to prevent excessive memory allocation
+	const maxAllowedConcurrency = 100
+	concurrency := a.MaxConcurrency
+	if concurrency <= 0 {
+		concurrency = 10 // Default value if not set
+	} else if concurrency > maxAllowedConcurrency {
+		concurrency = maxAllowedConcurrency // Cap at a reasonable maximum
+	}
+
+	semaphore := make(chan struct{}, concurrency)
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
+		if verbose {
+			fmt.Println("Debug: No filters selected and no active filters found, run all core analyzers.")
+		}
 		for name, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
 			semaphore <- struct{}{}
@@ -258,6 +412,9 @@ func (a *Analysis) RunAnalysis() {
 	}
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
+		if verbose {
+			fmt.Printf("Debug: Filter flags %v specified, run selected core analyzers.\n", a.Filters)
+		}
 		for _, filter := range a.Filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
 				semaphore <- struct{}{}
@@ -272,6 +429,9 @@ func (a *Analysis) RunAnalysis() {
 	}
 
 	// use active_filters
+	if len(activeFilters) > 0 && verbose {
+		fmt.Printf("Debug: Found active filters %v, run selected core analyzers.\n", activeFilters)
+	}
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
 			semaphore <- struct{}{}
@@ -294,8 +454,14 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	}
 
 	// Run the analyzer
+	verbose := viper.GetBool("verbose")
+	if verbose {
+		fmt.Printf("Debug: %s launched.\n", reflect.TypeOf(analyzer).Name())
+	}
 	results, err := analyzer.Analyze(analyzerConfig)
-
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Measure the time taken
 	if a.WithStats {
 		elapsedTime = time.Since(startTime)
@@ -313,18 +479,147 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 			a.Stats = append(a.Stats, stat)
 		}
 		a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
+		if verbose {
+			fmt.Printf("Debug: %s completed with errors.\n", reflect.TypeOf(analyzer).Name())
+		}
 	} else {
 		if a.WithStats {
 			a.Stats = append(a.Stats, stat)
 		}
 		a.Results = append(a.Results, results...)
+		if verbose {
+			fmt.Printf("Debug: %s completed without errors.\n", reflect.TypeOf(analyzer).Name())
+		}
 	}
 	<-semaphore
+}
+
+// resourceSensitive derives masking pairs from a result's own identity.
+//
+// Result.Name is the path the analyzer keyed the resource on: "namespace/name"
+// for namespaced resources, "namespace/pod/container" for the container-level
+// analyzers, and a bare name for cluster-scoped ones such as Node. Those
+// segments are exactly the identifiers that appear verbatim inside Kubernetes
+// event messages and status conditions, which analyzers copy straight into
+// Failure.Text with an empty Failure.Sensitive, so they reach the AI provider
+// unmasked even under --anonymize (issue #560).
+//
+// Deriving them here covers every analyzer at once, including the ones that
+// never populated Sensitive and any added later. Analyzers that do declare
+// their own entries keep working: the two sets compose.
+func resourceSensitive(name string) []common.Sensitive {
+	var sensitive []common.Sensitive
+	for _, segment := range strings.Split(name, "/") {
+		// Masking the empty string would match everywhere and shred the text
+		// in both directions.
+		if segment == "" {
+			continue
+		}
+		sensitive = append(sensitive, common.Sensitive{
+			Unmasked: segment,
+			Masked:   util.MaskString(segment),
+		})
+	}
+	return sensitive
+}
+
+// sensitiveMapping merges the pairs the analyzers declared with the ones
+// derived from the result's identity into a single deduplicated set, ordered
+// longest unmasked value first.
+//
+// The values overlap. A result named "prod/api-prod" derives both "prod" and
+// "api-prod", and a declared value can contain a derived one the same way.
+// Applying the pairs one at a time in declaration order masks the "prod"
+// suffix inside the pod name first, after which "api-prod" no longer matches
+// and "api-" is left in the prompt. Ordering longest first and replacing in a
+// single pass (see maskText) matches the complete identifier instead.
+//
+// Deduplicating on the unmasked value also keeps one identifier from having
+// two different masks, which would only be reversed by whichever pair the
+// unmasking happened to reach first.
+func sensitiveMapping(sets ...[]common.Sensitive) []common.Sensitive {
+	seen := make(map[string]bool)
+	var mapping []common.Sensitive
+	for _, set := range sets {
+		for _, s := range set {
+			// An empty value matches at every position and would shred the
+			// text in either direction.
+			if s.Unmasked == "" || s.Masked == "" || seen[s.Unmasked] {
+				continue
+			}
+			seen[s.Unmasked] = true
+			mapping = append(mapping, s)
+		}
+	}
+	sort.SliceStable(mapping, func(i, j int) bool {
+		return len(mapping[i].Unmasked) > len(mapping[j].Unmasked)
+	})
+	return mapping
+}
+
+// replaceLongestFirst rewrites every needle in one left-to-right pass, so a
+// replacement it just wrote is never itself rewritten by a later pair.
+//
+// Go's regexp prefers the earliest alternative that matches at a position, so
+// listing the needles longest first is what makes a complete identifier win
+// over a shorter one nested in it. The needles are literal values, not
+// patterns, hence QuoteMeta: node names are routinely FQDNs whose "." would
+// otherwise match any character, and masks are base64 that can contain "+"
+// and "/".
+func replaceLongestFirst(text string, needles []string, replacement map[string]string, suffix string) string {
+	if len(needles) == 0 {
+		return text
+	}
+	alternatives := make([]string, 0, len(needles))
+	for _, needle := range needles {
+		alternatives = append(alternatives, regexp.QuoteMeta(needle))
+	}
+	re := regexp.MustCompile(`(?:` + strings.Join(alternatives, "|") + `)` + suffix)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		return replacement[match]
+	})
+}
+
+func maskText(text string, mapping []common.Sensitive) string {
+	needles := make([]string, 0, len(mapping))
+	masked := make(map[string]string, len(mapping))
+	for _, s := range mapping {
+		needles = append(needles, s.Unmasked)
+		masked[s.Unmasked] = s.Masked
+	}
+	// The trailing boundary preserves the behaviour of util.ReplaceIfMatch: a
+	// value is redacted where it ends a word, not in the middle of a longer
+	// identifier that merely starts with it.
+	return replaceLongestFirst(text, needles, masked, `\b`)
+}
+
+func unmaskText(text string, mapping []common.Sensitive) string {
+	ordered := make([]common.Sensitive, len(mapping))
+	copy(ordered, mapping)
+	// Longest first again, this time on the masks, since an analyzer is free
+	// to declare a mask that contains another one.
+	sort.SliceStable(ordered, func(i, j int) bool {
+		return len(ordered[i].Masked) > len(ordered[j].Masked)
+	})
+
+	needles := make([]string, 0, len(ordered))
+	unmasked := make(map[string]string, len(ordered))
+	for _, s := range ordered {
+		needles = append(needles, s.Masked)
+		unmasked[s.Masked] = s.Unmasked
+	}
+	// No boundary on the way back: base64 masks can end in "=".
+	return replaceLongestFirst(text, needles, unmasked, "")
 }
 
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
+	}
+
+	verbose := viper.GetBool("verbose")
+	if verbose {
+		fmt.Println("Debug: Generating AI analysis.")
 	}
 
 	var bar *progressbar.ProgressBar
@@ -335,11 +630,27 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	for index, analysis := range a.Results {
 		var texts []string
 
+		// Analyzers only mask what they explicitly declare in Failure.Sensitive,
+		// and most declare nothing for event-derived failures, so mask the
+		// resource's own identity as well. See resourceSensitive. One mapping
+		// covers the whole result in both directions, so overlapping values
+		// resolve the same way going out and coming back.
+		var mapping []common.Sensitive
+		if anonymize {
+			sets := make([][]common.Sensitive, 0, len(analysis.Error)+1)
+			for _, failure := range analysis.Error {
+				sets = append(sets, failure.Sensitive)
+			}
+			mapping = sensitiveMapping(append(sets, resourceSensitive(analysis.Name))...)
+		}
+
+		if bar != nil && verbose {
+			bar.Describe(fmt.Sprintf("Analyzing %s", analysis.Kind))
+		}
+
 		for _, failure := range analysis.Error {
 			if anonymize {
-				for _, s := range failure.Sensitive {
-					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
-				}
+				failure.Text = maskText(failure.Text, mapping)
 			}
 			texts = append(texts, failure.Text)
 		}
@@ -366,11 +677,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		}
 
 		if anonymize {
-			for _, failure := range analysis.Error {
-				for _, s := range failure.Sensitive {
-					result = strings.ReplaceAll(result, s.Masked, s.Unmasked)
-				}
-			}
+			result = unmaskText(result, mapping)
 		}
 
 		analysis.Details = result
@@ -405,6 +712,24 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 	// Process template.
 	prompt := fmt.Sprintf(strings.TrimSpace(promptTmpl), a.Language, inputKey)
+	if a.AIClient.GetName() == ai.CustomRestClientName {
+		// Use proper JSON marshaling to handle special characters in error messages
+		// This fixes issues with quotes, newlines, and other special chars in inputKey
+		customRestPrompt := struct {
+			Language string `json:"language"`
+			Message  string `json:"message"`
+			Prompt   string `json:"prompt"`
+		}{
+			Language: a.Language,
+			Message:  inputKey,
+			Prompt:   prompt,
+		}
+		promptBytes, err := json.Marshal(customRestPrompt)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal customrest prompt: %w", err)
+		}
+		prompt = string(promptBytes)
+	}
 	response, err := a.AIClient.GetCompletion(a.Context, prompt)
 	if err != nil {
 		return "", err

@@ -16,6 +16,8 @@ package analyzer
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/fields"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,13 +37,15 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 	gcList := &gtwapi.GatewayClassList{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
-	if err := client.List(a.Context, gcList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
+	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
+	// Same push-down as the typed analyzers: the CtrlClient is a direct
+	// (uncached) client, so a field selector is served by the API server.
+	if a.ResourceName != "" {
+		listOpts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName)
+	}
+	if err := client.List(a.Context, gcList, listOpts); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
@@ -53,7 +57,7 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 
 		gcName := gc.GetName()
 		// Check only the current condition
-		if gc.Status.Conditions[0].Status != metav1.ConditionTrue {
+		if len(gc.Status.Conditions) > 0 && gc.Status.Conditions[0].Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
 					"GatewayClass '%s' with a controller name '%s' is not accepted. Message: '%s'.",

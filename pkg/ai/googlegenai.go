@@ -41,7 +41,7 @@ func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
 	// Access your API key as an environment variable (see "Set up your API key" above)
 	token := config.GetPassword()
 	authOption := option.WithAPIKey(token)
-	if token[0] == '{' {
+	if len(token) > 0 && token[0] == '{' {
 		authOption = option.WithCredentialsJSON([]byte(token))
 	}
 
@@ -80,10 +80,10 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 				if !r.Blocked {
 					continue
 				}
-				return "", fmt.Errorf("complection blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
+				return "", fmt.Errorf("completion blocked due to %v with probability %v", r.Category.String(), r.Probability.String())
 			}
 		}
-		return "", errors.New("no complection returned; unknown reason")
+		return "", errors.New("no completion returned; unknown reason")
 	}
 
 	// Format output.

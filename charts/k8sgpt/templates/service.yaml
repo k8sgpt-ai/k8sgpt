@@ -19,4 +19,9 @@ spec:
     - name: metrics
       port: 8081
       targetPort: 8081
+    {{- if .Values.deployment.mcp.enabled }}
+    - name: mcp
+      port: {{ .Values.deployment.mcp.port | int }}
+      targetPort: {{ .Values.deployment.mcp.port | int }}
+    {{- end }}
   type: {{ .Values.service.type }}

@@ -14,7 +14,11 @@ limitations under the License.
 package util
 
 import (
+	"context"
+	"encoding/base64"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
@@ -23,8 +27,70 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
+
+func TestFetchLatestEventScopesToObjectIdentity(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(1, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "pod-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Pod",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("pod-uid"),
+			},
+			Reason:        "FailedMount",
+			LastTimestamp: metav1.NewTime(time.Unix(2, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "stale-job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("old-job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(3, 0)),
+		},
+	)
+	kubeClient := &kubernetes.Client{Client: clientset}
+
+	event, err := FetchLatestEvent(context.Background(), kubeClient, v1.ObjectReference{
+		Kind:      "Job",
+		Namespace: "default",
+		Name:      "worker",
+		UID:       types.UID("job-uid"),
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, event)
+	require.Equal(t, "job-event", event.Name)
+	require.Len(t, clientset.Actions(), 1)
+	listAction, ok := clientset.Actions()[0].(interface {
+		GetListRestrictions() k8stesting.ListRestrictions
+	})
+	require.True(t, ok)
+	require.Equal(t,
+		"involvedObject.kind=Job,involvedObject.name=worker,involvedObject.uid=job-uid",
+		listAction.GetListRestrictions().Fields.String(),
+	)
+}
 
 func TestGetParent(t *testing.T) {
 	ownerName := "test-name"
@@ -247,6 +313,42 @@ func TestReplaceIfMatch(t *testing.T) {
 			pattern:        "value",
 			replacement:    "day",
 			expectedOutput: "new day",
+		},
+		{
+			// An empty pattern compiles to `(\b)`, which matches at every word
+			// boundary and would rewrite the whole text.
+			text:           "new value",
+			pattern:        "",
+			replacement:    "X",
+			expectedOutput: "new value",
+		},
+		{
+			// The pattern is a literal to redact, not a regex: "." must not
+			// match an arbitrary character.
+			text:           "abc",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "abc",
+		},
+		{
+			text:           "a.c",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "X",
+		},
+		{
+			// Node names are routinely FQDNs; the dots must be literal.
+			text:           "node ip-10-0-1-2.ec2.internal is NotReady",
+			pattern:        "ip-10-0-1-2.ec2.internal",
+			replacement:    "MASKED",
+			expectedOutput: "node MASKED is NotReady",
+		},
+		{
+			// An unescaped "[" is an invalid regex and would panic MustCompile.
+			text:           "a[b value",
+			pattern:        "a[b",
+			replacement:    "X",
+			expectedOutput: "X value",
 		},
 	}
 	for _, tt := range tests {
@@ -502,4 +604,75 @@ func TestLabelsIncludeAny(t *testing.T) {
 			require.Equal(t, tt.ok, LabelsIncludeAny(tt.p, tt.m))
 		})
 	}
+}
+
+func TestMaskString(t *testing.T) {
+	input := "mysecret"
+	masked := MaskString(input)
+	// decode base64 to compare properties
+	decoded, err := base64.StdEncoding.DecodeString(masked)
+	require.NoError(t, err)
+	require.Len(t, decoded, len(input))
+	// ensure it is not equal to input
+	require.NotEqual(t, input, string(decoded))
+	// ensure all runes are from anonymizePattern
+	allowed := make(map[rune]struct{})
+	for _, r := range anonymizePattern {
+		allowed[r] = struct{}{}
+	}
+	for _, r := range string(decoded) {
+		_, ok := allowed[r]
+		require.True(t, ok, "unexpected rune: %q", r)
+	}
+}
+
+func TestNewHeaders(t *testing.T) {
+	input := []string{
+		"X-Test: foo",
+		"X-Test: bar",
+		"Content-Type: application/json",
+		"InvalidHeader", // should be ignored
+	}
+	hs := NewHeaders(input)
+	// flatten to a map for easier assertions
+	got := map[string][]string{}
+	for _, h := range hs {
+		for k, v := range h {
+			got[k] = append(got[k], v...)
+		}
+	}
+	// expected values
+	require.Contains(t, got, "X-Test")
+	require.Contains(t, got, "Content-Type")
+	// order of values is not guaranteed
+	require.ElementsMatch(t, []string{"foo", "bar"}, got["X-Test"])
+	require.ElementsMatch(t, []string{"application/json"}, got["Content-Type"])
+}
+
+func TestLabelStrToSelector(t *testing.T) {
+	// empty case returns nil
+	require.Nil(t, LabelStrToSelector(""))
+
+	sel := LabelStrToSelector("key=value,foo=bar")
+	require.NotNil(t, sel)
+
+	// matches exact set
+	m := map[string]string{"key": "value", "foo": "bar"}
+	require.True(t, sel.Matches(labels.Set(m)))
+
+	// does not match different values
+	m2 := map[string]string{"key": "other", "foo": "bar"}
+	require.False(t, sel.Matches(labels.Set(m2)))
+}
+
+func TestCaptureOutput(t *testing.T) {
+	out := CaptureOutput(func() {
+		fmt.Print("hello world")
+	})
+	require.Equal(t, "hello world", out)
+}
+
+func TestContains(t *testing.T) {
+	require.True(t, Contains("abcdef", "bcd"))
+	require.False(t, Contains("abcdef", "xyz"))
 }

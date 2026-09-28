@@ -33,26 +33,40 @@ var (
 
 var coreAnalyzerMap = map[string]common.IAnalyzer{
 	"Pod":                            PodAnalyzer{},
+	"DaemonSet":                      DaemonSetAnalyzer{},
 	"Deployment":                     DeploymentAnalyzer{},
 	"ReplicaSet":                     ReplicaSetAnalyzer{},
 	"PersistentVolumeClaim":          PvcAnalyzer{},
 	"Service":                        ServiceAnalyzer{},
 	"Ingress":                        IngressAnalyzer{},
 	"StatefulSet":                    StatefulSetAnalyzer{},
+	"Job":                            JobAnalyzer{},
 	"CronJob":                        CronJobAnalyzer{},
 	"Node":                           NodeAnalyzer{},
 	"ValidatingWebhookConfiguration": ValidatingWebhookAnalyzer{},
 	"MutatingWebhookConfiguration":   MutatingWebhookAnalyzer{},
+	"ConfigMap":                      ConfigMapAnalyzer{},
 }
 
 var additionalAnalyzerMap = map[string]common.IAnalyzer{
-	"HorizontalPodAutoScaler": HpaAnalyzer{},
-	"PodDisruptionBudget":     PdbAnalyzer{},
-	"NetworkPolicy":           NetworkPolicyAnalyzer{},
-	"Log":                     LogAnalyzer{},
-	"GatewayClass":            GatewayClassAnalyzer{},
-	"Gateway":                 GatewayAnalyzer{},
-	"HTTPRoute":               HTTPRouteAnalyzer{},
+	"HorizontalPodAutoscaler":   HpaAnalyzer{},
+	"PodDisruptionBudget":       PdbAnalyzer{},
+	"NetworkPolicy":             NetworkPolicyAnalyzer{},
+	"Log":                       LogAnalyzer{},
+	"GatewayClass":              GatewayClassAnalyzer{},
+	"Gateway":                   GatewayAnalyzer{},
+	"HTTPRoute":                 HTTPRouteAnalyzer{},
+	"Storage":                   StorageAnalyzer{},
+	"Security":                  SecurityAnalyzer{},
+	"ClusterCatalog":            ClusterCatalogAnalyzer{},
+	"ClusterExtension":          ClusterExtensionAnalyzer{},
+	"ClusterServiceVersion":     ClusterServiceVersionAnalyzer{},
+	"Subscription":              SubscriptionAnalyzer{},
+	"InstallPlan":               InstallPlanAnalyzer{},
+	"CatalogSource":             CatalogSourceAnalyzer{},
+	"OperatorGroup":             OperatorGroupAnalyzer{},
+	"ValidatingAdmissionPolicy": ValidatingAdmissionPolicyAnalyzer{},
+	"ResourceClaim":             ResourceClaimAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {

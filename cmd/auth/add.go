@@ -20,15 +20,18 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
-	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/term"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 )
 
 const (
-	defaultBackend = "openai"
-	defaultModel   = "gpt-3.5-turbo"
+	defaultBackend        = "openai"
+	defaultModel          = "gpt-4o"
+	anthropicDefaultModel = "claude-3-5-sonnet-latest"
 )
 
 var addCmd = &cobra.Command{
@@ -48,6 +51,12 @@ var addCmd = &cobra.Command{
 		if strings.ToLower(backend) == "amazonbedrock" {
 			_ = cmd.MarkFlagRequired("providerRegion")
 		}
+		if strings.ToLower(backend) == "amazonbedrockconverse" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
+		if strings.ToLower(backend) == "bedrockmantle" {
+			_ = cmd.MarkFlagRequired("providerRegion")
+		}
 		if strings.ToLower(backend) == "ibmwatsonxai" {
 			_ = cmd.MarkFlagRequired("providerId")
 		}
@@ -63,11 +72,21 @@ var addCmd = &cobra.Command{
 			return false
 		}
 
-		// check if backend is not empty and a valid value
-		if backend == "" {
+		switch backend {
+		case "": // check if backend is not empty and a valid value
 			color.Yellow(fmt.Sprintf("Warning: backend input is empty, will use the default value: %s", defaultBackend))
 			backend = defaultBackend
-		} else {
+		case "azureopenai":
+			azureAPIType, _ := cmd.Flags().GetString("azureAPIType")
+
+			switch openai.APIType(azureAPIType) {
+			case "", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure:
+				// valid types
+			default:
+				color.Red("Error: Valid values of azureAPIType for azureopenai backends are AZURE, AZURE_AD or CLOUDFLARE_AZURE")
+				os.Exit(1)
+			}
+		default:
 			if !validBackend(ai.Backends, backend) {
 				color.Red("Error: Backend AI accepted values are '%v'", strings.Join(ai.Backends, ", "))
 				os.Exit(1)
@@ -98,8 +117,12 @@ var addCmd = &cobra.Command{
 
 		// check if model is not empty
 		if model == "" {
-			model = defaultModel
-			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", defaultModel))
+			fallbackModel := defaultModel
+			if backend == "anthropic" {
+				fallbackModel = anthropicDefaultModel
+			}
+			model = fallbackModel
+			color.Yellow(fmt.Sprintf("Warning: model input is empty, will use the default value: %s", fallbackModel))
 		}
 		if temperature > 1.0 || temperature < 0.0 {
 			color.Red("Error: temperature ranges from 0 to 1.")
@@ -126,22 +149,7 @@ var addCmd = &cobra.Command{
 		}
 
 		// create new provider object
-		newProvider := ai.AIProvider{
-			Name:           backend,
-			Model:          model,
-			Password:       password,
-			BaseURL:        baseURL,
-			EndpointName:   endpointName,
-			Engine:         engine,
-			Temperature:    temperature,
-			ProviderRegion: providerRegion,
-			ProviderId:     providerId,
-			CompartmentId:  compartmentId,
-			TopP:           topP,
-			TopK:           topK,
-			MaxTokens:      maxTokens,
-			OrganizationId: organizationId,
-		}
+		newProvider := newAIProviderFromAuthFlags(backend)
 
 		if providerIndex == -1 {
 			// provider with same name does not exist, add new provider to list
@@ -160,7 +168,7 @@ func init() {
 	// add flag for backend
 	addCmd.Flags().StringVarP(&backend, "backend", "b", defaultBackend, "Backend AI provider")
 	// add flag for model
-	addCmd.Flags().StringVarP(&model, "model", "m", defaultModel, "Backend AI model")
+	addCmd.Flags().StringVarP(&model, "model", "m", "", "Backend AI model")
 	// add flag for password
 	addCmd.Flags().StringVarP(&password, "password", "p", "", "Backend AI password")
 	// add flag for url
@@ -173,16 +181,22 @@ func init() {
 	addCmd.Flags().Int32VarP(&topK, "topk", "c", 50, "Sampling Cutoff: Set a threshold (1-100) to restrict the sampling process to the top K most probable words at each step. Higher values lead to greater variability, lower values increases predictability.")
 	// max tokens
 	addCmd.Flags().IntVarP(&maxTokens, "maxtokens", "l", 2048, "Specify a maximum output length. Adjust (1-...) to control text length. Higher values produce longer output, lower values limit length")
+	// stop sequences
+	addCmd.Flags().StringSliceVarP(&stopSequences, "stopsequences", "s", []string{}, "Stop Sequences: Define specific tokens or phrases that signal the model to stop generating text.")
 	// add flag for temperature
 	addCmd.Flags().Float32VarP(&temperature, "temperature", "t", 0.7, "The sampling temperature, value ranges between 0 ( output be more deterministic) and 1 (more random)")
 	// add flag for azure open ai engine/deployment name
 	addCmd.Flags().StringVarP(&engine, "engine", "e", "", "Azure AI deployment name (only for azureopenai backend)")
 	//add flag for amazonbedrock region name
-	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, googlevertexai backend)")
+	addCmd.Flags().StringVarP(&providerRegion, "providerRegion", "r", "", "Provider Region name (only for amazonbedrock, amazonbedrockconverse, bedrockmantle, googlevertexai backend)")
 	//add flag for vertexAI/WatsonxAI Project ID
 	addCmd.Flags().StringVarP(&providerId, "providerId", "i", "", "Provider specific ID for e.g. project (only for googlevertexai/ibmwatsonxai backend)")
-	//add flag for OCI Compartment ID
+	// add flag for OCI Compartment ID
 	addCmd.Flags().StringVarP(&compartmentId, "compartmentId", "k", "", "Compartment ID for generative AI model (only for oci backend)")
 	// add flag for openai organization
 	addCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "OpenAI or AzureOpenAI Organization ID (only for openai and azureopenai backend)")
+	// add flag for azure open ai APIType name
+	addCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
+	// add flag for azure open ai API version
+	addCmd.Flags().StringVarP(&azureAPIVersion, "azureAPIVersion", "", "", "AzureOpenAI API version, e.g. 2024-02-15-preview (only for azureopenai backend)")
 }

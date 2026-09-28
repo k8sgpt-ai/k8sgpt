@@ -9,7 +9,6 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7272/badge)](https://bestpractices.coreinfrastructure.org/projects/7272)
 [![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_shield)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go version](https://img.shields.io/github/go-mod/go-version/k8sgpt-ai/k8sgpt.svg)](https://github.com/k8sgpt-ai/k8sgpt)
 [![codecov](https://codecov.io/github/k8sgpt-ai/k8sgpt/graph/badge.svg?token=ZLR7NG8URE)](https://codecov.io/github/k8sgpt-ai/k8sgpt)
@@ -21,17 +20,34 @@ It has SRE experience codified into its analyzers and helps to pull out the most
 
 _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google Gemini and local models._
 
+
+> **Sister project:** Check out [sympozium](https://github.com/AlexsJones/sympozium/) for managing agents in Kubernetes.
+
+
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a> <a href="https://hellogithub.com/repository/9dfe44c18dfb4d6fa0181baf8b2cf2e1" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=9dfe44c18dfb4d6fa0181baf8b2cf2e1&claim_uid=gqG4wmzkMrP0eFy" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 
-<img src="images/demo4.gif" width=650px; />
+<img src="images/demo4.gif" width="650px">
+
+# Table of Contents
+- [Overview](#k8sgpt)
+- [Installation](#cli-installation)
+- [Quick Start](#quick-start)
+- [Analyzers](#analyzers)
+- [Examples](#examples)
+- [LLM AI Backends](#llm-ai-backends)
+- [Key Features](#key-features)
+- [Model Context Protocol (MCP)](#model-context-protocol-mcp)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Community](#community)
 
 # CLI Installation
 
 ### Linux/Mac via brew
 
 ```sh
-$ brew install k8sgpt
+brew install k8sgpt
 ```
 
 or
@@ -49,7 +65,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -57,7 +73,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -70,7 +86,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -81,7 +97,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -96,7 +112,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -105,7 +121,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.3.47/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -133,7 +149,7 @@ If you install gcc as suggested, the problem will persist. Therefore, you need t
 
 - Download the latest Windows binaries of **k8sgpt** from the [Release](https://github.com/k8sgpt-ai/k8sgpt/releases)
   tab based on your system architecture.
-- Extract the downloaded package to your desired location. Configure the system _path_ variable with the binary location
+- Extract the downloaded package to your desired location. Configure the system _PATH_ environment variable with the binary location
 
 ## Operator Installation
 
@@ -152,6 +168,76 @@ _This mode of operation is ideal for continuous monitoring of your cluster and c
 - And use `k8sgpt analyze --explain` to get a more detailed explanation of the issues.
 - You also run `k8sgpt analyze --with-doc` (with or without the explain flag) to get the official documentation from Kubernetes.
 
+# Using with Claude Desktop
+
+K8sGPT can be integrated with Claude Desktop to provide AI-powered Kubernetes cluster analysis. This integration requires K8sGPT v0.4.14 or later.
+
+## Prerequisites
+
+1. Install K8sGPT v0.4.14 or later:
+   ```sh
+   brew install k8sgpt
+   ```
+
+2. Install Claude Desktop from the official website
+
+3. Configure K8sGPT with your preferred AI backend:
+   ```sh
+   k8sgpt auth
+   ```
+
+## Setup
+
+1. Start the K8sGPT MCP server:
+   ```sh
+   k8sgpt serve --mcp
+   ```
+
+2. In Claude Desktop:
+   - Open Settings
+   - Navigate to the Integrations section
+   - Add K8sGPT as a new integration
+   - The MCP server will be automatically detected
+
+3. Configure Claude Desktop with the following JSON:
+
+  ```json
+  {
+    "mcpServers": {
+      "k8sgpt": {
+        "command": "k8sgpt",
+        "args": [
+          "serve",
+          "--mcp"
+        ]
+      }
+    }
+  }
+  ```
+
+## Usage
+
+Once connected, you can use Claude Desktop to:
+- Analyze your Kubernetes cluster
+- Get detailed insights about cluster health
+- Receive recommendations for fixing issues
+- Query cluster information
+
+Example commands in Claude Desktop:
+- "Analyze my Kubernetes cluster"
+- "What's the health status of my cluster?"
+- "Show me any issues in the default namespace"
+
+## Troubleshooting
+
+If you encounter connection issues:
+1. Ensure K8sGPT is running with the MCP server enabled
+2. Verify your Kubernetes cluster is accessible
+3. Check that your AI backend is properly configured
+4. Restart both K8sGPT and Claude Desktop
+
+For more information, visit our [documentation](https://docs.k8sgpt.ai).
+
 ## Analyzers
 
 K8sGPT uses analyzers to triage and diagnose issues in your cluster. It has a set of analyzers that are built in, but
@@ -169,10 +255,12 @@ you will be able to write your own analyzers.
 - [x] ingressAnalyzer
 - [x] statefulSetAnalyzer
 - [x] deploymentAnalyzer
+- [x] jobAnalyzer
 - [x] cronJobAnalyzer
 - [x] nodeAnalyzer
 - [x] mutatingWebhookAnalyzer
 - [x] validatingWebhookAnalyzer
+- [x] configMapAnalyzer
 
 #### Optional
 
@@ -183,6 +271,18 @@ you will be able to write your own analyzers.
 - [x] gateway
 - [x] httproute
 - [x] logAnalyzer
+- [x] storageAnalyzer
+- [x] securityAnalyzer
+- [x] CatalogSource
+- [x] ClusterCatalog
+- [x] ClusterExtension
+- [x] ClusterService
+- [x] ClusterServiceVersion
+- [x] OperatorGroup
+- [x] InstallPlan
+- [x] Subscription
+- [x] ValidatingAdmissionPolicy
+- [x] ResourceClaim
 
 ## Examples
 
@@ -304,6 +404,26 @@ _Serve mode_
 k8sgpt serve
 ```
 
+_Serve mode with MCP (Model Context Protocol)_
+
+```
+# Enable MCP server on default port 8089
+k8sgpt serve --mcp --mcp-http
+
+# Enable MCP server on custom port
+k8sgpt serve --mcp --mcp-http --mcp-port 8089
+
+# Full serve mode with MCP
+k8sgpt serve --mcp --mcp-http --port 8080 --metrics-port 8081 --mcp-port 8089
+```
+
+The MCP server enables integration with tools like Claude Desktop and other MCP-compatible clients. It runs on port 8089 by default and provides:
+- Kubernetes cluster analysis via MCP protocol
+- Resource information and health status
+- AI-powered issue explanations and recommendations
+
+For Helm chart deployment with MCP support, see the `charts/k8sgpt/values-mcp-example.yaml` file.
+
 _Analysis with serve mode_
 
 ```
@@ -324,14 +444,14 @@ _Print analysis stats_
 ```
 k8sgpt analyze -s
 The stats mode allows for debugging and understanding the time taken by an analysis by displaying the statistics of each analyzer.
-- Analyzer Ingress took 47.125583ms 
-- Analyzer PersistentVolumeClaim took 53.009167ms 
-- Analyzer CronJob took 57.517792ms 
-- Analyzer Deployment took 156.6205ms 
-- Analyzer Node took 160.109833ms 
-- Analyzer ReplicaSet took 245.938333ms 
-- Analyzer StatefulSet took 448.0455ms 
-- Analyzer Pod took 5.662594708s 
+- Analyzer Ingress took 47.125583ms
+- Analyzer PersistentVolumeClaim took 53.009167ms
+- Analyzer CronJob took 57.517792ms
+- Analyzer Deployment took 156.6205ms
+- Analyzer Node took 160.109833ms
+- Analyzer ReplicaSet took 245.938333ms
+- Analyzer StatefulSet took 448.0455ms
+- Analyzer Pod took 5.662594708s
 - Analyzer Service took 38.583359166s
 ```
 
@@ -366,16 +486,64 @@ Unused:
 > huggingface
 > noopai
 > googlevertexai
+> watsonxai
+> customrest
 > ibmwatsonxai
+> litellm
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
+
+_Using LiteLLM (route to 100+ providers through one proxy)_
+
+The `litellm` backend talks to a [LiteLLM proxy](https://docs.litellm.ai/docs/simple_proxy),
+which exposes an OpenAI-compatible API in front of 100+ providers (OpenAI, Azure,
+Anthropic, Bedrock, Gemini, ...). It defaults to the proxy's standard local
+endpoint (`http://localhost:4000/v1`); use `--model` to pick a model configured
+in your proxy, and `--baseurl` to point at a remote proxy. A password is only
+needed if your proxy enforces a virtual key.
+
+```
+k8sgpt auth add --backend litellm --model gpt-4o
+k8sgpt analyze --explain --backend litellm
+```
 
 _To set a new default provider_
 
 ```
 k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
+```
+
+_Using Amazon Bedrock Converse with inference profiles_
+
+_System Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+```
+
+_Application Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+
+```
+_Using Amazon Bedrock with inference profiles_
+
+_System Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+```
+
+_Application Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrock --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+
 ```
 
 ## Key Features
@@ -410,11 +578,9 @@ The Kubernetes system is trying to scale a StatefulSet named tGLcCRcHa1Ce5Rs usi
 The Kubernetes system is trying to scale a StatefulSet named fake-deployment using the HorizontalPodAutoscaler, but it cannot find the StatefulSet. The solution is to verify that the StatefulSet name is spelled correctly and exists in the same namespace as the HorizontalPodAutoscaler.
 ```
 
-Note: **Anonymization does not currently apply to events.**
-
 ### Further Details
 
-**Anonymization does not currently apply to events.**
+Note: **Anonymization does not currently apply to events.**
 
 _In a few analysers like Pod, we feed to the AI backend the event messages which are not known beforehand thus we are not masking them for the **time being**._
 
@@ -432,7 +598,7 @@ _In a few analysers like Pod, we feed to the AI backend the event messages which
 
 - The following is the list of analysers in which data is **not being masked**:-
 
-  - RepicaSet
+  - ReplicaSet
   - PersistentVolumeClaim
   - Pod
   - Log
@@ -483,7 +649,7 @@ There may be scenarios where caching remotely is preferred.
 In these scenarios K8sGPT supports AWS S3 or Azure Blob storage Integration.
 
 <summary> Remote caching </summary>
-<em>Note: You can only configure and use only one remote cache at a time</em>
+<em>Note: You can configure and use only one remote cache at a time</em>
 
 _Adding a remote cache_
 
@@ -529,7 +695,7 @@ k8sgpt cache remove
 <summary> Custom Analyzers</summary>
 
 There may be scenarios where you wish to write your own analyzer in a language of your choice.
-K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/analyzer.proto) and serving the analyzer for consumption.
+K8sGPT now supports the ability to do so by abiding by the [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/custom_analyzer.proto) and serving the analyzer for consumption.
 To do so, define the analyzer within the K8sGPT configuration and it will add it into the scanning process.
 In addition to this you will need to enable the following flag on analysis:
 
@@ -568,7 +734,30 @@ k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
 ```
 
 </details>
+## Model Context Protocol (MCP)
 
+K8sGPT provides a Model Context Protocol server that exposes Kubernetes operations as standardized tools for AI assistants like Claude, ChatGPT, and other MCP-compatible clients.
+
+**Start the MCP server:**
+
+Stdio mode (for local AI assistants):
+```bash
+k8sgpt serve --mcp
+```
+
+HTTP mode (for network access):
+```bash
+k8sgpt serve --mcp --mcp-http --mcp-port 8089
+```
+
+**Features:**
+- 12 tools for cluster analysis, resource management, and debugging
+- 3 resources for cluster information access
+- 3 interactive troubleshooting prompts
+- Stateless HTTP mode for one-off invocations
+- Full integration with Claude Desktop and other MCP clients
+
+**Learn more:** See [MCP.md](MCP.md) for complete documentation, usage examples, and integration guides.
 ## Documentation
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)
@@ -579,12 +768,9 @@ Please read our [contributing guide](./CONTRIBUTING.md).
 
 ## Community
 
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-276pa9uyq-pxAUr4TCVHubFxEvLZuT1Q)
+Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
 </a>
 
-## License
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_large)

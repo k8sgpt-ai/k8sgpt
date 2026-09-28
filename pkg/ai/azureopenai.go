@@ -20,6 +20,22 @@ type AzureAIClient struct {
 	// organizationId string
 }
 
+type customHeaderRoundTripper struct {
+	headers []http.Header
+	rt      http.RoundTripper
+}
+
+func (c *customHeaderRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	for _, header := range c.headers {
+		for key, values := range header {
+			for _, value := range values {
+				req.Header.Add(key, value)
+			}
+		}
+	}
+	return c.rt.RoundTrip(req)
+}
+
 func (c *AzureAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
 	baseURL := config.GetBaseURL()
@@ -27,17 +43,27 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	proxyEndpoint := config.GetProxyEndpoint()
 	defaultConfig := openai.DefaultAzureConfig(token, baseURL)
 	orgId := config.GetOrganizationId()
+	azureAPIType := config.GetAzureAPIType()
+	azureAPIVersion := config.GetAzureAPIVersion()
 
-	defaultConfig.AzureModelMapperFunc = func(model string) string {
-		// If you use a deployment name different from the model name, you can customize the AzureModelMapperFunc function
-		azureModelMapping := map[string]string{
-			model: engine,
+	if engine != "" {
+		defaultConfig.AzureModelMapperFunc = func(model string) string {
+			return engine
 		}
-		return azureModelMapping[model]
-
 	}
 
-	if proxyEndpoint != "" {
+	customHeaders := config.GetCustomHeaders()
+	if len(customHeaders) > 0 {
+		transport := &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		}
+		defaultConfig.HTTPClient = &http.Client{
+			Transport: &customHeaderRoundTripper{
+				headers: customHeaders,
+				rt:      transport,
+			},
+		}
+	} else if proxyEndpoint != "" {
 		proxyUrl, err := url.Parse(proxyEndpoint)
 		if err != nil {
 			return err
@@ -52,6 +78,18 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	}
 	if orgId != "" {
 		defaultConfig.OrgID = orgId
+	}
+	if azureAPIVersion != "" {
+		defaultConfig.APIVersion = azureAPIVersion
+	}
+
+	switch azureAPIType {
+	case string(openai.APITypeAzure):
+		defaultConfig.APIType = openai.APITypeAzure
+	case string(openai.APITypeAzureAD):
+		defaultConfig.APIType = openai.APITypeAzureAD
+	case string(openai.APITypeCloudflareAzure):
+		defaultConfig.APIType = openai.APITypeCloudflareAzure
 	}
 
 	client := openai.NewClientWithConfig(defaultConfig)

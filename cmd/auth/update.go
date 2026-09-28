@@ -14,10 +14,12 @@ limitations under the License.
 package auth
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sashabaranov/go-openai"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,6 +35,16 @@ var updateCmd = &cobra.Command{
 		if strings.ToLower(backend) == "azureopenai" {
 			_ = cmd.MarkFlagRequired("engine")
 			_ = cmd.MarkFlagRequired("baseurl")
+
+			azureAPIType, _ := cmd.Flags().GetString("azureAPIType")
+
+			switch openai.APIType(azureAPIType) {
+			case "", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure:
+				// valid types
+			default:
+				color.Red("Error: Valid values of azureAPIType for azureopenai backends are AZURE, AZURE_AD or CLOUDFLARE_AZURE")
+				os.Exit(1)
+			}
 		}
 		organizationId, _ := cmd.Flags().GetString("organizationId")
 		if strings.ToLower(backend) != "azureopenai" && strings.ToLower(backend) != "openai" {
@@ -62,35 +74,12 @@ var updateCmd = &cobra.Command{
 		for i, provider := range configAI.Providers {
 			if backend == provider.Name {
 				foundBackend = true
-				if backend != "" {
-					configAI.Providers[i].Name = backend
-					color.Blue("Backend name updated successfully")
-				}
-				if model != "" {
-					configAI.Providers[i].Model = model
-					color.Blue("Model updated successfully")
-				}
-				if password != "" {
-					configAI.Providers[i].Password = password
-					color.Blue("Password updated successfully")
-				}
-				if baseURL != "" {
-					configAI.Providers[i].BaseURL = baseURL
-					color.Blue("Base URL updated successfully")
-				}
-				if engine != "" {
-					configAI.Providers[i].Engine = engine
-				}
-				if organizationId != "" {
-					configAI.Providers[i].OrganizationId = organizationId
-					color.Blue("Organization Id updated successfully")
-				}
-				configAI.Providers[i].Temperature = temperature
+				applyAIProviderUpdates(&configAI.Providers[i], backend)
 				color.Green("%s updated in the AI backend provider list", backend)
 			}
 		}
 		if !foundBackend {
-			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", args[0])
+			color.Red("Error: %s does not exist in configuration file. Please use k8sgpt auth new.", backend)
 			os.Exit(1)
 		}
 
@@ -117,4 +106,8 @@ func init() {
 	updateCmd.Flags().StringVarP(&engine, "engine", "e", "", "Update Azure AI deployment name")
 	// update flag for organizationId
 	updateCmd.Flags().StringVarP(&organizationId, "organizationId", "o", "", "Update OpenAI or Azure organization Id")
+	// add flag for azure open ai APIType name
+	updateCmd.Flags().StringVarP(&azureAPIType, "azureAPIType", "a", "", fmt.Sprintf("AzureOpenAI API Type name. Valid values: %s, %s or %s (only for azureopenai backend)", openai.APITypeAzure, openai.APITypeAzureAD, openai.APITypeCloudflareAzure))
+	// add flag for azure open ai API version
+	updateCmd.Flags().StringVarP(&azureAPIVersion, "azureAPIVersion", "", "", "AzureOpenAI API version, e.g. 2024-02-15-preview")
 }

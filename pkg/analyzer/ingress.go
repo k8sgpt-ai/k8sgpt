@@ -41,7 +41,7 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -79,20 +79,24 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 		// check if ingressclass exist
 		if ingressClassName != nil {
-			_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
-			if err != nil {
-				doc := apiDoc.GetApiDocV2("spec.ingressClassName")
+			// Skip validation for GKE built-in ingress classes that don't require
+			// an IngressClass resource (they are recognized by the GKE ingress controller)
+			if !isGKEBuiltInIngressClass(*ingressClassName) {
+				_, err := a.Client.GetClient().NetworkingV1().IngressClasses().Get(a.Context, *ingressClassName, metav1.GetOptions{})
+				if err != nil {
+					doc := apiDoc.GetApiDocV2("spec.ingressClassName")
 
-				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName),
-					KubernetesDoc: doc,
-					Sensitive: []common.Sensitive{
-						{
-							Unmasked: *ingressClassName,
-							Masked:   util.MaskString(*ingressClassName),
+					failures = append(failures, common.Failure{
+						Text:          fmt.Sprintf("Ingress uses the ingress class %s which does not exist.", *ingressClassName),
+						KubernetesDoc: doc,
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: *ingressClassName,
+								Masked:   util.MaskString(*ingressClassName),
+							},
 						},
-					},
-				})
+					})
+				}
 			}
 		}
 
@@ -101,6 +105,11 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			// loop over HTTP paths
 			if rule.HTTP != nil {
 				for _, path := range rule.HTTP.Paths {
+					// a path can point at a resource backend instead, in which case
+					// there is no service to look up
+					if path.Backend.Service == nil {
+						continue
+					}
 					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
 					if err != nil {
 						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
@@ -125,6 +134,9 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		for _, tls := range ing.Spec.TLS {
+			if tls.SecretName == "" {
+				continue
+			}
 			_, err := a.Client.GetClient().CoreV1().Secrets(ing.Namespace).Get(a.Context, tls.SecretName, metav1.GetOptions{})
 			if err != nil {
 				doc := apiDoc.GetApiDocV2("spec.tls.secretName")
@@ -171,4 +183,12 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+// isGKEBuiltInIngressClass returns true if the ingress class is a GKE built-in
+// ingress class that does not require an IngressClass resource to be defined.
+// GKE recognizes "gce" (external) and "gce-internal" (internal) as valid
+// ingress classes without requiring explicit IngressClass resources.
+func isGKEBuiltInIngressClass(className string) bool {
+	return className == "gce" || className == "gce-internal"
 }

@@ -39,7 +39,7 @@ func (KyvernoAnalyzer) analyzePolicyReports(a common.Analyzer) ([]common.Result,
 	if err != nil {
 		return nil, err
 	}
-	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
+	if err := client.List(a.Context, result, &ctrl.ListOptions{Namespace: a.Namespace}); err != nil {
 		return nil, err
 	}
 

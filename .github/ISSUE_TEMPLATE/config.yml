@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: k8sgpt Documentation
+    url: https://docs.k8sgpt.ai
+    about: Please check the documentation before opening an issue
+  - name: Slack Community
+    url: https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ
+    about: Join our Slack community to ask questions and get help
+  - name: Security Vulnerabilities
+    url: https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md
+    about: Please report security vulnerabilities according to our security policy

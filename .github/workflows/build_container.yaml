@@ -8,13 +8,16 @@ on:
   pull_request:
     branches:
       - 'main'
+      - fix/build-branch
       - '[0-9]+.[1-9][0-9]*.x'
     paths-ignore:
       - "**.md"
 
 env:
-  GO_VERSION: "~1.22"
+  GO_VERSION: "~1.26"
   IMAGE_NAME: "k8sgpt"
+  REGISTRY_IMAGE: ghcr.io/k8sgpt-ai/k8sgpt
+
 defaults:
   run:
     shell: bash
@@ -33,11 +36,11 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Extract branch name
         id: extract_branch
-        uses: keptn/gh-action-extract-branch-name@main
+        uses: keptn/gh-action-extract-branch-name@6ca4fe061da10c66b2d7341fd1fb12962ad911b2 # main
 
       - name: Get current date and time
         id: get_datetime
@@ -51,97 +54,61 @@ jobs:
         id: get_run_type
         run: |
           NON_FORKED_AND_NON_ROBOT_RUN=${{ ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && ( github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository ) }}
-          echo "github.actor != 'renovate[bot]' = ${{ github.actor != 'renovate[bot]' }}"
-          echo "github.actor != 'dependabot[bot]' = ${{ github.actor != 'dependabot[bot]' }}"
-          echo "github.event_name == 'push' = ${{ github.event_name == 'push' }}"
-          echo "github.event.pull_request.head.repo.full_name == github.repository = ${{ github.event.pull_request.head.repo.full_name == github.repository }}"
-          echo "NON_FORKED_AND_NON_ROBOT_RUN = $NON_FORKED_AND_NON_ROBOT_RUN"
           echo "NON_FORKED_AND_NON_ROBOT_RUN=$NON_FORKED_AND_NON_ROBOT_RUN" >> "$GITHUB_OUTPUT"
 
-  build_image:
-    name: Build Container Image
+  build-and-push:
+    name: Build and Push Multi-arch Image
     needs: prepare_ci_run
     runs-on: ubuntu-latest
+    if: ${{ needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' }}
     env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
       BUILD_TIME: ${{ needs.prepare_ci_run.outputs.BUILD_TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-      RELEASE_REGISTRY: "localhost:5000/k8sgpt"
+
     steps:
       - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
-
-      - name: Build Docker Image
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
-          context: .
-          platforms: linux/amd64
-          file: ./container/Dockerfile
-          target: production
+          images: ${{ env.REGISTRY_IMAGE }}
           tags: |
-            ${{ env.RELEASE_REGISTRY }}/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
-          build-args: |
-            GIT_HASH=${{ env.GIT_SHA }}
-            RELEASE_VERSION=dev-${{ env.DATETIME }}
-            BUILD_TIME=${{ env.BUILD_TIME }}
-          builder: ${{ steps.buildx.outputs.name }}
-          push: false
-          cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
-          cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
-          outputs: type=docker,dest=/tmp/${{ env.IMAGE_NAME }}-image.tar
-
-      - name: Upload image as artifact
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
-        with:
-          name: ${{ env.IMAGE_NAME }}-image.tar
-          path: /tmp/${{ env.IMAGE_NAME }}-image.tar
-
-  upload_images:
-    name: Upload images to ghcr registry
-    needs: [ prepare_ci_run, build_image ]
-    if: github.event_name == 'push' && needs.prepare_ci_run.outputs.NON_FORKED_AND_NON_ROBOT_RUN == 'true' # only run on push to main/maintenance branches
-    runs-on: ubuntu-latest
-    env:
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATETIME }}
-      BUILD_TIME: ${{ needs.prepare_ci_run.outputs.BUILD_TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    permissions:
-      packages: write # Needed for pushing images to the registry
-      contents: read # Needed for checking out the repository
-    steps:
-      - name: Check out code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=dev-${{ env.DATETIME }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
-          registry: "ghcr.io"
+          registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.K8SGPT_BOT_SECRET }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
 
       - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994fabfe349 # v3
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
-      - name: Build Docker Image
-        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           file: ./container/Dockerfile
           platforms: linux/amd64,linux/arm64
+          push: true
           target: production
-          tags: |
-            ghcr.io/k8sgpt-ai/${{ env.IMAGE_NAME }}:dev-${{ env.DATETIME }}
           build-args: |
             GIT_HASH=${{ env.GIT_SHA }}
             RELEASE_VERSION=dev-${{ env.DATETIME }}
             BUILD_TIME=${{ env.BUILD_TIME }}
-          builder: ${{ steps.buildx.outputs.name }}
-          push: true
-          cache-from: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
-          cache-to: type=gha,scope=${{ github.ref_name }}-${{ env.IMAGE_NAME }}
+          tags: |
+            ${{ env.REGISTRY_IMAGE }}:${{ env.DATETIME }}
+          labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.K8SGPT_BOT_SECRET }}

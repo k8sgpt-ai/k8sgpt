@@ -14,12 +14,16 @@ limitations under the License.
 package kubernetes
 
 import (
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
+	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
+
+var installGatewayAPI = gtwapi.Install
 
 func (c *Client) GetConfig() *rest.Config {
 	return c.Config
@@ -31,6 +35,10 @@ func (c *Client) GetClient() kubernetes.Interface {
 
 func (c *Client) GetCtrlClient() ctrl.Client {
 	return c.CtrlClient
+}
+
+func (c *Client) GetDynamicClient() dynamic.Interface {
+	return c.DynamicClient
 }
 
 func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
@@ -64,7 +72,20 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		return nil, err
 	}
 
+	// Register the gateway-api types on the shared client scheme once, here,
+	// instead of inside each analyzer's Analyze(). The gateway analyzers run
+	// concurrently against this single client, and registering into the scheme
+	// on the hot path races on the scheme's internal maps (issue #1063).
+	if err := installGatewayAPI(ctrlClient.Scheme()); err != nil {
+		return nil, err
+	}
+
 	serverVersion, err := clientSet.ServerVersion()
+	if err != nil {
+		return nil, err
+	}
+
+	dynamicClient, err := dynamic.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
@@ -74,5 +95,6 @@ func NewClient(kubecontext string, kubeconfig string) (*Client, error) {
 		CtrlClient:    ctrlClient,
 		Config:        config,
 		ServerVersion: serverVersion,
+		DynamicClient: dynamicClient,
 	}, nil
 }

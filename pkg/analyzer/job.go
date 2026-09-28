@@ -1,0 +1,140 @@
+/*
+Copyright 2025 The K8sGPT Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package analyzer
+
+import (
+	"fmt"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+type JobAnalyzer struct{}
+
+func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
+
+	kind := "Job"
+	apiDoc := kubernetes.K8sApiReference{
+		Kind: kind,
+		ApiVersion: schema.GroupVersion{
+			Group:   "batch",
+			Version: "v1",
+		},
+		OpenapiSchema: a.OpenapiSchema,
+	}
+
+	AnalyzerErrorsMetric.DeletePartialMatch(map[string]string{
+		"analyzer_name": kind,
+	})
+
+	JobList, err := a.Client.GetClient().BatchV1().Jobs(a.Namespace).List(a.Context, a.ListOptions())
+	if err != nil {
+		return nil, err
+	}
+
+	var preAnalysis = map[string]common.PreAnalysis{}
+
+	for _, Job := range JobList.Items {
+		var failures []common.Failure
+		if Job.Spec.Suspend != nil && *Job.Spec.Suspend {
+			doc := apiDoc.GetApiDocV2("spec.suspend")
+
+			failures = append(failures, common.Failure{
+				Text:          fmt.Sprintf("Job %s is suspended", Job.Name),
+				KubernetesDoc: doc,
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: Job.Namespace,
+						Masked:   util.MaskString(Job.Namespace),
+					},
+					{
+						Unmasked: Job.Name,
+						Masked:   util.MaskString(Job.Name),
+					},
+				},
+			})
+		}
+		// A Job that has reached a successful terminal state (Complete or
+		// SuccessCriteriaMet) should not be reported as failed even when
+		// Status.Failed is non-zero: failed attempts that were retried within
+		// backoffLimit are normal and the Job is healthy.
+		if Job.Status.Failed > 0 && !jobHasSucceeded(Job) {
+			doc := apiDoc.GetApiDocV2("status.failed")
+
+			failure := common.Failure{
+				Text:          fmt.Sprintf("Job %s has failed", Job.Name),
+				KubernetesDoc: doc,
+				Sensitive: []common.Sensitive{
+					{
+						Unmasked: Job.Namespace,
+						Masked:   util.MaskString(Job.Namespace),
+					},
+					{
+						Unmasked: Job.Name,
+						Masked:   util.MaskString(Job.Name),
+					},
+				},
+			}
+
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
+				Kind:      kind,
+				Namespace: Job.Namespace,
+				Name:      Job.Name,
+				UID:       Job.UID,
+			})
+
+			// Check for Event BackoffLimitExceeded
+			if evt != nil && err == nil && evt.Reason == "BackoffLimitExceeded" && evt.Message != "" {
+				failure.Text = evt.Message
+			}
+
+			failures = append(failures, failure)
+		}
+
+		if len(failures) > 0 {
+			preAnalysis[fmt.Sprintf("%s/%s", Job.Namespace, Job.Name)] = common.PreAnalysis{
+				FailureDetails: failures,
+			}
+			AnalyzerErrorsMetric.WithLabelValues(kind, Job.Name, Job.Namespace).Set(float64(len(failures)))
+		}
+	}
+
+	for key, value := range preAnalysis {
+		currentAnalysis := common.Result{
+			Kind:  kind,
+			Name:  key,
+			Error: value.FailureDetails,
+		}
+		a.Results = append(a.Results, currentAnalysis)
+	}
+
+	return a.Results, nil
+}
+
+// jobHasSucceeded reports whether the Job has reached a successful terminal
+// state. Kubernetes records a Complete condition when all pods succeed, and a
+// SuccessCriteriaMet condition when the Job's success policy is met.
+func jobHasSucceeded(job batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue &&
+			(condition.Type == batchv1.JobComplete || condition.Type == batchv1.JobSuccessCriteriaMet) {
+			return true
+		}
+	}
+	return false
+}

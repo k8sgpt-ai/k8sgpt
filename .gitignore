@@ -7,3 +7,4 @@ k8sgpt*
 dist/
 
 bin/
+pkg/server/example/example
