@@ -208,6 +208,11 @@ func TestDefaultModels(t *testing.T) {
 	model, err := client.getModelFromString("anthropic.claude-v2")
 	assert.NoError(t, err, "Should find the model")
 	assert.Equal(t, "anthropic.claude-v2", model.Name, "Should find the correct model")
+
+	for _, name := range []string{"anthropic.claude-sonnet-5", "anthropic.claude-opus-5"} {
+		_, err := client.getModelFromString(name)
+		assert.NoError(t, err)
+	}
 }
 
 func TestValidateInferenceProfileArn(t *testing.T) {
