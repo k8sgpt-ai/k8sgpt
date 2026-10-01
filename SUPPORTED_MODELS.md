@@ -31,6 +31,8 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 
 ### Amazon Bedrock
 - **Supported Models:**
+  - anthropic.claude-sonnet-5
+  - anthropic.claude-opus-5
   - anthropic.claude-sonnet-4-20250514-v1:0
   - us.anthropic.claude-sonnet-4-20250514-v1:0
   - eu.anthropic.claude-sonnet-4-20250514-v1:0

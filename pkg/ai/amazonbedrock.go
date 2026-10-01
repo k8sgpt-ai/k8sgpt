@@ -62,6 +62,28 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 var defaultModels = []bedrock_support.BedrockModel{
 
 	{
+		Name:       "anthropic.claude-sonnet-5",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-sonnet-5",
+		},
+	},
+	{
+		Name:       "anthropic.claude-opus-5",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-opus-5",
+		},
+	},
+	{
 		Name:       "anthropic.claude-sonnet-4-20250514-v1:0",
 		Completion: &bedrock_support.CohereMessagesCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
