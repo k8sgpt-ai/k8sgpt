@@ -115,18 +115,21 @@ func (s *S3Cache) Load(key string) (string, error) {
 
 func (s *S3Cache) List() ([]CacheObjectDetails, error) {
 
-	// List the files in the bucket
-	result, err := s.session.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(s.bucketName)})
+	var keys []CacheObjectDetails
+	err := s.session.ListObjectsV2Pages(
+		&s3.ListObjectsV2Input{Bucket: aws.String(s.bucketName)},
+		func(result *s3.ListObjectsV2Output, _ bool) bool {
+			for _, item := range result.Contents {
+				keys = append(keys, CacheObjectDetails{
+					Name:      *item.Key,
+					UpdatedAt: *item.LastModified,
+				})
+			}
+			return true
+		},
+	)
 	if err != nil {
 		return nil, err
-	}
-
-	var keys []CacheObjectDetails
-	for _, item := range result.Contents {
-		keys = append(keys, CacheObjectDetails{
-			Name:      *item.Key,
-			UpdatedAt: *item.LastModified,
-		})
 	}
 
 	return keys, nil
