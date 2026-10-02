@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"regexp"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
@@ -28,6 +29,7 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"go.uber.org/zap/exp/zapslog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -65,9 +67,11 @@ func NewMCPServer(port string, aiProvider *ai.AIProvider, useHTTP bool, logger *
 	}
 
 	if useHTTP {
-		// Create HTTP server with streamable transport
+		// Create HTTP server with streamable transport. mcp-go v1 takes a
+		// *slog.Logger for transport-level logging, so bridge the zap logger
+		// through zapslog instead of the old printf-style adapter.
 		httpOpts := []server.StreamableHTTPOption{
-			server.WithLogger(&zapLoggerAdapter{logger: logger}),
+			server.WithStreamableHTTPLogger(slog.New(zapslog.NewHandler(logger.Core()))),
 			// Enable stateless mode for one-off tool invocations without session management
 			server.WithStateLess(true),
 		}
@@ -724,19 +728,6 @@ func (s *K8sGptMCPServer) getActiveFiltersResource(ctx context.Context, request 
 // Close closes the MCP server and releases resources
 func (s *K8sGptMCPServer) Close() error {
 	return nil
-}
-
-// zapLoggerAdapter adapts zap.Logger to the interface expected by mark3labs/mcp-go
-type zapLoggerAdapter struct {
-	logger *zap.Logger
-}
-
-func (z *zapLoggerAdapter) Infof(format string, v ...any) {
-	z.logger.Info(fmt.Sprintf(format, v...))
-}
-
-func (z *zapLoggerAdapter) Errorf(format string, v ...any) {
-	z.logger.Error(fmt.Sprintf(format, v...))
 }
 
 // stripANSI removes ANSI escape sequences from a string
