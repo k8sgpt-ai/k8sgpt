@@ -215,13 +215,13 @@ func NewAnalysis(
 	// Merge CLI and config headers, with CLI headers having higher priority
 	var cliHeaderKeys []string
 	for _, header := range customHeaders {
-		for key, _ := range header {
+		for key := range header {
 			cliHeaderKeys = append(cliHeaderKeys, http.CanonicalHeaderKey(key))
 		}
 	}
 
 	for _, header := range aiProvider.CustomHeaders {
-		for key, _ := range header {
+		for key := range header {
 			if !slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
 				customHeaders = append(customHeaders, header)
 			}
