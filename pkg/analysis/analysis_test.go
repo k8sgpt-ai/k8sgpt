@@ -898,19 +898,21 @@ func TestNewAnalysis_CustomHeaders(t *testing.T) {
 				"model":   "test-model",
 				"customHeaders": []map[string][]string{
 					{"X-Config-Header": {"config-val"}},
+					{"Same-Header-Key": {"overridden"}},
+					{"authorization": {"auth-config"}},
 				},
 			},
 		},
 	})
 
-	cliHeaders := []string{"X-CLI-Header:cli-val"}
+	cliHeaders := []string{"X-CLI-Header:cli-val", "Same-Header-Key:priority", "Authorization:auth-cli"}
 	a, err := NewAnalysis("noopai", "english", []string{"Pod"}, "default", "", true, true, 10, false, false, cliHeaders, false)
 	require.NoError(t, err)
 	defer a.Close()
 
-	require.Len(t, capturedHeaders, 2)
-	require.Equal(t, "config-val", capturedHeaders[0].Get("X-Config-Header"))
-	require.Equal(t, "cli-val", capturedHeaders[1].Get("X-CLI-Header"))
+	require.Len(t, capturedHeaders, 4)
+	require.Equal(t, "cli-val", capturedHeaders[0].Get("X-CLI-Header"))
+	require.Equal(t, "priority", capturedHeaders[1].Get("Same-Header-Key"))
+	require.Equal(t, "auth-cli", capturedHeaders[2].Get("Authorization"))
+	require.Equal(t, "config-val", capturedHeaders[3].Get("X-Config-Header"))
 }
-
-
