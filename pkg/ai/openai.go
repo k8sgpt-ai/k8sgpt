@@ -16,8 +16,10 @@ package ai
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -105,6 +107,9 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 	}
 	if len(resp.Choices) == 0 {
 		return "", errors.New("no completion choices returned from the AI provider")
+	}
+	if strings.TrimSpace(resp.Choices[0].Message.Content) == "" {
+		return "", fmt.Errorf("received an empty completion from the AI provider (finish reason: %v)", resp.Choices[0].FinishReason)
 	}
 	return resp.Choices[0].Message.Content, nil
 }
