@@ -215,3 +215,175 @@ func TestNodeAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "Node1", results[0].Name)
 }
+
+func TestIsEKSNodeMonitoringAgentConditionType(t *testing.T) {
+	tests := []struct {
+		name          string
+		conditionType v1.NodeConditionType
+		expected      bool
+	}{
+		{
+			name:          "AcceleratedHardwareReady is set by the EKS node monitoring agent",
+			conditionType: "AcceleratedHardwareReady",
+			expected:      true,
+		},
+		{
+			name:          "ContainerRuntimeReady is set by the EKS node monitoring agent",
+			conditionType: "ContainerRuntimeReady",
+			expected:      true,
+		},
+		{
+			name:          "KernelReady is set by the EKS node monitoring agent",
+			conditionType: "KernelReady",
+			expected:      true,
+		},
+		{
+			name:          "NetworkingReady is set by the EKS node monitoring agent",
+			conditionType: "NetworkingReady",
+			expected:      true,
+		},
+		{
+			name:          "StorageReady is set by the EKS node monitoring agent",
+			conditionType: "StorageReady",
+			expected:      true,
+		},
+		{
+			name:          "Ready is a standard condition",
+			conditionType: v1.NodeReady,
+			expected:      false,
+		},
+		{
+			name:          "MemoryPressure is a standard condition",
+			conditionType: v1.NodeMemoryPressure,
+			expected:      false,
+		},
+		{
+			name:          "KernelDeadlock is not set by the EKS node monitoring agent",
+			conditionType: "KernelDeadlock",
+			expected:      false,
+		},
+		{
+			name:          "empty type is not set by the EKS node monitoring agent",
+			conditionType: "",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, isEKSNodeMonitoringAgentConditionType(tt.conditionType))
+		})
+	}
+}
+
+func TestNodeAnalyzerEKSNodeMonitoringAgentConditionsTrueIgnored(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "Node1",
+				},
+				Status: v1.NodeStatus{
+					// A healthy EKS node: the standard conditions plus the five
+					// conditions the EKS node monitoring agent sets, all True.
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+						{
+							Type:   v1.NodeMemoryPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:   v1.NodeDiskPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:   v1.NodePIDPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:    "AcceleratedHardwareReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "AcceleratedHardwareIsReady",
+							Message: "Monitoring for the AcceleratedHardware system is active",
+						},
+						{
+							Type:    "ContainerRuntimeReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "ContainerRuntimeIsReady",
+							Message: "Monitoring for the ContainerRuntime system is active",
+						},
+						{
+							Type:    "KernelReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "KernelIsReady",
+							Message: "Monitoring for the Kernel system is active",
+						},
+						{
+							Type:    "NetworkingReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "NetworkingIsReady",
+							Message: "Monitoring for the Networking system is active",
+						},
+						{
+							Type:    "StorageReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "DiskIsReady",
+							Message: "Monitoring for the Disk system is active",
+						},
+					},
+				},
+			}),
+		},
+		Context: context.Background(),
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
+func TestNodeAnalyzerEKSNodeMonitoringAgentConditionFalseReported(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "Node1",
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+						{
+							Type:    "KernelReady",
+							Status:  v1.ConditionTrue,
+							Reason:  "KernelIsReady",
+							Message: "Monitoring for the Kernel system is active",
+						},
+						// The agent reports a detected problem with Status False.
+						{
+							Type:    "NetworkingReady",
+							Status:  v1.ConditionFalse,
+							Reason:  "IPAMDNotReady",
+							Message: "IPAM-D has failed to connect to API Server",
+						},
+					},
+				},
+			}),
+		},
+		Context: context.Background(),
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Node1", results[0].Name)
+	require.Equal(t, 1, len(results[0].Error))
+	require.Equal(t, "Node1 has condition of type NetworkingReady, reason IPAMDNotReady: IPAM-D has failed to connect to API Server", results[0].Error[0].Text)
+}
