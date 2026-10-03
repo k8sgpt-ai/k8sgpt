@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -23,6 +24,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
+
+// Lowercasing alone would render NotIn and DoesNotExist as "notin" and "doesnotexist".
+var labelSelectorOperatorPhrases = map[metav1.LabelSelectorOperator]string{
+	metav1.LabelSelectorOpIn:           "in",
+	metav1.LabelSelectorOpNotIn:        "not in",
+	metav1.LabelSelectorOpExists:       "exists",
+	metav1.LabelSelectorOpDoesNotExist: "does not exist",
+}
+
+func labelSelectorOperatorPhrase(op metav1.LabelSelectorOperator) string {
+	if phrase, ok := labelSelectorOperatorPhrases[op]; ok {
+		return phrase
+	}
+	return strings.ToLower(string(op))
+}
 
 type PdbAnalyzer struct{}
 
@@ -62,10 +78,16 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if pdb.Spec.MinAvailable != nil {
 				doc = apiDoc.GetApiDocV2("spec.minAvailable")
 			}
-			if pdb.Spec.Selector != nil && pdb.Spec.Selector.MatchLabels != nil {
+			// A null selector matches no pods, so such a PDB can never block an
+			// eviction and is not worth reporting. Every other selector shape
+			// does select pods, so a blocked PDB must be reported whether the
+			// selector uses matchLabels, matchExpressions, or is empty.
+			if pdb.Spec.Selector != nil {
+				reason := cond.Reason
+
 				for k, v := range pdb.Spec.Selector.MatchLabels {
 					failures = append(failures, common.Failure{
-						Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", cond.Reason, k, v),
+						Text:          fmt.Sprintf("%s, expected pdb pod label %s=%s", reason, k, v),
 						KubernetesDoc: doc,
 						Sensitive: []common.Sensitive{
 							{
@@ -75,6 +97,47 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 							{
 								Unmasked: v,
 								Masked:   util.MaskString(v),
+							},
+						},
+					})
+				}
+
+				for _, expr := range pdb.Spec.Selector.MatchExpressions {
+					sensitive := []common.Sensitive{
+						{
+							Unmasked: expr.Key,
+							Masked:   util.MaskString(expr.Key),
+						},
+					}
+					for _, v := range expr.Values {
+						sensitive = append(sensitive, common.Sensitive{
+							Unmasked: v,
+							Masked:   util.MaskString(v),
+						})
+					}
+
+					text := fmt.Sprintf("%s, expected pdb pod label %s %s", reason, expr.Key, labelSelectorOperatorPhrase(expr.Operator))
+					if len(expr.Values) > 0 {
+						text = fmt.Sprintf("%s (%s)", text, strings.Join(expr.Values, ", "))
+					}
+
+					failures = append(failures, common.Failure{
+						Text:          text,
+						KubernetesDoc: doc,
+						Sensitive:     sensitive,
+					})
+				}
+
+				// An empty selector selects every pod in the namespace, so it
+				// has the widest blast radius of all and must not be dropped.
+				if len(pdb.Spec.Selector.MatchLabels) == 0 && len(pdb.Spec.Selector.MatchExpressions) == 0 {
+					failures = append(failures, common.Failure{
+						Text:          fmt.Sprintf("%s, and its empty selector applies to every pod in namespace %s", reason, pdb.Namespace),
+						KubernetesDoc: doc,
+						Sensitive: []common.Sensitive{
+							{
+								Unmasked: pdb.Namespace,
+								Masked:   util.MaskString(pdb.Namespace),
 							},
 						},
 					})
