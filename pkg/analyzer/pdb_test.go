@@ -206,3 +206,78 @@ func TestPodDisruptionBudgetAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/PDB1", results[0].Name)
 }
+
+func TestPodDisruptionBudgetAnalyzer_MultipleConditionsOrdering(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				// Case 1: Another condition is at index 0 (Status: False), DisruptionAllowed is at index 1 (Status: True).
+				// Must NOT report failure because DisruptionAllowed is True.
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "allowed-pdb",
+						Namespace: "test",
+					},
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "CustomCondition",
+								Status: "False",
+								Reason: "CustomReason",
+							},
+							{
+								Type:   "DisruptionAllowed",
+								Status: "True",
+								Reason: "SufficientPods",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MinAvailable: &intstr.IntOrString{IntVal: 1},
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"app": "allowed"},
+						},
+					},
+				},
+				// Case 2: Another condition is at index 0 (Status: True), DisruptionAllowed is at index 1 (Status: False).
+				// Must report failure for DisruptionAllowed even though index 0 is True.
+				&policyv1.PodDisruptionBudget{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "blocked-pdb",
+						Namespace: "test",
+					},
+					Status: policyv1.PodDisruptionBudgetStatus{
+						Conditions: []metav1.Condition{
+							{
+								Type:   "CustomCondition",
+								Status: "True",
+								Reason: "CustomReason",
+							},
+							{
+								Type:   "DisruptionAllowed",
+								Status: "False",
+								Reason: "InsufficientPods",
+							},
+						},
+					},
+					Spec: policyv1.PodDisruptionBudgetSpec{
+						MinAvailable: &intstr.IntOrString{IntVal: 1},
+						Selector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{"app": "blocked"},
+						},
+					},
+				},
+			),
+		},
+		Context:   context.Background(),
+		Namespace: "test",
+	}
+
+	pdbAnalyzer := PdbAnalyzer{}
+	results, err := pdbAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "test/blocked-pdb", results[0].Name)
+	require.Contains(t, results[0].Error[0].Text, "InsufficientPods")
+}
+
