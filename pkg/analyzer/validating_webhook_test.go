@@ -215,3 +215,34 @@ func TestValidatingWebhookAnalyzerLabelSelectorFiltering(t *testing.T) {
 	}
 	require.Equal(t, 1, len(results))
 }
+
+func TestValidatingWebhookAnalyzerPopulatesKubernetesDoc(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&admissionregistrationv1.ValidatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "vwc"},
+					Webhooks: []admissionregistrationv1.ValidatingWebhook{
+						{
+							Name: "vw",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "missing-svc",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		OpenapiSchema: webhookOpenapiSchema("Validating"),
+	}
+
+	results, err := ValidatingWebhookAnalyzer{}.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Len(t, results[0].Error, 1)
+	require.NotEmpty(t, results[0].Error[0].KubernetesDoc, "KubernetesDoc should be populated when --with-doc is used")
+}
