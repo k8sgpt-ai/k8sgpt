@@ -286,9 +286,16 @@ func TestClusterCatalogAnalyzerNilImageSource(t *testing.T) {
 		Context: context.Background(),
 	}
 
+	var results []common.Result
+	var err error
 	require.NotPanics(t, func() {
-		_, _ = ClusterCatalogAnalyzer{}.Analyze(config)
+		results, err = ClusterCatalogAnalyzer{}.Analyze(config)
 	})
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Equal(t, "no-image-source", results[0].Name)
+	require.Len(t, results[0].Error, 1)
+	require.Contains(t, results[0].Error[0].Text, "missing spec.source.image")
 }
 
 func TestClusterCatalogAnalyzerNilResolvedSourceImage(t *testing.T) {
@@ -325,7 +332,14 @@ func TestClusterCatalogAnalyzerNilResolvedSourceImage(t *testing.T) {
 		Context: context.Background(),
 	}
 
+	var results []common.Result
+	var err error
 	require.NotPanics(t, func() {
-		_, _ = ClusterCatalogAnalyzer{}.Analyze(config)
+		results, err = ClusterCatalogAnalyzer{}.Analyze(config)
 	})
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	// Exactly one failure: a missing image must not also trip the digest check.
+	require.Len(t, results[0].Error, 1)
+	require.Contains(t, results[0].Error[0].Text, "missing status.resolvedSource.image.ref")
 }
