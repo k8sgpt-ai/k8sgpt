@@ -90,11 +90,12 @@ type PreAnalysis struct {
 }
 
 type Result struct {
-	Kind         string    `json:"kind"`
-	Name         string    `json:"name"`
-	Error        []Failure `json:"error"`
-	Details      string    `json:"details"`
-	ParentObject string    `json:"parentObject"`
+	Kind            string                   `json:"kind"`
+	Name            string                   `json:"name"`
+	Error           []Failure                `json:"error"`
+	Details         string                   `json:"details"`
+	ParentObject    string                   `json:"parentObject"`
+	SystemOneAction *ai.ActionClassification `json:"systemOneAction,omitempty"`
 }
 
 type AnalysisStats struct {

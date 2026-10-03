@@ -428,6 +428,7 @@ func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToo
 	// Create a new analysis with the request parameters
 	analysis, err := analysis.NewAnalysis(
 		req.Backend,
+		"", // actionBackend
 		req.Language,
 		req.Filters,
 		req.Namespace,
