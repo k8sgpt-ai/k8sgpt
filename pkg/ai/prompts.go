@@ -1,13 +1,13 @@
 package ai
 
 const (
-	default_prompt = `Simplify the following Kubernetes error message delimited by triple dashes written in --- %s --- language; --- %s ---.
+	default_prompt = `Respond ONLY in the --- %s --- language. Simplify the following Kubernetes error message delimited by triple dashes; --- %s ---.
 	Provide the most possible solution in a step by step style in no more than 280 characters. Write the output in the following format:
 	Error: {Explain error here}
 	Solution: {Step by step solution here}
 	`
 
-	prom_conf_prompt = `Simplify the following Prometheus error message delimited by triple dashes written in --- %s --- language; --- %s ---.
+	prom_conf_prompt = `Respond ONLY in the --- %s --- language. Simplify the following Prometheus error message delimited by triple dashes; --- %s ---.
 	This error came when validating the Prometheus configuration file.
 	Provide step by step instructions to fix, with suggestions, referencing Prometheus documentation if relevant.
 	Write the output in the following format in no more than 300 characters:
@@ -47,7 +47,7 @@ const (
 	    - {list of container names}
 	`
 
-	kyverno_prompt = `Simplify the following Kyverno warnings message delimited by triple dashes written in --- %s --- language; --- %s ---.
+	kyverno_prompt = `Respond ONLY in the --- %s --- language. Simplify the following Kyverno warnings message delimited by triple dashes; --- %s ---.
 	Provide the most probable solution as a kubectl command. 
 
 	Write the output in the following format, for the solution, only show the kubectl command:
