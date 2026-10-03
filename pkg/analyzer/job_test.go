@@ -340,3 +340,131 @@ func TestJobAnalyzerFailedConditionOverridesRetries(t *testing.T) {
 	require.Len(t, results, 1, "a Job with Failed condition should still be reported")
 	require.Equal(t, "default/failed-job", results[0].Name)
 }
+
+func TestJobAnalyzerDeadlineExceededEvent(t *testing.T) {
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "deadline-job",
+			Namespace: "default",
+		},
+		Spec: batchv1.JobSpec{},
+		Status: batchv1.JobStatus{
+			Failed: 1,
+			Conditions: []batchv1.JobCondition{
+				{
+					Type:    batchv1.JobFailed,
+					Status:  corev1.ConditionTrue,
+					Reason:  "DeadlineExceeded",
+					Message: "Job was active longer than specified deadline",
+				},
+			},
+		},
+	}
+	evt := &corev1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "deadline-event",
+			Namespace: "default",
+		},
+		InvolvedObject: corev1.ObjectReference{
+			Kind:      "Job",
+			Name:      "deadline-job",
+			Namespace: "default",
+		},
+		Reason:  "DeadlineExceeded",
+		Message: "Job was active longer than specified deadline",
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(job, evt),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := JobAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Equal(t, "default/deadline-job", results[0].Name)
+	require.Len(t, results[0].Error, 1)
+	require.Equal(t, "Job was active longer than specified deadline", results[0].Error[0].Text)
+}
+
+func TestJobAnalyzerFailedConditionZeroFailedCount(t *testing.T) {
+	// A Job that timed out on pending pods has Failed condition=True,
+	// but Status.Failed is 0 because no pod ever exited with failure.
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "timeout-pending-job",
+			Namespace: "default",
+		},
+		Spec: batchv1.JobSpec{},
+		Status: batchv1.JobStatus{
+			Failed: 0,
+			Conditions: []batchv1.JobCondition{
+				{
+					Type:    batchv1.JobFailed,
+					Status:  corev1.ConditionTrue,
+					Reason:  "DeadlineExceeded",
+					Message: "Job was active longer than specified deadline",
+				},
+			},
+		},
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(job),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := JobAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1, "a Job with Failed condition should be reported even if Status.Failed is 0")
+	require.Equal(t, "default/timeout-pending-job", results[0].Name)
+	require.Len(t, results[0].Error, 1)
+	require.Equal(t, "Job was active longer than specified deadline", results[0].Error[0].Text)
+}
+
+func TestJobAnalyzerConditionMessageWhenEventsExpired(t *testing.T) {
+	// When events are expired, the failure text should fall back to the
+	// message from the Failed JobCondition if present.
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "expired-events-job",
+			Namespace: "default",
+		},
+		Spec: batchv1.JobSpec{},
+		Status: batchv1.JobStatus{
+			Failed: 2,
+			Conditions: []batchv1.JobCondition{
+				{
+					Type:    batchv1.JobFailed,
+					Status:  corev1.ConditionTrue,
+					Reason:  "BackoffLimitExceeded",
+					Message: "Job has reached the specified backoff limit",
+				},
+			},
+		},
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(job),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := JobAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Equal(t, "default/expired-events-job", results[0].Name)
+	require.Len(t, results[0].Error, 1)
+	require.Equal(t, "Job has reached the specified backoff limit", results[0].Error[0].Text)
+}
