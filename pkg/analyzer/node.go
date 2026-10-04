@@ -43,13 +43,16 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 		for _, nodeCondition := range node.Status.Conditions {
 			// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-			switch nodeCondition.Type {
-			case v1.NodeReady:
+			switch {
+			// The EKS node monitoring agent conditions follow the Ready convention:
+			// True means the monitored subsystem is healthy, so only a non-True
+			// status is a failure.
+			case nodeCondition.Type == v1.NodeReady, isEKSNodeMonitoringAgentConditionType(nodeCondition.Type):
 				if nodeCondition.Status != v1.ConditionTrue {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
 			// k3s `EtcdIsVoter`` should not be reported as an error
-			case v1.NodeConditionType("EtcdIsVoter"):
+			case nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter"):
 				break
 			default:
 				// For other conditions:
@@ -99,6 +102,23 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 		},
 	})
 	return failures
+}
+
+// isEKSNodeMonitoringAgentConditionType checks if the condition type is set by the
+// Amazon EKS node monitoring agent. These conditions are True while the monitored
+// subsystem is healthy and False when a problem is detected, the same as Ready.
+// https://docs.aws.amazon.com/eks/latest/userguide/node-health.html
+func isEKSNodeMonitoringAgentConditionType(conditionType v1.NodeConditionType) bool {
+	switch conditionType {
+	case "AcceleratedHardwareReady",
+		"ContainerRuntimeReady",
+		"KernelReady",
+		"NetworkingReady",
+		"StorageReady":
+		return true
+	default:
+		return false
+	}
 }
 
 // isKnownNodeConditionType checks if the condition type is a standard Kubernetes node condition
