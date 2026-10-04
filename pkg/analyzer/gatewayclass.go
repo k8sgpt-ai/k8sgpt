@@ -16,11 +16,11 @@ package analyzer
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/fields"
-
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -56,14 +56,15 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		var failures []common.Failure
 
 		gcName := gc.GetName()
-		// Check only the current condition
-		if len(gc.Status.Conditions) > 0 && gc.Status.Conditions[0].Status != metav1.ConditionTrue {
+		// Check the Accepted condition
+		cond := apimeta.FindStatusCondition(gc.Status.Conditions, string(gtwapi.GatewayClassConditionStatusAccepted))
+		if cond != nil && cond.Status != metav1.ConditionTrue {
 			failures = append(failures, common.Failure{
 				Text: fmt.Sprintf(
 					"GatewayClass '%s' with a controller name '%s' is not accepted. Message: '%s'.",
 					gcName,
 					gc.Spec.ControllerName,
-					gc.Status.Conditions[0].Message,
+					cond.Message,
 				),
 				Sensitive: []common.Sensitive{
 					{
