@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
 	"reflect"
 	"strings"
 	"testing"
@@ -871,4 +872,47 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Name)
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Kind, "Kind should default to the analyzer name")
 	require.Len(t, a.Results[0].Error, 1)
+}
+
+func TestNewAnalysis_CustomHeaders(t *testing.T) {
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{
+			Config: &rest.Config{Host: "fake-server"},
+		}, nil
+	})
+	defer patches.Reset()
+
+	var capturedHeaders []http.Header
+	patches2 := gomonkey.ApplyMethod(reflect.TypeOf(&ai.NoOpAIClient{}), "Configure", func(_ *ai.NoOpAIClient, config ai.IAIConfig) error {
+		capturedHeaders = config.GetCustomHeaders()
+		return nil
+	})
+	defer patches2.Reset()
+
+	viper.Set("ai", map[string]interface{}{
+		"defaultProvider": "noopai",
+		"providers": []map[string]interface{}{
+			{
+				"name":    "noopai",
+				"baseUrl": "http://test",
+				"model":   "test-model",
+				"customHeaders": []map[string][]string{
+					{"X-Config-Header": {"config-val"}},
+					{"Same-Header-Key": {"overridden"}},
+					{"authorization": {"auth-config"}},
+				},
+			},
+		},
+	})
+
+	cliHeaders := []string{"X-CLI-Header:cli-val", "Same-Header-Key:priority", "Authorization:auth-cli"}
+	a, err := NewAnalysis("noopai", "english", []string{"Pod"}, "default", "", true, true, 10, false, false, cliHeaders, false)
+	require.NoError(t, err)
+	defer a.Close()
+
+	require.Len(t, capturedHeaders, 4)
+	require.Equal(t, "cli-val", capturedHeaders[0].Get("X-CLI-Header"))
+	require.Equal(t, "priority", capturedHeaders[1].Get("Same-Header-Key"))
+	require.Equal(t, "auth-cli", capturedHeaders[2].Get("Authorization"))
+	require.Equal(t, "config-val", capturedHeaders[3].Get("X-Config-Header"))
 }

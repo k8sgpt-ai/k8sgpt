@@ -19,8 +19,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -208,24 +210,26 @@ func NewAnalysis(
 
 	aiClient := ai.NewClient(aiProvider.Name)
 
-	var headerStrings []string
+	customHeaders := util.NewHeaders(httpHeaders)
 
-	// If AI provider has custom headers in config, use those first
-	if len(aiProvider.CustomHeaders) > 0 {
-		for _, header := range aiProvider.CustomHeaders {
-			for key, values := range header {
-				for _, value := range values {
-					headerStrings = append(headerStrings, fmt.Sprintf("%s:%s", key, value))
-				}
-			}
+	// Merge CLI and config headers, with CLI headers having higher priority
+	var cliHeaderKeys []string
+	for _, header := range customHeaders {
+		for key := range header {
+			cliHeaderKeys = append(cliHeaderKeys, http.CanonicalHeaderKey(key))
 		}
-	} else if len(httpHeaders) > 0 {
-		headerStrings = httpHeaders
 	}
 
-	customHeaders := util.NewHeaders(headerStrings)
+	for _, header := range aiProvider.CustomHeaders {
+		for key := range header {
+			if !slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
+				customHeaders = append(customHeaders, header)
+			}
+		}
+	}
 
 	aiProvider.CustomHeaders = customHeaders
+
 	if verbose {
 		fmt.Println("Debug: Checking AI client initialization.")
 	}
