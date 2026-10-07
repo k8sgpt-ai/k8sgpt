@@ -14,7 +14,6 @@ limitations under the License.
 package analyzer
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -32,7 +31,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 	apiDoc := kubernetes.K8sApiReference{
 		Kind: kind,
 		ApiVersion: schema.GroupVersion{
-			Group:   "apps",
+			Group:   "admissionregistration.k8s.io",
 			Version: "v1",
 		},
 		OpenapiSchema: a.OpenapiSchema,
@@ -42,7 +41,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		"analyzer_name": kind,
 	})
 
-	mutatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().List(context.Background(), a.ListOptions())
+	mutatingWebhooks, err := a.Client.GetClient().AdmissionregistrationV1().MutatingWebhookConfigurations().List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +57,12 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			}
 			svc := webhook.ClientConfig.Service
 			// Get the service
-			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(context.Background(), svc.Name, v1.GetOptions{})
+			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(a.Context, svc.Name, v1.GetOptions{})
 			if err != nil {
 				// If the service is not found, we can't check the pods
 				failures = append(failures, common.Failure{
 					Text:          fmt.Sprintf("Service %s not found as mapped to by Mutating Webhook %s", svc.Name, webhook.Name),
-					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					KubernetesDoc: apiDoc.GetApiDocV2("webhooks.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
@@ -88,7 +87,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				continue
 			}
 			// Get pods within service
-			pods, err := a.Client.GetClient().CoreV1().Pods(svc.Namespace).List(context.Background(), v1.ListOptions{
+			pods, err := a.Client.GetClient().CoreV1().Pods(svc.Namespace).List(a.Context, v1.ListOptions{
 				LabelSelector: util.MapToString(service.Spec.Selector),
 			})
 			if err != nil {
@@ -98,7 +97,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			if len(pods.Items) == 0 {
 				failures = append(failures, common.Failure{
 					Text:          fmt.Sprintf("No active pods found within service %s as mapped to by Mutating Webhook %s", svc.Name, webhook.Name),
-					KubernetesDoc: apiDoc.GetApiDocV2("spec.webhook.clientConfig.service"),
+					KubernetesDoc: apiDoc.GetApiDocV2("webhooks.clientConfig.service"),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: webhookConfig.Namespace,
@@ -110,7 +109,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			}
 			for _, pod := range pods.Items {
 				if pod.Status.Phase != "Running" {
-					doc := apiDoc.GetApiDocV2("spec.webhook")
+					doc := apiDoc.GetApiDocV2("webhooks")
 					failures = append(failures, common.Failure{
 						Text: fmt.Sprintf(
 							"Mutating Webhook (%s) is pointing to an inactive receiver pod (%s)",
