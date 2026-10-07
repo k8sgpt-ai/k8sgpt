@@ -278,3 +278,70 @@ func TestConfigMapAnalyzer_SidecarPatterns(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigMapAnalyzer_NamespaceScoping(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		// team-a has a used configmap
+		&v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "shared-cm",
+				Namespace: "team-a",
+			},
+			Data: map[string]string{
+				"key": "value",
+			},
+		},
+		// team-a pod uses shared-cm
+		&v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "pod-a",
+				Namespace: "team-a",
+			},
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{
+						Name: "container-a",
+						EnvFrom: []v1.EnvFromSource{
+							{
+								ConfigMapRef: &v1.ConfigMapEnvSource{
+									LocalObjectReference: v1.LocalObjectReference{
+										Name: "shared-cm",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		// team-b has an unused configmap with the same name
+		&v1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "shared-cm",
+				Namespace: "team-b",
+			},
+			Data: map[string]string{
+				"key": "value",
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "",
+	}
+
+	analyzer := ConfigMapAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	assert.NoError(t, err)
+
+	// team-b/shared-cm is unused and must be reported; team-a/shared-cm is used and must not be reported.
+	assert.Equal(t, 1, len(results), "expected 1 failure for the unused ConfigMap in team-b, got %d", len(results))
+	if len(results) == 1 {
+		assert.Equal(t, "team-b/shared-cm", results[0].Name)
+		assert.Contains(t, results[0].Error[0].Text, "is not used by any pods in the namespace")
+	}
+}
