@@ -59,7 +59,6 @@ func (ClusterExtensionAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		if err != nil {
 			continue
 		}
-		fmt.Printf("ClusterExtension: %s | Source: %s\n", extension.Name, extension.Spec.Source.Catalog.PackageName)
 		failures, err = ValidateClusterExtension(failures, extension)
 		if err != nil {
 			continue
