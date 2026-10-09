@@ -123,7 +123,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			return nil, err
 		}
 		for _, event := range events.Items {
-			if event.Type != "Normal" {
+			if event.Type != "Normal" && event.InvolvedObject.Kind == kind {
 				failures = append(failures, common.Failure{
 					Text: fmt.Sprintf("Service %s/%s has event %s", ep.Namespace, ep.Name, event.Message),
 				})
