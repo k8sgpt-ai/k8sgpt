@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.4.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.39...v0.4.40) (2026-10-09)
+
+
+### Features
+
+* add ResourceClaim analyzer for missing DeviceClasses ([#1768](https://github.com/k8sgpt-ai/k8sgpt/issues/1768)) ([f2dd92e](https://github.com/k8sgpt-ai/k8sgpt/commit/f2dd92e40ace4a6aa0e341b8907d9da312e53a76))
+
+
+### Bug Fixes
+
+* close the custom analyzer gRPC connection after each analysis ([#1800](https://github.com/k8sgpt-ai/k8sgpt/issues/1800)) ([d6d75f7](https://github.com/k8sgpt-ai/k8sgpt/commit/d6d75f7e14cb136a3f45ce77ceeca28ab98f430a))
+* correct API doc lookups for the webhook analyzers ([#1802](https://github.com/k8sgpt-ai/k8sgpt/issues/1802)) ([ce78560](https://github.com/k8sgpt-ai/k8sgpt/commit/ce78560b1e00a7c2769822b9ef9a49daf3a46428))
+* handle empty AI responses and respect configured language ([#1756](https://github.com/k8sgpt-ai/k8sgpt/issues/1756)) ([9456068](https://github.com/k8sgpt-ai/k8sgpt/commit/94560681fea9008ec3e75d488348180d2ee3c95b))
+* honor StatefulSet start ordinals ([#1759](https://github.com/k8sgpt-ai/k8sgpt/issues/1759)) ([dd16466](https://github.com/k8sgpt-ai/k8sgpt/commit/dd16466d2fc5cbec644022678d855b1c485dba27))
+* honour K8SGPT_BACKEND on every serve start ([#1749](https://github.com/k8sgpt-ai/k8sgpt/issues/1749)) ([6959a93](https://github.com/k8sgpt-ai/k8sgpt/commit/6959a93f123afbcf0a3a151dd75462f3fb0a4af4))
+* ignore in-progress Deployment replica mismatches ([#1743](https://github.com/k8sgpt-ai/k8sgpt/issues/1743)) ([cbaae54](https://github.com/k8sgpt-ai/k8sgpt/commit/cbaae54ed3890f6728ee4668dbff4f20041493e6))
+* paginate S3 object listings ([#1811](https://github.com/k8sgpt-ai/k8sgpt/issues/1811)) ([21aadb4](https://github.com/k8sgpt-ai/k8sgpt/commit/21aadb4d75648258953e1338c57ef77c292f89dd))
+* recognize EKS node monitoring agent node conditions ([#1798](https://github.com/k8sgpt-ai/k8sgpt/issues/1798)) ([635d9b1](https://github.com/k8sgpt-ai/k8sgpt/commit/635d9b122318a41ada1bfcf9153801365fdcaf77)), closes [#1461](https://github.com/k8sgpt-ai/k8sgpt/issues/1461)
+* register kyverno policy-report scheme once to avoid concurrent map writes ([#1777](https://github.com/k8sgpt-ai/k8sgpt/issues/1777)) ([2556f80](https://github.com/k8sgpt-ai/k8sgpt/commit/2556f8020e3ed57955590861729e13457525b233))
+* render PDB selector operators as readable phrases ([#1820](https://github.com/k8sgpt-ai/k8sgpt/issues/1820)) ([1bd139d](https://github.com/k8sgpt-ai/k8sgpt/commit/1bd139da0d329173bf7ef2f7fc15625f7656e04b))
+* report blocked PDBs whose selector is empty or uses matchExpressions ([#1797](https://github.com/k8sgpt-ai/k8sgpt/issues/1797)) ([2a129c5](https://github.com/k8sgpt-ai/k8sgpt/commit/2a129c5fa6c6d52cdb5451cf715ad92a67475c66))
+* report DeadlineExceeded and JobFailed conditions in Job analyzer ([#1809](https://github.com/k8sgpt-ai/k8sgpt/issues/1809)) ([7b26cd1](https://github.com/k8sgpt-ai/k8sgpt/commit/7b26cd17ae59b2af390ccf65feef1d25dacac94e))
+* report FailedBinding events in PersistentVolumeClaim analyzer ([#1808](https://github.com/k8sgpt-ai/k8sgpt/issues/1808)) ([9ca8484](https://github.com/k8sgpt-ai/k8sgpt/commit/9ca8484bc8cce8d92cb16e252030917a3b1a6598))
+* report missing default backend services in Ingress analyzer ([#1810](https://github.com/k8sgpt-ai/k8sgpt/issues/1810)) ([79fdc97](https://github.com/k8sgpt-ai/k8sgpt/commit/79fdc97a2d9bdcf360f790ef5b71704829d20478))
+* scope analyzer events to object identity ([#1790](https://github.com/k8sgpt-ai/k8sgpt/issues/1790)) ([09c5098](https://github.com/k8sgpt-ai/k8sgpt/commit/09c5098b88824aca037380a408d25cfca9638645))
+* scope ConfigMap usage tracking to pod namespace ([#1812](https://github.com/k8sgpt-ai/k8sgpt/issues/1812)) ([c422c96](https://github.com/k8sgpt-ai/k8sgpt/commit/c422c9662ba4fdf6ba33c80732937f16bf3eb44b))
+* scope NetworkPolicy pod lookup to policy namespace ([#1747](https://github.com/k8sgpt-ai/k8sgpt/issues/1747)) ([432ebaa](https://github.com/k8sgpt-ai/k8sgpt/commit/432ebaa7d4940f1cca8246214bbce39e45ebc089))
+* scope service events to endpoint namespace ([#1795](https://github.com/k8sgpt-ai/k8sgpt/issues/1795)) ([8cb270e](https://github.com/k8sgpt-ai/k8sgpt/commit/8cb270e0800e9195d0ba4540fab1f458cac15117))
+* send involvedObject filters as a field selector in MCP list-events ([#1792](https://github.com/k8sgpt-ai/k8sgpt/issues/1792)) ([42d6447](https://github.com/k8sgpt-ai/k8sgpt/commit/42d64476eac4f0157e736f708a6c01755158c560))
+* stop reporting local StorageClasses as deprecated ([#1779](https://github.com/k8sgpt-ai/k8sgpt/issues/1779)) ([988f4b4](https://github.com/k8sgpt-ai/k8sgpt/commit/988f4b402268a11d57a0dd70ab07f6a7df1cc04a))
+* stop the OLM analyzers panicking on catalogs without an image ([#1815](https://github.com/k8sgpt-ai/k8sgpt/issues/1815)) ([613a74b](https://github.com/k8sgpt-ai/k8sgpt/commit/613a74bcf21fda780b85dbc7c9260af2d05ec049))
+* thread analyzer context instead of context.Background() ([#1732](https://github.com/k8sgpt-ai/k8sgpt/issues/1732)) ([9b026e8](https://github.com/k8sgpt-ai/k8sgpt/commit/9b026e865460ea57552b895868798e4894c0eb9e))
+* use apimeta.FindStatusCondition for GatewayClass Accepted condition ([#1806](https://github.com/k8sgpt-ai/k8sgpt/issues/1806)) ([0f89704](https://github.com/k8sgpt-ai/k8sgpt/commit/0f897047c238bdd2ab55dd40f38500f643639fb0))
+* use apimeta.FindStatusCondition for PDB DisruptionAllowed condition ([#1807](https://github.com/k8sgpt-ai/k8sgpt/issues/1807)) ([2247f5c](https://github.com/k8sgpt-ai/k8sgpt/commit/2247f5c77e9bb48c3b4725b1999332d0572a29a7))
+
+
+### Other
+
+* **deps:** update codecov/codecov-action digest to 303a32d ([#1785](https://github.com/k8sgpt-ai/k8sgpt/issues/1785)) ([10c438c](https://github.com/k8sgpt-ai/k8sgpt/commit/10c438cc68bfba5d9bbad5b407e3510958607aa0))
+* **deps:** update docker/build-push-action digest to c3c9e26 ([#1786](https://github.com/k8sgpt-ai/k8sgpt/issues/1786)) ([3d90679](https://github.com/k8sgpt-ai/k8sgpt/commit/3d9067922c8056535d110d7cfa4c0ea5d2d19efd))
+* **deps:** update docker/setup-buildx-action digest to f87e599 ([#1787](https://github.com/k8sgpt-ai/k8sgpt/issues/1787)) ([f7e30d5](https://github.com/k8sgpt-ai/k8sgpt/commit/f7e30d5ac56f22cb59d20b097318496e847e7763))
+* **deps:** update docker/setup-qemu-action digest to 9901266 ([#1771](https://github.com/k8sgpt-ai/k8sgpt/issues/1771)) ([367dc86](https://github.com/k8sgpt-ai/k8sgpt/commit/367dc8619674d6a5f20d7f8789a570b0bd751691))
+* **deps:** update jlumbroso/free-disk-space digest to 36e9a5a ([#1794](https://github.com/k8sgpt-ai/k8sgpt/issues/1794)) ([2cc7031](https://github.com/k8sgpt-ai/k8sgpt/commit/2cc7031a82c7d2a15a236908ab355cf68e4315b4))
+
+
+### Docs
+
+* point CONTRIBUTING.md at CNCF Slack ([#1799](https://github.com/k8sgpt-ai/k8sgpt/issues/1799)) ([b4e7fdc](https://github.com/k8sgpt-ai/k8sgpt/commit/b4e7fdca044419b0a346d1dfe82aabcc38938b8b))
+
 ## [0.4.39](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.38...v0.4.39) (2026-09-14)
 
 
