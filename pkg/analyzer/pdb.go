@@ -25,6 +25,21 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// Lowercasing alone would render NotIn and DoesNotExist as "notin" and "doesnotexist".
+var labelSelectorOperatorPhrases = map[metav1.LabelSelectorOperator]string{
+	metav1.LabelSelectorOpIn:           "in",
+	metav1.LabelSelectorOpNotIn:        "not in",
+	metav1.LabelSelectorOpExists:       "exists",
+	metav1.LabelSelectorOpDoesNotExist: "does not exist",
+}
+
+func labelSelectorOperatorPhrase(op metav1.LabelSelectorOperator) string {
+	if phrase, ok := labelSelectorOperatorPhrases[op]; ok {
+		return phrase
+	}
+	return strings.ToLower(string(op))
+}
+
 type PdbAnalyzer struct{}
 
 func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
@@ -101,7 +116,7 @@ func (PdbAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						})
 					}
 
-					text := fmt.Sprintf("%s, expected pdb pod label %s %s", reason, expr.Key, strings.ToLower(string(expr.Operator)))
+					text := fmt.Sprintf("%s, expected pdb pod label %s %s", reason, expr.Key, labelSelectorOperatorPhrase(expr.Operator))
 					if len(expr.Values) > 0 {
 						text = fmt.Sprintf("%s (%s)", text, strings.Join(expr.Values, ", "))
 					}
