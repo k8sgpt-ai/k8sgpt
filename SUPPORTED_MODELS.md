@@ -31,8 +31,32 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 
 ### Amazon Bedrock
 - **Supported Models:**
-  - anthropic.claude-sonnet-5
   - anthropic.claude-opus-5
+  - us.anthropic.claude-opus-5
+  - global.anthropic.claude-opus-5
+  - anthropic.claude-sonnet-5-5
+  - us.anthropic.claude-sonnet-5-5
+  - global.anthropic.claude-sonnet-5-5
+  - anthropic.claude-opus-5-5
+  - us.anthropic.claude-opus-5-5
+  - global.anthropic.claude-opus-5-5
+  - anthropic.claude-sonnet-4-5-20250929-v1:0
+  - us.anthropic.claude-sonnet-4-5-20250929-v1:0
+  - eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+  - au.anthropic.claude-sonnet-4-5-20250929-v1:0
+  - jp.anthropic.claude-sonnet-4-5-20250929-v1:0
+  - global.anthropic.claude-sonnet-4-5-20250929-v1:0
+  - anthropic.claude-haiku-4-5-20251001-v1:0
+  - us.anthropic.claude-haiku-4-5-20251001-v1:0
+  - eu.anthropic.claude-haiku-4-5-20251001-v1:0
+  - au.anthropic.claude-haiku-4-5-20251001-v1:0
+  - jp.anthropic.claude-haiku-4-5-20251001-v1:0
+  - in.anthropic.claude-haiku-4-5-20251001-v1:0
+  - global.anthropic.claude-haiku-4-5-20251001-v1:0
+  - anthropic.claude-opus-4-5-20251101-v1:0
+  - us.anthropic.claude-opus-4-5-20251101-v1:0
+  - eu.anthropic.claude-opus-4-5-20251101-v1:0
+  - global.anthropic.claude-opus-4-5-20251101-v1:0
   - anthropic.claude-sonnet-4-20250514-v1:0
   - us.anthropic.claude-sonnet-4-20250514-v1:0
   - eu.anthropic.claude-sonnet-4-20250514-v1:0
