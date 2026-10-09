@@ -42,11 +42,14 @@ import (
 )
 
 type Analysis struct {
-	Context            context.Context
-	Filters            []string
-	Client             *kubernetes.Client
-	Language           string
-	AIClient           ai.IAI
+	Context  context.Context
+	Filters  []string
+	Client   *kubernetes.Client
+	Language string
+	AIClient ai.IAI
+	// ActionClient is an optional System One model (e.g. configured via --action-backend systemone)
+	// that classifies the output of the Generative AI into structured decisions.
+	ActionClient       ai.ISystemOne
 	Results            []common.Result
 	Errors             []string
 	Namespace          string
@@ -81,6 +84,7 @@ type JsonOutput struct {
 
 func NewAnalysis(
 	backend string,
+	actionBackend string,
 	language string,
 	filters []string,
 	namespace string,
@@ -237,6 +241,37 @@ func NewAnalysis(
 	}
 	a.AIClient = aiClient
 	a.AnalysisAIProvider = aiProvider.Name
+
+	// --- System One Action Client ---
+	// If the user passed --action-backend, initialise a secondary System One
+	// client that classifies the generated text.
+	if actionBackend != "" {
+		var actionProvider ai.AIProvider
+		for _, provider := range configAI.Providers {
+			if actionBackend == provider.Name {
+				actionProvider = provider
+				break
+			}
+		}
+		if actionProvider.Name == "" {
+			return nil, fmt.Errorf("action backend %q not found in configuration. Please run 'k8sgpt auth add --backend %s'", actionBackend, actionBackend)
+		}
+		baseClient := ai.NewClient(actionProvider.Name)
+		if err := baseClient.Configure(&actionProvider); err != nil {
+			return nil, fmt.Errorf("failed to configure action backend %q: %w", actionBackend, err)
+		}
+		// Only wire it if the backend actually implements ISystemOne
+		if s1Client, ok := baseClient.(ai.ISystemOne); ok {
+			a.ActionClient = s1Client
+			if verbose {
+				fmt.Printf("Debug: Action client initialised, provider=%s.\n", actionBackend)
+			}
+		} else {
+			return nil, fmt.Errorf("backend %q does not implement the System One classifier interface. Use 'systemone' as your --action-backend", actionBackend)
+		}
+	}
+	// --- End System One Action Client ---
+
 	return a, nil
 }
 
@@ -697,6 +732,24 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 				return fmt.Errorf("exhausted API quota for AI provider %s: %v", a.AIClient.GetName(), err)
 			}
 			return fmt.Errorf("failed while calling AI provider %s: %v", a.AIClient.GetName(), err)
+		}
+
+		// If a deterministic classification model is provided via --action-backend,
+		// pass the LLM's unstructured text through it to extract a strictly typed action.
+		if a.ActionClient != nil {
+			classification, err := a.ActionClient.ClassifyAction(
+				a.Context,
+				result, // Pass the LLM's full text output
+				[]string{"RestartPod", "ScaleDeployment", "Ignore", "ReviewConfig"},
+			)
+			if err == nil {
+				// Store the full classification (decision, confidence, suggested action)
+				// so downstream consumers (ChatOps, --auto-fix) can gate on confidence.
+				analysis.SystemOneAction = &classification
+			} else if verbose {
+				fmt.Printf("[SystemOne] Action Classification failed for %s/%s: %v\n",
+					analysis.Kind, analysis.Name, err)
+			}
 		}
 
 		if anonymize {
