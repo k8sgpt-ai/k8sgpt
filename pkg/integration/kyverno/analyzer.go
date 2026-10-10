@@ -35,10 +35,6 @@ func (KyvernoAnalyzer) analyzePolicyReports(a common.Analyzer) ([]common.Result,
 	result := &v1alpha2.PolicyReportList{}
 	client := a.Client.CtrlClient
 
-	err := v1alpha2.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{Namespace: a.Namespace}); err != nil {
 		return nil, err
 	}
@@ -89,10 +85,6 @@ func (t KyvernoAnalyzer) analyzeClusterPolicyReports(a common.Analyzer) ([]commo
 	result := &v1alpha2.ClusterPolicyReportList{}
 	client := a.Client.CtrlClient
 
-	err := v1alpha2.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
