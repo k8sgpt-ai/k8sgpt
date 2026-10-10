@@ -74,7 +74,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 						},
 					},
 				})
-				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+				preAnalysis[webhookResultName(webhookConfig.Name, webhook.Name)] = common.PreAnalysis{
 					MutatingWebhook: webhookConfig,
 					FailureDetails:  failures,
 				}
@@ -135,7 +135,7 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				}
 			}
 			if len(failures) > 0 {
-				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+				preAnalysis[webhookResultName(webhookConfig.Name, webhook.Name)] = common.PreAnalysis{
 					MutatingWebhook: webhookConfig,
 					FailureDetails:  failures,
 				}
@@ -158,4 +158,11 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 	}
 
 	return a.Results, nil
+}
+
+// webhookResultName keys a webhook finding by its configuration. These
+// configurations are cluster-scoped, so ObjectMeta.Namespace is empty and
+// webhook names only have to be unique inside one configuration.
+func webhookResultName(configName, webhookName string) string {
+	return configName + "/" + webhookName
 }
