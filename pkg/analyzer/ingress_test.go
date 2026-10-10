@@ -21,12 +21,16 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
+	// only exists to give the resource backend's APIGroup something addressable
+	resourceBackendAPIGroup := "k8s.example.com"
+
 	// Create test cases
 	testCases := []struct {
 		name           string
@@ -158,6 +162,85 @@ func TestIngressAnalyzer(t *testing.T) {
 				"Ingress uses the secret default/non-existent-secret as a TLS certificate which does not exist.",
 			},
 		},
+		{
+			name: "Resource backend instead of a service backend",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-resource-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					Rules: []networkingv1.IngressRule{
+						{
+							Host: "example.com",
+							IngressRuleValue: networkingv1.IngressRuleValue{
+								HTTP: &networkingv1.HTTPIngressRuleValue{
+									Paths: []networkingv1.HTTPIngressPath{
+										{
+											Path: "/static",
+											Backend: networkingv1.IngressBackend{
+												Resource: &corev1.TypedLocalObjectReference{
+													APIGroup: &resourceBackendAPIGroup,
+													Kind:     "StorageBucket",
+													Name:     "static-assets",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-resource-backend does not specify an Ingress class.",
+			},
+		},
+		{
+			name: "Non-existent default backend service",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-default-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					DefaultBackend: &networkingv1.IngressBackend{
+						Service: &networkingv1.IngressServiceBackend{
+							Name: "non-existent-default-svc",
+							Port: networkingv1.ServiceBackendPort{
+								Number: 80,
+							},
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-default-backend does not specify an Ingress class.",
+				"Ingress uses the default backend service default/non-existent-default-svc which does not exist.",
+			},
+		},
+		{
+			name: "Resource backend on default backend",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-default-resource-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					DefaultBackend: &networkingv1.IngressBackend{
+						Resource: &corev1.TypedLocalObjectReference{
+							APIGroup: &resourceBackendAPIGroup,
+							Kind:     "StorageBucket",
+							Name:     "default-static-assets",
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-default-resource-backend does not specify an Ingress class.",
+			},
+		},
 	}
 
 	// Run test cases
@@ -245,6 +328,225 @@ func TestIngressAnalyzerLabelSelector(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/ingress-with-label", results[0].Name)
+}
+
+func TestIngressAnalyzerSkipsEmptyTLSSecretName(t *testing.T) {
+	ingressClassName := "gce"
+	clientSet := fake.NewSimpleClientset(
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "default-certificate-ingress",
+				Namespace: "default",
+			},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				TLS: []networkingv1.IngressTLS{
+					{
+						Hosts: []string{"example.com"},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := IngressAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
+func TestIsGKEBuiltInIngressClass(t *testing.T) {
+	tests := []struct {
+		name      string
+		className string
+		expected  bool
+	}{
+		{
+			name:      "gce class is GKE built-in",
+			className: "gce",
+			expected:  true,
+		},
+		{
+			name:      "gce-internal class is GKE built-in",
+			className: "gce-internal",
+			expected:  true,
+		},
+		{
+			name:      "nginx class is not GKE built-in",
+			className: "nginx",
+			expected:  false,
+		},
+		{
+			name:      "empty class is not GKE built-in",
+			className: "",
+			expected:  false,
+		},
+		{
+			name:      "custom class is not GKE built-in",
+			className: "custom-ingress",
+			expected:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isGKEBuiltInIngressClass(tt.className)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIngressAnalyzerGKEIngressClass(t *testing.T) {
+	gceClassName := "gce"
+	gceInternalClassName := "gce-internal"
+	nonExistentClassName := "non-existent-class"
+
+	testCases := []struct {
+		name                  string
+		ingress               *networkingv1.Ingress
+		expectIngressClassErr bool
+	}{
+		{
+			name: "GKE gce ingress class should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &gceClassName,
+				},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "GKE gce-internal ingress class should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-internal-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &gceInternalClassName,
+				},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "GKE gce ingress class via annotation should not report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "gke-ingress-annotation",
+					Namespace: "default",
+					Annotations: map[string]string{
+						"kubernetes.io/ingress.class": "gce",
+					},
+				},
+				Spec: networkingv1.IngressSpec{},
+			},
+			expectIngressClassErr: false,
+		},
+		{
+			name: "Non-existent ingress class should report error",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "custom-ingress",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					IngressClassName: &nonExistentClassName,
+				},
+			},
+			expectIngressClassErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			clientset := fake.NewSimpleClientset()
+
+			_, err := clientset.NetworkingV1().Ingresses(tc.ingress.Namespace).Create(ctx, tc.ingress, metav1.CreateOptions{})
+			require.NoError(t, err)
+
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   ctx,
+				Namespace: tc.ingress.Namespace,
+			}
+
+			analyzer := IngressAnalyzer{}
+			results, err := analyzer.Analyze(config)
+			require.NoError(t, err)
+
+			if tc.expectIngressClassErr {
+				require.Len(t, results, 1)
+				found := false
+				for _, failure := range results[0].Error {
+					if failure.Text == "Ingress uses the ingress class non-existent-class which does not exist." {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Expected to find ingress class error")
+			} else {
+				// Should have no results (no errors) for GKE built-in classes
+				assert.Len(t, results, 0, "Expected no errors for GKE built-in ingress class")
+			}
+		})
+	}
+}
+
+func TestIngressAnalyzerDefaultBackendExistingService(t *testing.T) {
+	ingressClassName := "gce"
+	clientSet := fake.NewSimpleClientset(
+		&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "existing-default-svc",
+				Namespace: "default",
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ingress-with-valid-default-backend",
+				Namespace: "default",
+			},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				DefaultBackend: &networkingv1.IngressBackend{
+					Service: &networkingv1.IngressServiceBackend{
+						Name: "existing-default-svc",
+						Port: networkingv1.ServiceBackendPort{
+							Number: 80,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := IngressAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
 }
 
 // Helper functions

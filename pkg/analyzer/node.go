@@ -20,7 +20,6 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type NodeAnalyzer struct{}
@@ -33,7 +32,7 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -44,17 +43,22 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 		for _, nodeCondition := range node.Status.Conditions {
 			// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-			switch nodeCondition.Type {
-			case v1.NodeReady:
-				if nodeCondition.Status == v1.ConditionTrue {
-					break
+			switch {
+			// The EKS node monitoring agent conditions follow the Ready convention:
+			// True means the monitored subsystem is healthy, so only a non-True
+			// status is a failure.
+			case nodeCondition.Type == v1.NodeReady, isEKSNodeMonitoringAgentConditionType(nodeCondition.Type):
+				if nodeCondition.Status != v1.ConditionTrue {
+					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
-				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 			// k3s `EtcdIsVoter`` should not be reported as an error
-			case v1.NodeConditionType("EtcdIsVoter"):
+			case nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter"):
 				break
 			default:
-				if nodeCondition.Status != v1.ConditionFalse {
+				// For other conditions:
+				// - Report True or Unknown status as failures (for standard conditions)
+				// - Report any unknown condition type as a failure
+				if nodeCondition.Status == v1.ConditionTrue || nodeCondition.Status == v1.ConditionUnknown || !isKnownNodeConditionType(nodeCondition.Type) {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
 			}
@@ -98,4 +102,35 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 		},
 	})
 	return failures
+}
+
+// isEKSNodeMonitoringAgentConditionType checks if the condition type is set by the
+// Amazon EKS node monitoring agent. These conditions are True while the monitored
+// subsystem is healthy and False when a problem is detected, the same as Ready.
+// https://docs.aws.amazon.com/eks/latest/userguide/node-health.html
+func isEKSNodeMonitoringAgentConditionType(conditionType v1.NodeConditionType) bool {
+	switch conditionType {
+	case "AcceleratedHardwareReady",
+		"ContainerRuntimeReady",
+		"KernelReady",
+		"NetworkingReady",
+		"StorageReady":
+		return true
+	default:
+		return false
+	}
+}
+
+// isKnownNodeConditionType checks if the condition type is a standard Kubernetes node condition
+func isKnownNodeConditionType(conditionType v1.NodeConditionType) bool {
+	switch conditionType {
+	case v1.NodeReady,
+		v1.NodeMemoryPressure,
+		v1.NodeDiskPressure,
+		v1.NodePIDPressure,
+		v1.NodeNetworkUnavailable:
+		return true
+	default:
+		return false
+	}
 }

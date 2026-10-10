@@ -32,6 +32,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	k "k8s.io/client-go/kubernetes"
 )
 
@@ -161,7 +162,16 @@ func MaskString(input string) string {
 }
 
 func ReplaceIfMatch(text string, pattern string, replacement string) string {
-	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, pattern))
+	// An empty pattern compiles to `(\b)`, which matches at every word boundary
+	// and would rewrite the whole text.
+	if pattern == "" {
+		return text
+	}
+	// Callers pass literal values to redact (resource names, node hostnames),
+	// not regexes. Node names are routinely FQDNs, so an unescaped "." would
+	// match any character, and a value containing "+" or "(" would panic
+	// MustCompile.
+	re := regexp.MustCompile(fmt.Sprintf(`%s(\b)`, regexp.QuoteMeta(pattern)))
 	if re.MatchString(text) {
 		text = re.ReplaceAllString(text, replacement)
 	}
@@ -238,12 +248,19 @@ func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
 	return false
 }
 
-func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
+func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, object v1.ObjectReference) (*v1.Event, error) {
+	selector := fields.Set{
+		"involvedObject.name": object.Name,
+		"involvedObject.kind": object.Kind,
+	}
+	if object.UID != "" {
+		selector["involvedObject.uid"] = string(object.UID)
+	}
 
 	// get the list of events
-	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
+	events, err := kubernetesClient.GetClient().CoreV1().Events(object.Namespace).List(ctx,
 		metav1.ListOptions{
-			FieldSelector: "involvedObject.name=" + name,
+			FieldSelector: selector.AsSelector().String(),
 		})
 
 	if err != nil {
@@ -252,6 +269,10 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 	// find most recent event
 	var latestEvent *v1.Event
 	for _, event := range events.Items {
+		if event.InvolvedObject.Name != object.Name || event.InvolvedObject.Kind != object.Kind ||
+			(object.UID != "" && event.InvolvedObject.UID != object.UID) {
+			continue
+		}
 		if latestEvent == nil {
 			// this is required, as a pointer to a loop variable would always yield the latest value in the range
 			e := event

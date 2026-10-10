@@ -1,0 +1,39 @@
+# Example values file to enable MCP (Model Context Protocol) service
+# Copy this file and modify as needed, then use: helm install -f values-mcp-example.yaml
+
+deployment:
+  # Enable MCP server
+  mcp:
+    enabled: true
+    port: "8089"  # Port for MCP server (default: 8089)
+    http: true    # Enable HTTP mode for MCP server
+  
+  # Other deployment settings remain the same
+  image:
+    repository: ghcr.io/k8sgpt-ai/k8sgpt
+    tag: "" # defaults to Chart.appVersion if unspecified
+  imagePullPolicy: Always
+  env:
+    model: "gpt-3.5-turbo"
+    backend: "openai"
+  resources:
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+    requests:
+      cpu: "0.2"
+      memory: "156Mi"
+
+# Service configuration
+service:
+  type: ClusterIP
+  annotations: {}
+
+# Secret configuration for AI backend
+secret:
+  secretKey: "" # base64 encoded OpenAI token
+
+# ServiceMonitor for Prometheus metrics
+serviceMonitor:
+  enabled: false
+  additionalLabels: {}

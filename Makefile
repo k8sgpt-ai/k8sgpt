@@ -85,6 +85,12 @@ docker-build:
 	@echo "===========> Building docker image"
 	docker buildx build --build-arg=VERSION="$$(git describe --tags --abbrev=0)" --build-arg=COMMIT="$$(git rev-parse --short HEAD)" --build-arg DATE="$$(date +%FT%TZ)" --platform="linux/amd64,linux/arm64" -t ${IMG} -f container/Dockerfile . --push
 
+## docker-build-local: Build docker image for local testing
+.PHONY: docker-build-local
+docker-build-local:
+	@echo "===========> Building docker image for local testing"
+	docker build --build-arg=VERSION="$$(git describe --tags --abbrev=0)" --build-arg=COMMIT="$$(git rev-parse --short HEAD)" --build-arg DATE="$$(date +%FT%TZ)" -t k8sgpt:local -f container/Dockerfile .
+
 ## fmt: Run go fmt against code.
 .PHONY: fmt
 fmt:

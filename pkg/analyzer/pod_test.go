@@ -120,6 +120,126 @@ func TestPodAnalyzer(t *testing.T) {
 			},
 		},
 		{
+			name: "SchedulingGated pods with and without a message",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "GatedPod1",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Phase: v1.PodPending,
+								Conditions: []v1.PodCondition{
+									{
+										// A gated pod usually has an empty message;
+										// a default message is generated instead.
+										Type:   v1.PodScheduled,
+										Status: v1.ConditionFalse,
+										Reason: v1.PodReasonSchedulingGated,
+									},
+								},
+							},
+						},
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "GatedPod2",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Phase: v1.PodPending,
+								Conditions: []v1.PodCondition{
+									{
+										// When a message is present, it is surfaced as-is.
+										Type:    v1.PodScheduled,
+										Status:  v1.ConditionFalse,
+										Reason:  v1.PodReasonSchedulingGated,
+										Message: "Scheduling is blocked due to non-empty scheduling gates",
+									},
+								},
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/GatedPod1",
+					failuresCount: 1,
+				},
+				{
+					name:          "default/GatedPod2",
+					failuresCount: 1,
+				},
+			},
+		},
+		{
+			name: "Evicted pod with message",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "EvictedPod",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Reason:  "Evicted",
+								Message: "Pod was rejected: The node had condition: [DiskPressure]. ",
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/EvictedPod",
+					failuresCount: 1,
+				},
+			},
+		},
+		{
+			name: "Evicted pod without message",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "EvictedPod",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Reason:  "Evicted",
+								Message: "",
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/EvictedPod",
+					failuresCount: 1,
+				},
+			},
+		},
+		{
 			name: "readiness probe failure without any event",
 			config: common.Analyzer{
 				Client: &kubernetes.Client{

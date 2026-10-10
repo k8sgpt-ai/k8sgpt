@@ -19,7 +19,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -41,7 +42,7 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		"analyzer_name": kind,
 	})
 
-	JobList, err := a.Client.GetClient().BatchV1().Jobs(a.Namespace).List(a.Context, v1.ListOptions{LabelSelector: a.LabelSelector})
+	JobList, err := a.Client.GetClient().BatchV1().Jobs(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -68,10 +69,33 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 				},
 			})
 		}
-		if Job.Status.Failed > 0 {
+		// A Job that has reached a successful terminal state (Complete or
+		// SuccessCriteriaMet) should not be reported as failed even when
+		// Status.Failed is non-zero: failed attempts that were retried within
+		// backoffLimit are normal and the Job is healthy.
+		failedCond := jobFailedCondition(Job)
+		if (failedCond != nil || Job.Status.Failed > 0) && !jobHasSucceeded(Job) {
 			doc := apiDoc.GetApiDocV2("status.failed")
-			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("Job %s has failed", Job.Name),
+
+			failureText := fmt.Sprintf("Job %s has failed", Job.Name)
+			if failedCond != nil && failedCond.Message != "" {
+				failureText = failedCond.Message
+			}
+
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
+				Kind:      kind,
+				Namespace: Job.Namespace,
+				Name:      Job.Name,
+				UID:       Job.UID,
+			})
+
+			// Check for Event BackoffLimitExceeded or DeadlineExceeded
+			if evt != nil && err == nil && (evt.Reason == "BackoffLimitExceeded" || evt.Reason == "DeadlineExceeded") && evt.Message != "" {
+				failureText = evt.Message
+			}
+
+			failure := common.Failure{
+				Text:          failureText,
 				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
@@ -83,7 +107,9 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 						Masked:   util.MaskString(Job.Name),
 					},
 				},
-			})
+			}
+
+			failures = append(failures, failure)
 		}
 
 		if len(failures) > 0 {
@@ -104,4 +130,28 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 
 	return a.Results, nil
+}
+
+// jobFailedCondition returns the JobCondition if the Job has reached a failed
+// terminal state.
+func jobFailedCondition(job batchv1.Job) *batchv1.JobCondition {
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue && condition.Type == batchv1.JobFailed {
+			return &condition
+		}
+	}
+	return nil
+}
+
+// jobHasSucceeded reports whether the Job has reached a successful terminal
+// state. Kubernetes records a Complete condition when all pods succeed, and a
+// SuccessCriteriaMet condition when the Job's success policy is met.
+func jobHasSucceeded(job batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue &&
+			(condition.Type == batchv1.JobComplete || condition.Type == batchv1.JobSuccessCriteriaMet) {
+			return true
+		}
+	}
+	return false
 }

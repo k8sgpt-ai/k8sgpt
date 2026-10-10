@@ -281,7 +281,7 @@ func unmarshalPromConfigBytes(b []byte) (*promconfig.Config, error) {
 		}
 		err = yaml.Unmarshal(gunzipBytes, &config)
 		if err != nil {
-			return nil, err
+			return &config, err
 		}
 		return &config, nil
 	} else {

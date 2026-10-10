@@ -14,8 +14,10 @@ limitations under the License.
 package serve
 
 import (
+	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	k8sgptserver "github.com/k8sgpt-ai/k8sgpt/pkg/server"
 
@@ -41,6 +43,8 @@ var (
 	enableMCP   bool
 	mcpPort     string
 	mcpHTTP     bool
+	// filters can be injected into the server (repeatable flag)
+	filters []string
 )
 
 var ServeCmd = &cobra.Command{
@@ -55,6 +59,9 @@ var ServeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		// K8SGPT_BACKEND must be honoured on every start, not only the first.
+		backend = resolveBackend(cmd.Flags().Changed("backend"), backend)
+
 		var aiProvider *ai.AIProvider
 		if len(configAI.Providers) == 0 {
 			// we validate and set temperature for our backend
@@ -118,31 +125,29 @@ var ServeCmd = &cobra.Command{
 				}
 				return int(maxTokens)
 			}
-			// Check for env injection
-			backend = os.Getenv("K8SGPT_BACKEND")
-			password := os.Getenv("K8SGPT_PASSWORD")
-			model := os.Getenv("K8SGPT_MODEL")
-			baseURL := os.Getenv("K8SGPT_BASEURL")
-			engine := os.Getenv("K8SGPT_ENGINE")
-			proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
-			providerId := os.Getenv("K8SGPT_PROVIDER_ID")
+
+			// Parse custom headers from environment variable
+			parseCustomHeaders := func() []http.Header {
+				headersEnv := os.Getenv("K8SGPT_CUSTOM_HEADERS")
+				if headersEnv == "" {
+					return nil
+				}
+
+				header := make(http.Header)
+				headerPairs := strings.Split(headersEnv, ",")
+				for _, pair := range headerPairs {
+					kv := strings.SplitN(pair, ":", 2)
+					if len(kv) == 2 {
+						header.Add(strings.TrimSpace(kv[0]), strings.TrimSpace(kv[1]))
+					}
+				}
+				return []http.Header{header}
+			}
 			// If the envs are set, allocate in place to the aiProvider
 			// else exit with error
-			envIsSet := backend != "" || password != "" || model != ""
+			envProvider, envIsSet := providerFromEnv(parseCustomHeaders, temperature, topP, topK, maxTokens)
 			if envIsSet {
-				aiProvider = &ai.AIProvider{
-					Name:          backend,
-					Password:      password,
-					Model:         model,
-					BaseURL:       baseURL,
-					Engine:        engine,
-					ProxyEndpoint: proxyEndpoint,
-					ProviderId:    providerId,
-					Temperature:   temperature(),
-					TopP:          topP(),
-					TopK:          topK(),
-					MaxTokens:     maxTokens(),
-				}
+				aiProvider = envProvider
 
 				configAI.Providers = append(configAI.Providers, *aiProvider)
 
@@ -201,6 +206,11 @@ var ServeCmd = &cobra.Command{
 			}()
 		}
 
+		// Allow metrics port to be overridden by environment variable
+		if envMetricsPort := os.Getenv("K8SGPT_METRICS_PORT"); envMetricsPort != "" && !cmd.Flags().Changed("metrics-port") {
+			metricsPort = envMetricsPort
+		}
+
 		server := k8sgptserver.Config{
 			Backend:     aiProvider.Name,
 			Port:        port,
@@ -208,6 +218,7 @@ var ServeCmd = &cobra.Command{
 			EnableHttp:  enableHttp,
 			Token:       aiProvider.Password,
 			Logger:      logger,
+			Filters:     filters,
 		}
 		go func() {
 			if err := server.ServeMetrics(); err != nil {
@@ -228,13 +239,69 @@ var ServeCmd = &cobra.Command{
 	},
 }
 
+// resolveBackend returns the backend name to look up in the configuration. The
+// config written on the first start makes the env block in ServeCmd unreachable
+// on later starts, so K8SGPT_BACKEND is read here too. An explicit --backend
+// still takes precedence.
+func resolveBackend(flagChanged bool, current string) string {
+	if flagChanged {
+		return current
+	}
+	if envBackend := os.Getenv("K8SGPT_BACKEND"); envBackend != "" {
+		return envBackend
+	}
+	return current
+}
+
+func providerFromEnv(
+	parseCustomHeaders func() []http.Header,
+	temperature func() float32,
+	topP func() float32,
+	topK func() int32,
+	maxTokens func() int,
+) (*ai.AIProvider, bool) {
+	backend = os.Getenv("K8SGPT_BACKEND")
+	password := os.Getenv("K8SGPT_PASSWORD")
+	model := os.Getenv("K8SGPT_MODEL")
+	baseURL := os.Getenv("K8SGPT_BASEURL")
+	engine := os.Getenv("K8SGPT_ENGINE")
+	azureAPIType := os.Getenv("K8SGPT_AZURE_API_TYPE")
+	azureAPIVersion := os.Getenv("K8SGPT_AZURE_API_VERSION")
+	proxyEndpoint := os.Getenv("K8SGPT_PROXY_ENDPOINT")
+	providerId := os.Getenv("K8SGPT_PROVIDER_ID")
+
+	envIsSet := backend != "" || password != "" || model != ""
+	if !envIsSet {
+		return nil, false
+	}
+
+	return &ai.AIProvider{
+		Name:            backend,
+		Password:        password,
+		Model:           model,
+		BaseURL:         baseURL,
+		Engine:          engine,
+		AzureAPIType:    azureAPIType,
+		AzureAPIVersion: azureAPIVersion,
+		CustomHeaders:   parseCustomHeaders(),
+		ProxyEndpoint:   proxyEndpoint,
+		ProviderId:      providerId,
+		Temperature:     temperature(),
+		TopP:            topP(),
+		TopK:            topK(),
+		MaxTokens:       maxTokens(),
+	}, true
+}
+
 func init() {
 	// add flag for backend
 	ServeCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to run the server on")
-	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "", "8081", "Port to run the metrics-server on")
+	ServeCmd.Flags().StringVarP(&metricsPort, "metrics-port", "m", "8081", "Port to run the metrics-server on (env: K8SGPT_METRICS_PORT)")
 	ServeCmd.Flags().StringVarP(&backend, "backend", "b", "openai", "Backend AI provider")
 	ServeCmd.Flags().BoolVarP(&enableHttp, "http", "", false, "Enable REST/http using gppc-gateway")
 	ServeCmd.Flags().BoolVarP(&enableMCP, "mcp", "", false, "Enable Mission Control Protocol server")
 	ServeCmd.Flags().StringVarP(&mcpPort, "mcp-port", "", "8089", "Port to run the MCP server on")
 	ServeCmd.Flags().BoolVarP(&mcpHTTP, "mcp-http", "", false, "Enable HTTP mode for MCP server")
+	// allow injecting filters into the running server (repeatable)
+	ServeCmd.Flags().StringSliceVar(&filters, "filter", []string{}, "Filter to apply (can be specified multiple times)")
 }

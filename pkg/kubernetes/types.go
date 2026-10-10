@@ -4,6 +4,7 @@ import (
 	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
@@ -14,6 +15,7 @@ type Client struct {
 	CtrlClient    ctrl.Client
 	Config        *rest.Config
 	ServerVersion *version.Info
+	DynamicClient dynamic.Interface
 }
 
 type K8sApiReference struct {

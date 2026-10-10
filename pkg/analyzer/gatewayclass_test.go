@@ -56,6 +56,41 @@ func TestGatewayClassAnalyzer(t *testing.T) {
 
 }
 
+// A GatewayClass with no status conditions (newly created, or no controller
+// installed) must not panic the analyzer.
+func TestEmptyConditionsGatewayClassAnalyzer(t *testing.T) {
+	GatewayClass := &gtwapi.GatewayClass{}
+	GatewayClass.Name = "foobar"
+	GatewayClass.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	// Create a GatewayClassAnalyzer instance with the fake client
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(GatewayClass).Build()
+
+	analyzerInstance := GatewayClassAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := analyzerInstance.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, len(analysisResults), 0)
+
+}
+
 func TestGatewayClassAnalyzerLabelSelectorFiltering(t *testing.T) {
 	condition := metav1.Condition{
 		Type:    "Accepted",
@@ -103,3 +138,73 @@ func TestGatewayClassAnalyzerLabelSelectorFiltering(t *testing.T) {
 	}
 	assert.Equal(t, len(analysisResults), 1)
 }
+
+func TestGatewayClassAnalyzer_MultipleConditionsOrdering(t *testing.T) {
+	scheme := scheme.Scheme
+	err := gtwapi.Install(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+	err = apiextensionsv1.AddToScheme(scheme)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Case 1: SupportedVersion is at index 0 (Status: True), Accepted is at index 1 (Status: False).
+	// Must report failure for Accepted condition even though index 0 is True.
+	gcUnaccepted := &gtwapi.GatewayClass{}
+	gcUnaccepted.Name = "unaccepted"
+	gcUnaccepted.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	gcUnaccepted.Status.Conditions = []metav1.Condition{
+		{
+			Type:    string(gtwapi.GatewayClassConditionStatusSupportedVersion),
+			Status:  metav1.ConditionTrue,
+			Message: "Supported version",
+			Reason:  string(gtwapi.GatewayClassReasonSupportedVersion),
+		},
+		{
+			Type:    string(gtwapi.GatewayClassConditionStatusAccepted),
+			Status:  metav1.ConditionFalse,
+			Message: "Controller rejected configuration",
+			Reason:  string(gtwapi.GatewayClassReasonInvalidParameters),
+		},
+	}
+
+	// Case 2: Another condition is at index 0 (Status: False), but Accepted is at index 1 (Status: True).
+	// Must NOT report failure because Accepted is True.
+	gcAccepted := &gtwapi.GatewayClass{}
+	gcAccepted.Name = "accepted"
+	gcAccepted.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	gcAccepted.Status.Conditions = []metav1.Condition{
+		{
+			Type:    string(gtwapi.GatewayClassConditionStatusSupportedVersion),
+			Status:  metav1.ConditionFalse,
+			Message: "Unsupported version",
+			Reason:  string(gtwapi.GatewayClassReasonUnsupportedVersion),
+		},
+		{
+			Type:    string(gtwapi.GatewayClassConditionStatusAccepted),
+			Status:  metav1.ConditionTrue,
+			Message: "Controller accepted",
+			Reason:  string(gtwapi.GatewayClassReasonAccepted),
+		},
+	}
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(gcUnaccepted, gcAccepted).Build()
+
+	analyzerInstance := GatewayClassAnalyzer{}
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analysisResults, err := analyzerInstance.Analyze(config)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(analysisResults))
+	assert.Equal(t, "unaccepted", analysisResults[0].Name)
+	assert.Contains(t, analysisResults[0].Error[0].Text, "Controller rejected configuration")
+}
+

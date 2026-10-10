@@ -61,6 +61,10 @@ func (m *mockConfig) GetMaxTokens() int {
 	return 0
 }
 
+func (m *mockConfig) GetStopSequences() []string {
+	return []string{"", "", "", ""}
+}
+
 func (m *mockConfig) GetEndpointName() string {
 	return ""
 }
@@ -73,6 +77,14 @@ func (m *mockConfig) GetProviderId() string {
 }
 
 func (m *mockConfig) GetProviderRegion() string {
+	return ""
+}
+
+func (m *mockConfig) GetAzureAPIType() string {
+	return ""
+}
+
+func (m *mockConfig) GetAzureAPIVersion() string {
 	return ""
 }
 
@@ -103,4 +115,23 @@ func TestOpenAIClient_CustomHeaders(t *testing.T) {
 	ctx := context.Background()
 	_, err = client.GetCompletion(ctx, "foo prompt")
 	assert.NoError(t, err)
+}
+
+func TestOpenAIClient_GetCompletionNoChoices(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(`{"choices": []}`))
+		if err != nil {
+			t.Fatalf("error writing response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	client := &OpenAIClient{}
+	err := client.Configure(&mockConfig{baseURL: server.URL})
+	assert.NoError(t, err)
+
+	_, err = client.GetCompletion(context.Background(), "foo prompt")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no completion choices")
 }

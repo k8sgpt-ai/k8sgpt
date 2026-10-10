@@ -14,6 +14,8 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/bedrock"
 	"github.com/aws/aws-sdk-go-v2/service/bedrockruntime"
+	"github.com/aws/smithy-go/middleware"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 const amazonbedrockAIClientName = "amazonbedrock"
@@ -58,6 +60,55 @@ var BEDROCKER_SUPPORTED_REGION = []string{
 }
 
 var defaultModels = []bedrock_support.BedrockModel{
+
+	{
+		Name:       "anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "us.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "us.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "eu.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
+	{
+		Name:       "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+		},
+	},
 	{
 		Name:       "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		Completion: &bedrock_support.CohereMessagesCompletion{},
@@ -80,6 +131,18 @@ var defaultModels = []bedrock_support.BedrockModel{
 			Temperature: 0.5,
 			TopP:        0.9,
 			ModelName:   "eu.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		},
+	},
+	{
+		Name:       "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
+		Config: bedrock_support.BedrockModelConfig{
+			// sensible defaults
+			MaxTokens:   100,
+			Temperature: 0.5,
+			TopP:        0.9,
+			ModelName:   "apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
 		},
 	},
 	{
@@ -255,13 +318,14 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-3-haiku-20240307-v1:0",
-		Completion: &bedrock_support.CohereCompletion{},
-		Response:   &bedrock_support.CohereResponse{},
+		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			// sensible defaults
 			MaxTokens:   100,
 			Temperature: 0.5,
 			TopP:        0.9,
+			ModelName:   "anthropic.claude-3-haiku-20240307-v1:0",
 		},
 	},
 }
@@ -311,7 +375,6 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 
 	// Trim spaces from the model name
 	model = strings.TrimSpace(model)
-	modelLower := strings.ToLower(model)
 
 	// Try to find an exact match first
 	for i := range a.models {
@@ -322,26 +385,27 @@ func (a *AmazonBedRockClient) getModelFromString(model string) (*bedrock_support
 		}
 	}
 
-	// If no exact match, try partial match
-	for i := range a.models {
-		modelNameLower := strings.ToLower(a.models[i].Name)
-		modelConfigNameLower := strings.ToLower(a.models[i].Config.ModelName)
-
-		// Check if the input string contains the model name or vice versa
-		if strings.Contains(modelNameLower, modelLower) || strings.Contains(modelLower, modelNameLower) ||
-			strings.Contains(modelConfigNameLower, modelLower) || strings.Contains(modelLower, modelConfigNameLower) {
-			// Create a copy to avoid returning a pointer to a loop variable
-			modelCopy := a.models[i]
-			// for partial match, set the model name to the input string if it is a valid ARN
-			if validateModelArn(modelLower) {
-				modelCopy.Config.ModelName = modelLower
-			}
-
-			return &modelCopy, nil
-		}
+	supportedModels := make([]string, len(a.models))
+	for i, m := range a.models {
+		supportedModels[i] = m.Name
 	}
 
-	return nil, fmt.Errorf("model '%s' not found in supported models", model)
+	supportedRegions := BEDROCKER_SUPPORTED_REGION
+
+	// Pretty-print supported models and regions
+	modelList := ""
+	for _, m := range supportedModels {
+		modelList += "  - " + m + "\n"
+	}
+	regionList := ""
+	for _, r := range supportedRegions {
+		regionList += "  - " + r + "\n"
+	}
+
+	return nil, fmt.Errorf(
+		"model '%s' not found in supported models.\n\nSupported models:\n%sSupported regions:\n%s",
+		model, modelList, regionList,
+	)
 }
 
 // Configure configures the AmazonBedRockClient with the provided configuration.
@@ -378,6 +442,9 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 			awsconfig.WithRegion(region),
 		)
 		if err != nil {
+			if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+				return fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+			}
 			return fmt.Errorf("failed to load AWS config for region %s: %w", region, err)
 		}
 
@@ -391,31 +458,30 @@ func (a *AmazonBedRockClient) Configure(config IAIConfig) error {
 		// Get the inference profile details
 		profile, err := a.getInferenceProfile(context.Background(), modelInput)
 		if err != nil {
-			// Instead of using a fallback model, throw an error
 			return fmt.Errorf("failed to get inference profile: %v", err)
-		} else {
-			// Extract the model ID from the inference profile
-			modelID, err := a.extractModelFromInferenceProfile(profile)
-			if err != nil {
-				return fmt.Errorf("failed to extract model ID from inference profile: %v", err)
-			}
-
-			// Find the model configuration for the extracted model ID
-			foundModel, err := a.getModelFromString(modelID)
-			if err != nil {
-				// Instead of using a fallback model, throw an error
-				return fmt.Errorf("failed to find model configuration for %s: %v", modelID, err)
-			}
-			a.model = foundModel
-
-			// Use the inference profile ARN as the model ID for API calls
-			a.model.Config.ModelName = modelInput
 		}
+		// Extract the model ID from the inference profile
+		modelID, err := a.extractModelFromInferenceProfile(profile)
+		if err != nil {
+			return fmt.Errorf("failed to extract model ID from inference profile: %v", err)
+		}
+		// Find the model configuration for the extracted model ID
+		foundModel, err := a.getModelFromString(modelID)
+		if err != nil {
+			// Instead of failing, use a generic config for completion/response
+			// But still warn user
+			return fmt.Errorf("failed to find model configuration for %s: %v", modelID, err)
+		}
+		// Use the found model config for completion/response, but set ModelName to the profile ARN
+		a.model = foundModel
+		a.model.Config.ModelName = modelInput
+		// Mark that we're using an inference profile
+		// (could add a field if needed)
 	} else {
 		// Regular model ID provided
 		foundModel, err := a.getModelFromString(modelInput)
 		if err != nil {
-			return err
+			return fmt.Errorf("model '%s' is not supported: %v", modelInput, err)
 		}
 		a.model = foundModel
 		a.model.Config.ModelName = foundModel.Config.ModelName
@@ -490,6 +556,22 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 	a.model.Config.Temperature = a.temperature
 	a.model.Config.TopP = a.topP
 
+	supportedModels := make([]string, len(a.models))
+	for i, m := range a.models {
+		supportedModels[i] = m.Name
+	}
+
+	// Allow valid inference profile ARNs as supported models
+	if !bedrock_support.IsModelSupported(a.model.Config.ModelName, supportedModels) && !validateInferenceProfileArn(a.model.Config.ModelName) {
+		return "", fmt.Errorf("model '%s' is not supported.\nSupported models:\n%s", a.model.Config.ModelName, func() string {
+			s := ""
+			for _, m := range supportedModels {
+				s += "  - " + m + "\n"
+			}
+			return s
+		}())
+	}
+
 	body, err := a.model.Completion.GetCompletion(ctx, prompt, a.model.Config)
 	if err != nil {
 		return "", err
@@ -503,9 +585,34 @@ func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) 
 		Accept:      aws.String("application/json"),
 	}
 
+	// Detect if the model name is an inference profile ARN and set the header if so
+	var optFns []func(*bedrockruntime.Options)
+	if validateInferenceProfileArn(a.model.Config.ModelName) {
+		inferenceProfileArn := a.model.Config.ModelName
+		optFns = append(optFns, func(options *bedrockruntime.Options) {
+			options.APIOptions = append(options.APIOptions, func(stack *middleware.Stack) error {
+				return stack.Initialize.Add(middleware.InitializeMiddlewareFunc("InferenceProfileHeader", func(ctx context.Context, in middleware.InitializeInput, next middleware.InitializeHandler) (out middleware.InitializeOutput, metadata middleware.Metadata, err error) {
+					req, ok := in.Parameters.(*smithyhttp.Request)
+					if ok {
+						req.Header.Set("X-Amzn-Bedrock-Inference-Profile-ARN", inferenceProfileArn)
+					}
+					return next.HandleInitialize(ctx, in)
+				}), middleware.Before)
+			})
+		})
+	}
+
 	// Invoke the model
-	resp, err := a.client.InvokeModel(ctx, params)
+	var resp *bedrockruntime.InvokeModelOutput
+	if len(optFns) > 0 {
+		resp, err = a.client.InvokeModel(ctx, params, optFns...)
+	} else {
+		resp, err = a.client.InvokeModel(ctx, params)
+	}
 	if err != nil {
+		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+			return "", fmt.Errorf("AWS credentials are invalid or missing. Please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config. Details: %v", err)
+		}
 		return "", err
 	}
 

@@ -54,6 +54,8 @@ type Config struct {
 	AnalyzeHandler *analyze.Handler
 	QueryHandler   *query.Handler
 	Logger         *zap.Logger
+	// Filters can be injected into the server to limit analysis to specific analyzers
+	Filters        []string
 	metricsServer  *http.Server
 	listener       net.Listener
 	EnableHttp     bool

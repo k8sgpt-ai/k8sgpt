@@ -9,7 +9,6 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7272/badge)](https://bestpractices.coreinfrastructure.org/projects/7272)
 [![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_shield)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go version](https://img.shields.io/github/go-mod/go-version/k8sgpt-ai/k8sgpt.svg)](https://github.com/k8sgpt-ai/k8sgpt)
 [![codecov](https://codecov.io/github/k8sgpt-ai/k8sgpt/graph/badge.svg?token=ZLR7NG8URE)](https://codecov.io/github/k8sgpt-ai/k8sgpt)
@@ -20,6 +19,10 @@
 It has SRE experience codified into its analyzers and helps to pull out the most relevant information to enrich it with AI.
 
 _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google Gemini and local models._
+
+
+> **Sister project:** Check out [sympozium](https://github.com/AlexsJones/sympozium/) for managing agents in Kubernetes.
+
 
 <a href="https://www.producthunt.com/posts/k8sgpt?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-k8sgpt" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=389489&theme=light" alt="K8sGPT - K8sGPT&#0032;gives&#0032;Kubernetes&#0032;Superpowers&#0032;to&#0032;everyone | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a> <a href="https://hellogithub.com/repository/9dfe44c18dfb4d6fa0181baf8b2cf2e1" target="_blank"><img src="https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=9dfe44c18dfb4d6fa0181baf8b2cf2e1&claim_uid=gqG4wmzkMrP0eFy" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
@@ -34,10 +37,10 @@ _Out of the box integration with OpenAI, Azure, Cohere, Amazon Bedrock, Google G
 - [Examples](#examples)
 - [LLM AI Backends](#llm-ai-backends)
 - [Key Features](#key-features)
+- [Model Context Protocol (MCP)](#model-context-protocol-mcp)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Community](#community)
-- [License](#license)
 
 # CLI Installation
 
@@ -62,7 +65,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -70,7 +73,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -83,7 +86,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -94,7 +97,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -109,7 +112,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -118,7 +121,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.17/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.40/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -197,7 +200,7 @@ K8sGPT can be integrated with Claude Desktop to provide AI-powered Kubernetes cl
    - The MCP server will be automatically detected
 
 3. Configure Claude Desktop with the following JSON:
-   
+
   ```json
   {
     "mcpServers": {
@@ -270,6 +273,16 @@ you will be able to write your own analyzers.
 - [x] logAnalyzer
 - [x] storageAnalyzer
 - [x] securityAnalyzer
+- [x] CatalogSource
+- [x] ClusterCatalog
+- [x] ClusterExtension
+- [x] ClusterService
+- [x] ClusterServiceVersion
+- [x] OperatorGroup
+- [x] InstallPlan
+- [x] Subscription
+- [x] ValidatingAdmissionPolicy
+- [x] ResourceClaim
 
 ## Examples
 
@@ -391,6 +404,26 @@ _Serve mode_
 k8sgpt serve
 ```
 
+_Serve mode with MCP (Model Context Protocol)_
+
+```
+# Enable MCP server on default port 8089
+k8sgpt serve --mcp --mcp-http
+
+# Enable MCP server on custom port
+k8sgpt serve --mcp --mcp-http --mcp-port 8089
+
+# Full serve mode with MCP
+k8sgpt serve --mcp --mcp-http --port 8080 --metrics-port 8081 --mcp-port 8089
+```
+
+The MCP server enables integration with tools like Claude Desktop and other MCP-compatible clients. It runs on port 8089 by default and provides:
+- Kubernetes cluster analysis via MCP protocol
+- Resource information and health status
+- AI-powered issue explanations and recommendations
+
+For Helm chart deployment with MCP support, see the `charts/k8sgpt/values-mcp-example.yaml` file.
+
 _Analysis with serve mode_
 
 ```
@@ -456,9 +489,24 @@ Unused:
 > watsonxai
 > customrest
 > ibmwatsonxai
+> litellm
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
+
+_Using LiteLLM (route to 100+ providers through one proxy)_
+
+The `litellm` backend talks to a [LiteLLM proxy](https://docs.litellm.ai/docs/simple_proxy),
+which exposes an OpenAI-compatible API in front of 100+ providers (OpenAI, Azure,
+Anthropic, Bedrock, Gemini, ...). It defaults to the proxy's standard local
+endpoint (`http://localhost:4000/v1`); use `--model` to pick a model configured
+in your proxy, and `--baseurl` to point at a remote proxy. A password is only
+needed if your proxy enforces a virtual key.
+
+```
+k8sgpt auth add --backend litellm --model gpt-4o
+k8sgpt analyze --explain --backend litellm
+```
 
 _To set a new default provider_
 
@@ -467,6 +515,21 @@ k8sgpt auth default -p azureopenai
 Default provider set to azureopenai
 ```
 
+_Using Amazon Bedrock Converse with inference profiles_
+
+_System Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:inference-profile/my-inference-profile
+
+```
+
+_Application Inference Profile_
+
+```
+k8sgpt auth add --backend amazonbedrockconverse --providerRegion us-east-1 --model arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/2uzp4s0w39t6
+
+```
 _Using Amazon Bedrock with inference profiles_
 
 _System Inference Profile_
@@ -671,7 +734,30 @@ k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
 ```
 
 </details>
+## Model Context Protocol (MCP)
 
+K8sGPT provides a Model Context Protocol server that exposes Kubernetes operations as standardized tools for AI assistants like Claude, ChatGPT, and other MCP-compatible clients.
+
+**Start the MCP server:**
+
+Stdio mode (for local AI assistants):
+```bash
+k8sgpt serve --mcp
+```
+
+HTTP mode (for network access):
+```bash
+k8sgpt serve --mcp --mcp-http --mcp-port 8089
+```
+
+**Features:**
+- 12 tools for cluster analysis, resource management, and debugging
+- 3 resources for cluster information access
+- 3 interactive troubleshooting prompts
+- Stateless HTTP mode for one-off invocations
+- Full integration with Claude Desktop and other MCP clients
+
+**Learn more:** See [MCP.md](MCP.md) for complete documentation, usage examples, and integration guides.
 ## Documentation
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)
@@ -688,6 +774,3 @@ Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bf
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
 </a>
 
-## License
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fk8sgpt-ai%2Fk8sgpt?ref=badge_large)

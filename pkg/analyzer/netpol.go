@@ -19,7 +19,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -43,7 +42,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 	// get all network policies in the namespace
 	policies, err := a.Client.GetClient().NetworkingV1().
-		NetworkPolicies(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+		NetworkPolicies(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			})
 		} else {
 			// Check if policy is not applied to any pods
-			podList, err := util.GetPodListByLabels(a.Client.GetClient(), a.Namespace, policy.Spec.PodSelector.MatchLabels)
+			podList, err := util.GetPodListByLabels(a.Client.GetClient(), policy.Namespace, policy.Spec.PodSelector.MatchLabels)
 			if err != nil {
 				return nil, err
 			}

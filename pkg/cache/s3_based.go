@@ -3,8 +3,9 @@ package cache
 import (
 	"bytes"
 	"crypto/tls"
-	"log"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -27,16 +28,19 @@ type S3CacheConfiguration struct {
 
 func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	if cacheInfo.S3.BucketName == "" {
-		log.Fatal("Bucket name not configured")
+		return errors.New("bucket name not configured")
 	}
 	s.bucketName = cacheInfo.S3.BucketName
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
+	sess, err := session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 		Config: aws.Config{
 			Region: aws.String(cacheInfo.S3.Region),
 		},
-	}))
+	})
+	if err != nil {
+		return errors.New("failed to create AWS session; please check your AWS credentials and configuration: " + err.Error())
+	}
 	if cacheInfo.S3.Endpoint != "" {
 		sess.Config.Endpoint = &cacheInfo.S3.Endpoint
 		sess.Config.S3ForcePathStyle = aws.Bool(true)
@@ -50,10 +54,14 @@ func (s *S3Cache) Configure(cacheInfo CacheProvider) error {
 	s3Client := s3.New(sess)
 
 	// Check if the bucket exists, if not create it
-	_, err := s3Client.HeadBucket(&s3.HeadBucketInput{
+	_, err = s3Client.HeadBucket(&s3.HeadBucketInput{
 		Bucket: aws.String(cacheInfo.S3.BucketName),
 	})
 	if err != nil {
+		// Check for AWS credentials error
+		if strings.Contains(err.Error(), "InvalidAccessKeyId") || strings.Contains(err.Error(), "SignatureDoesNotMatch") || strings.Contains(err.Error(), "NoCredentialProviders") {
+			return errors.New("aws credentials are invalid or missing; please check your AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables or AWS config")
+		}
 		_, err = s3Client.CreateBucket(&s3.CreateBucketInput{
 			Bucket: aws.String(cacheInfo.S3.BucketName),
 		})
@@ -107,18 +115,21 @@ func (s *S3Cache) Load(key string) (string, error) {
 
 func (s *S3Cache) List() ([]CacheObjectDetails, error) {
 
-	// List the files in the bucket
-	result, err := s.session.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String(s.bucketName)})
+	var keys []CacheObjectDetails
+	err := s.session.ListObjectsV2Pages(
+		&s3.ListObjectsV2Input{Bucket: aws.String(s.bucketName)},
+		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
+			for _, item := range page.Contents {
+				keys = append(keys, CacheObjectDetails{
+					Name:      aws.StringValue(item.Key),
+					UpdatedAt: aws.TimeValue(item.LastModified),
+				})
+			}
+			return !lastPage
+		},
+	)
 	if err != nil {
 		return nil, err
-	}
-
-	var keys []CacheObjectDetails
-	for _, item := range result.Contents {
-		keys = append(keys, CacheObjectDetails{
-			Name:      *item.Key,
-			UpdatedAt: *item.LastModified,
-		})
 	}
 
 	return keys, nil

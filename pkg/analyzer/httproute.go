@@ -16,6 +16,8 @@ package analyzer
 import (
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/fields"
+
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	corev1 "k8s.io/api/core/v1"
@@ -38,13 +40,15 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	gtw := &gtwapi.Gateway{}
 	service := &corev1.Service{}
 	client := a.Client.CtrlClient
-	err := gtwapi.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 
 	labelSelector := util.LabelStrToSelector(a.LabelSelector)
-	if err := client.List(a.Context, routeList, &ctrl.ListOptions{LabelSelector: labelSelector}); err != nil {
+	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
+	// Same push-down as the typed analyzers: the CtrlClient is a direct
+	// (uncached) client, so a field selector is served by the API server.
+	if a.ResourceName != "" {
+		listOpts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName)
+	}
+	if err := client.List(a.Context, routeList, listOpts); err != nil {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
@@ -177,6 +181,11 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						},
 					})
 				} else {
+					// Port is optional on a backendRef; skip the port check when
+					// it is unset rather than dereferencing a nil pointer.
+					if backend.Port == nil {
+						continue
+					}
 					portMatch := false
 					for _, svcPort := range service.Spec.Ports {
 						if int32(*backend.Port) == svcPort.Port {

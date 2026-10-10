@@ -18,17 +18,30 @@ func TestInterplexCache(t *testing.T) {
 	}
 
 	// Mock GRPC server setup
+	errChan := make(chan error, 1)
 	go func() {
 		lis, err := net.Listen("tcp", ":50051")
 		if err != nil {
-			t.Fatalf("failed to listen: %v", err)
+			errChan <- err
+			return
 		}
 		s := grpc.NewServer()
 		rpc.RegisterCacheServiceServer(s, &mockCacheService{})
 		if err := s.Serve(lis); err != nil {
-			t.Fatalf("failed to serve: %v", err)
+			errChan <- err
+			return
 		}
 	}()
+
+	// Check if server startup failed
+	select {
+	case err := <-errChan:
+		if err != nil {
+			t.Fatalf("failed to start mock server: %v", err)
+		}
+	default:
+		// Server started successfully
+	}
 
 	t.Run("TestStore", func(t *testing.T) {
 		err := cache.Store("key1", "value1")
@@ -51,6 +64,36 @@ func TestInterplexCache(t *testing.T) {
 		exists := cache.Exists("key1")
 		if !exists {
 			t.Errorf("Expected key1 to exist")
+		}
+	})
+}
+
+// TestInterplexCacheClientError ensures Store and Load return the connection
+// error instead of panicking when grpc.NewClient fails. On error grpc.NewClient
+// returns a nil *ClientConn, so a deferred conn.Close() placed before the error
+// check dereferences nil.
+func TestInterplexCacheClientError(t *testing.T) {
+	// Store/Load overwrite the connection string with localhost:8084 when
+	// INTERPLEX_LOCAL_MODE is set, which would bypass grpc.NewClient. Pin it empty
+	// so the invalid connection string is exercised regardless of the environment.
+	t.Setenv("INTERPLEX_LOCAL_MODE", "")
+
+	// An invalid URL escape makes grpc.NewClient fail and return a nil conn.
+	cache := &InterplexCache{
+		configuration: InterplexCacheConfiguration{
+			ConnectionString: "dns://%zz",
+		},
+	}
+
+	t.Run("Store", func(t *testing.T) {
+		if err := cache.Store("key1", "value1"); err == nil {
+			t.Error("expected an error for an invalid connection string, got nil")
+		}
+	})
+
+	t.Run("Load", func(t *testing.T) {
+		if _, err := cache.Load("key1"); err == nil {
+			t.Error("expected an error for an invalid connection string, got nil")
 		}
 	})
 }
