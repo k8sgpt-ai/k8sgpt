@@ -90,7 +90,7 @@ func BuildHTTPRoute(backendName, gtwName gtwapi.ObjectName, gtwNamespace gtwapi.
 1. Gateway doesn't exist or at least doesn't exist in the same namespace
 2. Gateway exists in different namespace, is configured in httproute's spec
 and Gateway's configuration is allowing only from its same namespace
-3. Gateway exists in the same namespace but has selectors different from route's labels
+3. Gateway exists in the same namespace but its selector does not match the namespace labels
 4. BackendRef is pointing to a non existent Service
 5. BackendRef's port and Service Port are different
 */
@@ -315,7 +315,7 @@ func TestGWConfigSelectorHTTRouteAnalyzer(t *testing.T) {
 	}
 
 	var errorFound bool
-	want := "HTTPRoute 'default/foohttproute' can't be attached on Gateway 'default/gatewayname', selector labels do not match HTTProute's labels."
+	want := "HTTPRoute 'default/foohttproute' can't be attached on Gateway 'default/gatewayname', namespace default labels do not match the listener selector."
 	for _, analysis := range analysisResults {
 		for _, got := range analysis.Error {
 			if want == got.Text {
@@ -467,5 +467,121 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 
 	if !errorFound {
 		t.Errorf("Expected message, <%s> , not found in HTTPRoute's analysis results", want)
+	}
+}
+
+func TestHTTPRouteSelectorUsesNamespaceLabels(t *testing.T) {
+	backendName := gtwapi.ObjectName("foobackend")
+	gtwName := gtwapi.ObjectName("gatewayname")
+	gtwNamespace := gtwapi.Namespace("default")
+	svcPort := gtwapi.PortNumber(1027)
+
+	route := BuildHTTPRoute(backendName, gtwName, gtwNamespace, &svcPort, "default")
+	route.Labels = map[string]string{"app": "web"}
+	gateway := BuildRouteGateway("default", "gatewayname", "Selector")
+	namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{
+		Name:   "default",
+		Labels: map[string]string{"foo": "bar"},
+	}}
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&route, &gateway, namespace).Build()
+
+	results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, result := range results {
+		for _, failure := range result.Error {
+			if failure.Text == "HTTPRoute 'default/foohttproute' can't be attached on Gateway 'default/gatewayname', selector labels do not match HTTProute's labels." ||
+				failure.Text == "HTTPRoute 'default/foohttproute' can't be attached on Gateway 'default/gatewayname', namespace default labels do not match the listener selector." {
+				t.Fatalf("namespace labels match the selector, got %q", failure.Text)
+			}
+		}
+	}
+}
+
+func TestHTTPRouteSelectorDoesNotUseRouteLabels(t *testing.T) {
+	backendName := gtwapi.ObjectName("foobackend")
+	gtwName := gtwapi.ObjectName("gatewayname")
+	gtwNamespace := gtwapi.Namespace("default")
+	svcPort := gtwapi.PortNumber(1027)
+
+	route := BuildHTTPRoute(backendName, gtwName, gtwNamespace, &svcPort, "default")
+	route.Labels = map[string]string{"foo": "bar"}
+	gateway := BuildRouteGateway("default", "gatewayname", "Selector")
+	namespace := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}}
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&route, &gateway, namespace).Build()
+
+	results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "HTTPRoute 'default/foohttproute' can't be attached on Gateway 'default/gatewayname', namespace default labels do not match the listener selector."
+	for _, result := range results {
+		for _, failure := range result.Error {
+			if failure.Text == want {
+				return
+			}
+		}
+	}
+	t.Fatalf("expected %q", want)
+}
+
+func TestHTTPRouteNilAllowedRoutesFromDoesNotPanic(t *testing.T) {
+	backendName := gtwapi.ObjectName("foobackend")
+	gtwName := gtwapi.ObjectName("gatewayname")
+	gtwNamespace := gtwapi.Namespace("default")
+	svcPort := gtwapi.PortNumber(1027)
+
+	route := BuildHTTPRoute(backendName, gtwName, gtwNamespace, &svcPort, "default")
+	gateway := BuildRouteGateway("default", "gatewayname", "Same")
+	gateway.Spec.Listeners[0].AllowedRoutes.Namespaces.From = nil
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&route, &gateway).Build()
+
+	results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, result := range results {
+		for _, failure := range result.Error {
+			if failure.Text == "HTTPRoute 'default/foohttproute' is deployed in a different namespace from Gateway 'default/gatewayname' which only allows HTTPRoutes from its namespace." {
+				t.Fatalf("nil From defaults to Same, got %q", failure.Text)
+			}
+		}
 	}
 }
