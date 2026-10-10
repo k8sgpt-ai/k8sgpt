@@ -48,6 +48,9 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	if a.ResourceName != "" {
 		listOpts.FieldSelector = fields.OneTermEqualSelector("metadata.name", a.ResourceName)
 	}
+	if a.Namespace != "" {
+		listOpts.Namespace = a.Namespace
+	}
 	if err := client.List(a.Context, routeList, listOpts); err != nil {
 		return nil, err
 	}
