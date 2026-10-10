@@ -51,6 +51,13 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				if nodeCondition.Status != v1.ConditionTrue {
 					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 				}
+			// node-problem-detector conditions name a problem: False means the
+			// problem has not been detected, so only a non-False status is a
+			// failure.
+			case isNodeProblemDetectorConditionType(nodeCondition.Type):
+				if nodeCondition.Status != v1.ConditionFalse {
+					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
+				}
 			// k3s `EtcdIsVoter`` should not be reported as an error
 			case nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter"):
 				break
@@ -115,6 +122,33 @@ func isEKSNodeMonitoringAgentConditionType(conditionType v1.NodeConditionType) b
 		"KernelReady",
 		"NetworkingReady",
 		"StorageReady":
+		return true
+	default:
+		return false
+	}
+}
+
+// isNodeProblemDetectorConditionType checks if the condition type is set by
+// node-problem-detector with one of the configs in its repository. These
+// conditions are False while no problem is detected and True when a problem is
+// found.
+// https://github.com/kubernetes/node-problem-detector
+func isNodeProblemDetectorConditionType(conditionType v1.NodeConditionType) bool {
+	switch conditionType {
+	case "ContainerRuntimeUnhealthy",
+		"CorruptDockerOverlay2",
+		"CperHardwareErrorFatal",
+		"DiskBadBlock",
+		"FrequentContainerdRestart",
+		"FrequentDockerRestart",
+		"FrequentKubeletRestart",
+		"FrequentUnregisterNetDevice",
+		"KernelDeadlock",
+		"KubeProxyUnhealthy",
+		"KubeletUnhealthy",
+		"NTPProblem",
+		"ReadonlyFilesystem",
+		"XfsShutdown":
 		return true
 	default:
 		return false
