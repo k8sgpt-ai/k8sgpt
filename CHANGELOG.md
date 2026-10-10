@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.40...v0.4.41) (2026-10-10)
+
+
+### Bug Fixes
+
+* honor matchExpressions in NetworkPolicy pod selectors ([#1818](https://github.com/k8sgpt-ai/k8sgpt/issues/1818)) ([e8a8a1d](https://github.com/k8sgpt-ai/k8sgpt/commit/e8a8a1d954cae24796cf9dacc5cc3d30392bd62f))
+
 ## [0.4.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.39...v0.4.40) (2026-10-09)
 
 
