@@ -487,7 +487,7 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 	var errorFound bool
 	for _, analysis := range analysisResults {
 		for _, err := range analysis.Error {
-			if strings.Contains(err.Text, "does not have resource configured.") {
+			if strings.Contains(err.Text, "does not set a cpu request on container(s) example") {
 				errorFound = true
 				break
 			}
@@ -497,7 +497,7 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 		}
 	}
 	if !errorFound {
-		t.Error("expected error 'does not have resource configured.' not found in analysis results")
+		t.Error("expected error 'does not set a cpu request on container(s) example' not found in analysis results")
 	}
 }
 
@@ -1091,5 +1091,272 @@ func TestHPAAnalyzerUnsupportedScaleTargetRefReportedOnce(t *testing.T) {
 	}
 	if !strings.Contains(failures[0].Text, "which is not an option.") {
 		t.Errorf("unexpected failure text: %s", failures[0].Text)
+	}
+}
+
+func TestHPAAnalyzerUtilizationRequests(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	utilization := int32(80)
+
+	resourceUtilization := func(name corev1.ResourceName) autoscalingv2.MetricSpec {
+		return autoscalingv2.MetricSpec{
+			Type: autoscalingv2.ResourceMetricSourceType,
+			Resource: &autoscalingv2.ResourceMetricSource{
+				Name: name,
+				Target: autoscalingv2.MetricTarget{
+					Type:               autoscalingv2.UtilizationMetricType,
+					AverageUtilization: &utilization,
+				},
+			},
+		}
+	}
+	containerUtilization := func(name corev1.ResourceName, container string) autoscalingv2.MetricSpec {
+		return autoscalingv2.MetricSpec{
+			Type: autoscalingv2.ContainerResourceMetricSourceType,
+			ContainerResource: &autoscalingv2.ContainerResourceMetricSource{
+				Name:      name,
+				Container: container,
+				Target: autoscalingv2.MetricTarget{
+					Type:               autoscalingv2.UtilizationMetricType,
+					AverageUtilization: &utilization,
+				},
+			},
+		}
+	}
+	requests := func(names ...corev1.ResourceName) corev1.ResourceRequirements {
+		list := corev1.ResourceList{}
+		for _, name := range names {
+			list[name] = resource.MustParse("100m")
+		}
+		return corev1.ResourceRequirements{Requests: list}
+	}
+	limits := func(names ...corev1.ResourceName) corev1.ResourceRequirements {
+		return corev1.ResourceRequirements{Limits: requests(names...).Requests}
+	}
+	averageValue := resource.MustParse("200m")
+
+	tests := []struct {
+		name     string
+		metrics  []autoscalingv2.MetricSpec
+		podSpec  corev1.PodSpec
+		expected []string
+	}{
+		{
+			name:    "requests without limits are enough",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "app", Resources: requests(corev1.ResourceCPU)}},
+			},
+		},
+		{
+			name:    "limits without requests default the requests",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "app", Resources: limits(corev1.ResourceCPU)}},
+			},
+		},
+		{
+			name: "no metrics defaults to cpu utilization",
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "app", Resources: requests(corev1.ResourceMemory)}},
+			},
+			expected: []string{
+				"Deployment default/example does not set a cpu request on container(s) app, so the HorizontalPodAutoscaler cannot compute its cpu utilization.",
+			},
+		},
+		{
+			name:    "one container without a request",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{Name: "app", Resources: requests(corev1.ResourceCPU)},
+					{Name: "sidecar"},
+				},
+			},
+			expected: []string{
+				"Deployment default/example does not set a cpu request on container(s) sidecar, so the HorizontalPodAutoscaler cannot compute its cpu utilization.",
+			},
+		},
+		{
+			name:    "memory utilization needs a memory request",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceMemory)},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "app", Resources: requests(corev1.ResourceCPU)}},
+			},
+			expected: []string{
+				"Deployment default/example does not set a memory request on container(s) app, so the HorizontalPodAutoscaler cannot compute its memory utilization.",
+			},
+		},
+		{
+			name: "average value target does not need requests",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.ResourceMetricSourceType,
+				Resource: &autoscalingv2.ResourceMetricSource{
+					Name: corev1.ResourceCPU,
+					Target: autoscalingv2.MetricTarget{
+						Type:         autoscalingv2.AverageValueMetricType,
+						AverageValue: &averageValue,
+					},
+				},
+			}},
+			podSpec: corev1.PodSpec{Containers: []corev1.Container{{Name: "app"}}},
+		},
+		{
+			name: "pods metric does not need requests",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.PodsMetricSourceType,
+				Pods: &autoscalingv2.PodsMetricSource{
+					Metric: autoscalingv2.MetricIdentifier{Name: "requests_per_second"},
+					Target: autoscalingv2.MetricTarget{
+						Type:         autoscalingv2.AverageValueMetricType,
+						AverageValue: &averageValue,
+					},
+				},
+			}},
+			podSpec: corev1.PodSpec{Containers: []corev1.Container{{Name: "app"}}},
+		},
+		{
+			name:    "sidecar init container needs a request",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				InitContainers: []corev1.Container{
+					{Name: "migrate"},
+					{Name: "proxy", RestartPolicy: &always},
+				},
+				Containers: []corev1.Container{{Name: "app", Resources: requests(corev1.ResourceCPU)}},
+			},
+			expected: []string{
+				"Deployment default/example does not set a cpu request on container(s) proxy, so the HorizontalPodAutoscaler cannot compute its cpu utilization.",
+			},
+		},
+		{
+			name:    "pod-level request covers every container",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Resources:  &corev1.ResourceRequirements{Requests: requests(corev1.ResourceCPU).Requests},
+				Containers: []corev1.Container{{Name: "app"}, {Name: "sidecar"}},
+			},
+		},
+		{
+			name:    "pod-level limit defaults the pod-level request",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Resources:  &corev1.ResourceRequirements{Limits: limits(corev1.ResourceCPU).Limits},
+				Containers: []corev1.Container{{Name: "app"}},
+			},
+		},
+		{
+			name:    "pod-level request falls back to the container requests",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Resources: &corev1.ResourceRequirements{Requests: requests(corev1.ResourceMemory).Requests},
+				Containers: []corev1.Container{
+					{Name: "app", Resources: requests(corev1.ResourceCPU)},
+					{Name: "sidecar"},
+				},
+			},
+		},
+		{
+			name:    "pod-level request without the resource anywhere",
+			metrics: []autoscalingv2.MetricSpec{resourceUtilization(corev1.ResourceCPU)},
+			podSpec: corev1.PodSpec{
+				Resources:  &corev1.ResourceRequirements{Requests: requests(corev1.ResourceMemory).Requests},
+				Containers: []corev1.Container{{Name: "app"}, {Name: "sidecar"}},
+			},
+			expected: []string{
+				"Deployment default/example does not set a cpu request on container(s) app, sidecar, so the HorizontalPodAutoscaler cannot compute its cpu utilization.",
+			},
+		},
+		{
+			name: "container resource metric ignores the pod-level request",
+			metrics: []autoscalingv2.MetricSpec{
+				containerUtilization(corev1.ResourceCPU, "app"),
+			},
+			podSpec: corev1.PodSpec{
+				Resources:  &corev1.ResourceRequirements{Requests: requests(corev1.ResourceCPU).Requests},
+				Containers: []corev1.Container{{Name: "app"}},
+			},
+			expected: []string{
+				"Deployment default/example does not set a cpu request on container(s) app, so the HorizontalPodAutoscaler cannot compute its cpu utilization.",
+			},
+		},
+		{
+			name:    "container resource metric only needs the named container",
+			metrics: []autoscalingv2.MetricSpec{containerUtilization(corev1.ResourceCPU, "app")},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{
+					{Name: "app", Resources: requests(corev1.ResourceCPU)},
+					{Name: "sidecar"},
+				},
+			},
+		},
+		{
+			name:    "container resource metric on a missing container",
+			metrics: []autoscalingv2.MetricSpec{containerUtilization(corev1.ResourceCPU, "web")},
+			podSpec: corev1.PodSpec{
+				Containers: []corev1.Container{{Name: "app", Resources: requests(corev1.ResourceCPU)}},
+			},
+			expected: []string{
+				"HorizontalPodAutoscaler scales on the cpu utilization of container web, which does not exist in Deployment default/example.",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clientset := fake.NewSimpleClientset(
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "example",
+						Namespace: "default",
+					},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+							Kind: "Deployment",
+							Name: "example",
+						},
+						Metrics: tt.metrics,
+					},
+				},
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "example",
+						Namespace: "default",
+					},
+					Spec: appsv1.DeploymentSpec{
+						Template: corev1.PodTemplateSpec{Spec: tt.podSpec},
+					},
+				},
+			)
+
+			// analyze every namespace so the failure text has to name the
+			// namespace of the HPA rather than the one being analyzed
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context: context.Background(),
+			}
+
+			analysisResults, err := HpaAnalyzer{}.Analyze(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var texts []string
+			for _, result := range analysisResults {
+				for _, failure := range result.Error {
+					texts = append(texts, failure.Text)
+				}
+			}
+			if len(texts) != len(tt.expected) {
+				t.Fatalf("expected failures %q, got %q", tt.expected, texts)
+			}
+			for i := range texts {
+				if texts[i] != tt.expected[i] {
+					t.Errorf("expected failure %q, got %q", tt.expected[i], texts[i])
+				}
+			}
+		})
 	}
 }

@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -143,19 +144,23 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				})
 			}
 		} else {
-			containers := len(podInfo.GetPodSpec().Containers)
-			for _, container := range podInfo.GetPodSpec().Containers {
-				if container.Resources.Requests == nil || container.Resources.Limits == nil {
-					containers--
-				}
-			}
+			podSpec := podInfo.GetPodSpec()
+			for _, target := range utilizationTargets(hpa) {
+				missing, found := containersMissingRequest(podSpec, target)
 
-			if containers <= 0 {
-				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef.kind")
+				var text string
+				switch {
+				case !found:
+					text = fmt.Sprintf("HorizontalPodAutoscaler scales on the %s utilization of container %s, which does not exist in %s %s/%s.", target.resource, target.container, scaleTargetRef.Kind, hpa.Namespace, scaleTargetRef.Name)
+				case len(missing) > 0:
+					text = fmt.Sprintf("%s %s/%s does not set a %s request on container(s) %s, so the HorizontalPodAutoscaler cannot compute its %s utilization.", scaleTargetRef.Kind, hpa.Namespace, scaleTargetRef.Name, target.resource, strings.Join(missing, ", "), target.resource)
+				default:
+					continue
+				}
 
 				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
-					KubernetesDoc: doc,
+					Text:          text,
+					KubernetesDoc: apiDoc.GetApiDocV2("spec.metrics"),
 					Sensitive: []common.Sensitive{
 						{
 							Unmasked: scaleTargetRef.Name,
@@ -164,7 +169,6 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					},
 				})
 			}
-
 		}
 
 		if len(failures) > 0 {
@@ -192,6 +196,127 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+// hpaUtilizationTarget is a resource whose utilization the HPA controller
+// computes as a percentage of the scale target's resource requests. An empty
+// container means the requests of the whole pod are used.
+type hpaUtilizationTarget struct {
+	resource  corev1.ResourceName
+	container string
+}
+
+// utilizationTargets returns the Resource and ContainerResource metrics of the
+// HPA that are measured as utilization. Only those depend on resource
+// requests: an AverageValue target compares raw usage, and Pods, Object and
+// External metrics never read requests. An HPA without metrics is defaulted by
+// the API server to 80% average CPU utilization, so it is treated the same.
+func utilizationTargets(hpa autoscalingv2.HorizontalPodAutoscaler) []hpaUtilizationTarget {
+	if len(hpa.Spec.Metrics) == 0 {
+		return []hpaUtilizationTarget{{resource: corev1.ResourceCPU}}
+	}
+
+	var targets []hpaUtilizationTarget
+	seen := map[hpaUtilizationTarget]bool{}
+	for _, metric := range hpa.Spec.Metrics {
+		var target hpaUtilizationTarget
+		switch {
+		case metric.Type == autoscalingv2.ResourceMetricSourceType && metric.Resource != nil &&
+			isUtilizationTarget(metric.Resource.Target):
+			target = hpaUtilizationTarget{resource: metric.Resource.Name}
+		case metric.Type == autoscalingv2.ContainerResourceMetricSourceType && metric.ContainerResource != nil &&
+			isUtilizationTarget(metric.ContainerResource.Target):
+			target = hpaUtilizationTarget{resource: metric.ContainerResource.Name, container: metric.ContainerResource.Container}
+		default:
+			continue
+		}
+
+		if !seen[target] {
+			seen[target] = true
+			targets = append(targets, target)
+		}
+	}
+	return targets
+}
+
+// isUtilizationTarget mirrors the HPA controller, which uses an AverageValue
+// target whenever one is set and only otherwise falls back to
+// AverageUtilization.
+func isUtilizationTarget(target autoscalingv2.MetricTarget) bool {
+	return target.AverageValue == nil && target.AverageUtilization != nil
+}
+
+// containersMissingRequest returns the containers the HPA controller reads a
+// request for target.resource from that do not set one, and whether the
+// container named by target exists in the pod.
+//
+// The controller reads the requests of the created pods, not of the pod
+// template, so the pod defaulting is taken into account: a resource with a
+// limit but no request gets a request equal to the limit. When no container is
+// named and the pod sets pod-level resources, the controller uses the
+// pod-level request, which also falls back to the requests of the containers,
+// so any of them is enough. Otherwise every app and sidecar container, or only
+// the named one, needs a request.
+func containersMissingRequest(podSpec corev1.PodSpec, target hpaUtilizationTarget) (missing []string, found bool) {
+	if target.container == "" && setsPodLevelResources(podSpec) {
+		if setsRequest(*podSpec.Resources, target.resource) {
+			return nil, true
+		}
+		for _, containers := range [][]corev1.Container{podSpec.InitContainers, podSpec.Containers} {
+			for _, c := range containers {
+				if setsRequest(c.Resources, target.resource) {
+					return nil, true
+				}
+			}
+		}
+	}
+
+	containers := append([]corev1.Container{}, podSpec.Containers...)
+	for _, c := range podSpec.InitContainers {
+		if c.RestartPolicy != nil && *c.RestartPolicy == corev1.ContainerRestartPolicyAlways {
+			containers = append(containers, c)
+		}
+	}
+
+	found = target.container == ""
+	for _, c := range containers {
+		if target.container != "" && target.container != c.Name {
+			continue
+		}
+		found = true
+		if !setsRequest(c.Resources, target.resource) {
+			missing = append(missing, c.Name)
+		}
+	}
+	return missing, found
+}
+
+// setsRequest reports whether a pod created from resources has a request for
+// name. The API server defaults a missing request to the limit on pods, but
+// not on pod templates, so a limit alone is enough.
+func setsRequest(resources corev1.ResourceRequirements, name corev1.ResourceName) bool {
+	_, hasRequest := resources.Requests[name]
+	_, hasLimit := resources.Limits[name]
+	return hasRequest || hasLimit
+}
+
+// setsPodLevelResources reports whether a pod created from podSpec has
+// pod-level requests, which the HPA controller then uses instead of summing
+// the requests of the containers. Only CPU, memory and hugepages are supported
+// at the pod level, and a pod-level limit defaults the pod-level request.
+func setsPodLevelResources(podSpec corev1.PodSpec) bool {
+	if podSpec.Resources == nil {
+		return false
+	}
+	for _, list := range []corev1.ResourceList{podSpec.Resources.Requests, podSpec.Resources.Limits} {
+		for name := range list {
+			if name == corev1.ResourceCPU || name == corev1.ResourceMemory ||
+				strings.HasPrefix(string(name), corev1.ResourceHugePagesPrefix) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 type PodInfo interface {
