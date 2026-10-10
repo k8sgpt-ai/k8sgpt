@@ -36,6 +36,9 @@ func TestStatefulSetAnalyzer(t *testing.T) {
 				Name:      "example",
 				Namespace: "default",
 			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+			},
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
 
@@ -93,6 +96,44 @@ func TestStatefulSetAnalyzerWithoutService(t *testing.T) {
 	if !errorFound {
 		t.Errorf("Error expected: '%v', not found in StatefulSet's analysis results", want)
 	}
+}
+
+func TestStatefulSetAnalyzerWithoutServiceName(t *testing.T) {
+	// spec.serviceName is optional, so a StatefulSet that leaves it empty has
+	// no governing Service to look up and must not be reported for one.
+	replicas := int32(1)
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				Replicas: &replicas,
+			},
+			Status: appsv1.StatefulSetStatus{
+				AvailableReplicas: 1,
+			},
+		})
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		for _, failure := range analysis.Error {
+			t.Errorf("unexpected failure: %s", failure.Text)
+		}
+	}
+	assert.Equal(t, len(analysisResults), 0)
 }
 
 func TestStatefulSetAnalyzerMissingStorageClass(t *testing.T) {
@@ -168,11 +209,17 @@ func TestStatefulSetAnalyzerNamespaceFiltering(t *testing.T) {
 				Name:      "example",
 				Namespace: "default",
 			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+			},
 		},
 		&appsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
 				Namespace: "other-namespace",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
 			},
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
@@ -202,11 +249,17 @@ func TestStatefulSetAnalyzerLabelSelectorFiltering(t *testing.T) {
 					"part-of": "test",
 				},
 			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+			},
 		},
 		&appsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example2",
 				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
 			},
 		},
 	)
@@ -281,7 +334,8 @@ func TestStatefulSetAnalyzerReplica(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: appsv1.StatefulSetSpec{
-				Replicas: &replicas,
+				ServiceName: "example-svc",
+				Replicas:    &replicas,
 			},
 			Status: appsv1.StatefulSetStatus{
 				AvailableReplicas: 3,
@@ -314,7 +368,8 @@ func TestStatefulSetAnalyzerUnavailableReplicas(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: appsv1.StatefulSetSpec{
-				Replicas: &replicas,
+				ServiceName: "example-svc",
+				Replicas:    &replicas,
 			},
 			Status: appsv1.StatefulSetStatus{
 				AvailableReplicas: 0,

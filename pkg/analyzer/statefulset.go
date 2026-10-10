@@ -52,30 +52,33 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, sts := range list.Items {
 		var failures []common.Failure
 
-		// get serviceName
+		// spec.serviceName is optional. Without it the pods get no stable
+		// network identity, but there is no governing Service to look up.
 		serviceName := sts.Spec.ServiceName
-		_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
-		if err != nil {
-			doc := apiDoc.GetApiDocV2("spec.serviceName")
+		if serviceName != "" {
+			_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
+			if err != nil {
+				doc := apiDoc.GetApiDocV2("spec.serviceName")
 
-			failures = append(failures, common.Failure{
-				Text: fmt.Sprintf(
-					"StatefulSet uses the service %s/%s which does not exist.",
-					sts.Namespace,
-					serviceName,
-				),
-				KubernetesDoc: doc,
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: sts.Namespace,
-						Masked:   util.MaskString(sts.Namespace),
+				failures = append(failures, common.Failure{
+					Text: fmt.Sprintf(
+						"StatefulSet uses the service %s/%s which does not exist.",
+						sts.Namespace,
+						serviceName,
+					),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: sts.Namespace,
+							Masked:   util.MaskString(sts.Namespace),
+						},
+						{
+							Unmasked: serviceName,
+							Masked:   util.MaskString(serviceName),
+						},
 					},
-					{
-						Unmasked: serviceName,
-						Masked:   util.MaskString(serviceName),
-					},
-				},
-			})
+				})
+			}
 		}
 		if len(sts.Spec.VolumeClaimTemplates) > 0 {
 			for _, volumeClaimTemplate := range sts.Spec.VolumeClaimTemplates {
