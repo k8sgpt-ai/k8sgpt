@@ -469,3 +469,37 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 		t.Errorf("Expected message, <%s> , not found in HTTPRoute's analysis results", want)
 	}
 }
+
+func TestHTTPRouteAnalyzerNamespaceFilter(t *testing.T) {
+	backendName := gtwapi.ObjectName("foobackend")
+	gtwName := gtwapi.ObjectName("missing")
+	svcPort := gtwapi.PortNumber(1027)
+	inNamespace := BuildHTTPRoute(backendName, gtwName, "default", &svcPort, "default")
+	other := BuildHTTPRoute(backendName, gtwName, "other", &svcPort, "other")
+	other.Name = "otherroute"
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&inNamespace, &other).Build()
+
+	results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || results[0].Name != "default/foohttproute" {
+		names := make([]string, 0, len(results))
+		for _, result := range results {
+			names = append(names, result.Name)
+		}
+		t.Fatalf("expected only default/foohttproute, got %v", names)
+	}
+}

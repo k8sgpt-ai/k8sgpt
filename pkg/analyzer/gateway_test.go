@@ -470,3 +470,36 @@ func TestGatewayAnalyzerLabelSelectorFiltering(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 0)
 
 }
+
+func TestGatewayAnalyzerNamespaceFilter(t *testing.T) {
+	class := BuildGatewayClass("exists")
+	inNamespace := BuildGateway("exists", metav1.ConditionFalse, nil)
+	other := BuildGateway("exists", metav1.ConditionFalse, nil)
+	other.Name = "other"
+	other.Namespace = "other"
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&class, &inNamespace, &other).Build()
+
+	results, err := GatewayAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{CtrlClient: fakeClient},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || results[0].Name != "default/foobar" {
+		names := make([]string, 0, len(results))
+		for _, result := range results {
+			names = append(names, result.Name)
+		}
+		t.Fatalf("expected only default/foobar, got %v", names)
+	}
+}
