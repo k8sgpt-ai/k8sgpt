@@ -387,3 +387,311 @@ func TestNodeAnalyzerEKSNodeMonitoringAgentConditionFalseReported(t *testing.T) 
 	require.Equal(t, 1, len(results[0].Error))
 	require.Equal(t, "Node1 has condition of type NetworkingReady, reason IPAMDNotReady: IPAM-D has failed to connect to API Server", results[0].Error[0].Text)
 }
+
+func TestIsNodeProblemDetectorConditionType(t *testing.T) {
+	tests := []struct {
+		name          string
+		conditionType v1.NodeConditionType
+		expected      bool
+	}{
+		{
+			name:          "ContainerRuntimeUnhealthy is set by node-problem-detector",
+			conditionType: "ContainerRuntimeUnhealthy",
+			expected:      true,
+		},
+		{
+			name:          "CorruptDockerOverlay2 is set by node-problem-detector",
+			conditionType: "CorruptDockerOverlay2",
+			expected:      true,
+		},
+		{
+			name:          "CperHardwareErrorFatal is set by node-problem-detector",
+			conditionType: "CperHardwareErrorFatal",
+			expected:      true,
+		},
+		{
+			name:          "DiskBadBlock is set by node-problem-detector",
+			conditionType: "DiskBadBlock",
+			expected:      true,
+		},
+		{
+			name:          "FrequentContainerdRestart is set by node-problem-detector",
+			conditionType: "FrequentContainerdRestart",
+			expected:      true,
+		},
+		{
+			name:          "FrequentDockerRestart is set by node-problem-detector",
+			conditionType: "FrequentDockerRestart",
+			expected:      true,
+		},
+		{
+			name:          "FrequentKubeletRestart is set by node-problem-detector",
+			conditionType: "FrequentKubeletRestart",
+			expected:      true,
+		},
+		{
+			name:          "FrequentUnregisterNetDevice is set by node-problem-detector",
+			conditionType: "FrequentUnregisterNetDevice",
+			expected:      true,
+		},
+		{
+			name:          "KernelDeadlock is set by node-problem-detector",
+			conditionType: "KernelDeadlock",
+			expected:      true,
+		},
+		{
+			name:          "KubeProxyUnhealthy is set by node-problem-detector",
+			conditionType: "KubeProxyUnhealthy",
+			expected:      true,
+		},
+		{
+			name:          "KubeletUnhealthy is set by node-problem-detector",
+			conditionType: "KubeletUnhealthy",
+			expected:      true,
+		},
+		{
+			name:          "NTPProblem is set by node-problem-detector",
+			conditionType: "NTPProblem",
+			expected:      true,
+		},
+		{
+			name:          "ReadonlyFilesystem is set by node-problem-detector",
+			conditionType: "ReadonlyFilesystem",
+			expected:      true,
+		},
+		{
+			name:          "XfsShutdown is set by node-problem-detector",
+			conditionType: "XfsShutdown",
+			expected:      true,
+		},
+		{
+			name:          "Ready is a standard condition",
+			conditionType: v1.NodeReady,
+			expected:      false,
+		},
+		{
+			name:          "MemoryPressure is a standard condition",
+			conditionType: v1.NodeMemoryPressure,
+			expected:      false,
+		},
+		{
+			name:          "KernelReady is not set by node-problem-detector",
+			conditionType: "KernelReady",
+			expected:      false,
+		},
+		{
+			name:          "empty type is not set by node-problem-detector",
+			conditionType: "",
+			expected:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.expected, isNodeProblemDetectorConditionType(tt.conditionType))
+		})
+	}
+}
+
+func TestNodeAnalyzerNodeProblemDetectorConditionsFalseIgnored(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "Node1",
+				},
+				Status: v1.NodeStatus{
+					// A healthy node running node-problem-detector: the standard
+					// conditions plus the conditions from the configs in its
+					// repository, all False with their default reason and message.
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+						{
+							Type:   v1.NodeMemoryPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:   v1.NodeDiskPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:   v1.NodePIDPressure,
+							Status: v1.ConditionFalse,
+						},
+						{
+							Type:    "ContainerRuntimeUnhealthy",
+							Status:  v1.ConditionFalse,
+							Reason:  "ContainerRuntimeIsHealthy",
+							Message: "Container runtime on the node is functioning properly",
+						},
+						{
+							Type:    "CorruptDockerOverlay2",
+							Status:  v1.ConditionFalse,
+							Reason:  "NoCorruptDockerOverlay2",
+							Message: "docker overlay2 is functioning properly",
+						},
+						{
+							Type:    "CperHardwareErrorFatal",
+							Status:  v1.ConditionFalse,
+							Reason:  "CperHardwareHasNoFatalError",
+							Message: "UEFI CPER has no fatal error",
+						},
+						{
+							Type:    "DiskBadBlock",
+							Status:  v1.ConditionFalse,
+							Reason:  "DiskBadBlock",
+							Message: "Disk no bad block",
+						},
+						{
+							Type:    "FrequentContainerdRestart",
+							Status:  v1.ConditionFalse,
+							Reason:  "NoFrequentContainerdRestart",
+							Message: "containerd is functioning properly",
+						},
+						{
+							Type:    "FrequentDockerRestart",
+							Status:  v1.ConditionFalse,
+							Reason:  "NoFrequentDockerRestart",
+							Message: "docker is functioning properly",
+						},
+						{
+							Type:    "FrequentKubeletRestart",
+							Status:  v1.ConditionFalse,
+							Reason:  "NoFrequentKubeletRestart",
+							Message: "kubelet is functioning properly",
+						},
+						{
+							Type:    "FrequentUnregisterNetDevice",
+							Status:  v1.ConditionFalse,
+							Reason:  "NoFrequentUnregisterNetDevice",
+							Message: "node is functioning properly",
+						},
+						{
+							Type:    "KernelDeadlock",
+							Status:  v1.ConditionFalse,
+							Reason:  "KernelHasNoDeadlock",
+							Message: "kernel has no deadlock",
+						},
+						{
+							Type:    "KubeProxyUnhealthy",
+							Status:  v1.ConditionFalse,
+							Reason:  "KubeProxyIsHealthy",
+							Message: "kube-proxy on the node is functioning properly",
+						},
+						{
+							Type:    "KubeletUnhealthy",
+							Status:  v1.ConditionFalse,
+							Reason:  "KubeletIsHealthy",
+							Message: "kubelet on the node is functioning properly",
+						},
+						{
+							Type:    "NTPProblem",
+							Status:  v1.ConditionFalse,
+							Reason:  "NTPIsUp",
+							Message: "ntp service is up",
+						},
+						{
+							Type:    "ReadonlyFilesystem",
+							Status:  v1.ConditionFalse,
+							Reason:  "FilesystemIsNotReadOnly",
+							Message: "Filesystem is not read-only",
+						},
+						{
+							Type:    "XfsShutdown",
+							Status:  v1.ConditionFalse,
+							Reason:  "XfsHasNotShutDown",
+							Message: "XFS has not shutdown",
+						},
+					},
+				},
+			}),
+		},
+		Context: context.Background(),
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
+func TestNodeAnalyzerNodeProblemDetectorConditionTrueReported(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "Node1",
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+						{
+							Type:    "ReadonlyFilesystem",
+							Status:  v1.ConditionFalse,
+							Reason:  "FilesystemIsNotReadOnly",
+							Message: "Filesystem is not read-only",
+						},
+						// node-problem-detector reports a detected problem with Status True.
+						{
+							Type:    "KernelDeadlock",
+							Status:  v1.ConditionTrue,
+							Reason:  "DockerHung",
+							Message: "INFO: task docker:20744 blocked for more than 120 seconds.",
+						},
+					},
+				},
+			}),
+		},
+		Context: context.Background(),
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Node1", results[0].Name)
+	require.Equal(t, 1, len(results[0].Error))
+	require.Equal(t, "Node1 has condition of type KernelDeadlock, reason DockerHung: INFO: task docker:20744 blocked for more than 120 seconds.", results[0].Error[0].Text)
+}
+
+func TestNodeAnalyzerNodeProblemDetectorConditionUnknownReported(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&v1.Node{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "Node1",
+				},
+				Status: v1.NodeStatus{
+					Conditions: []v1.NodeCondition{
+						{
+							Type:   v1.NodeReady,
+							Status: v1.ConditionTrue,
+						},
+						// A custom plugin that cannot run reports Status Unknown.
+						{
+							Type:    "KubeletUnhealthy",
+							Status:  v1.ConditionUnknown,
+							Reason:  "KubeletIsHealthy",
+							Message: "Error in starting plugin. Please check the error log",
+						},
+					},
+				},
+			}),
+		},
+		Context: context.Background(),
+	}
+
+	nAnalyzer := NodeAnalyzer{}
+	results, err := nAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "Node1", results[0].Name)
+	require.Equal(t, 1, len(results[0].Error))
+	require.Equal(t, "Node1 has condition of type KubeletUnhealthy, reason KubeletIsHealthy: Error in starting plugin. Please check the error log", results[0].Error[0].Text)
+}
