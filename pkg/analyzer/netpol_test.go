@@ -187,6 +187,94 @@ func TestNetpolNoPodsUsesPolicyNamespace(t *testing.T) {
 	assert.Equal(t, results[0].Name, "team-a/worker-policy")
 }
 
+func TestNetpolMatchExpressions(t *testing.T) {
+	webPod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "web",
+			Namespace: "default",
+			Labels: map[string]string{
+				"app":  "web",
+				"tier": "frontend",
+			},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		podSelector  metav1.LabelSelector
+		expectedText []string
+	}{
+		{
+			name: "expressions only, pod selected",
+			podSelector: metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{Key: "app", Operator: metav1.LabelSelectorOpIn, Values: []string{"web"}},
+				},
+			},
+		},
+		{
+			name: "expressions only, no pod selected",
+			podSelector: metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{Key: "app", Operator: metav1.LabelSelectorOpIn, Values: []string{"api"}},
+				},
+			},
+			expectedText: []string{"Network policy is not applied to any pods: example"},
+		},
+		{
+			name: "labels match but expressions exclude the pod",
+			podSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "web",
+				},
+				MatchExpressions: []metav1.LabelSelectorRequirement{
+					{Key: "tier", Operator: metav1.LabelSelectorOpNotIn, Values: []string{"frontend"}},
+				},
+			},
+			expectedText: []string{"Network policy is not applied to any pods: example"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clientset := fake.NewSimpleClientset(
+				&networkingv1.NetworkPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "example",
+						Namespace: "default",
+					},
+					Spec: networkingv1.NetworkPolicySpec{
+						PodSelector: tt.podSelector,
+					},
+				},
+				webPod,
+			)
+
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			}
+
+			analyzer := NetworkPolicyAnalyzer{}
+			results, err := analyzer.Analyze(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var texts []string
+			for _, result := range results {
+				for _, failure := range result.Error {
+					texts = append(texts, failure.Text)
+				}
+			}
+			assert.Equal(t, texts, tt.expectedText)
+		})
+	}
+}
+
 func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&networkingv1.NetworkPolicy{
