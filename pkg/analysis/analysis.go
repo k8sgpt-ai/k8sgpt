@@ -233,7 +233,6 @@ func NewAnalysis(
 	}
 
 	aiProvider.CustomHeaders = customHeaders
-
 	if verbose {
 		fmt.Println("Debug: Checking AI client initialization.")
 	}
