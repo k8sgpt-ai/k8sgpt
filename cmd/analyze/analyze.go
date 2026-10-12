@@ -30,6 +30,7 @@ import (
 var (
 	explain         bool
 	backend         string
+	actionBackend   string
 	output          string
 	filters         []string
 	language        string
@@ -64,6 +65,7 @@ var AnalyzeCmd = &cobra.Command{
 		// Create analysis configuration first.
 		config, err := analysis.NewAnalysis(
 			backend,
+			actionBackend,
 			language,
 			filters,
 			namespace,
@@ -227,4 +229,6 @@ func init() {
 	AnalyzeCmd.Flags().StringVar(&resource, "resource", "", "Analyze a single resource in Kind/Name format (e.g. Deployment/my-app). Combine with -n to scope the namespace.")
 	// print stats
 	AnalyzeCmd.Flags().BoolVarP(&withStats, "with-stat", "s", false, "Print analysis stats (time taken per analyzer) in addition to the normal output.")
+	// action backend flag: optional System One model to classify the AI output
+	AnalyzeCmd.Flags().StringVarP(&actionBackend, "action-backend", "t", "", "Optional System One backend to classify the AI output (e.g. 'systemone')")
 }

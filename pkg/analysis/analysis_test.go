@@ -527,7 +527,7 @@ func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
 
 	output := util.CaptureOutput(func() {
 		a, err := NewAnalysis(
-			"", "english", []string{"Pod"}, "default", "", true,
+			"", "", "english", []string{"Pod"}, "default", "", true,
 			false, // explain
 			10, false, false, []string{}, false,
 		)
@@ -586,7 +586,7 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 
 	output := util.CaptureOutput(func() {
 		a, err := NewAnalysis(
-			"", "english", []string{"Pod"}, "default", "", true,
+			"", "", "english", []string{"Pod"}, "default", "", true,
 			true, // explain
 			10, false, false, []string{}, false,
 		)
@@ -871,4 +871,62 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Name)
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Kind, "Kind should default to the analyzer name")
 	require.Len(t, a.Results[0].Error, 1)
+}
+
+// mockSystemOneClient mocks the ISystemOne interface for testing GetAIResults
+type mockSystemOneClient struct {
+	ai.IAI
+}
+
+func (m *mockSystemOneClient) ClassifyAction(ctx context.Context, prompt string, categories []string) (ai.ActionClassification, error) {
+	return ai.ActionClassification{
+		Decision:        "RestartPod",
+		Confidence:      0.99,
+		SuggestedAction: "Mock action",
+	}, nil
+}
+
+// mockAIClient mocks IAI to return a mock explanation
+type mockAIClient struct {
+	ai.IAI
+}
+func (m *mockAIClient) GetName() string { return "mockAI" }
+func (m *mockAIClient) Parse(ctx context.Context, prompt []string, cache cache.ICache, promptTmpl string) (string, error) {
+	return "mock generative explanation", nil
+}
+func (m *mockAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+	return "mock generative explanation", nil
+}
+
+type mockCache struct {
+	cache.ICache
+}
+func (m *mockCache) IsCacheDisabled() bool { return true }
+func (m *mockCache) Store(key string, data string) error { return nil }
+func (m *mockCache) Exists(key string) bool { return false }
+func (m *mockCache) Load(key string) (string, error) { return "", nil }
+
+func TestGetAIResults_SystemOneClassification(t *testing.T) {
+	a := &Analysis{
+		Context:      context.Background(),
+		ActionClient: &mockSystemOneClient{},
+		Results: []common.Result{
+			{
+				Kind:  "Pod",
+				Name:  "test-pod",
+				Error: []common.Failure{{Text: "test failure"}},
+			},
+		},
+	}
+	a.AIClient = &mockAIClient{}
+	a.Cache = &mockCache{}
+
+	err := a.GetAIResults("english", false)
+	require.NoError(t, err)
+	
+	// Verify the full classification was populated
+	require.NotNil(t, a.Results[0].SystemOneAction)
+	require.Equal(t, "RestartPod", a.Results[0].SystemOneAction.Decision)
+	require.InDelta(t, 0.99, float64(a.Results[0].SystemOneAction.Confidence), 0.01)
+	require.Equal(t, "Mock action", a.Results[0].SystemOneAction.SuggestedAction)
 }

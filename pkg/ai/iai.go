@@ -39,6 +39,7 @@ var (
 		&GroqClient{},
 		&AmazonBedrockMantleClient{},
 		&LiteLLMClient{},
+		&SystemOneClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -60,6 +61,7 @@ var (
 		groqAIClientName,
 		bedrockMantleClientName,
 		liteLLMClientName,
+		systemOneClientName,
 	}
 )
 
