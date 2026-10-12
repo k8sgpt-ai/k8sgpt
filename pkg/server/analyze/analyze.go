@@ -40,10 +40,15 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	config.Context = ctx // Replace context for correct timeouts.
 	defer config.Close()
 
+	matchedCustomFilters := []string(nil)
 	if config.CustomAnalyzersAreAvailable() {
-		config.RunCustomAnalysis()
+		matchedCustomFilters = config.RunCustomAnalysis()
 	}
-	config.RunAnalysis()
+	coreFilters := analysis.CoreFiltersAfterCustom(config.Filters, matchedCustomFilters)
+	if len(matchedCustomFilters) == 0 || len(coreFilters) > 0 {
+		config.Filters = coreFilters
+		config.RunAnalysis()
+	}
 
 	if i.Explain {
 		err := config.GetAIResults(i.Output, i.Anonymize)

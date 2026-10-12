@@ -95,15 +95,22 @@ var AnalyzeCmd = &cobra.Command{
 		}
 		defer config.Close()
 
+		matchedCustomFilters := []string(nil)
 		if customAnalysis {
-			config.RunCustomAnalysis()
+			matchedCustomFilters = config.RunCustomAnalysis()
 			if verbose {
 				fmt.Println("Debug: All custom analyzers completed.")
 			}
 		}
-		config.RunAnalysis()
-		if verbose {
-			fmt.Println("Debug: All core analyzers completed.")
+
+		coreFilters := analysis.CoreFiltersAfterCustom(config.Filters, matchedCustomFilters)
+
+		if len(matchedCustomFilters) == 0 || len(coreFilters) > 0 {
+			config.Filters = coreFilters
+			config.RunAnalysis()
+			if verbose {
+				fmt.Println("Debug: All core analyzers completed.")
+			}
 		}
 
 		if explain {
