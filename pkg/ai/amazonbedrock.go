@@ -63,7 +63,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 
 	{
 		Name:       "anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -74,7 +74,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -85,7 +85,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -96,7 +96,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -107,7 +107,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -118,7 +118,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -129,7 +129,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -140,7 +140,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -151,7 +151,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -162,7 +162,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -173,7 +173,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -184,7 +184,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -195,7 +195,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -206,7 +206,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -217,7 +217,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -228,7 +228,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -239,7 +239,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -250,7 +250,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -261,7 +261,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "au.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -272,7 +272,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -283,7 +283,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "in.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -294,7 +294,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-haiku-4-5-20251001-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -305,7 +305,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-opus-4-5-20251101-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -316,7 +316,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-opus-4-5-20251101-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -327,7 +327,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "eu.anthropic.claude-opus-4-5-20251101-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -338,7 +338,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-opus-4-5-20251101-v1:0",
-		Completion: &bedrock_support.CohereMessagesCompletion{},
+		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
