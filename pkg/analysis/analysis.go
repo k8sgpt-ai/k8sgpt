@@ -221,10 +221,14 @@ func NewAnalysis(
 	}
 
 	for _, header := range aiProvider.CustomHeaders {
+		filteredCopy := header.Clone()
 		for key := range header {
-			if !slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
-				customHeaders = append(customHeaders, header)
+			if slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
+				delete(filteredCopy, key)
 			}
+		}
+		if len(filteredCopy) > 0 {
+			customHeaders = append(customHeaders, filteredCopy)
 		}
 	}
 
