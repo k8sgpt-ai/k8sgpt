@@ -59,9 +59,7 @@ func (a *CohereMessagesCompletion) GetCompletion(ctx context.Context, prompt str
 // see the "Request and Response" warning on AWS's Anthropic Claude Messages
 // request/response docs). Only temperature is sent; top_p falls back to the
 // provider default.
-type CohereMessagesSingleSamplingCompletion struct {
-	completion ICompletion
-}
+type CohereMessagesSingleSamplingCompletion struct{}
 
 func (a *CohereMessagesSingleSamplingCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
 	request := map[string]interface{}{
