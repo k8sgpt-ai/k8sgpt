@@ -364,6 +364,94 @@ func TestGetParentStopsAtUnknownOwner(t *testing.T) {
 	}
 }
 
+func TestGetParentFollowsKnownOwners(t *testing.T) {
+	namespace := "test"
+	// Each object is owned by the next kind GetParent handles, so every kind
+	// has to return the parent it resolved through its own owner.
+	clientset := fake.NewSimpleClientset(
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "StatefulSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "DaemonSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Ingress", Name: "app"},
+				},
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "MutatingWebhookConfiguration", Name: "app"},
+				},
+			},
+		},
+		&admissionregistrationv1.MutatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "ValidatingWebhookConfiguration", Name: "app"},
+				},
+			},
+		},
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "ReplicaSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+			},
+		},
+	)
+	kubeClient := kubernetes.Client{
+		Client: clientset,
+	}
+
+	for _, kind := range []string{
+		"Deployment",
+		"StatefulSet",
+		"DaemonSet",
+		"Ingress",
+		"MutatingWebhookConfiguration",
+		"ValidatingWebhookConfiguration",
+	} {
+		t.Run(kind, func(t *testing.T) {
+			meta := metav1.ObjectMeta{
+				Namespace:       namespace,
+				Name:            "pod",
+				OwnerReferences: []metav1.OwnerReference{{Kind: kind, Name: "app"}},
+			}
+			output, ok := GetParent(&kubeClient, meta)
+			require.True(t, ok)
+			require.Equal(t, "ReplicaSet/app", output)
+		})
+	}
+}
+
 func TestRemoveDuplicates(t *testing.T) {
 	tests := []struct {
 		name               string
