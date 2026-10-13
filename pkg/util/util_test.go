@@ -261,6 +261,49 @@ func TestGetParentStopsAtUnknownOwner(t *testing.T) {
 				},
 			},
 		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "db",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "PostgresCluster", Name: "db"},
+				},
+			},
+		},
+		&appsv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "agent",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Agent", Name: "agent"},
+				},
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "WebApp", Name: "web"},
+				},
+			},
+		},
+		&admissionregistrationv1.MutatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "injector",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Mesh", Name: "default"},
+				},
+			},
+		},
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "policy",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Mesh", Name: "default"},
+				},
+			},
+		},
 	)
 	kubeClient := kubernetes.Client{
 		Client: clientset,
@@ -280,6 +323,31 @@ func TestGetParentStopsAtUnknownOwner(t *testing.T) {
 			name:           "replicaset owned by a custom resource",
 			owner:          metav1.OwnerReference{Kind: "ReplicaSet", Name: "canary-7f9c2"},
 			expectedOutput: "ReplicaSet/canary-7f9c2",
+		},
+		{
+			name:           "statefulset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "StatefulSet", Name: "db"},
+			expectedOutput: "StatefulSet/db",
+		},
+		{
+			name:           "daemonset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "DaemonSet", Name: "agent"},
+			expectedOutput: "DaemonSet/agent",
+		},
+		{
+			name:           "ingress owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "Ingress", Name: "web"},
+			expectedOutput: "Ingress/web",
+		},
+		{
+			name:           "mutating webhook configuration owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "MutatingWebhookConfiguration", Name: "injector"},
+			expectedOutput: "MutatingWebhook/injector",
+		},
+		{
+			name:           "validating webhook configuration owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ValidatingWebhookConfiguration", Name: "policy"},
+			expectedOutput: "ValidatingWebhook/policy",
 		},
 	}
 	for _, tt := range tests {
