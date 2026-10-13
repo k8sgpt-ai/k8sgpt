@@ -22,6 +22,8 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -87,9 +89,15 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			} else {
 				// Check if the aforementioned Gateway allows the HTTPRoutes from the route's namespace
 				for _, listener := range gtw.Spec.Listeners {
-					if listener.AllowedRoutes.Namespaces != nil {
-						switch allow := listener.AllowedRoutes.Namespaces.From; {
-						case *allow == gtwapi.NamespacesFromSame:
+					if listener.AllowedRoutes != nil && listener.AllowedRoutes.Namespaces != nil {
+						// From defaults to Same. A nil pointer here is an object
+						// the API server did not default, not a reason to panic.
+						from := gtwapi.NamespacesFromSame
+						if listener.AllowedRoutes.Namespaces.From != nil {
+							from = *listener.AllowedRoutes.Namespaces.From
+						}
+						switch from {
+						case gtwapi.NamespacesFromSame:
 							// check if Gateway is in the same namespace
 							if route.Namespace != gtw.Namespace {
 								failures = append(failures, common.Failure{
@@ -119,16 +127,17 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 									},
 								})
 							}
-						case *allow == gtwapi.NamespacesFromSelector:
-							// check if our route include the same selector Label
-							if !util.LabelsIncludeAny(listener.AllowedRoutes.Namespaces.Selector.MatchLabels, route.Labels) {
+						case gtwapi.NamespacesFromSelector:
+							// The selector matches the route's namespace, not the route.
+							if !httpRouteNamespaceMatchesSelector(a, client, route.Namespace, listener.AllowedRoutes.Namespaces.Selector) {
 								failures = append(failures, common.Failure{
 									Text: fmt.Sprintf(
-										"HTTPRoute '%s/%s' can't be attached on Gateway '%s/%s', selector labels do not match HTTProute's labels.",
+										"HTTPRoute '%s/%s' can't be attached on Gateway '%s/%s', namespace %s labels do not match the listener selector.",
 										route.Namespace,
 										route.Name,
 										gtw.Namespace,
 										gtw.Name,
+										route.Namespace,
 									),
 									Sensitive: []common.Sensitive{
 										{
@@ -238,4 +247,23 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 	return a.Results, nil
 
+}
+
+// httpRouteNamespaceMatchesSelector reports whether namespaceName's labels
+// satisfy selector. A missing namespace or a nil selector does not match:
+// NamespacesFromSelector requires a selector, and there is nothing to match
+// when the namespace cannot be read.
+func httpRouteNamespaceMatchesSelector(a common.Analyzer, client ctrl.Client, namespaceName string, selector *metav1.LabelSelector) bool {
+	if selector == nil {
+		return false
+	}
+	sel, err := metav1.LabelSelectorAsSelector(selector)
+	if err != nil {
+		return false
+	}
+	ns := &corev1.Namespace{}
+	if err := client.Get(a.Context, ctrl.ObjectKey{Name: namespaceName}, ns); err != nil {
+		return false
+	}
+	return sel.Matches(labels.Set(ns.Labels))
 }
