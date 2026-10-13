@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
 	"reflect"
 	"strings"
 	"testing"
@@ -871,4 +872,61 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Name)
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Kind, "Kind should default to the analyzer name")
 	require.Len(t, a.Results[0].Error, 1)
+}
+
+func TestNewAnalysis_CustomHeaders(t *testing.T) {
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{
+			Config: &rest.Config{Host: "fake-server"},
+		}, nil
+	})
+	defer patches.Reset()
+
+	var capturedHeaders []http.Header
+	patches2 := gomonkey.ApplyMethod(reflect.TypeOf(&ai.NoOpAIClient{}), "Configure", func(_ *ai.NoOpAIClient, config ai.IAIConfig) error {
+		capturedHeaders = config.GetCustomHeaders()
+		return nil
+	})
+	defer patches2.Reset()
+
+	viper.Set("ai", map[string]interface{}{
+		"defaultProvider": "noopai",
+		"providers": []map[string]interface{}{
+			{
+				"name":    "noopai",
+				"baseUrl": "http://test",
+				"model":   "test-model",
+				"customHeaders": []map[string][]string{
+					{"X-Config-Header-1": {"config-val-1"}, "X-Config-Header-2": {"config-val-2"}},
+					{"Same-Header-Key": {"overridden"}, "Different-Header-Key": {"not-overridden"}},
+					{"authorization": {"auth-config"}},
+				},
+			},
+		},
+	})
+
+	cliHeaders := []string{"X-CLI-Header:cli-val", "Same-Header-Key:priority", "Authorization:auth-cli"}
+	a, err := NewAnalysis("noopai", "english", []string{"Pod"}, "default", "", true, true, 10, false, false, cliHeaders, false)
+	require.NoError(t, err)
+	defer a.Close()
+
+	require.Len(t, capturedHeaders, 5)
+
+	// CLI headers are built from map iteration in util.NewHeaders, so their
+	// order is not deterministic. Merge everything and assert per key.
+	merged := make(http.Header)
+	for _, h := range capturedHeaders {
+		for k, vs := range h {
+			for _, v := range vs {
+				merged.Add(k, v)
+			}
+		}
+	}
+	require.Len(t, merged, 6)
+	require.Equal(t, []string{"cli-val"}, merged.Values("X-CLI-Header"))
+	require.Equal(t, []string{"priority"}, merged.Values("Same-Header-Key"))
+	require.Equal(t, []string{"auth-cli"}, merged.Values("Authorization"))
+	require.Equal(t, []string{"config-val-1"}, merged.Values("X-Config-Header-1"))
+	require.Equal(t, []string{"config-val-2"}, merged.Values("X-Config-Header-2"))
+	require.Equal(t, []string{"not-overridden"}, merged.Values("Different-Header-Key"))
 }

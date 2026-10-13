@@ -1,7 +1,6 @@
 package analyzer
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -56,7 +55,7 @@ func (DaemonSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			})
 		}
 		for _, imagePullSecret := range ds.Spec.Template.Spec.ImagePullSecrets {
-			_, err := a.Client.GetClient().CoreV1().Secrets(ds.Namespace).Get(context.Background(), imagePullSecret.Name, metav1.GetOptions{})
+			_, err := a.Client.GetClient().CoreV1().Secrets(ds.Namespace).Get(a.Context, imagePullSecret.Name, metav1.GetOptions{})
 			if err != nil {
 				failures = append(failures, common.Failure{
 					Text: fmt.Sprintf("DaemonSet %s/%s references non-existent ImagePullSecret %s", ds.Namespace, ds.Name, imagePullSecret.Name),

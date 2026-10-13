@@ -197,6 +197,50 @@ func TestIngressAnalyzer(t *testing.T) {
 				"Ingress default/test-ingress-resource-backend does not specify an Ingress class.",
 			},
 		},
+		{
+			name: "Non-existent default backend service",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-default-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					DefaultBackend: &networkingv1.IngressBackend{
+						Service: &networkingv1.IngressServiceBackend{
+							Name: "non-existent-default-svc",
+							Port: networkingv1.ServiceBackendPort{
+								Number: 80,
+							},
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-default-backend does not specify an Ingress class.",
+				"Ingress uses the default backend service default/non-existent-default-svc which does not exist.",
+			},
+		},
+		{
+			name: "Resource backend on default backend",
+			ingress: &networkingv1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-ingress-default-resource-backend",
+					Namespace: "default",
+				},
+				Spec: networkingv1.IngressSpec{
+					DefaultBackend: &networkingv1.IngressBackend{
+						Resource: &corev1.TypedLocalObjectReference{
+							APIGroup: &resourceBackendAPIGroup,
+							Kind:     "StorageBucket",
+							Name:     "default-static-assets",
+						},
+					},
+				},
+			},
+			expectedIssues: []string{
+				"Ingress default/test-ingress-default-resource-backend does not specify an Ingress class.",
+			},
+		},
 	}
 
 	// Run test cases
@@ -461,6 +505,48 @@ func TestIngressAnalyzerGKEIngressClass(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIngressAnalyzerDefaultBackendExistingService(t *testing.T) {
+	ingressClassName := "gce"
+	clientSet := fake.NewSimpleClientset(
+		&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "existing-default-svc",
+				Namespace: "default",
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "ingress-with-valid-default-backend",
+				Namespace: "default",
+			},
+			Spec: networkingv1.IngressSpec{
+				IngressClassName: &ingressClassName,
+				DefaultBackend: &networkingv1.IngressBackend{
+					Service: &networkingv1.IngressServiceBackend{
+						Name: "existing-default-svc",
+						Port: networkingv1.ServiceBackendPort{
+							Number: 80,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientSet,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := IngressAnalyzer{}
+	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
 }
 
 // Helper functions

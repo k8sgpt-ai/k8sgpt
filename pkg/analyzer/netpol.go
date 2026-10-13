@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -52,8 +53,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 	for _, policy := range policies.Items {
 		var failures []common.Failure
 
+		selector, err := metav1.LabelSelectorAsSelector(&policy.Spec.PodSelector)
+		if err != nil {
+			return nil, err
+		}
+
 		// Check if policy allows traffic to all pods in the namespace
-		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
+		if selector.Empty() {
 			doc := apiDoc.GetApiDocV2("spec.podSelector.matchLabels")
 
 			failures = append(failures, common.Failure{
@@ -68,7 +74,9 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			})
 		} else {
 			// Check if policy is not applied to any pods
-			podList, err := util.GetPodListByLabels(a.Client.GetClient(), policy.Namespace, policy.Spec.PodSelector.MatchLabels)
+			podList, err := a.Client.GetClient().CoreV1().Pods(policy.Namespace).List(a.Context, metav1.ListOptions{
+				LabelSelector: selector.String(),
+			})
 			if err != nil {
 				return nil, err
 			}

@@ -17,6 +17,7 @@ import (
 	"context"
 	"testing"
 
+	openapi_v2 "github.com/google/gnostic/openapiv2"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
@@ -212,4 +213,102 @@ func TestMutatingWebhookAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/webhook1", results[0].Name)
+}
+
+// webhookOpenapiSchema mirrors the shape the API server returns for
+// MutatingWebhookConfiguration: no spec, a webhooks list, and the service
+// reference nested under clientConfig.
+func webhookOpenapiSchema(kind string) *openapi_v2.Document {
+	strSchema := func(desc string) *openapi_v2.Schema {
+		return &openapi_v2.Schema{
+			Description: desc,
+			Type:        &openapi_v2.TypeItem{Value: []string{"string"}},
+		}
+	}
+	ref := func(name string) *openapi_v2.Schema {
+		return &openapi_v2.Schema{XRef: "#/definitions/" + name}
+	}
+
+	return &openapi_v2.Document{
+		Definitions: &openapi_v2.Definitions{
+			AdditionalProperties: []*openapi_v2.NamedSchema{
+				{
+					Name: "io.k8s.api.admissionregistration.v1." + kind + "WebhookConfiguration",
+					Value: &openapi_v2.Schema{
+						Properties: &openapi_v2.Properties{
+							AdditionalProperties: []*openapi_v2.NamedSchema{
+								{
+									Name: "webhooks",
+									Value: &openapi_v2.Schema{
+										Items: &openapi_v2.ItemsItem{
+											Schema: []*openapi_v2.Schema{
+												ref("io.k8s.api.admissionregistration.v1."+kind+"Webhook"),
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "io.k8s.api.admissionregistration.v1." + kind + "Webhook",
+					Value: &openapi_v2.Schema{
+						Properties: &openapi_v2.Properties{
+							AdditionalProperties: []*openapi_v2.NamedSchema{
+								{
+									Name:  "clientConfig",
+									Value: ref("io.k8s.api.admissionregistration.v1.WebhookClientConfig"),
+								},
+							},
+						},
+					},
+				},
+				{
+					Name: "io.k8s.api.admissionregistration.v1.WebhookClientConfig",
+					Value: &openapi_v2.Schema{
+						Properties: &openapi_v2.Properties{
+							AdditionalProperties: []*openapi_v2.NamedSchema{
+								{
+									Name:  "service",
+									Value: strSchema("`service` is a reference to the service for this webhook."),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func TestMutatingWebhookAnalyzerPopulatesKubernetesDoc(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&admissionregistrationv1.MutatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "mwc"},
+					Webhooks: []admissionregistrationv1.MutatingWebhook{
+						{
+							Name: "mw",
+							ClientConfig: admissionregistrationv1.WebhookClientConfig{
+								Service: &admissionregistrationv1.ServiceReference{
+									Name:      "missing-svc",
+									Namespace: "default",
+								},
+							},
+						},
+					},
+				},
+			),
+		},
+		Context:       context.Background(),
+		OpenapiSchema: webhookOpenapiSchema("Mutating"),
+	}
+
+	results, err := MutatingWebhookAnalyzer{}.Analyze(config)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Len(t, results[0].Error, 1)
+	require.NotEmpty(t, results[0].Error[0].KubernetesDoc, "KubernetesDoc should be populated when --with-doc is used")
 }

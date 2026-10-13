@@ -137,7 +137,7 @@ type AIProvider struct {
 	OrganizationId  string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
 	AzureAPIType    string        `mapstructure:"azureapitype" yaml:"azureapitype,omitempty"`
 	AzureAPIVersion string        `mapstructure:"azureapiversion" yaml:"azureapiversion,omitempty"`
-	CustomHeaders   []http.Header `mapstructure:"customHeaders"`
+	CustomHeaders   []http.Header `mapstructure:"customHeaders" yaml:"customHeaders,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
