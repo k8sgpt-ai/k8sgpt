@@ -231,6 +231,71 @@ func TestGetParent(t *testing.T) {
 	}
 }
 
+func TestGetParentStopsAtUnknownOwner(t *testing.T) {
+	namespace := "test"
+	clientset := fake.NewSimpleClientset(
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web-6d4b8",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Deployment", Name: "web"},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "WebApp", Name: "web"},
+				},
+			},
+		},
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "canary-7f9c2",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Rollout", Name: "canary"},
+				},
+			},
+		},
+	)
+	kubeClient := kubernetes.Client{
+		Client: clientset,
+	}
+
+	tests := []struct {
+		name           string
+		owner          metav1.OwnerReference
+		expectedOutput string
+	}{
+		{
+			name:           "deployment owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ReplicaSet", Name: "web-6d4b8"},
+			expectedOutput: "Deployment/web",
+		},
+		{
+			name:           "replicaset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ReplicaSet", Name: "canary-7f9c2"},
+			expectedOutput: "ReplicaSet/canary-7f9c2",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			meta := metav1.ObjectMeta{
+				Namespace:       namespace,
+				Name:            "pod",
+				OwnerReferences: []metav1.OwnerReference{tt.owner},
+			}
+			output, ok := GetParent(&kubeClient, meta)
+			require.True(t, ok)
+			require.Equal(t, tt.expectedOutput, output)
+		})
+	}
+}
+
 func TestRemoveDuplicates(t *testing.T) {
 	tests := []struct {
 		name               string
