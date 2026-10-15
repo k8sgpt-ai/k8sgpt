@@ -212,7 +212,7 @@ func TestMutatingWebhookAnalyzerLabelSelectorFiltering(t *testing.T) {
 	results, err := mwAnalyzer.Analyze(config)
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
-	require.Equal(t, "default/webhook1", results[0].Name)
+	require.Equal(t, "test-mutating-webhook-config/webhook1", results[0].Name)
 }
 
 // webhookOpenapiSchema mirrors the shape the API server returns for
@@ -242,7 +242,7 @@ func webhookOpenapiSchema(kind string) *openapi_v2.Document {
 									Value: &openapi_v2.Schema{
 										Items: &openapi_v2.ItemsItem{
 											Schema: []*openapi_v2.Schema{
-												ref("io.k8s.api.admissionregistration.v1."+kind+"Webhook"),
+												ref("io.k8s.api.admissionregistration.v1." + kind + "Webhook"),
 											},
 										},
 									},
@@ -311,4 +311,41 @@ func TestMutatingWebhookAnalyzerPopulatesKubernetesDoc(t *testing.T) {
 	require.Len(t, results, 1)
 	require.Len(t, results[0].Error, 1)
 	require.NotEmpty(t, results[0].Error[0].KubernetesDoc, "KubernetesDoc should be populated when --with-doc is used")
+}
+
+func TestMutatingWebhookAnalyzerDistinctNames(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&admissionregistrationv1.MutatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "config-a"},
+					Webhooks: []admissionregistrationv1.MutatingWebhook{{
+						Name: "hook",
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{Name: "missing", Namespace: "default"},
+						},
+					}},
+				},
+				&admissionregistrationv1.MutatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "config-b"},
+					Webhooks: []admissionregistrationv1.MutatingWebhook{{
+						Name: "hook",
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{Name: "missing", Namespace: "default"},
+						},
+					}},
+				},
+			),
+		},
+		Context: context.Background(),
+	}
+
+	results, err := MutatingWebhookAnalyzer{}.Analyze(config)
+	require.NoError(t, err)
+
+	names := map[string]bool{}
+	for _, result := range results {
+		names[result.Name] = true
+	}
+	require.Equal(t, map[string]bool{"config-a/hook": true, "config-b/hook": true}, names)
 }
