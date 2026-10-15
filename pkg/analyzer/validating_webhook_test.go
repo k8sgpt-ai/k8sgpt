@@ -246,3 +246,40 @@ func TestValidatingWebhookAnalyzerPopulatesKubernetesDoc(t *testing.T) {
 	require.Len(t, results[0].Error, 1)
 	require.NotEmpty(t, results[0].Error[0].KubernetesDoc, "KubernetesDoc should be populated when --with-doc is used")
 }
+
+func TestValidatingWebhookAnalyzerDistinctNames(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&admissionregistrationv1.ValidatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "config-a"},
+					Webhooks: []admissionregistrationv1.ValidatingWebhook{{
+						Name: "hook",
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{Name: "missing", Namespace: "default"},
+						},
+					}},
+				},
+				&admissionregistrationv1.ValidatingWebhookConfiguration{
+					ObjectMeta: metav1.ObjectMeta{Name: "config-b"},
+					Webhooks: []admissionregistrationv1.ValidatingWebhook{{
+						Name: "hook",
+						ClientConfig: admissionregistrationv1.WebhookClientConfig{
+							Service: &admissionregistrationv1.ServiceReference{Name: "missing", Namespace: "default"},
+						},
+					}},
+				},
+			),
+		},
+		Context: context.Background(),
+	}
+
+	results, err := ValidatingWebhookAnalyzer{}.Analyze(config)
+	require.NoError(t, err)
+
+	names := map[string]bool{}
+	for _, result := range results {
+		names[result.Name] = true
+	}
+	require.Equal(t, map[string]bool{"config-a/hook": true, "config-b/hook": true}, names)
+}
