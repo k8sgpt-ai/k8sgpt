@@ -22,6 +22,7 @@ import (
 	"github.com/kyverno/policy-reporter-kyverno-plugin/pkg/crd/api/policyreport/v1alpha2"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -91,6 +92,54 @@ func TestAnalyzerNamespaceFiltering(t *testing.T) {
 	assert.Equal(t, len(results), 1)
 	assert.Equal(t, results[0].Kind, "PolicyReport")
 	assert.Equal(t, results[0].Name, "test-ns/policy-1")
+}
+
+func TestAnalyzerClusterPolicyReportFailures(t *testing.T) {
+	scheme := runtime.NewScheme()
+	if err := v1alpha2.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	ctrlClient := fake.NewClientBuilder().WithScheme(scheme).WithObjects(
+		&v1alpha2.ClusterPolicyReport{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "cpol-require-labels",
+			},
+			Results: []v1alpha2.PolicyReportResult{
+				{
+					Message:  "validation error: label 'team' is required.",
+					Policy:   "require-labels",
+					Result:   "fail",
+					Severity: v1alpha2.SeverityMedium,
+				},
+				{
+					Message:  "validation rule 'check-team' passed.",
+					Policy:   "require-labels",
+					Result:   "pass",
+					Severity: v1alpha2.SeverityCritical,
+				},
+			},
+		},
+	).Build()
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: ctrlClient,
+		},
+		Context: context.Background(),
+	}
+
+	analyzer := KyvernoAnalyzer{
+		clusterReportAnalysis: true,
+	}
+	results, err := analyzer.Analyze(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	require.Len(t, results, 1)
+	assert.Equal(t, "ClusterPolicyReport", results[0].Kind)
+	require.Len(t, results[0].Error, 1)
+	assert.Equal(t, "policy failure: require-labels (message: validation error: label 'team' is required.)", results[0].Error[0].Text)
 }
 
 func TestAnalyzerAllNamespace(t *testing.T) {
