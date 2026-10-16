@@ -16,8 +16,10 @@ package ai
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 
 	ollama "github.com/ollama/ollama/api"
 )
@@ -77,6 +79,41 @@ func (c *OllamaClient) Configure(config IAIConfig) error {
 	return nil
 }
 func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
+	listResp, err := c.client.List(ctx)
+	if err != nil {
+		return "", err
+	}
+	modelExists := false
+	for _, m := range listResp.Models {
+		if m.Name == c.model || m.Name == c.model+":latest" {
+			modelExists = true
+			break
+		}
+	}
+	if !modelExists {
+		if os.Getenv("K8SGPT_OLLAMA_AUTO_PULL") != "true" {
+			return "", fmt.Errorf("model '%s' is required but not installed; set K8SGPT_OLLAMA_AUTO_PULL=true to download automatically", c.model)
+		}
+
+		fmt.Printf("\n[Ollama] Pulling model %s... Please wait.\n", c.model)
+
+		pullReq := &ollama.PullRequest{Model: c.model}
+		progressFunc := func(resp ollama.ProgressResponse) error {
+			if resp.Total > 0 {
+				fmt.Printf("\r[Ollama] Status: %s (%.2f%%)", resp.Status, float64(resp.Completed)/float64(resp.Total)*100)
+			} else {
+				fmt.Printf("\r[Ollama] Status: %s", resp.Status)
+			}
+			return nil
+		}
+		err := c.client.Pull(ctx, pullReq, progressFunc)
+		if err != nil {
+			return "", fmt.Errorf("failed to pull model: %v", err)
+		}
+
+		fmt.Printf("\n[Ollama] Successfully pulled model %s!\n", c.model)
+	}
+
 	req := &ollama.GenerateRequest{
 		Model:  c.model,
 		Prompt: prompt,
@@ -91,7 +128,7 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 		completion = resp.Response
 		return nil
 	}
-	err := c.client.Generate(ctx, req, respFunc)
+	err = c.client.Generate(ctx, req, respFunc)
 	if err != nil {
 		return "", err
 	}
