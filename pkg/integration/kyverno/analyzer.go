@@ -97,11 +97,11 @@ func (t KyvernoAnalyzer) analyzeClusterPolicyReports(a common.Analyzer) ([]commo
 		// For each pod there may be multiple vulnerabilities
 		var failures []common.Failure
 		for _, vuln := range report.Results {
-			if vuln.Severity == "CRITICAL" {
+			if vuln.Result == "fail" {
 				// get the vulnerability ID
 				// get the vulnerability description
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.ID, vuln.Source),
+					Text:      fmt.Sprintf("policy failure: %s (message: %s)", vuln.Policy, vuln.Message),
 					Sensitive: []common.Sensitive{},
 				})
 			}
