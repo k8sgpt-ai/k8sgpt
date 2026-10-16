@@ -161,6 +161,54 @@ func TestStatefulSetAnalyzerMissingStorageClass(t *testing.T) {
 
 }
 
+func TestStatefulSetAnalyzerEmptyStorageClassName(t *testing.T) {
+	storageClassName := ""
+	clientset := fake.NewSimpleClientset(
+		&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example-svc",
+				Namespace: "default",
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+					{
+						ObjectMeta: metav1.ObjectMeta{
+							Name: "pvc-example",
+						},
+						Spec: corev1.PersistentVolumeClaimSpec{
+							StorageClassName: &storageClassName,
+						},
+					},
+				},
+			},
+		})
+	statefulSetAnalyzer := StatefulSetAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := statefulSetAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			t.Errorf("unexpected failure for %s: %s", analysis.Name, got.Text)
+		}
+	}
+}
+
 func TestStatefulSetAnalyzerNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&appsv1.StatefulSet{

@@ -43,31 +43,14 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 		for _, nodeCondition := range node.Status.Conditions {
 			// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-			switch {
-			// The EKS node monitoring agent conditions follow the Ready convention:
-			// True means the monitored subsystem is healthy, so only a non-True
-			// status is a failure.
-			case nodeCondition.Type == v1.NodeReady, isEKSNodeMonitoringAgentConditionType(nodeCondition.Type):
-				if nodeCondition.Status != v1.ConditionTrue {
-					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
-				}
-			// node-problem-detector conditions name a problem: False means the
-			// problem has not been detected, so only a non-False status is a
-			// failure.
-			case isNodeProblemDetectorConditionType(nodeCondition.Type):
-				if nodeCondition.Status != v1.ConditionFalse {
-					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
-				}
-			// k3s `EtcdIsVoter`` should not be reported as an error
-			case nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter"):
-				break
-			default:
-				// For other conditions:
-				// - Report True or Unknown status as failures (for standard conditions)
-				// - Report any unknown condition type as a failure
-				if nodeCondition.Status == v1.ConditionTrue || nodeCondition.Status == v1.ConditionUnknown || !isKnownNodeConditionType(nodeCondition.Type) {
-					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
-				}
+			// k3s `EtcdIsVoter` should not be reported as an error
+			if nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter") {
+				continue
+			}
+			// A condition type we do not know is reported whatever its status.
+			healthy, known := healthyNodeConditionStatus(nodeCondition.Type)
+			if !known || nodeCondition.Status != healthy {
+				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 			}
 		}
 
@@ -111,31 +94,26 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 	return failures
 }
 
-// isEKSNodeMonitoringAgentConditionType checks if the condition type is set by the
-// Amazon EKS node monitoring agent. These conditions are True while the monitored
-// subsystem is healthy and False when a problem is detected, the same as Ready.
-// https://docs.aws.amazon.com/eks/latest/userguide/node-health.html
-func isEKSNodeMonitoringAgentConditionType(conditionType v1.NodeConditionType) bool {
+// healthyNodeConditionStatus returns the status a node condition has while the
+// node is healthy, and false if the condition type is not known.
+func healthyNodeConditionStatus(conditionType v1.NodeConditionType) (v1.ConditionStatus, bool) {
 	switch conditionType {
-	case "AcceleratedHardwareReady",
+	case v1.NodeReady,
+		// Amazon EKS node monitoring agent
+		// https://docs.aws.amazon.com/eks/latest/userguide/node-health.html
+		"AcceleratedHardwareReady",
 		"ContainerRuntimeReady",
 		"KernelReady",
 		"NetworkingReady",
 		"StorageReady":
-		return true
-	default:
-		return false
-	}
-}
-
-// isNodeProblemDetectorConditionType checks if the condition type is set by
-// node-problem-detector with one of the configs in its repository. These
-// conditions are False while no problem is detected and True when a problem is
-// found.
-// https://github.com/kubernetes/node-problem-detector
-func isNodeProblemDetectorConditionType(conditionType v1.NodeConditionType) bool {
-	switch conditionType {
-	case "ContainerRuntimeUnhealthy",
+		return v1.ConditionTrue, true
+	case v1.NodeMemoryPressure,
+		v1.NodeDiskPressure,
+		v1.NodePIDPressure,
+		v1.NodeNetworkUnavailable,
+		// node-problem-detector
+		// https://github.com/kubernetes/node-problem-detector
+		"ContainerRuntimeUnhealthy",
 		"CorruptDockerOverlay2",
 		"CperHardwareErrorFatal",
 		"DiskBadBlock",
@@ -149,22 +127,8 @@ func isNodeProblemDetectorConditionType(conditionType v1.NodeConditionType) bool
 		"NTPProblem",
 		"ReadonlyFilesystem",
 		"XfsShutdown":
-		return true
+		return v1.ConditionFalse, true
 	default:
-		return false
-	}
-}
-
-// isKnownNodeConditionType checks if the condition type is a standard Kubernetes node condition
-func isKnownNodeConditionType(conditionType v1.NodeConditionType) bool {
-	switch conditionType {
-	case v1.NodeReady,
-		v1.NodeMemoryPressure,
-		v1.NodeDiskPressure,
-		v1.NodePIDPressure,
-		v1.NodeNetworkUnavailable:
-		return true
-	default:
-		return false
+		return "", false
 	}
 }
