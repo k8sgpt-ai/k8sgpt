@@ -126,6 +126,30 @@ func TestScaledObjectAnalyzerReportsMissingTargetWithoutEvent(t *testing.T) {
 	assert.Equal(t, "ScaledObject uses Deployment/missing as ScaleTargetRef which does not exist.", results[0].Error[0].Text)
 }
 
+// TestScaledObjectAnalyzerUnsupportedScaleTargetReportedOnce verifies that a
+// kind the analyzer does not look up is not also reported as missing.
+func TestScaledObjectAnalyzerUnsupportedScaleTargetReportedOnce(t *testing.T) {
+	so := cpuScaledObject("example", "default")
+	so.Spec.ScaleTargetRef.Kind = "Rollout"
+	srv := newScaledObjectServer(t, []kedaSchema.ScaledObject{so})
+	defer srv.Close()
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(),
+			Config: &rest.Config{Host: srv.URL},
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	results, err := (&ScaledObjectAnalyzer{}).Analyze(config)
+	assert.NoError(t, err)
+	assert.Len(t, results, 1)
+	assert.Len(t, results[0].Error, 1)
+	assert.Equal(t, "ScaledObject uses Rollout as ScaleTargetRef which is not an option.", results[0].Error[0].Text)
+}
+
 // TestScaledObjectAnalyzerReportsWarningEvent verifies the event-based failure
 // path still works: a non-Normal event message is surfaced.
 func TestScaledObjectAnalyzerReportsWarningEvent(t *testing.T) {

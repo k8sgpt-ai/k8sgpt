@@ -72,7 +72,7 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 						},
 					},
 				})
-				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+				preAnalysis[webhookResultName(webhookConfig.Name, webhook.Name)] = common.PreAnalysis{
 					ValidatingWebhook: webhookConfig,
 					FailureDetails:    failures,
 				}
@@ -133,7 +133,7 @@ func (ValidatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, er
 				}
 			}
 			if len(failures) > 0 {
-				preAnalysis[fmt.Sprintf("%s/%s", webhookConfig.Namespace, webhook.Name)] = common.PreAnalysis{
+				preAnalysis[webhookResultName(webhookConfig.Name, webhook.Name)] = common.PreAnalysis{
 					ValidatingWebhook: webhookConfig,
 					FailureDetails:    failures,
 				}

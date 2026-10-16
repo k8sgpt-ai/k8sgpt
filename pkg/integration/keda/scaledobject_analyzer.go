@@ -41,6 +41,7 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		}
 
 		var podInfo PodInfo
+		supportedKind := true
 
 		switch scaleTargetRef.Kind {
 		case "Deployment":
@@ -64,6 +65,7 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 				podInfo = StatefulSetInfo{ss}
 			}
 		default:
+			supportedKind = false
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("ScaledObject uses %s as ScaleTargetRef which is not an option.", scaleTargetRef.Kind),
 				Sensitive: []common.Sensitive{},
@@ -71,18 +73,20 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 		}
 
 		if podInfo == nil {
-			doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
+			if supportedKind {
+				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
 
-			failures = append(failures, common.Failure{
-				Text:          fmt.Sprintf("ScaledObject uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
-				KubernetesDoc: doc,
-				Sensitive: []common.Sensitive{
-					{
-						Unmasked: scaleTargetRef.Name,
-						Masked:   util.MaskString(scaleTargetRef.Name),
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("ScaledObject uses %s/%s as ScaleTargetRef which does not exist.", scaleTargetRef.Kind, scaleTargetRef.Name),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: scaleTargetRef.Name,
+							Masked:   util.MaskString(scaleTargetRef.Name),
+						},
 					},
-				},
-			})
+				})
+			}
 		} else {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {
