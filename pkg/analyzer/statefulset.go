@@ -79,7 +79,9 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 		if len(sts.Spec.VolumeClaimTemplates) > 0 {
 			for _, volumeClaimTemplate := range sts.Spec.VolumeClaimTemplates {
-				if volumeClaimTemplate.Spec.StorageClassName != nil {
+				// An empty storageClassName asks for a PV with no class, so there is
+				// no StorageClass to look up.
+				if volumeClaimTemplate.Spec.StorageClassName != nil && *volumeClaimTemplate.Spec.StorageClassName != "" {
 					_, err := a.Client.GetClient().StorageV1().StorageClasses().Get(a.Context, *volumeClaimTemplate.Spec.StorageClassName, metav1.GetOptions{})
 					if err != nil {
 						failures = append(failures, common.Failure{
