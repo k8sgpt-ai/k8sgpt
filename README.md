@@ -283,6 +283,7 @@ you will be able to write your own analyzers.
 - [x] Subscription
 - [x] ValidatingAdmissionPolicy
 - [x] ResourceClaim
+- [x] NodeClaim
 
 ## Examples
 
