@@ -47,8 +47,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if rs.OwnerReferences != nil {
-					return GetParent(client, rs.ObjectMeta)
+				if parent, found := GetParent(client, rs.ObjectMeta); found {
+					return parent, true
 				}
 				return "ReplicaSet/" + rs.Name, true
 
@@ -57,8 +57,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if dep.OwnerReferences != nil {
-					return GetParent(client, dep.ObjectMeta)
+				if parent, found := GetParent(client, dep.ObjectMeta); found {
+					return parent, true
 				}
 				return "Deployment/" + dep.Name, true
 
@@ -67,8 +67,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if sts.OwnerReferences != nil {
-					return GetParent(client, sts.ObjectMeta)
+				if parent, found := GetParent(client, sts.ObjectMeta); found {
+					return parent, true
 				}
 				return "StatefulSet/" + sts.Name, true
 
@@ -77,8 +77,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if ds.OwnerReferences != nil {
-					return GetParent(client, ds.ObjectMeta)
+				if parent, found := GetParent(client, ds.ObjectMeta); found {
+					return parent, true
 				}
 				return "DaemonSet/" + ds.Name, true
 
@@ -87,8 +87,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if ds.OwnerReferences != nil {
-					return GetParent(client, ds.ObjectMeta)
+				if parent, found := GetParent(client, ds.ObjectMeta); found {
+					return parent, true
 				}
 				return "Ingress/" + ds.Name, true
 
@@ -97,8 +97,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if mw.OwnerReferences != nil {
-					return GetParent(client, mw.ObjectMeta)
+				if parent, found := GetParent(client, mw.ObjectMeta); found {
+					return parent, true
 				}
 				return "MutatingWebhook/" + mw.Name, true
 
@@ -107,8 +107,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if vw.OwnerReferences != nil {
-					return GetParent(client, vw.ObjectMeta)
+				if parent, found := GetParent(client, vw.ObjectMeta); found {
+					return parent, true
 				}
 				return "ValidatingWebhook/" + vw.Name, true
 			}
