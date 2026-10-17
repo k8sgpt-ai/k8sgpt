@@ -233,7 +233,7 @@ func TestNodeClaimAnalyzer_CRDNotInstalled(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected an error when the NodeClaim CRD is not installed")
 	}
-	if !strings.Contains(err.Error(), "is Karpenter installed?") {
+	if !strings.Contains(err.Error(), "karpenter.sh/v1 NodeClaim: CRD not installed") {
 		t.Errorf("expected a helpful CRD-not-found error, got %v", err)
 	}
 	if !apierrors.IsNotFound(err) {

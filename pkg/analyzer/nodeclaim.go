@@ -59,7 +59,7 @@ func (NodeClaimAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		List(a.Context, a.ListOptions())
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			return nil, fmt.Errorf("karpenter.sh/v1 NodeClaim CRD not found; is Karpenter installed?: %w", err)
+			return nil, fmt.Errorf("karpenter.sh/v1 NodeClaim: CRD not installed: %w", err)
 		}
 		return nil, err
 	}

@@ -283,7 +283,7 @@ you will be able to write your own analyzers.
 - [x] Subscription
 - [x] ValidatingAdmissionPolicy
 - [x] ResourceClaim
-- [x] NodeClaim
+- [x] NodeClaim (Karpenter v1; cluster-scoped, so `--namespace` does not apply)
 
 ## Examples
 
