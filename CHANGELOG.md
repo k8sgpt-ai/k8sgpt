@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.4.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.40...v0.4.41) (2026-10-17)
+
+
+### Features
+
+* enable to source customHeaders from the config file ([#1339](https://github.com/k8sgpt-ai/k8sgpt/issues/1339)) ([37b87f1](https://github.com/k8sgpt-ai/k8sgpt/commit/37b87f16fbe204d5e5ef04f300721a023d9824d0))
+
+
+### Bug Fixes
+
+* accept an empty storageClassName in StatefulSet claim templates ([#1830](https://github.com/k8sgpt-ai/k8sgpt/issues/1830)) ([642c3a4](https://github.com/k8sgpt-ai/k8sgpt/commit/642c3a4f8057b46e5b10c3d57feac5b53a37f660))
+* do not report an unsupported KEDA scaleTargetRef as missing ([#1831](https://github.com/k8sgpt-ai/k8sgpt/issues/1831)) ([7fd1b40](https://github.com/k8sgpt-ai/k8sgpt/commit/7fd1b40b7b75bedc2d31fb52480077f38db2a4fb))
+* honor matchExpressions in NetworkPolicy pod selectors ([#1818](https://github.com/k8sgpt-ai/k8sgpt/issues/1818)) ([e8a8a1d](https://github.com/k8sgpt-ai/k8sgpt/commit/e8a8a1d954cae24796cf9dacc5cc3d30392bd62f))
+* honor the namespace filter in the Gateway API analyzers ([#1826](https://github.com/k8sgpt-ai/k8sgpt/issues/1826)) ([33935bf](https://github.com/k8sgpt-ai/k8sgpt/commit/33935bf60d1132ca7122368ff5c2df9190b32fbb))
+* keep the known parent when the top owner has an unsupported kind ([#1833](https://github.com/k8sgpt-ai/k8sgpt/issues/1833)) ([bf4432b](https://github.com/k8sgpt-ai/k8sgpt/commit/bf4432ba8095781954bab356e9c369a7ca9f9454))
+* keep webhook findings when configurations share a webhook name ([#1827](https://github.com/k8sgpt-ai/k8sgpt/issues/1827)) ([912a7cb](https://github.com/k8sgpt-ai/k8sgpt/commit/912a7cb923e204b241bb8b60c048725bd2edc03a))
+* match HTTPRoute namespace selectors against the namespace ([#1825](https://github.com/k8sgpt-ai/k8sgpt/issues/1825)) ([9a8398e](https://github.com/k8sgpt-ai/k8sgpt/commit/9a8398ee4c62b85479de07c75671f1609391119d))
+* recognize node-problem-detector node conditions ([#1821](https://github.com/k8sgpt-ai/k8sgpt/issues/1821)) ([7a22730](https://github.com/k8sgpt-ai/k8sgpt/commit/7a227303d8ec4164c49e0dc9342984d88ee2cdb5))
+* report failed results in Kyverno ClusterPolicyReports ([#1832](https://github.com/k8sgpt-ai/k8sgpt/issues/1832)) ([70fdcdc](https://github.com/k8sgpt-ai/k8sgpt/commit/70fdcdc043964e98bdaf1d76262b00a257b63d38))
+
+
+### Other
+
+* **deps:** update goreleaser/goreleaser-action digest to a4f02ab ([#1829](https://github.com/k8sgpt-ai/k8sgpt/issues/1829)) ([d9a9352](https://github.com/k8sgpt-ai/k8sgpt/commit/d9a935249370e1fe2737eec0f7541dcfc07fd25d))
+* **deps:** update module github.com/containerd/containerd to v1.7.36 [security] ([#1834](https://github.com/k8sgpt-ai/k8sgpt/issues/1834)) ([bd42af7](https://github.com/k8sgpt-ai/k8sgpt/commit/bd42af70d3ba55eb328241b59555949ef49450fa))
+* **deps:** update module github.com/moby/spdystream to v0.5.1 [security] ([#1835](https://github.com/k8sgpt-ai/k8sgpt/issues/1835)) ([4c58db4](https://github.com/k8sgpt-ai/k8sgpt/commit/4c58db4dcef42d2094ee5534f9488e048da328ea))
+* **deps:** update module go.opentelemetry.io/otel/sdk to v1.45.0 [security] ([#1836](https://github.com/k8sgpt-ai/k8sgpt/issues/1836)) ([67b7f13](https://github.com/k8sgpt-ai/k8sgpt/commit/67b7f1379bd79531163eee4e6b0c180ad083e84b))
+
+
+### Refactoring
+
+* look up the healthy status of each node condition type ([#1838](https://github.com/k8sgpt-ai/k8sgpt/issues/1838)) ([130cc09](https://github.com/k8sgpt-ai/k8sgpt/commit/130cc090732058f8f32c5a6068cc54afe6483854))
+
 ## [0.4.40](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.39...v0.4.40) (2026-10-09)
 
 
