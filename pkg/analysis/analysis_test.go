@@ -874,6 +874,54 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 	require.Len(t, a.Results[0].Error, 1)
 }
 
+// With --filter set, only custom analyzers whose name is among the filters run
+// (#1374): the filtered-out analyzer contributes nothing, while the selected one
+// still records its result. Filter names matching no custom analyzer are not an
+// error, so --filter can mix built-in and custom analyzers.
+func TestRunCustomAnalysisRespectsFilters(t *testing.T) {
+	host, port := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{
+			Name:  "SelectedAnalyzer",
+			Error: []*schemav1.ErrorDetail{{Text: "something is wrong"}},
+		},
+	})
+	viper.Set("verbose", false)
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "SelectedAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
+		{"name": "OtherAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	a := &Analysis{MaxConcurrency: 1, Filters: []string{"SelectedAnalyzer", "Pod"}}
+	a.RunCustomAnalysis()
+
+	require.Empty(t, a.Errors)
+	require.Len(t, a.Results, 1, "only the filtered-in analyzer may run")
+	require.Equal(t, "SelectedAnalyzer", a.Results[0].Name)
+}
+
+// Without filters every configured custom analyzer still runs.
+func TestRunCustomAnalysisWithoutFiltersRunsAll(t *testing.T) {
+	host, port := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{
+			Name:  "AnalyzerA",
+			Error: []*schemav1.ErrorDetail{{Text: "something is wrong"}},
+		},
+	})
+	viper.Set("verbose", false)
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "AnalyzerA", "connection": map[string]interface{}{"url": host, "port": port}},
+		{"name": "AnalyzerB", "connection": map[string]interface{}{"url": host, "port": port}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	a := &Analysis{MaxConcurrency: 1}
+	a.RunCustomAnalysis()
+
+	require.Empty(t, a.Errors)
+	require.Len(t, a.Results, 2, "both analyzers must run when no filter is set")
+}
+
 func TestNewAnalysis_CustomHeaders(t *testing.T) {
 	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
 		return &kubernetes.Client{

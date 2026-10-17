@@ -295,6 +295,21 @@ func (a *Analysis) RunCustomAnalysis() {
 			fmt.Printf("Debug: Found custom analyzers %v.\n", cAnalyzerNames)
 		}
 	}
+	// A --filter flag selects custom analyzers by name, mirroring how it selects
+	// core analyzers (#1374): when filters are set, analyzers whose Name is not
+	// among them are skipped entirely. Names that match no custom analyzer are
+	// not an error, so --filter can mix built-in and custom analyzers.
+	if len(a.Filters) != 0 {
+		filtered := make([]custom.CustomAnalyzer, 0, len(customAnalyzers))
+		for _, cAnalyzer := range customAnalyzers {
+			if slices.Contains(a.Filters, cAnalyzer.Name) {
+				filtered = append(filtered, cAnalyzer)
+			} else if verbose {
+				fmt.Printf("Debug: %s skipped, not selected by filters %v.\n", cAnalyzer.Name, a.Filters)
+			}
+		}
+		customAnalyzers = filtered
+	}
 	for _, cAnalyzer := range customAnalyzers {
 		wg.Add(1)
 		semaphore <- struct{}{}
