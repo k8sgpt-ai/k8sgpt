@@ -68,6 +68,7 @@ var additionalAnalyzerMap = map[string]common.IAnalyzer{
 	"ValidatingAdmissionPolicy": ValidatingAdmissionPolicyAnalyzer{},
 	"ResourceClaim":             ResourceClaimAnalyzer{},
 	"NodeClaim":                 NodeClaimAnalyzer{},
+	"NodePool":                  NodePoolAnalyzer{},
 }
 
 func ListFilters() ([]string, []string, []string) {
