@@ -44,6 +44,7 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 	result := JsonOutput{
 		Provider: a.AnalysisAIProvider,
 		Problems: problems,
+		Excluded: a.Excluded,
 		Results:  a.Results,
 		Errors:   a.Errors,
 		Status:   status,

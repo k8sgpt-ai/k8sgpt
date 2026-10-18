@@ -44,6 +44,7 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 		config.RunCustomAnalysis()
 	}
 	config.RunAnalysis()
+	config.ApplyExclusions()
 
 	if i.Explain {
 		err := config.GetAIResults(i.Output, i.Anonymize)

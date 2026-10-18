@@ -62,6 +62,7 @@ type Analysis struct {
 	WithDoc            bool
 	WithStats          bool
 	Stats              []common.AnalysisStats
+	Excluded           int // failures muted by the exclusions config (issue #372)
 }
 
 type (
@@ -79,6 +80,7 @@ type JsonOutput struct {
 	Errors   AnalysisErrors  `json:"errors"`
 	Status   AnalysisStatus  `json:"status"`
 	Problems int             `json:"problems"`
+	Excluded int             `json:"excluded,omitempty"`
 	Results  []common.Result `json:"results"`
 }
 
