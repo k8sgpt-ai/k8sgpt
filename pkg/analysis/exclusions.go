@@ -63,16 +63,32 @@ func (a *Analysis) loadExclusions() []Exclusion {
 			continue
 		}
 		if ex.Expires != "" {
-			if expiry, err := time.Parse(time.RFC3339, ex.Expires); err != nil {
+			expiry, err := parseExpiry(ex.Expires)
+			if err != nil {
 				a.Errors = append(a.Errors, fmt.Sprintf("[exclusions] invalid expires %q: %s", ex.Expires, err))
 				continue
-			} else if !now.Before(expiry) {
+			}
+			if !now.Before(expiry) {
 				continue // expired: the finding surfaces again
 			}
 		}
 		live = append(live, ex)
 	}
 	return live
+}
+
+// parseExpiry accepts both the documented date-only form ("2026-12-31") and a
+// full RFC 3339 timestamp. A date-only value expires at the end of that day in
+// local time, so an exclusion written for a day still covers that day.
+func parseExpiry(value string) (time.Time, error) {
+	if expiry, err := time.Parse(time.RFC3339, value); err == nil {
+		return expiry, nil
+	}
+	date, err := time.ParseInLocation(time.DateOnly, value, time.Local)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("expected a date (2006-01-02) or RFC 3339 timestamp (2006-01-02T15:04:05Z)")
+	}
+	return date.AddDate(0, 0, 1), nil
 }
 
 // ApplyExclusions drops findings muted by the exclusions config, analyzer-
