@@ -19,8 +19,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -208,22 +210,27 @@ func NewAnalysis(
 
 	aiClient := ai.NewClient(aiProvider.Name)
 
-	var headerStrings []string
+	customHeaders := util.NewHeaders(httpHeaders)
 
-	// If AI provider has custom headers in config, use those first
-	if len(aiProvider.CustomHeaders) > 0 {
-		for _, header := range aiProvider.CustomHeaders {
-			for key, values := range header {
-				for _, value := range values {
-					headerStrings = append(headerStrings, fmt.Sprintf("%s:%s", key, value))
-				}
-			}
+	// Merge CLI and config headers, with CLI headers having higher priority
+	var cliHeaderKeys []string
+	for _, header := range customHeaders {
+		for key := range header {
+			cliHeaderKeys = append(cliHeaderKeys, http.CanonicalHeaderKey(key))
 		}
-	} else if len(httpHeaders) > 0 {
-		headerStrings = httpHeaders
 	}
 
-	customHeaders := util.NewHeaders(headerStrings)
+	for _, header := range aiProvider.CustomHeaders {
+		filteredCopy := header.Clone()
+		for key := range header {
+			if slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
+				delete(filteredCopy, key)
+			}
+		}
+		if len(filteredCopy) > 0 {
+			customHeaders = append(customHeaders, filteredCopy)
+		}
+	}
 
 	aiProvider.CustomHeaders = customHeaders
 	if verbose {
@@ -300,6 +307,13 @@ func (a *Analysis) RunCustomAnalysis() {
 				mutex.Unlock()
 				return
 			}
+			defer func() {
+				if cerr := canClient.Close(); cerr != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("Client close error for %s analyzer", cAnalyzer.Name))
+					mutex.Unlock()
+				}
+			}()
 			if verbose {
 				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
 			}
@@ -709,7 +723,7 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	inputKey := strings.Join(texts, " ")
 	// Check for cached data.
 	// TODO(bwplotka): This might depend on model too (or even other client configuration pieces), fix it in later PRs.
-	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, inputKey)
+	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, promptTmpl+inputKey)
 
 	if !a.Cache.IsCacheDisabled() && a.Cache.Exists(cacheKey) {
 		response, err := a.Cache.Load(cacheKey)
@@ -719,10 +733,13 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 		if response != "" {
 			output, err := base64.StdEncoding.DecodeString(response)
-			if err == nil {
+			if err != nil {
+				color.Red("error decoding cached data; ignoring cache item: %v", err)
+			} else if strings.TrimSpace(string(output)) != "" {
 				return string(output), nil
+			} else {
+				color.Red("cached data is empty; ignoring cache item")
 			}
-			color.Red("error decoding cached data; ignoring cache item: %v", err)
 		}
 	}
 

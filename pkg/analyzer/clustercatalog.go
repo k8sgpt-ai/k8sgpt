@@ -25,6 +25,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+var resolvedImageRefDigest = regexp.MustCompile(`@sha256:[a-f0-9]{64}$`)
+
 type ClusterCatalogAnalyzer struct{}
 
 func (ClusterCatalogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
@@ -60,7 +62,6 @@ func (ClusterCatalogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error
 		if err != nil {
 			continue
 		}
-		fmt.Printf("ClusterCatalog: %s | Source: %s\n", catalog.Name, catalog.Spec.Source.Image.Ref)
 		failures, err = ValidateClusterCatalog(failures, catalog)
 		if err != nil {
 			continue
@@ -128,16 +129,18 @@ func addCatalogFailure(failures []common.Failure, catalogName string, err error)
 }
 
 func ValidateClusterCatalog(failures []common.Failure, catalog *common.ClusterCatalog) ([]common.Failure, error) {
-	if !isValidImageRef(catalog.Spec.Source.Image.Ref) {
+	if catalog.Spec.Source.Image == nil {
+		failures = addCatalogFailure(failures, catalog.Name, fmt.Errorf("missing spec.source.image"))
+	} else if !isValidImageRef(catalog.Spec.Source.Image.Ref) {
 		failures = addCatalogFailure(failures, catalog.Name, fmt.Errorf("invalid image ref format in spec.source.image.ref: %s", catalog.Spec.Source.Image.Ref))
 	}
 
 	// Check status.resolvedSource.image.ref ends with @sha256:...
 	if catalog.Status.ResolvedSource != nil {
-		if catalog.Status.ResolvedSource.Image.Ref == "" {
+		switch {
+		case catalog.Status.ResolvedSource.Image == nil || catalog.Status.ResolvedSource.Image.Ref == "":
 			failures = addCatalogFailure(failures, catalog.Name, fmt.Errorf("missing status.resolvedSource.image.ref"))
-		}
-		if !regexp.MustCompile(`@sha256:[a-f0-9]{64}$`).MatchString(catalog.Status.ResolvedSource.Image.Ref) {
+		case !resolvedImageRefDigest.MatchString(catalog.Status.ResolvedSource.Image.Ref):
 			failures = addCatalogFailure(failures, catalog.Name, fmt.Errorf("status.resolvedSource.image.ref must end with @sha256:<digest>"))
 		}
 	}

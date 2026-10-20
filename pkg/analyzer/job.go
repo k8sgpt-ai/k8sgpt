@@ -73,11 +73,29 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 		// SuccessCriteriaMet) should not be reported as failed even when
 		// Status.Failed is non-zero: failed attempts that were retried within
 		// backoffLimit are normal and the Job is healthy.
-		if Job.Status.Failed > 0 && !jobHasSucceeded(Job) {
+		failedCond := jobFailedCondition(Job)
+		if (failedCond != nil || Job.Status.Failed > 0) && !jobHasSucceeded(Job) {
 			doc := apiDoc.GetApiDocV2("status.failed")
 
+			failureText := fmt.Sprintf("Job %s has failed", Job.Name)
+			if failedCond != nil && failedCond.Message != "" {
+				failureText = failedCond.Message
+			}
+
+			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
+				Kind:      kind,
+				Namespace: Job.Namespace,
+				Name:      Job.Name,
+				UID:       Job.UID,
+			})
+
+			// Check for Event BackoffLimitExceeded or DeadlineExceeded
+			if evt != nil && err == nil && (evt.Reason == "BackoffLimitExceeded" || evt.Reason == "DeadlineExceeded") && evt.Message != "" {
+				failureText = evt.Message
+			}
+
 			failure := common.Failure{
-				Text:          fmt.Sprintf("Job %s has failed", Job.Name),
+				Text:          failureText,
 				KubernetesDoc: doc,
 				Sensitive: []common.Sensitive{
 					{
@@ -89,18 +107,6 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 						Masked:   util.MaskString(Job.Name),
 					},
 				},
-			}
-
-			evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
-				Kind:      kind,
-				Namespace: Job.Namespace,
-				Name:      Job.Name,
-				UID:       Job.UID,
-			})
-
-			// Check for Event BackoffLimitExceeded
-			if evt != nil && err == nil && evt.Reason == "BackoffLimitExceeded" && evt.Message != "" {
-				failure.Text = evt.Message
 			}
 
 			failures = append(failures, failure)
@@ -124,6 +130,17 @@ func (analyzer JobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 
 	return a.Results, nil
+}
+
+// jobFailedCondition returns the JobCondition if the Job has reached a failed
+// terminal state.
+func jobFailedCondition(job batchv1.Job) *batchv1.JobCondition {
+	for _, condition := range job.Status.Conditions {
+		if condition.Status == corev1.ConditionTrue && condition.Type == batchv1.JobFailed {
+			return &condition
+		}
+	}
+	return nil
 }
 
 // jobHasSucceeded reports whether the Job has reached a successful terminal

@@ -67,3 +67,29 @@ func TestProviderFromEnvReturnsFalseWhenUnset(t *testing.T) {
 		t.Fatalf("expected no provider, got %#v", provider)
 	}
 }
+
+// A restart with a config that already holds the provider must still honour
+// K8SGPT_BACKEND; before the fix it fell back to the "openai" flag default.
+func TestResolveBackendPrefersEnvOverFlagDefault(t *testing.T) {
+	t.Setenv("K8SGPT_BACKEND", "google")
+
+	if got := resolveBackend(false, "openai"); got != "google" {
+		t.Fatalf("expected K8SGPT_BACKEND to override the unchanged flag default, got %q", got)
+	}
+}
+
+func TestResolveBackendKeepsExplicitFlag(t *testing.T) {
+	t.Setenv("K8SGPT_BACKEND", "google")
+
+	if got := resolveBackend(true, "localai"); got != "localai" {
+		t.Fatalf("expected an explicitly set --backend to win over the environment, got %q", got)
+	}
+}
+
+func TestResolveBackendKeepsDefaultWhenEnvUnset(t *testing.T) {
+	t.Setenv("K8SGPT_BACKEND", "")
+
+	if got := resolveBackend(false, "openai"); got != "openai" {
+		t.Fatalf("expected the flag default to be kept when K8SGPT_BACKEND is unset, got %q", got)
+	}
+}

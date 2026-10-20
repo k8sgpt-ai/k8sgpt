@@ -79,7 +79,9 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 		if len(sts.Spec.VolumeClaimTemplates) > 0 {
 			for _, volumeClaimTemplate := range sts.Spec.VolumeClaimTemplates {
-				if volumeClaimTemplate.Spec.StorageClassName != nil {
+				// An empty storageClassName asks for a PV with no class, so there is
+				// no StorageClass to look up.
+				if volumeClaimTemplate.Spec.StorageClassName != nil && *volumeClaimTemplate.Spec.StorageClassName != "" {
 					_, err := a.Client.GetClient().StorageV1().StorageClasses().Get(a.Context, *volumeClaimTemplate.Spec.StorageClassName, metav1.GetOptions{})
 					if err != nil {
 						failures = append(failures, common.Failure{
@@ -96,11 +98,15 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 		if sts.Spec.Replicas != nil && *(sts.Spec.Replicas) != sts.Status.AvailableReplicas {
-			for i := int32(0); i < *(sts.Spec.Replicas); i++ {
+			startOrdinal := int32(0)
+			if sts.Spec.Ordinals != nil {
+				startOrdinal = sts.Spec.Ordinals.Start
+			}
+			for i := startOrdinal; i < startOrdinal+*(sts.Spec.Replicas); i++ {
 				podName := sts.Name + "-" + fmt.Sprint(i)
 				pod, err := a.Client.GetClient().CoreV1().Pods(sts.Namespace).Get(a.Context, podName, metav1.GetOptions{})
 				if err != nil {
-					if errors.IsNotFound(err) && i == 0 {
+					if errors.IsNotFound(err) && i == startOrdinal {
 						evt, err := util.FetchLatestEvent(a.Context, a.Client, corev1.ObjectReference{
 							Kind:      kind,
 							Namespace: sts.Namespace,

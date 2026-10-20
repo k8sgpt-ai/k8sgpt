@@ -42,7 +42,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	for _, pvc := range list.Items {
 		var failures []common.Failure
 
-		// Check for empty rs
+		// Check for Pending PVCs
 		if pvc.Status.Phase == appsv1.ClaimPending {
 
 			// parse the event log and append details
@@ -55,7 +55,7 @@ func (PvcAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			if err != nil || evt == nil {
 				continue
 			}
-			if evt.Reason == "ProvisioningFailed" && evt.Message != "" {
+			if (evt.Reason == "ProvisioningFailed" || evt.Reason == "FailedBinding") && evt.Message != "" {
 				failures = append(failures, common.Failure{
 					Text:      evt.Message,
 					Sensitive: []common.Sensitive{},
