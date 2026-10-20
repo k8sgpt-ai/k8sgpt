@@ -305,3 +305,5 @@ require (
 replace github.com/docker/docker => github.com/docker/docker v28.0.4+incompatible
 
 replace dario.cat/mergo => github.com/imdario/mergo v1.0.1
+
+replace github.com/cyphar/filepath-securejoin => github.com/cyphar/filepath-securejoin v0.4.1
