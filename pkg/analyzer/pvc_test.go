@@ -43,6 +43,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
 							LastTimestamp: metav1.Time{
 								Time: time.Date(2024, 3, 15, 10, 0, 0, 0, time.UTC),
 							},
@@ -60,6 +65,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 							// This is the latest event.
 							ObjectMeta: metav1.ObjectMeta{
 								Name:      "Event3",
+								Namespace: "default",
+							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC5",
 								Namespace: "default",
 							},
 							LastTimestamp: metav1.Time{
@@ -157,6 +167,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
 							// Any reason other than ProvisioningFailed won't result in failure.
 							Reason: "UnknownReason",
 						},
@@ -185,6 +200,11 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 								Name:      "Event1",
 								Namespace: "default",
 							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
 							// Event without any error message won't result in failure.
 							Reason: "ProvisioningFailed",
 						},
@@ -201,6 +221,42 @@ func TestPersistentVolumeClaimAnalyzer(t *testing.T) {
 				},
 				Context:   context.Background(),
 				Namespace: "default",
+			},
+		},
+		{
+			name: "event with FailedBinding reports failure",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&appsv1.Event{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "Event-FailedBinding",
+								Namespace: "default",
+							},
+							InvolvedObject: appsv1.ObjectReference{
+								Kind:      "PersistentVolumeClaim",
+								Name:      "PVC1",
+								Namespace: "default",
+							},
+							Reason:  "FailedBinding",
+							Message: "no persistent volumes available for this claim and no storage class is set",
+						},
+						&appsv1.PersistentVolumeClaim{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "PVC1",
+								Namespace: "default",
+							},
+							Status: appsv1.PersistentVolumeClaimStatus{
+								Phase: appsv1.ClaimPending,
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []string{
+				"default/PVC1",
 			},
 		},
 	}
@@ -236,6 +292,11 @@ func TestPvcAnalyzerLabelSelectorFiltering(t *testing.T) {
 				&appsv1.Event{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "Event1",
+						Namespace: "default",
+					},
+					InvolvedObject: appsv1.ObjectReference{
+						Kind:      "PersistentVolumeClaim",
+						Name:      "PVC1",
 						Namespace: "default",
 					},
 					LastTimestamp: metav1.Time{
@@ -277,4 +338,44 @@ func TestPvcAnalyzerLabelSelectorFiltering(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(results))
 	require.Equal(t, "default/PVC1", results[0].Name)
+}
+
+func TestPersistentVolumeClaimAnalyzer_FailedBinding(t *testing.T) {
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(
+				&appsv1.Event{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "Event-FailedBinding",
+						Namespace: "default",
+					},
+					InvolvedObject: appsv1.ObjectReference{
+						Kind:      "PersistentVolumeClaim",
+						Name:      "pvc-unbound",
+						Namespace: "default",
+					},
+					Reason:  "FailedBinding",
+					Message: "no persistent volumes available for this claim and no storage class is set",
+				},
+				&appsv1.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "pvc-unbound",
+						Namespace: "default",
+					},
+					Status: appsv1.PersistentVolumeClaimStatus{
+						Phase: appsv1.ClaimPending,
+					},
+				},
+			),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	pvcAnalyzer := PvcAnalyzer{}
+	results, err := pvcAnalyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(results))
+	require.Equal(t, "default/pvc-unbound", results[0].Name)
+	require.Equal(t, "no persistent volumes available for this claim and no storage class is set", results[0].Error[0].Text)
 }

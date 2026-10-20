@@ -20,7 +20,6 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type NodeAnalyzer struct{}
@@ -33,7 +32,7 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().CoreV1().Nodes().List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -44,21 +43,14 @@ func (NodeAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var failures []common.Failure
 		for _, nodeCondition := range node.Status.Conditions {
 			// https://kubernetes.io/docs/concepts/architecture/nodes/#condition
-			switch nodeCondition.Type {
-			case v1.NodeReady:
-				if nodeCondition.Status != v1.ConditionTrue {
-					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
-				}
-			// k3s `EtcdIsVoter`` should not be reported as an error
-			case v1.NodeConditionType("EtcdIsVoter"):
-				break
-			default:
-				// For other conditions:
-				// - Report True or Unknown status as failures (for standard conditions)
-				// - Report any unknown condition type as a failure
-				if nodeCondition.Status == v1.ConditionTrue || nodeCondition.Status == v1.ConditionUnknown || !isKnownNodeConditionType(nodeCondition.Type) {
-					failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
-				}
+			// k3s `EtcdIsVoter` should not be reported as an error
+			if nodeCondition.Type == v1.NodeConditionType("EtcdIsVoter") {
+				continue
+			}
+			// A condition type we do not know is reported whatever its status.
+			healthy, known := healthyNodeConditionStatus(nodeCondition.Type)
+			if !known || nodeCondition.Status != healthy {
+				failures = addNodeConditionFailure(failures, node.Name, nodeCondition)
 			}
 		}
 
@@ -102,16 +94,41 @@ func addNodeConditionFailure(failures []common.Failure, nodeName string, nodeCon
 	return failures
 }
 
-// isKnownNodeConditionType checks if the condition type is a standard Kubernetes node condition
-func isKnownNodeConditionType(conditionType v1.NodeConditionType) bool {
+// healthyNodeConditionStatus returns the status a node condition has while the
+// node is healthy, and false if the condition type is not known.
+func healthyNodeConditionStatus(conditionType v1.NodeConditionType) (v1.ConditionStatus, bool) {
 	switch conditionType {
 	case v1.NodeReady,
-		v1.NodeMemoryPressure,
+		// Amazon EKS node monitoring agent
+		// https://docs.aws.amazon.com/eks/latest/userguide/node-health.html
+		"AcceleratedHardwareReady",
+		"ContainerRuntimeReady",
+		"KernelReady",
+		"NetworkingReady",
+		"StorageReady":
+		return v1.ConditionTrue, true
+	case v1.NodeMemoryPressure,
 		v1.NodeDiskPressure,
 		v1.NodePIDPressure,
-		v1.NodeNetworkUnavailable:
-		return true
+		v1.NodeNetworkUnavailable,
+		// node-problem-detector
+		// https://github.com/kubernetes/node-problem-detector
+		"ContainerRuntimeUnhealthy",
+		"CorruptDockerOverlay2",
+		"CperHardwareErrorFatal",
+		"DiskBadBlock",
+		"FrequentContainerdRestart",
+		"FrequentDockerRestart",
+		"FrequentKubeletRestart",
+		"FrequentUnregisterNetDevice",
+		"KernelDeadlock",
+		"KubeProxyUnhealthy",
+		"KubeletUnhealthy",
+		"NTPProblem",
+		"ReadonlyFilesystem",
+		"XfsShutdown":
+		return v1.ConditionFalse, true
 	default:
-		return false
+		return "", false
 	}
 }

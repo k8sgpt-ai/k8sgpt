@@ -43,7 +43,7 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 
 	// get all network policies in the namespace
 	policies, err := a.Client.GetClient().NetworkingV1().
-		NetworkPolicies(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+		NetworkPolicies(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +53,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 	for _, policy := range policies.Items {
 		var failures []common.Failure
 
+		selector, err := metav1.LabelSelectorAsSelector(&policy.Spec.PodSelector)
+		if err != nil {
+			return nil, err
+		}
+
 		// Check if policy allows traffic to all pods in the namespace
-		if len(policy.Spec.PodSelector.MatchLabels) == 0 {
+		if selector.Empty() {
 			doc := apiDoc.GetApiDocV2("spec.podSelector.matchLabels")
 
 			failures = append(failures, common.Failure{
@@ -69,7 +74,9 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			})
 		} else {
 			// Check if policy is not applied to any pods
-			podList, err := util.GetPodListByLabels(a.Client.GetClient(), a.Namespace, policy.Spec.PodSelector.MatchLabels)
+			podList, err := a.Client.GetClient().CoreV1().Pods(policy.Namespace).List(a.Context, metav1.ListOptions{
+				LabelSelector: selector.String(),
+			})
 			if err != nil {
 				return nil, err
 			}

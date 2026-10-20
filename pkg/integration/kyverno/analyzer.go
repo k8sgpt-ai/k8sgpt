@@ -35,10 +35,6 @@ func (KyvernoAnalyzer) analyzePolicyReports(a common.Analyzer) ([]common.Result,
 	result := &v1alpha2.PolicyReportList{}
 	client := a.Client.CtrlClient
 
-	err := v1alpha2.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{Namespace: a.Namespace}); err != nil {
 		return nil, err
 	}
@@ -89,10 +85,6 @@ func (t KyvernoAnalyzer) analyzeClusterPolicyReports(a common.Analyzer) ([]commo
 	result := &v1alpha2.ClusterPolicyReportList{}
 	client := a.Client.CtrlClient
 
-	err := v1alpha2.AddToScheme(client.Scheme())
-	if err != nil {
-		return nil, err
-	}
 	if err := client.List(a.Context, result, &ctrl.ListOptions{}); err != nil {
 		return nil, err
 	}
@@ -105,11 +97,11 @@ func (t KyvernoAnalyzer) analyzeClusterPolicyReports(a common.Analyzer) ([]commo
 		// For each pod there may be multiple vulnerabilities
 		var failures []common.Failure
 		for _, vuln := range report.Results {
-			if vuln.Severity == "CRITICAL" {
+			if vuln.Result == "fail" {
 				// get the vulnerability ID
 				// get the vulnerability description
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("critical Vulnerability found ID: %s (learn more at: %s)", vuln.ID, vuln.Source),
+					Text:      fmt.Sprintf("policy failure: %s (message: %s)", vuln.Policy, vuln.Message),
 					Sensitive: []common.Sensitive{},
 				})
 			}
