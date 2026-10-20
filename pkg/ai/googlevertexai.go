@@ -61,16 +61,20 @@ var VERTEXAI_SUPPORTED_REGION = []string{
 }
 
 const (
-	ModelGeminiProV1       = "gemini-1.0-pro-001"    // Retired Model
-	ModelGeminiProV2_5     = "gemini-2.5-pro"        // Latest Stable Model
-	ModelGeminiFlashV2_5   = "gemini-2.5-flash"      // Latest Stable Model
-	ModelGeminiFlashV2     = "gemini-2.0-flash"      // Latest Stable Model
-	ModelGeminiFlashLiteV2 = "gemini-2.0-flash-lite" // Latest Stable Model
-	ModelGeminiProV1_5     = "gemini-1.5-pro-002"    // Legacy Stable Model
-	ModelGeminiFlashV1_5   = "gemini-1.5-flash-002"  // Legacy Stable Model
+	ModelGeminiProV1         = "gemini-1.0-pro-001"    // Retired Model
+	ModelGeminiFlashV3_8     = "gemini-3.8-flash"      // Latest Stable Model
+	ModelGeminiFlashLiteV3_1 = "gemini-3.1-flash-lite" // Latest Stable Model
+	ModelGeminiProV2_5       = "gemini-2.5-pro"        // Retired 2026-10-20
+	ModelGeminiFlashV2_5     = "gemini-2.5-flash"      // Retired 2026-10-20
+	ModelGeminiFlashV2       = "gemini-2.0-flash"      // Retired 2026-06-01
+	ModelGeminiFlashLiteV2   = "gemini-2.0-flash-lite" // Retired 2026-06-01
+	ModelGeminiProV1_5       = "gemini-1.5-pro-002"    // Retired 2025-09-24
+	ModelGeminiFlashV1_5     = "gemini-1.5-flash-002"  // Retired 2025-09-24
 )
 
 var VERTEXAI_MODELS = []string{
+	ModelGeminiFlashV3_8,
+	ModelGeminiFlashLiteV3_1,
 	ModelGeminiProV2_5,
 	ModelGeminiFlashV2_5,
 	ModelGeminiFlashV2,
