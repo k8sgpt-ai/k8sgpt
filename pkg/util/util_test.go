@@ -14,9 +14,11 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
@@ -26,8 +28,69 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
+
+func TestFetchLatestEventScopesToObjectIdentity(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(1, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "pod-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Pod",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("pod-uid"),
+			},
+			Reason:        "FailedMount",
+			LastTimestamp: metav1.NewTime(time.Unix(2, 0)),
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: "stale-job-event", Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Job",
+				Namespace: "default",
+				Name:      "worker",
+				UID:       types.UID("old-job-uid"),
+			},
+			Reason:        "BackoffLimitExceeded",
+			LastTimestamp: metav1.NewTime(time.Unix(3, 0)),
+		},
+	)
+	kubeClient := &kubernetes.Client{Client: clientset}
+
+	event, err := FetchLatestEvent(context.Background(), kubeClient, v1.ObjectReference{
+		Kind:      "Job",
+		Namespace: "default",
+		Name:      "worker",
+		UID:       types.UID("job-uid"),
+	})
+
+	require.NoError(t, err)
+	require.NotNil(t, event)
+	require.Equal(t, "job-event", event.Name)
+	require.Len(t, clientset.Actions(), 1)
+	listAction, ok := clientset.Actions()[0].(interface {
+		GetListRestrictions() k8stesting.ListRestrictions
+	})
+	require.True(t, ok)
+	require.Equal(t,
+		"involvedObject.kind=Job,involvedObject.name=worker,involvedObject.uid=job-uid",
+		listAction.GetListRestrictions().Fields.String(),
+	)
+}
 
 func TestGetParent(t *testing.T) {
 	ownerName := "test-name"
@@ -168,6 +231,227 @@ func TestGetParent(t *testing.T) {
 	}
 }
 
+func TestGetParentStopsAtUnknownOwner(t *testing.T) {
+	namespace := "test"
+	clientset := fake.NewSimpleClientset(
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web-6d4b8",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Deployment", Name: "web"},
+				},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "WebApp", Name: "web"},
+				},
+			},
+		},
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "canary-7f9c2",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Rollout", Name: "canary"},
+				},
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "db",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "PostgresCluster", Name: "db"},
+				},
+			},
+		},
+		&appsv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "agent",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Agent", Name: "agent"},
+				},
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "web",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "WebApp", Name: "web"},
+				},
+			},
+		},
+		&admissionregistrationv1.MutatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "injector",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Mesh", Name: "default"},
+				},
+			},
+		},
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "policy",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Mesh", Name: "default"},
+				},
+			},
+		},
+	)
+	kubeClient := kubernetes.Client{
+		Client: clientset,
+	}
+
+	tests := []struct {
+		name           string
+		owner          metav1.OwnerReference
+		expectedOutput string
+	}{
+		{
+			name:           "deployment owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ReplicaSet", Name: "web-6d4b8"},
+			expectedOutput: "Deployment/web",
+		},
+		{
+			name:           "replicaset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ReplicaSet", Name: "canary-7f9c2"},
+			expectedOutput: "ReplicaSet/canary-7f9c2",
+		},
+		{
+			name:           "statefulset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "StatefulSet", Name: "db"},
+			expectedOutput: "StatefulSet/db",
+		},
+		{
+			name:           "daemonset owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "DaemonSet", Name: "agent"},
+			expectedOutput: "DaemonSet/agent",
+		},
+		{
+			name:           "ingress owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "Ingress", Name: "web"},
+			expectedOutput: "Ingress/web",
+		},
+		{
+			name:           "mutating webhook configuration owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "MutatingWebhookConfiguration", Name: "injector"},
+			expectedOutput: "MutatingWebhook/injector",
+		},
+		{
+			name:           "validating webhook configuration owned by a custom resource",
+			owner:          metav1.OwnerReference{Kind: "ValidatingWebhookConfiguration", Name: "policy"},
+			expectedOutput: "ValidatingWebhook/policy",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			meta := metav1.ObjectMeta{
+				Namespace:       namespace,
+				Name:            "pod",
+				OwnerReferences: []metav1.OwnerReference{tt.owner},
+			}
+			output, ok := GetParent(&kubeClient, meta)
+			require.True(t, ok)
+			require.Equal(t, tt.expectedOutput, output)
+		})
+	}
+}
+
+func TestGetParentFollowsKnownOwners(t *testing.T) {
+	namespace := "test"
+	// Each object is owned by the next kind GetParent handles, so every kind
+	// has to return the parent it resolved through its own owner.
+	clientset := fake.NewSimpleClientset(
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "StatefulSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "DaemonSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "Ingress", Name: "app"},
+				},
+			},
+		},
+		&networkingv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "app",
+				Namespace: namespace,
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "MutatingWebhookConfiguration", Name: "app"},
+				},
+			},
+		},
+		&admissionregistrationv1.MutatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "ValidatingWebhookConfiguration", Name: "app"},
+				},
+			},
+		},
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+				OwnerReferences: []metav1.OwnerReference{
+					{Kind: "ReplicaSet", Name: "app"},
+				},
+			},
+		},
+		&appsv1.ReplicaSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "app",
+			},
+		},
+	)
+	kubeClient := kubernetes.Client{
+		Client: clientset,
+	}
+
+	for _, kind := range []string{
+		"Deployment",
+		"StatefulSet",
+		"DaemonSet",
+		"Ingress",
+		"MutatingWebhookConfiguration",
+		"ValidatingWebhookConfiguration",
+	} {
+		t.Run(kind, func(t *testing.T) {
+			meta := metav1.ObjectMeta{
+				Namespace:       namespace,
+				Name:            "pod",
+				OwnerReferences: []metav1.OwnerReference{{Kind: kind, Name: "app"}},
+			}
+			output, ok := GetParent(&kubeClient, meta)
+			require.True(t, ok)
+			require.Equal(t, "ReplicaSet/app", output)
+		})
+	}
+}
+
 func TestRemoveDuplicates(t *testing.T) {
 	tests := []struct {
 		name               string
@@ -250,6 +534,42 @@ func TestReplaceIfMatch(t *testing.T) {
 			pattern:        "value",
 			replacement:    "day",
 			expectedOutput: "new day",
+		},
+		{
+			// An empty pattern compiles to `(\b)`, which matches at every word
+			// boundary and would rewrite the whole text.
+			text:           "new value",
+			pattern:        "",
+			replacement:    "X",
+			expectedOutput: "new value",
+		},
+		{
+			// The pattern is a literal to redact, not a regex: "." must not
+			// match an arbitrary character.
+			text:           "abc",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "abc",
+		},
+		{
+			text:           "a.c",
+			pattern:        "a.c",
+			replacement:    "X",
+			expectedOutput: "X",
+		},
+		{
+			// Node names are routinely FQDNs; the dots must be literal.
+			text:           "node ip-10-0-1-2.ec2.internal is NotReady",
+			pattern:        "ip-10-0-1-2.ec2.internal",
+			replacement:    "MASKED",
+			expectedOutput: "node MASKED is NotReady",
+		},
+		{
+			// An unescaped "[" is an invalid regex and would panic MustCompile.
+			text:           "a[b value",
+			pattern:        "a[b",
+			replacement:    "X",
+			expectedOutput: "X value",
 		},
 	}
 	for _, tt := range tests {

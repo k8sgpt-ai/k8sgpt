@@ -19,7 +19,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type PodAnalyzer struct {
@@ -34,9 +33,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// search all namespaces for pods that are not running
-	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	list, err := a.Client.GetClient().CoreV1().Pods(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +41,12 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	for _, pod := range list.Items {
 		var failures []common.Failure
+		podReference := v1.ObjectReference{
+			Kind:      kind,
+			Namespace: pod.Namespace,
+			Name:      pod.Name,
+			UID:       pod.UID,
+		}
 
 		// Check for pending pods
 		if pod.Status.Phase == "Pending" {
@@ -85,10 +88,10 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		// Check for errors in the init containers.
-		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.InitContainerStatuses, pod.Name, pod.Namespace, string(pod.Status.Phase))...)
+		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.InitContainerStatuses, podReference, string(pod.Status.Phase))...)
 
 		// Check for errors in containers.
-		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.ContainerStatuses, pod.Name, pod.Namespace, string(pod.Status.Phase))...)
+		failures = append(failures, analyzeContainerStatusFailures(a, pod.Status.ContainerStatuses, podReference, string(pod.Status.Phase))...)
 
 		if len(failures) > 0 {
 			preAnalysis[fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)] = common.PreAnalysis{
@@ -116,7 +119,7 @@ func (PodAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	return a.Results, nil
 }
 
-func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerStatus, name string, namespace string, statusPhase string) []common.Failure {
+func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerStatus, pod v1.ObjectReference, statusPhase string) []common.Failure {
 	var failures []common.Failure
 
 	// Check through container status to check for crashes or unready
@@ -125,7 +128,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 			if containerStatus.State.Waiting.Reason == "ContainerCreating" && statusPhase == "Pending" {
 				// This represents a container that is still being created or blocked due to conditions such as OOMKilled
 				// parse the event log and append details
-				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, pod)
 				if err != nil || evt == nil {
 					continue
 				}
@@ -138,7 +141,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 			} else if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" && containerStatus.LastTerminationState.Terminated != nil {
 				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, name),
+					Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, pod.Name),
 					Sensitive: []common.Sensitive{},
 				})
 			} else if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
@@ -157,7 +160,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 					reason = "Unknown"
 				}
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("the termination reason is %s exitCode=%d container=%s pod=%s", reason, exitCode, containerStatus.Name, name),
+					Text:      fmt.Sprintf("the termination reason is %s exitCode=%d container=%s pod=%s", reason, exitCode, containerStatus.Name, pod.Name),
 					Sensitive: []common.Sensitive{},
 				})
 			}
@@ -165,7 +168,7 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 			// when pod is Running but its ReadinessProbe fails
 			if !containerStatus.Ready && statusPhase == "Running" {
 				// parse the event log and append details
-				evt, err := util.FetchLatestEvent(a.Context, a.Client, namespace, name)
+				evt, err := util.FetchLatestEvent(a.Context, a.Client, pod)
 				if err != nil || evt == nil {
 					continue
 				}

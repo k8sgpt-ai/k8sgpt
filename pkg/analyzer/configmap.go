@@ -31,9 +31,7 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	})
 
 	// Get all ConfigMaps in the namespace
-	configMaps, err := a.Client.GetClient().CoreV1().ConfigMaps(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	configMaps, err := a.Client.GetClient().CoreV1().ConfigMaps(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -46,17 +44,33 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 	var results []common.Result
 
-	// Track which ConfigMaps are used
+	// Track which ConfigMaps are used (keyed by "namespace/name")
 	usedConfigMaps := make(map[string]bool)
-	configMapUsage := make(map[string][]string) // maps ConfigMap name to list of pods using it
+	configMapUsage := make(map[string][]string) // maps "namespace/name" to list of pods using it
 
 	// Analyze ConfigMap usage in Pods
 	for _, pod := range pods.Items {
-		// Check volume mounts
+		markUsed := func(cmName string) {
+			if cmName == "" {
+				return
+			}
+			key := fmt.Sprintf("%s/%s", pod.Namespace, cmName)
+			usedConfigMaps[key] = true
+			configMapUsage[key] = append(configMapUsage[key], pod.Name)
+		}
+
+		// Check volume mounts, including projected ConfigMap sources.
 		for _, volume := range pod.Spec.Volumes {
 			if volume.ConfigMap != nil {
-				usedConfigMaps[volume.ConfigMap.Name] = true
-				configMapUsage[volume.ConfigMap.Name] = append(configMapUsage[volume.ConfigMap.Name], pod.Name)
+				markUsed(volume.ConfigMap.Name)
+			}
+			if volume.Projected == nil {
+				continue
+			}
+			for _, source := range volume.Projected.Sources {
+				if source.ConfigMap != nil {
+					markUsed(source.ConfigMap.Name)
+				}
 			}
 		}
 
@@ -64,14 +78,12 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		for _, container := range pod.Spec.InitContainers {
 			for _, env := range container.EnvFrom {
 				if env.ConfigMapRef != nil {
-					usedConfigMaps[env.ConfigMapRef.Name] = true
-					configMapUsage[env.ConfigMapRef.Name] = append(configMapUsage[env.ConfigMapRef.Name], pod.Name)
+					markUsed(env.ConfigMapRef.Name)
 				}
 			}
 			for _, env := range container.Env {
 				if env.ValueFrom != nil && env.ValueFrom.ConfigMapKeyRef != nil {
-					usedConfigMaps[env.ValueFrom.ConfigMapKeyRef.Name] = true
-					configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name] = append(configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name], pod.Name)
+					markUsed(env.ValueFrom.ConfigMapKeyRef.Name)
 				}
 			}
 		}
@@ -80,14 +92,12 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		for _, container := range pod.Spec.Containers {
 			for _, env := range container.EnvFrom {
 				if env.ConfigMapRef != nil {
-					usedConfigMaps[env.ConfigMapRef.Name] = true
-					configMapUsage[env.ConfigMapRef.Name] = append(configMapUsage[env.ConfigMapRef.Name], pod.Name)
+					markUsed(env.ConfigMapRef.Name)
 				}
 			}
 			for _, env := range container.Env {
 				if env.ValueFrom != nil && env.ValueFrom.ConfigMapKeyRef != nil {
-					usedConfigMaps[env.ValueFrom.ConfigMapKeyRef.Name] = true
-					configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name] = append(configMapUsage[env.ValueFrom.ConfigMapKeyRef.Name], pod.Name)
+					markUsed(env.ValueFrom.ConfigMapKeyRef.Name)
 				}
 			}
 		}
@@ -96,10 +106,11 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	// Analyze each ConfigMap
 	for _, cm := range configMaps.Items {
 		var failures []common.Failure
+		cmKey := fmt.Sprintf("%s/%s", cm.Namespace, cm.Name)
 
 		// Check if ConfigMap is dynamically loaded by sidecars
 		if isKnownSidecarPattern(cm) {
-			usedConfigMaps[cm.Name] = true
+			usedConfigMaps[cmKey] = true
 			continue
 		}
 
@@ -109,7 +120,7 @@ func (ConfigMapAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		// Check for unused ConfigMaps
-		if !usedConfigMaps[cm.Name] {
+		if !usedConfigMaps[cmKey] {
 			failures = append(failures, common.Failure{
 				Text:      fmt.Sprintf("ConfigMap %s is not used by any pods in the namespace", cm.Name),
 				Sensitive: []common.Sensitive{},

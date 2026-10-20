@@ -21,7 +21,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	cron "github.com/robfig/cron/v3"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -43,7 +42,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		"analyzer_name": kind,
 	})
 
-	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, v1.ListOptions{LabelSelector: a.LabelSelector})
+	cronJobList, err := a.Client.GetClient().BatchV1().CronJobs(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

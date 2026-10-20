@@ -59,7 +59,6 @@ func (ClusterExtensionAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		if err != nil {
 			continue
 		}
-		fmt.Printf("ClusterExtension: %s | Source: %s\n", extension.Name, extension.Spec.Source.Catalog.PackageName)
 		failures, err = ValidateClusterExtension(failures, extension)
 		if err != nil {
 			continue
@@ -81,7 +80,7 @@ func (ClusterExtensionAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 			Error: value.FailureDetails,
 		}
 
-		parent, found := util.GetParent(a.Client, value.Node.ObjectMeta)
+		parent, found := util.GetParent(a.Client, value.Extension.ObjectMeta)
 		if found {
 			currentAnalysis.ParentObject = parent
 		}

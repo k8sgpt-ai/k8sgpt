@@ -68,14 +68,6 @@ func analyzeStorageClasses(a common.Analyzer) ([]common.Result, error) {
 	for _, sc := range scs.Items {
 		var failures []common.Failure
 
-		// Check for deprecated storage classes
-		if sc.Provisioner == "kubernetes.io/no-provisioner" {
-			failures = append(failures, common.Failure{
-				Text:      fmt.Sprintf("StorageClass %s uses deprecated provisioner 'kubernetes.io/no-provisioner'", sc.Name),
-				Sensitive: []common.Sensitive{},
-			})
-		}
-
 		// Check for default storage class
 		if sc.Annotations["storageclass.kubernetes.io/is-default-class"] == "true" {
 			// Check if there are multiple default storage classes
@@ -159,9 +151,7 @@ func analyzePersistentVolumes(a common.Analyzer) ([]common.Result, error) {
 func analyzePersistentVolumeClaims(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	pvcs, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, metav1.ListOptions{
-		LabelSelector: a.LabelSelector,
-	})
+	pvcs, err := a.Client.GetClient().CoreV1().PersistentVolumeClaims(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

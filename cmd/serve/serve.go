@@ -59,6 +59,9 @@ var ServeCmd = &cobra.Command{
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
+		// K8SGPT_BACKEND must be honoured on every start, not only the first.
+		backend = resolveBackend(cmd.Flags().Changed("backend"), backend)
+
 		var aiProvider *ai.AIProvider
 		if len(configAI.Providers) == 0 {
 			// we validate and set temperature for our backend
@@ -234,6 +237,20 @@ var ServeCmd = &cobra.Command{
 		// Wait for both servers to exit
 		select {}
 	},
+}
+
+// resolveBackend returns the backend name to look up in the configuration. The
+// config written on the first start makes the env block in ServeCmd unreachable
+// on later starts, so K8SGPT_BACKEND is read here too. An explicit --backend
+// still takes precedence.
+func resolveBackend(flagChanged bool, current string) string {
+	if flagChanged {
+		return current
+	}
+	if envBackend := os.Getenv("K8SGPT_BACKEND"); envBackend != "" {
+		return envBackend
+	}
+	return current
 }
 
 func providerFromEnv(

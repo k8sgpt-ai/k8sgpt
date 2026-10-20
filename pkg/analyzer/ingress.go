@@ -41,7 +41,7 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		"analyzer_name": kind,
 	})
 
-	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, metav1.ListOptions{LabelSelector: a.LabelSelector})
+	list, err := a.Client.GetClient().NetworkingV1().Ingresses(a.Namespace).List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -100,11 +100,39 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 
+		// check default backend
+		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
+			_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, ing.Spec.DefaultBackend.Service.Name, metav1.GetOptions{})
+			if err != nil {
+				doc := apiDoc.GetApiDocV2("spec.defaultBackend.service")
+
+				failures = append(failures, common.Failure{
+					Text:          fmt.Sprintf("Ingress uses the default backend service %s/%s which does not exist.", ing.Namespace, ing.Spec.DefaultBackend.Service.Name),
+					KubernetesDoc: doc,
+					Sensitive: []common.Sensitive{
+						{
+							Unmasked: ing.Namespace,
+							Masked:   util.MaskString(ing.Namespace),
+						},
+						{
+							Unmasked: ing.Spec.DefaultBackend.Service.Name,
+							Masked:   util.MaskString(ing.Spec.DefaultBackend.Service.Name),
+						},
+					},
+				})
+			}
+		}
+
 		// loop over rules
 		for _, rule := range ing.Spec.Rules {
 			// loop over HTTP paths
 			if rule.HTTP != nil {
 				for _, path := range rule.HTTP.Paths {
+					// a path can point at a resource backend instead, in which case
+					// there is no service to look up
+					if path.Backend.Service == nil {
+						continue
+					}
 					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
 					if err != nil {
 						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")

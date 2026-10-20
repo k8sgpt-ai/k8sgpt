@@ -19,7 +19,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
+	"regexp"
+	"slices"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -35,6 +39,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/viper"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,6 +53,7 @@ type Analysis struct {
 	Errors             []string
 	Namespace          string
 	LabelSelector      string
+	ResourceName       string
 	Cache              cache.ICache
 	Explain            bool
 	MaxConcurrency     int
@@ -204,22 +210,27 @@ func NewAnalysis(
 
 	aiClient := ai.NewClient(aiProvider.Name)
 
-	var headerStrings []string
+	customHeaders := util.NewHeaders(httpHeaders)
 
-	// If AI provider has custom headers in config, use those first
-	if len(aiProvider.CustomHeaders) > 0 {
-		for _, header := range aiProvider.CustomHeaders {
-			for key, values := range header {
-				for _, value := range values {
-					headerStrings = append(headerStrings, fmt.Sprintf("%s:%s", key, value))
-				}
-			}
+	// Merge CLI and config headers, with CLI headers having higher priority
+	var cliHeaderKeys []string
+	for _, header := range customHeaders {
+		for key := range header {
+			cliHeaderKeys = append(cliHeaderKeys, http.CanonicalHeaderKey(key))
 		}
-	} else if len(httpHeaders) > 0 {
-		headerStrings = httpHeaders
 	}
 
-	customHeaders := util.NewHeaders(headerStrings)
+	for _, header := range aiProvider.CustomHeaders {
+		filteredCopy := header.Clone()
+		for key := range header {
+			if slices.Contains(cliHeaderKeys, http.CanonicalHeaderKey(key)) {
+				delete(filteredCopy, key)
+			}
+		}
+		if len(filteredCopy) > 0 {
+			customHeaders = append(customHeaders, filteredCopy)
+		}
+	}
 
 	aiProvider.CustomHeaders = customHeaders
 	if verbose {
@@ -296,6 +307,13 @@ func (a *Analysis) RunCustomAnalysis() {
 				mutex.Unlock()
 				return
 			}
+			defer func() {
+				if cerr := canClient.Close(); cerr != nil {
+					mutex.Lock()
+					a.Errors = append(a.Errors, fmt.Sprintf("Client close error for %s analyzer", cAnalyzer.Name))
+					mutex.Unlock()
+				}
+			}()
 			if verbose {
 				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
 			}
@@ -350,6 +368,20 @@ func (a *Analysis) RunCustomAnalysis() {
 }
 
 func (a *Analysis) RunAnalysis() {
+	// Validate namespace if specified; otherwise a typo'd namespace silently
+	// yields empty results from every analyzer, misreporting a clean cluster.
+	// Only abort on a confirmed NotFound: a service account scoped to a single
+	// namespace often cannot Get the Namespace object itself, and that
+	// Forbidden (or any other transient) error must not block an analysis
+	// that would otherwise succeed.
+	if a.Namespace != "" && a.Client != nil {
+		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
+		if apierrors.IsNotFound(err) {
+			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
+			return
+		}
+	}
+
 	activeFilters := viper.GetStringSlice("active_filters")
 	verbose := viper.GetBool("verbose")
 
@@ -377,6 +409,7 @@ func (a *Analysis) RunAnalysis() {
 		Context:       a.Context,
 		Namespace:     a.Namespace,
 		LabelSelector: a.LabelSelector,
+		ResourceName:  a.ResourceName,
 		AIClient:      a.AIClient,
 		OpenapiSchema: openapiSchema,
 	}
@@ -491,6 +524,124 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	<-semaphore
 }
 
+// resourceSensitive derives masking pairs from a result's own identity.
+//
+// Result.Name is the path the analyzer keyed the resource on: "namespace/name"
+// for namespaced resources, "namespace/pod/container" for the container-level
+// analyzers, and a bare name for cluster-scoped ones such as Node. Those
+// segments are exactly the identifiers that appear verbatim inside Kubernetes
+// event messages and status conditions, which analyzers copy straight into
+// Failure.Text with an empty Failure.Sensitive, so they reach the AI provider
+// unmasked even under --anonymize (issue #560).
+//
+// Deriving them here covers every analyzer at once, including the ones that
+// never populated Sensitive and any added later. Analyzers that do declare
+// their own entries keep working: the two sets compose.
+func resourceSensitive(name string) []common.Sensitive {
+	var sensitive []common.Sensitive
+	for _, segment := range strings.Split(name, "/") {
+		// Masking the empty string would match everywhere and shred the text
+		// in both directions.
+		if segment == "" {
+			continue
+		}
+		sensitive = append(sensitive, common.Sensitive{
+			Unmasked: segment,
+			Masked:   util.MaskString(segment),
+		})
+	}
+	return sensitive
+}
+
+// sensitiveMapping merges the pairs the analyzers declared with the ones
+// derived from the result's identity into a single deduplicated set, ordered
+// longest unmasked value first.
+//
+// The values overlap. A result named "prod/api-prod" derives both "prod" and
+// "api-prod", and a declared value can contain a derived one the same way.
+// Applying the pairs one at a time in declaration order masks the "prod"
+// suffix inside the pod name first, after which "api-prod" no longer matches
+// and "api-" is left in the prompt. Ordering longest first and replacing in a
+// single pass (see maskText) matches the complete identifier instead.
+//
+// Deduplicating on the unmasked value also keeps one identifier from having
+// two different masks, which would only be reversed by whichever pair the
+// unmasking happened to reach first.
+func sensitiveMapping(sets ...[]common.Sensitive) []common.Sensitive {
+	seen := make(map[string]bool)
+	var mapping []common.Sensitive
+	for _, set := range sets {
+		for _, s := range set {
+			// An empty value matches at every position and would shred the
+			// text in either direction.
+			if s.Unmasked == "" || s.Masked == "" || seen[s.Unmasked] {
+				continue
+			}
+			seen[s.Unmasked] = true
+			mapping = append(mapping, s)
+		}
+	}
+	sort.SliceStable(mapping, func(i, j int) bool {
+		return len(mapping[i].Unmasked) > len(mapping[j].Unmasked)
+	})
+	return mapping
+}
+
+// replaceLongestFirst rewrites every needle in one left-to-right pass, so a
+// replacement it just wrote is never itself rewritten by a later pair.
+//
+// Go's regexp prefers the earliest alternative that matches at a position, so
+// listing the needles longest first is what makes a complete identifier win
+// over a shorter one nested in it. The needles are literal values, not
+// patterns, hence QuoteMeta: node names are routinely FQDNs whose "." would
+// otherwise match any character, and masks are base64 that can contain "+"
+// and "/".
+func replaceLongestFirst(text string, needles []string, replacement map[string]string, suffix string) string {
+	if len(needles) == 0 {
+		return text
+	}
+	alternatives := make([]string, 0, len(needles))
+	for _, needle := range needles {
+		alternatives = append(alternatives, regexp.QuoteMeta(needle))
+	}
+	re := regexp.MustCompile(`(?:` + strings.Join(alternatives, "|") + `)` + suffix)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		return replacement[match]
+	})
+}
+
+func maskText(text string, mapping []common.Sensitive) string {
+	needles := make([]string, 0, len(mapping))
+	masked := make(map[string]string, len(mapping))
+	for _, s := range mapping {
+		needles = append(needles, s.Unmasked)
+		masked[s.Unmasked] = s.Masked
+	}
+	// The trailing boundary preserves the behaviour of util.ReplaceIfMatch: a
+	// value is redacted where it ends a word, not in the middle of a longer
+	// identifier that merely starts with it.
+	return replaceLongestFirst(text, needles, masked, `\b`)
+}
+
+func unmaskText(text string, mapping []common.Sensitive) string {
+	ordered := make([]common.Sensitive, len(mapping))
+	copy(ordered, mapping)
+	// Longest first again, this time on the masks, since an analyzer is free
+	// to declare a mask that contains another one.
+	sort.SliceStable(ordered, func(i, j int) bool {
+		return len(ordered[i].Masked) > len(ordered[j].Masked)
+	})
+
+	needles := make([]string, 0, len(ordered))
+	unmasked := make(map[string]string, len(ordered))
+	for _, s := range ordered {
+		needles = append(needles, s.Masked)
+		unmasked[s.Masked] = s.Unmasked
+	}
+	// No boundary on the way back: base64 masks can end in "=".
+	return replaceLongestFirst(text, needles, unmasked, "")
+}
+
 func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	if len(a.Results) == 0 {
 		return nil
@@ -509,15 +660,27 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 	for index, analysis := range a.Results {
 		var texts []string
 
+		// Analyzers only mask what they explicitly declare in Failure.Sensitive,
+		// and most declare nothing for event-derived failures, so mask the
+		// resource's own identity as well. See resourceSensitive. One mapping
+		// covers the whole result in both directions, so overlapping values
+		// resolve the same way going out and coming back.
+		var mapping []common.Sensitive
+		if anonymize {
+			sets := make([][]common.Sensitive, 0, len(analysis.Error)+1)
+			for _, failure := range analysis.Error {
+				sets = append(sets, failure.Sensitive)
+			}
+			mapping = sensitiveMapping(append(sets, resourceSensitive(analysis.Name))...)
+		}
+
 		if bar != nil && verbose {
 			bar.Describe(fmt.Sprintf("Analyzing %s", analysis.Kind))
 		}
 
 		for _, failure := range analysis.Error {
 			if anonymize {
-				for _, s := range failure.Sensitive {
-					failure.Text = util.ReplaceIfMatch(failure.Text, s.Unmasked, s.Masked)
-				}
+				failure.Text = maskText(failure.Text, mapping)
 			}
 			texts = append(texts, failure.Text)
 		}
@@ -544,11 +707,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 		}
 
 		if anonymize {
-			for _, failure := range analysis.Error {
-				for _, s := range failure.Sensitive {
-					result = strings.ReplaceAll(result, s.Masked, s.Unmasked)
-				}
-			}
+			result = unmaskText(result, mapping)
 		}
 
 		analysis.Details = result
@@ -564,7 +723,7 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	inputKey := strings.Join(texts, " ")
 	// Check for cached data.
 	// TODO(bwplotka): This might depend on model too (or even other client configuration pieces), fix it in later PRs.
-	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, inputKey)
+	cacheKey := util.GetCacheKey(a.AIClient.GetName(), a.Language, promptTmpl+inputKey)
 
 	if !a.Cache.IsCacheDisabled() && a.Cache.Exists(cacheKey) {
 		response, err := a.Cache.Load(cacheKey)
@@ -574,10 +733,13 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 
 		if response != "" {
 			output, err := base64.StdEncoding.DecodeString(response)
-			if err == nil {
+			if err != nil {
+				color.Red("error decoding cached data; ignoring cache item: %v", err)
+			} else if strings.TrimSpace(string(output)) != "" {
 				return string(output), nil
+			} else {
+				color.Red("cached data is empty; ignoring cache item")
 			}
-			color.Red("error decoding cached data; ignoring cache item: %v", err)
 		}
 	}
 
