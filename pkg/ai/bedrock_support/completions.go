@@ -54,6 +54,33 @@ func (a *CohereMessagesCompletion) GetCompletion(ctx context.Context, prompt str
 	return body, nil
 }
 
+// CohereMessagesSingleSamplingCompletion is for Claude models that reject a request
+// setting both temperature and top_p (e.g. Claude Sonnet 4.5 and Claude Haiku 4.5 -
+// see the "Request and Response" warning on AWS's Anthropic Claude Messages
+// request/response docs). Only temperature is sent; top_p falls back to the
+// provider default.
+type CohereMessagesSingleSamplingCompletion struct{}
+
+func (a *CohereMessagesSingleSamplingCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
+	request := map[string]interface{}{
+		"max_tokens":        modelConfig.MaxTokens,
+		"temperature":       modelConfig.Temperature,
+		"anthropic_version": "bedrock-2023-05-31",
+		"messages": []map[string]interface{}{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+	}
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		return []byte{}, err
+	}
+	return body, nil
+}
+
 type AI21 struct {
 	completion ICompletion
 }

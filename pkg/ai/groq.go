@@ -59,6 +59,7 @@ func (c *GroqClient) Configure(config IAIConfig) error {
 
 	customHeaders := config.GetCustomHeaders()
 	defaultConfig.HTTPClient = &http.Client{
+		Timeout: defaultHTTPTimeout,
 		Transport: &OpenAIHeaderTransport{
 			Origin:  transport,
 			Headers: customHeaders,
@@ -93,6 +94,9 @@ func (c *GroqClient) GetCompletion(ctx context.Context, prompt string) (string, 
 	})
 	if err != nil {
 		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned")
 	}
 	return resp.Choices[0].Message.Content, nil
 }
