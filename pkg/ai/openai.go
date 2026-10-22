@@ -69,6 +69,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 
 	customHeaders := config.GetCustomHeaders()
 	defaultConfig.HTTPClient = &http.Client{
+		Timeout: defaultHTTPTimeout,
 		Transport: &OpenAIHeaderTransport{
 			Origin:  transport,
 			Headers: customHeaders,
