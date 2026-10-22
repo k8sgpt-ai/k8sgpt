@@ -30,6 +30,29 @@ func TestCohereCompletion_GetCompletion(t *testing.T) {
 	assert.Equal(t, 0.9, request["top_p"])
 }
 
+func TestCohereMessagesSingleSamplingCompletion_GetCompletion(t *testing.T) {
+	completion := &CohereMessagesSingleSamplingCompletion{}
+	modelConfig := BedrockModelConfig{
+		MaxTokens:   100,
+		Temperature: 0.7,
+		TopP:        0.9,
+	}
+	prompt := "Test prompt"
+
+	body, err := completion.GetCompletion(context.Background(), prompt, modelConfig)
+	assert.NoError(t, err)
+
+	var request map[string]interface{}
+	err = json.Unmarshal(body, &request)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 100, int(request["max_tokens"].(float64)))
+	assert.Equal(t, 0.7, request["temperature"])
+	assert.Equal(t, "bedrock-2023-05-31", request["anthropic_version"])
+	_, hasTopP := request["top_p"]
+	assert.False(t, hasTopP, "top_p must not be sent - Claude Sonnet 4.5/Haiku 4.5 reject requests setting both temperature and top_p")
+}
+
 func TestAI21_GetCompletion(t *testing.T) {
 	completion := &AI21{}
 	modelConfig := BedrockModelConfig{
