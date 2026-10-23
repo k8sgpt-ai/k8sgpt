@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"net"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
@@ -350,4 +352,131 @@ func waitForPort(address string, timeout time.Duration) error {
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+// TestMCPToolSchemaCompatibility tests that all MCP tool parameter schemas
+// comply with Draft-07 compatible schemas without $dynamicRef or unsupported Draft 2020-12
+// meta-schema URIs that cause validation errors in MCP clients like GitHub Copilot (Issue #1507).
+func TestMCPToolSchemaCompatibility(t *testing.T) {
+	logger, _ := zap.NewDevelopment()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	aiProvider := &ai.AIProvider{
+		Name:     "test-provider",
+		Password: "test-password",
+		Model:    "test-model",
+	}
+
+	mcpServer, err := NewMCPServer("8092", aiProvider, true, logger)
+	assert.NoError(t, err)
+	defer func() {
+		_ = mcpServer.Close()
+	}()
+
+	err = waitForPort("localhost:8092", 10*time.Second)
+	if err != nil {
+		t.Skipf("MCP server did not start within timeout: %v", err)
+	}
+
+	// Initialize session
+	initRequest := `{
+		"jsonrpc": "2.0",
+		"id": 1,
+		"method": "initialize",
+		"params": {
+			"protocolVersion": "2025-03-26",
+			"capabilities": {"tools": {}},
+			"clientInfo": {"name": "test-client", "version": "1.0.0"}
+		}
+	}`
+
+	initResp, err := http.Post("http://localhost:8092/mcp", "application/json", bytes.NewBufferString(initRequest))
+	require.NoError(t, err)
+	sessionID := initResp.Header.Get("Mcp-Session-Id")
+	_ = initResp.Body.Close()
+
+	// List tools
+	req, err := http.NewRequest("POST", "http://localhost:8092/mcp", bytes.NewBufferString(`{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}`))
+	require.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json,text/event-stream")
+	if sessionID != "" {
+		req.Header.Set("Mcp-Session-Id", sessionID)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var listResult struct {
+		Result struct {
+			Tools []struct {
+				Name        string         `json:"name"`
+				Description string         `json:"description"`
+				InputSchema map[string]any `json:"inputSchema"`
+			} `json:"tools"`
+		} `json:"result"`
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(&listResult)
+	require.NoError(t, err)
+	require.NotEmpty(t, listResult.Result.Tools)
+
+	toolMap := make(map[string]map[string]any)
+	for _, tool := range listResult.Result.Tools {
+		toolMap[tool.Name] = tool.InputSchema
+
+		// Serialize schema to check for meta-schema incompatibilities
+		schemaBytes, err := json.Marshal(tool.InputSchema)
+		require.NoError(t, err)
+		schemaStr := string(schemaBytes)
+
+		// Ensure no $dynamicRef or Draft 2020-12 meta-schema is used (Issue #1507)
+		assert.NotContains(t, schemaStr, "$dynamicRef", "Tool %s schema should not contain $dynamicRef", tool.Name)
+		assert.NotContains(t, schemaStr, "2020-12", "Tool %s schema should not use Draft 2020-12 meta-schema", tool.Name)
+
+		// Every tool should declare "type": "object"
+		assert.Equal(t, "object", tool.InputSchema["type"], "Tool %s inputSchema type should be object", tool.Name)
+	}
+
+	// Parameterless tools must have empty properties {} and no required fields
+	parameterlessTools := []string{"cluster-info", "list-namespaces", "list-filters", "list-integrations"}
+	for _, toolName := range parameterlessTools {
+		schema, exists := toolMap[toolName]
+		require.True(t, exists, "Parameterless tool %s should be registered", toolName)
+		props, ok := schema["properties"].(map[string]any)
+		require.True(t, ok, "Tool %s properties should be an object", toolName)
+		assert.Empty(t, props, "Tool %s should have empty properties", toolName)
+		assert.Nil(t, schema["required"], "Tool %s should have no required fields", toolName)
+	}
+
+	// Analyze tool should declare all parameters supported by handleAnalyze
+	analyzeSchema, exists := toolMap["analyze"]
+	require.True(t, exists, "analyze tool should be registered")
+	analyzeProps, ok := analyzeSchema["properties"].(map[string]any)
+	require.True(t, ok)
+	expectedAnalyzeProps := []string{
+		"namespace", "backend", "language", "explain", "filters",
+		"labelSelector", "noCache", "maxConcurrency", "withDoc",
+		"interactiveMode", "customHeaders", "withStats", "anonymize",
+	}
+	for _, prop := range expectedAnalyzeProps {
+		assert.Contains(t, analyzeProps, prop, "analyze tool should include %s parameter", prop)
+	}
+
+	// Config tool should have customAnalyzers as array
+	configSchema, exists := toolMap["config"]
+	require.True(t, exists, "config tool should be registered")
+	configProps, ok := configSchema["properties"].(map[string]any)
+	require.True(t, ok)
+	customAnalyzers, ok := configProps["customAnalyzers"].(map[string]any)
+	require.True(t, ok)
+	assert.Equal(t, "array", customAnalyzers["type"], "config customAnalyzers should be array")
 }
