@@ -50,16 +50,16 @@ func (c *AnthropicClient) Configure(config IAIConfig) error {
 		opts = append(opts, option.WithAPIKey(token))
 	}
 
+	httpClient := &http.Client{Timeout: defaultHTTPTimeout}
 	proxyEndpoint := config.GetProxyEndpoint()
 	if proxyEndpoint != "" {
 		proxyURL, err := url.Parse(proxyEndpoint)
 		if err != nil {
 			return err
 		}
-		opts = append(opts, option.WithHTTPClient(&http.Client{
-			Transport: &http.Transport{Proxy: http.ProxyURL(proxyURL)},
-		}))
+		httpClient.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 	}
+	opts = append(opts, option.WithHTTPClient(httpClient))
 
 	model := config.GetModel()
 	if model == "" {
