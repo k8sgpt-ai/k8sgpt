@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 )
 
 var outputFormats = map[string]func(*Analysis) ([]byte, error){
@@ -29,6 +30,33 @@ func (a *Analysis) PrintOutput(format string) ([]byte, error) {
 	return outputFunc(a)
 }
 
+// resultsWithFindingHashes returns the analysis results with Failure.Hash
+// filled in for every failure. The hash is derived from the same inputs
+// ApplyExclusions matches on (Kind, Name and the pre-anonymization failure
+// text), so the value printed here is the one a user pastes into the
+// exclusions config. The receiver's results are left untouched: this is a
+// rendering-only projection, which keeps the hash out of the AI payload and
+// out of the exclusion matching itself.
+func (a *Analysis) resultsWithFindingHashes() []common.Result {
+	if len(a.Results) == 0 {
+		return a.Results
+	}
+	results := make([]common.Result, len(a.Results))
+	for i, result := range a.Results {
+		results[i] = result
+		if len(result.Error) == 0 {
+			continue
+		}
+		failures := make([]common.Failure, len(result.Error))
+		for j, failure := range result.Error {
+			failure.Hash = FindingHash(result.Kind, result.Name, failure.Text)
+			failures[j] = failure
+		}
+		results[i].Error = failures
+	}
+	return results
+}
+
 func (a *Analysis) jsonOutput() ([]byte, error) {
 	var problems int
 	var status AnalysisStatus
@@ -44,7 +72,8 @@ func (a *Analysis) jsonOutput() ([]byte, error) {
 	result := JsonOutput{
 		Provider: a.AnalysisAIProvider,
 		Problems: problems,
-		Results:  a.Results,
+		Excluded: a.Excluded,
+		Results:  a.resultsWithFindingHashes(),
 		Errors:   a.Errors,
 		Status:   status,
 	}
@@ -87,6 +116,9 @@ func (a *Analysis) textOutput() ([]byte, error) {
 	output.WriteString("\n")
 	if len(a.Results) == 0 {
 		output.WriteString(color.GreenString("No problems detected\n"))
+		if a.Excluded > 0 {
+			output.WriteString(color.GreenString("%d findings excluded\n", a.Excluded))
+		}
 		return []byte(output.String()), nil
 	}
 	for n, result := range a.Results {
@@ -95,12 +127,19 @@ func (a *Analysis) textOutput() ([]byte, error) {
 			color.YellowString(result.Name),
 			color.CyanString(result.ParentObject)))
 		for _, err := range result.Error {
-			output.WriteString(fmt.Sprintf("- %s %s\n", color.RedString("Error:"), color.RedString(err.Text)))
+			// The trailing hash is what a user copies into the exclusions
+			// config; without it the feature is unusable without recomputing
+			// SHA-256 by hand.
+			output.WriteString(fmt.Sprintf("- %s %s %s\n", color.RedString("Error:"), color.RedString(err.Text),
+				color.HiBlackString("hash=%s", FindingHash(result.Kind, result.Name, err.Text))))
 			if err.KubernetesDoc != "" {
 				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Kubernetes Doc:"), color.RedString(err.KubernetesDoc)))
 			}
 		}
 		output.WriteString(color.GreenString(result.Details + "\n"))
+	}
+	if a.Excluded > 0 {
+		output.WriteString(color.YellowString("\n%d findings excluded\n", a.Excluded))
 	}
 	return []byte(output.String()), nil
 }
