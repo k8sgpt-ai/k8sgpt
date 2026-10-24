@@ -491,6 +491,7 @@ Unused:
 > customrest
 > ibmwatsonxai
 > litellm
+> gpt2giga
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
@@ -507,6 +508,17 @@ needed if your proxy enforces a virtual key.
 ```
 k8sgpt auth add --backend litellm --model gpt-4o
 k8sgpt analyze --explain --backend litellm
+```
+
+_Using GPT2Giga_
+
+The `gpt2giga` backend connects to a GPT2Giga service using the OpenAI-compatible
+Chat Completions API. It defaults to `http://localhost:8090`; use `--baseurl` to
+configure a different endpoint. This backend does not require a password.
+
+```
+k8sgpt auth add --backend gpt2giga --model <model>
+k8sgpt analyze --explain --backend gpt2giga
 ```
 
 _To set a new default provider_
