@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.42](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.41...v0.4.42) (2026-10-24)
+
+
+### Features
+
+* add NodeClaim analyzer for Karpenter v1 ([#1842](https://github.com/k8sgpt-ai/k8sgpt/issues/1842)) ([ae3863a](https://github.com/k8sgpt-ai/k8sgpt/commit/ae3863a10db8ccce6d7e80f71c2be98df53b11a1))
+
+
+### Bug Fixes
+
+* **deps:** update k8s.io/utils digest to ca04ba5 ([#1865](https://github.com/k8sgpt-ai/k8sgpt/issues/1865)) ([5a6543a](https://github.com/k8sgpt-ai/k8sgpt/commit/5a6543a13ff98d639e93af88b8a42d3e71863b92))
+
+
+### Other
+
+* **deps:** update docker/login-action digest to 81c6f93 ([#1864](https://github.com/k8sgpt-ai/k8sgpt/issues/1864)) ([192b355](https://github.com/k8sgpt-ai/k8sgpt/commit/192b355ceb52c1144f791742aebe19fb3bfdfe2a))
+
 ## [0.4.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.40...v0.4.41) (2026-10-20)
 
 
