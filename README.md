@@ -734,6 +734,11 @@ _Removing custom analyzer_
 k8sgpt custom-analyzer remove --names "my-custom-analyzer,my-custom-analyzer-2"
 ```
 
+_Filtering which custom analyzers run_
+```
+k8sgpt analyze --custom-analysis --filter my-custom-analyzer
+```
+
 </details>
 ## Model Context Protocol (MCP)
 

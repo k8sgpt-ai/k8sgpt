@@ -930,3 +930,95 @@ func TestNewAnalysis_CustomHeaders(t *testing.T) {
 	require.Equal(t, []string{"config-val-2"}, merged.Values("X-Config-Header-2"))
 	require.Equal(t, []string{"not-overridden"}, merged.Values("Different-Header-Key"))
 }
+
+// Test: the --filter flag must select a single custom analyzer instead of
+// running every configured one.
+func TestRunCustomAnalysisHonoursFilters(t *testing.T) {
+	viper.Set("verbose", true)
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{
+			"name":       "AlphaAnalyzer",
+			"connection": map[string]interface{}{"url": "127.0.0.1", "port": "2333"},
+		},
+		{
+			"name":       "BetaAnalyzer",
+			"connection": map[string]interface{}{"url": "127.0.0.1", "port": "2333"},
+		},
+	})
+
+	// The filter is deliberately lower-case: custom analyzer names are
+	// user-defined, so matching must not depend on case.
+	analysisObj := &Analysis{
+		MaxConcurrency: 1,
+		Filters:        []string{"betaanalyzer"},
+	}
+	output := util.CaptureOutput(func() {
+		analysisObj.RunCustomAnalysis()
+	})
+
+	require.Contains(t, output, "Debug: Found custom analyzers [BetaAnalyzer].")
+	require.Contains(t, output, "Debug: BetaAnalyzer launched.")
+	require.NotContains(t, output, "AlphaAnalyzer")
+	// Only the selected analyzer is contacted, so exactly one connection error.
+	require.Len(t, analysisObj.Errors, 1)
+}
+
+// Test: a filter that matches no custom analyzer must run none of them and must
+// not report an error of its own, leaving that to filter resolution.
+func TestRunCustomAnalysisFilterMatchesNothing(t *testing.T) {
+	viper.Set("verbose", true)
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{
+			"name":       "AlphaAnalyzer",
+			"connection": map[string]interface{}{"url": "127.0.0.1", "port": "2333"},
+		},
+	})
+
+	analysisObj := &Analysis{
+		MaxConcurrency: 1,
+		Filters:        []string{"Pod"},
+	}
+	output := util.CaptureOutput(func() {
+		analysisObj.RunCustomAnalysis()
+	})
+
+	require.Contains(t, output, "Debug: No custom analyzers matched the given filters.")
+	require.NotContains(t, output, "AlphaAnalyzer")
+	require.Empty(t, analysisObj.Errors)
+}
+
+func TestCustomAnalyzerSelected(t *testing.T) {
+	cases := []struct {
+		name    string
+		filters []string
+		want    bool
+	}{
+		{"Pod", nil, true},
+		{"Pod", []string{}, true},
+		{"MyAnalyzer", []string{"MyAnalyzer"}, true},
+		{"MyAnalyzer", []string{"myanalyzer"}, true},
+		{"MyAnalyzer", []string{"Pod", " MyAnalyzer "}, true},
+		{"MyAnalyzer", []string{"Pod"}, false},
+	}
+	for _, tc := range cases {
+		require.Equal(t, tc.want, customAnalyzerSelected(tc.name, tc.filters),
+			"name=%q filters=%v", tc.name, tc.filters)
+	}
+}
+
+func TestFilterResolutionError(t *testing.T) {
+	customNames := []string{"MyAnalyzer"}
+
+	// Filter names a custom analyzer that is going to run: stay silent.
+	require.Equal(t, "", filterResolutionError("MyAnalyzer", customNames, true))
+	require.Equal(t, "", filterResolutionError("myanalyzer", customNames, true))
+
+	// Filter names a custom analyzer that is switched off: say how to enable it.
+	disabled := filterResolutionError("MyAnalyzer", customNames, false)
+	require.Contains(t, disabled, "custom analyzer")
+	require.Contains(t, disabled, "--custom-analysis")
+
+	// Filter matches neither a core analyzer nor a custom one.
+	require.Contains(t, filterResolutionError("Nope", customNames, true), "does not exist")
+	require.Contains(t, filterResolutionError("Pod", nil, false), "does not exist")
+}
