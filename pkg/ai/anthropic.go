@@ -17,7 +17,7 @@ const (
 	anthropicClientName       = "anthropic"
 	anthropicDefaultBaseURL   = "https://api.anthropic.com"
 	anthropicMessagesPath     = "/v1/messages"
-	anthropicDefaultModel     = "claude-3-5-sonnet-latest"
+	anthropicDefaultModel     = "claude-sonnet-4-6"
 	anthropicDefaultMaxTokens = 2048
 )
 
