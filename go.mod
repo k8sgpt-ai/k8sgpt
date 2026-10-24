@@ -186,7 +186,7 @@ require (
 	github.com/containerd/containerd v1.7.36 // indirect
 	github.com/cyphar/filepath-securejoin v0.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/docker/cli v26.1.4+incompatible // indirect
+	github.com/docker/cli v29.2.0+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.3.0+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.2 // indirect
