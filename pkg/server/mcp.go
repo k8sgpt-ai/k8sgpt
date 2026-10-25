@@ -449,8 +449,13 @@ func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToo
 	analysis.RunAnalysis()
 	if req.Explain {
 
-		var output string
-		err := analysis.GetAIResults(output, req.Anonymize)
+		// Pass "json" so GetAIResults does not start a progress bar: the bar
+		// writes to stdout, which is the MCP stdio JSON-RPC channel, so any
+		// progress output corrupts the protocol stream and the client drops
+		// the response (the symptom reported in #1501: "details" stays empty
+		// over MCP while the CLI explains fine). The CLI passes the user's
+		// --output flag; here the response below is plain text either way.
+		err := analysis.GetAIResults("json", req.Anonymize)
 		if err != nil {
 			return mcp.NewToolResultErrorf("Failed to get results from AI: %v", err), nil
 		}
