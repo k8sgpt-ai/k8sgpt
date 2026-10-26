@@ -16,7 +16,17 @@ package ai
 import (
 	"context"
 	"net/http"
+	"time"
 )
+
+// defaultHTTPTimeout bounds the worst-case duration of a single AI backend
+// HTTP call. It acts as a safety net for backends whose SDK does not
+// propagate the request context's deadline all the way to the transport,
+// and for callers that pass a context with no deadline of its own. It is
+// intentionally generous (rather than a strict SLA) since local/self-hosted
+// backends such as Ollama can legitimately take minutes to generate a
+// completion on constrained hardware.
+const defaultHTTPTimeout = 10 * time.Minute
 
 var (
 	clients = []IAI{
