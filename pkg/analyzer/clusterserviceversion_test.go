@@ -35,7 +35,9 @@ func TestClusterServiceVersionAnalyzer(t *testing.T) {
 				"namespace": "ns1",
 			},
 			"status": map[string]any{
-				"phase": "Failed",
+				"phase":   "Failed",
+				"reason":  "ErrorResolving",
+				"message": "missing dep",
 				// IMPORTANT: conditions must be []interface{}, not []map[string]any
 				"conditions": []interface{}{
 					map[string]any{
@@ -74,5 +76,67 @@ func TestClusterServiceVersionAnalyzer(t *testing.T) {
 	}
 	if len(res[0].Error) == 0 || !strings.Contains(res[0].Error[0].Text, "missing dep") {
 		t.Fatalf("expected 'missing dep' in failure, got %#v", res[0].Error)
+	}
+}
+
+func TestClusterServiceVersionAnalyzerReportsCurrentReason(t *testing.T) {
+	failed := &unstructured.Unstructured{
+		Object: map[string]any{
+			"apiVersion": "operators.coreos.com/v1alpha1",
+			"kind":       "ClusterServiceVersion",
+			"metadata": map[string]any{
+				"name":      "etcdoperator.v0.9.4",
+				"namespace": "ns1",
+			},
+			"status": map[string]any{
+				"phase":   "Failed",
+				"reason":  "InstallCheckFailed",
+				"message": "install timeout",
+				"conditions": []interface{}{
+					map[string]any{
+						"phase":   "Pending",
+						"reason":  "RequirementsUnknown",
+						"message": "requirements not yet checked",
+					},
+					map[string]any{
+						"phase":   "InstallReady",
+						"reason":  "AllRequirementsMet",
+						"message": "all requirements found, attempting install",
+					},
+					map[string]any{
+						"phase":   "Installing",
+						"reason":  "InstallSucceeded",
+						"message": "waiting for install components to report healthy",
+					},
+					map[string]any{
+						"phase":   "Failed",
+						"reason":  "InstallCheckFailed",
+						"message": "install timeout",
+					},
+				},
+			},
+		},
+	}
+
+	listKinds := map[schema.GroupVersionResource]string{
+		{Group: "operators.coreos.com", Version: "v1alpha1", Resource: "clusterserviceversions"}: "ClusterServiceVersionList",
+	}
+	dc := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), listKinds, failed)
+
+	a := common.Analyzer{
+		Context: context.TODO(),
+		Client:  &kubernetes.Client{DynamicClient: dc},
+	}
+
+	res, err := (ClusterServiceVersionAnalyzer{}).Analyze(a)
+	if err != nil {
+		t.Fatalf("Analyze error: %v", err)
+	}
+	if len(res) != 1 || len(res[0].Error) != 1 {
+		t.Fatalf("expected 1 result with 1 failure, got %#v", res)
+	}
+	want := `phase="Failed": InstallCheckFailed: install timeout`
+	if got := res[0].Error[0].Text; got != want {
+		t.Fatalf("failure text = %q, want %q", got, want)
 	}
 }
