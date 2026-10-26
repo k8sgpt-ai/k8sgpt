@@ -52,3 +52,28 @@ func (SubscriptionAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	}
 	return results, nil
 }
+
+// pickWorstCondition returns the reason and message of the first True
+// condition. Subscription conditions are abnormal-true, so a True condition
+// such as ResolutionFailed is the problem and a False one is healthy.
+func pickWorstCondition(conds []interface{}) string {
+	for _, c := range conds {
+		m, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		if s, _ := m["status"].(string); s != "True" {
+			continue
+		}
+		r, _ := m["reason"].(string)
+		msg, _ := m["message"].(string)
+		if r == "" && msg == "" {
+			continue
+		}
+		if r != "" && msg != "" {
+			return r + ": " + msg
+		}
+		return r + msg
+	}
+	return ""
+}
