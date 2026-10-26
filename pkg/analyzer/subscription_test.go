@@ -40,7 +40,7 @@ func TestSubscriptionAnalyzer(t *testing.T) {
 				"state": "UpgradeAvailable",
 				"conditions": []interface{}{
 					map[string]any{
-						"status":  "False",
+						"status":  "True",
 						"reason":  "CatalogSourcesUnhealthy",
 						"message": "not reachable",
 					},
@@ -74,5 +74,56 @@ func TestSubscriptionAnalyzer(t *testing.T) {
 	}
 	if len(res[0].Error) == 0 || !strings.Contains(res[0].Error[0].Text, "CatalogSourcesUnhealthy") {
 		t.Fatalf("expected 'CatalogSourcesUnhealthy' in failure, got %#v", res[0].Error)
+	}
+}
+
+func TestSubscriptionAnalyzerReportsTrueCondition(t *testing.T) {
+	sub := &unstructured.Unstructured{
+		Object: map[string]any{
+			"apiVersion": "operators.coreos.com/v1alpha1",
+			"kind":       "Subscription",
+			"metadata": map[string]any{
+				"name":      "etcd",
+				"namespace": "ns1",
+			},
+			"status": map[string]any{
+				"conditions": []interface{}{
+					map[string]any{
+						"type":    "CatalogSourcesUnhealthy",
+						"status":  "False",
+						"reason":  "AllCatalogSourcesHealthy",
+						"message": "all available catalogsources are healthy",
+					},
+					map[string]any{
+						"type":    "ResolutionFailed",
+						"status":  "True",
+						"reason":  "ConstraintsNotSatisfiable",
+						"message": "no operators found in package etcd in the catalog referenced by subscription etcd",
+					},
+				},
+			},
+		},
+	}
+
+	listKinds := map[schema.GroupVersionResource]string{
+		{Group: "operators.coreos.com", Version: "v1alpha1", Resource: "subscriptions"}: "SubscriptionList",
+	}
+	dc := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), listKinds, sub)
+
+	a := common.Analyzer{
+		Context: context.TODO(),
+		Client:  &kubernetes.Client{DynamicClient: dc},
+	}
+
+	res, err := (SubscriptionAnalyzer{}).Analyze(a)
+	if err != nil {
+		t.Fatalf("Analyze error: %v", err)
+	}
+	if len(res) != 1 || len(res[0].Error) != 1 {
+		t.Fatalf("expected 1 result with 1 failure, got %#v", res)
+	}
+	want := `state="": subscription not at latest; ConstraintsNotSatisfiable: no operators found in package etcd in the catalog referenced by subscription etcd`
+	if got := res[0].Error[0].Text; got != want {
+		t.Fatalf("failure text = %q, want %q", got, want)
 	}
 }
