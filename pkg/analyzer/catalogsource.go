@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -25,8 +24,8 @@ func (CatalogSourceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 	}
 
 	list, err := a.Client.GetDynamicClient().
-		Resource(catSrcGVR).Namespace(metav1.NamespaceAll).
-		List(a.Context, metav1.ListOptions{})
+		Resource(catSrcGVR).Namespace(a.Namespace).
+		List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
