@@ -20,6 +20,11 @@ K8sGPT supports a variety of AI/LLM providers (backends). Some providers have a 
 ### Ollama
 - **Model:** User-configurable (default: `llama3`, others can be specified)
 
+### GPT2Giga (`gpt2giga`)
+- **Model:** User-configurable
+- **API:** OpenAI-compatible Chat Completions API
+- **Endpoint:** Defaults to `http://localhost:8090`; override with `--baseurl`
+
 ### NoOpAI
 - **Model:** N/A (no real model, used for testing)
 
