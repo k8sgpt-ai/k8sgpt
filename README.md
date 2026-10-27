@@ -284,6 +284,7 @@ you will be able to write your own analyzers.
 - [x] ValidatingAdmissionPolicy
 - [x] ResourceClaim
 - [x] NodeClaim (Karpenter v1; cluster-scoped, so `--namespace` does not apply)
+- [x] NodePool (Karpenter v1; cluster-scoped, so `--namespace` does not apply; pools at their limit are reported as at capacity)
 
 ## Examples
 
