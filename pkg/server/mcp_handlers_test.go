@@ -19,10 +19,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -146,6 +149,58 @@ func TestHandleListEventsAppliesInvolvedObjectFieldSelector(t *testing.T) {
 				require.Equal(t, e.InvolvedObject.Name, got[i].InvolvedObject.Name)
 				require.Equal(t, e.InvolvedObject.Kind, got[i].InvolvedObject.Kind)
 			}
+		})
+	}
+}
+
+func TestFilterToolsStartFromCoreFilters(t *testing.T) {
+	coreFilters, _, _ := analyzer.ListFilters()
+	withoutPod := slices.DeleteFunc(slices.Clone(coreFilters), func(f string) bool { return f == "Pod" })
+
+	s := &K8sGptMCPServer{}
+	tests := []struct {
+		name    string
+		handler func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error)
+		active  []string
+		filters []string
+		want    []string
+	}{
+		{
+			name:    "add with no active filters keeps the core analyzers",
+			handler: s.handleAddFilters,
+			filters: []string{"HorizontalPodAutoscaler"},
+			want:    append(slices.Clone(coreFilters), "HorizontalPodAutoscaler"),
+		},
+		{
+			name:    "remove with no active filters removes from the core analyzers",
+			handler: s.handleRemoveFilters,
+			filters: []string{"Pod"},
+			want:    withoutPod,
+		},
+		{
+			name:    "add with active filters appends to them",
+			handler: s.handleAddFilters,
+			active:  []string{"Pod"},
+			filters: []string{"HorizontalPodAutoscaler"},
+			want:    []string{"Pod", "HorizontalPodAutoscaler"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			t.Cleanup(viper.Reset)
+			viper.SetConfigFile(filepath.Join(t.TempDir(), "config.yaml"))
+			if tt.active != nil {
+				viper.Set("active_filters", tt.active)
+			}
+
+			result, err := tt.handler(context.Background(), mcp.CallToolRequest{
+				Params: mcp.CallToolParams{Arguments: map[string]any{"filters": tt.filters}},
+			})
+			require.NoError(t, err)
+			require.False(t, result.IsError, "unexpected tool error: %+v", result.Content)
+			require.ElementsMatch(t, tt.want, viper.GetStringSlice("active_filters"))
 		})
 	}
 }
