@@ -15,7 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+
+	rpc "buf.build/gen/go/k8sgpt-ai/k8sgpt/grpc/go/schema/v1/schemav1grpc"
+	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 )
 
 func TestServe(t *testing.T) {
@@ -71,6 +75,59 @@ func TestServe(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Error("Serve did not return after shutdown")
 	}
+}
+
+func TestServe_ShutdownRPC(t *testing.T) {
+	logger, _ := zap.NewDevelopment()
+	defer func() {
+		_ = logger.Sync()
+	}()
+
+	s := &Config{
+		Port:       "50060",
+		Logger:     logger,
+		EnableHttp: false,
+	}
+
+	serveErr := make(chan error, 1)
+	go func() {
+		serveErr <- s.Serve()
+	}()
+
+	err := waitForPort("localhost:50060", 10*time.Second)
+	assert.NoError(t, err, "Server should start without error")
+
+	conn, err := grpc.NewClient("localhost:50060", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	assert.NoError(t, err, "Should be able to dial the server")
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	configCli := rpc.NewServerConfigServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := configCli.Shutdown(ctx, &schemav1.ShutdownRequest{})
+	assert.NoError(t, err, "Shutdown RPC should succeed")
+	assert.NotNil(t, resp)
+	assert.Equal(t, "Success", resp.Status)
+
+	select {
+	case err := <-serveErr:
+		assert.ErrorIs(t, err, net.ErrClosed, "Serve should return due to shutdown RPC")
+	case <-time.After(5 * time.Second):
+		t.Error("Serve did not exit after shutdown RPC")
+	}
+}
+
+func TestServer_ShutdownUnstartedAndWithMetrics(t *testing.T) {
+	s := &Config{}
+	err := s.Shutdown()
+	assert.NoError(t, err)
+
+	s.metricsServer = &http.Server{}
+	err = s.Shutdown()
+	assert.NoError(t, err)
 }
 
 // TestMCPServerCreation tests the creation of an MCP server

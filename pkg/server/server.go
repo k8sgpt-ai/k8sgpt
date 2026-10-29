@@ -75,7 +75,13 @@ var health = Health{
 }
 
 func (s *Config) Shutdown() error {
-	return s.listener.Close()
+	if s.metricsServer != nil {
+		_ = s.metricsServer.Close()
+	}
+	if s.listener != nil {
+		return s.listener.Close()
+	}
+	return nil
 }
 
 // grpcHandlerFunc returns an http.Handler that delegates to grpcServer on incoming gRPC
@@ -101,7 +107,11 @@ func (s *Config) Serve() error {
 		return err
 	}
 
-	s.ConfigHandler = &config.Handler{}
+	s.ConfigHandler = &config.Handler{
+		OnShutdown: func() {
+			_ = s.Shutdown()
+		},
+	}
 	s.AnalyzeHandler = &analyze.Handler{}
 	s.QueryHandler = &query.Handler{}
 	s.listener = lis
