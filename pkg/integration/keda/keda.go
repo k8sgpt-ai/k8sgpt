@@ -41,14 +41,35 @@ func getEnv(key, defaultValue string) string {
 func NewKeda() *Keda {
 	helmClient, err := helmclient.New(&helmclient.Options{})
 	if err != nil {
-		panic(err)
+		return &Keda{}
 	}
 	return &Keda{
 		helm: helmClient,
 	}
 }
 
+// WithHelmClient overrides the helm client (useful for testing)
+func (k *Keda) WithHelmClient(client helmclient.Client) *Keda {
+	k.helm = client
+	return k
+}
+
+func (k *Keda) initHelmClient() error {
+	if k.helm == nil {
+		helmClient, err := helmclient.New(&helmclient.Options{})
+		if err != nil {
+			return err
+		}
+		k.helm = helmClient
+	}
+	return nil
+}
+
 func (k *Keda) Deploy(namespace string) error {
+	if err := k.initHelmClient(); err != nil {
+		return err
+	}
+
 	// Add the repository
 	chartRepo := repo.Entry{
 		Name: RepoShortName,
@@ -56,7 +77,7 @@ func (k *Keda) Deploy(namespace string) error {
 	}
 	// Add a chart-repository to the client.
 	if err := k.helm.AddOrUpdateChartRepo(chartRepo); err != nil {
-		panic(err)
+		return err
 	}
 
 	chartSpec := helmclient.ChartSpec{
@@ -81,6 +102,9 @@ func (k *Keda) Deploy(namespace string) error {
 }
 
 func (k *Keda) UnDeploy(namespace string) error {
+	if err := k.initHelmClient(); err != nil {
+		return err
+	}
 	kubecontext := viper.GetString("kubecontext")
 	kubeconfig := viper.GetString("kubeconfig")
 	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
@@ -164,6 +188,9 @@ func (k *Keda) GetAnalyzerName() []string {
 }
 
 func (k *Keda) GetNamespace() (string, error) {
+	if k.helm == nil {
+		return "", status.Error(codes.NotFound, "keda release not found")
+	}
 	releases, err := k.helm.ListDeployedReleases()
 	if err != nil {
 		return "", err
