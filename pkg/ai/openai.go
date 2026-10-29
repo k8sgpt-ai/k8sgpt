@@ -33,6 +33,7 @@ type OpenAIClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 	// organizationId string
 }
 
@@ -42,6 +43,14 @@ const (
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
 )
+
+// maxTokensOrDefault returns the configured output limit, or maxToken when none is set.
+func maxTokensOrDefault(configured int) int {
+	if configured <= 0 {
+		return maxToken
+	}
+	return configured
+}
 
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
@@ -84,6 +93,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
 }
 
@@ -98,7 +108,7 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 			},
 		},
 		Temperature:      c.temperature,
-		MaxCompletionTokens: maxToken,
+		MaxCompletionTokens: c.maxTokens,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
