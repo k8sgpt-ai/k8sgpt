@@ -204,3 +204,78 @@ func TestFilterToolsStartFromCoreFilters(t *testing.T) {
 		})
 	}
 }
+
+
+func TestHandleConfigCustomAnalyzersValidation(t *testing.T) {
+	s := &K8sGptMCPServer{}
+
+	t.Run("fails when custom analyzer name is empty", func(t *testing.T) {
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "",
+							"connection": map[string]any{
+								"url":  "http://localhost",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "custom analyzer name is required")
+	})
+
+	t.Run("fails when custom analyzer connection url is empty", func(t *testing.T) {
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "test-analyzer",
+							"connection": map[string]any{
+								"url":  "",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "custom analyzer connection url is required for test-analyzer")
+	})
+
+	t.Run("succeeds with valid custom analyzer", func(t *testing.T) {
+		viper.Reset()
+		t.Cleanup(viper.Reset)
+		viper.SetConfigFile(filepath.Join(t.TempDir(), "config.yaml"))
+
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "test-analyzer",
+							"connection": map[string]any{
+								"url":  "http://localhost",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.False(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "Successfully added configuration")
+	})
+}

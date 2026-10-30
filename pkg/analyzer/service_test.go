@@ -15,11 +15,14 @@ package analyzer
 
 import (
 	"context"
+	"os"
 	"sort"
 	"testing"
 
+	"github.com/fatih/color"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -285,7 +288,16 @@ func TestServiceAnalyzer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			analyzer := ServiceAnalyzer{}
-			results, err := analyzer.Analyze(tt.config)
+			var results []common.Result
+			var err error
+			// color prints to the stdout it saw at start-up, so point it at the capture
+			old := color.Output
+			defer func() { color.Output = old }()
+			output := util.CaptureOutput(func() {
+				color.Output = os.Stdout
+				results, err = analyzer.Analyze(tt.config)
+			})
+			require.Empty(t, output, "stdout carries only the report")
 			require.NoError(t, err)
 			require.Len(t, results, len(tt.expectations))
 
