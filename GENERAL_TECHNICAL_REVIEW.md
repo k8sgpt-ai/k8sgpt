@@ -17,7 +17,7 @@
 
 The roadmap is documented in [ROADMAP.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/ROADMAP.md). Scope is determined through:
 - GitHub Issues and PRs from the community
-- Slack discussions in [#k8sgpt](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+- Slack discussions in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io)
 - GitHub Discussions
 - Maintainer retrospectives and planning sessions
 

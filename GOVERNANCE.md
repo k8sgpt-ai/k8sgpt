@@ -12,7 +12,7 @@ k8sgpt operates under the following principles:
 - **Merit-based**: Influence is earned through sustained, quality contributions.
 - **Community-focused**: We serve the cloud native community, not any single vendor.
 
-k8sgpt is a CNCF project and adheres to the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
+k8sgpt is a CNCF project and adheres to the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
 
 ## Decision Making
 
@@ -93,14 +93,21 @@ Subprojects have their own maintainers but are expected to align with the main p
 
 We encourage broad community participation:
 
-- **Slack**: [#k8sgpt](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
 - **GitHub Issues**: All feature requests and bug reports
 - **GitHub Discussions**: Open for community questions and ideas
-- **CNCF Slack**: [#k8sgpt](https://slack.cncf.io/)
+- **Slack**: `#k8sgpt` on [CNCF Slack](https://slack.cncf.io/)
+
+### Community meeting
+
+k8sgpt holds a monthly public community meeting, open to everyone, on the second Thursday, 16:00–17:00 UK time (Europe/London). The first meeting is Thursday 12 November 2026.
+
+Join on Google Meet: https://meet.google.com/ugf-zqjt-nwu
+
+Agenda items can be posted in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io) or in the K8sGPT Slack `#general`.
 
 ## Code of Conduct
 
-All participants in this project are expected to adhere to the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md). Reports should be sent to the project maintainers and/or CNCF staff.
+All participants in this project are expected to adhere to the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md). Reports should be sent to the project maintainers and/or CNCF staff.
 
 ## Amendment Process
 
