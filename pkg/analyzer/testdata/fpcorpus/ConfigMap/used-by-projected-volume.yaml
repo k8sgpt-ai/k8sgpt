@@ -1,0 +1,30 @@
+issues: ["#1738", "#1741"]
+description: a ConfigMap mounted through a projected volume is in use
+namespace: default
+expectResults: []
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+data:
+  key: value
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  namespace: default
+spec:
+  containers:
+  - name: main
+    image: nginx
+    volumeMounts:
+    - {name: config, mountPath: /etc/app}
+  volumes:
+  - name: config
+    projected:
+      sources:
+      - configMap:
+          name: app-config

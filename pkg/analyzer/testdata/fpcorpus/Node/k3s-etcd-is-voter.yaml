@@ -1,0 +1,12 @@
+issues: ["#1461"]
+description: the k3s EtcdIsVoter condition is informational, not a failure
+expectResults: []
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: k3s-server
+status:
+  conditions:
+  - {type: Ready, status: "True"}
+  - {type: EtcdIsVoter, status: "True"}

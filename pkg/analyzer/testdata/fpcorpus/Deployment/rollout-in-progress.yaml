@@ -1,0 +1,30 @@
+issues: ["#1742", "#1743"]
+description: a rollout that is still progressing is not a replica mismatch
+namespace: default
+expectResults: []
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rolling
+  namespace: default
+  generation: 4
+spec:
+  replicas: 3
+  selector:
+    matchLabels: {app: rolling}
+  template:
+    metadata:
+      labels: {app: rolling}
+    spec:
+      containers:
+      - {name: main, image: nginx}
+status:
+  observedGeneration: 4
+  replicas: 4
+  updatedReplicas: 1
+  readyReplicas: 2
+  availableReplicas: 2
+  conditions:
+  - {type: Progressing, status: "True", reason: ReplicaSetUpdated}
+  - {type: Available, status: "True", reason: MinimumReplicasAvailable}

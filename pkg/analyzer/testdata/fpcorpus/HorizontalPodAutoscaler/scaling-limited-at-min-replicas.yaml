@@ -1,0 +1,41 @@
+issues: ["#1667", "#1716"]
+description: ScalingLimited=True/TooFewReplicas at minReplicas is the floor working, not a fault
+namespace: default
+expectResults: []
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: web}
+  template:
+    metadata:
+      labels: {app: web}
+    spec:
+      containers:
+      - name: main
+        image: nginx
+        resources:
+          requests: {cpu: 100m, memory: 64Mi}
+          limits: {cpu: 200m, memory: 128Mi}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web
+  namespace: default
+spec:
+  minReplicas: 2
+  maxReplicas: 5
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: web}
+status:
+  currentReplicas: 2
+  desiredReplicas: 2
+  conditions:
+  - {type: AbleToScale, status: "True", reason: ReadyForNewScale}
+  - {type: ScalingActive, status: "True", reason: ValidMetricFound}
+  - {type: ScalingLimited, status: "True", reason: TooFewReplicas, message: "the desired replica count is less than the minimum replica count"}
