@@ -81,6 +81,31 @@ func (a *CohereMessagesSingleSamplingCompletion) GetCompletion(ctx context.Conte
 	return body, nil
 }
 
+// CohereMessagesNoSamplingCompletion is for Claude models that reject any
+// temperature or top_p value (Claude Opus 5.5 and Claude Sonnet 5.5 return a 400,
+// see "Sampling parameters" in Anthropic's Claude Opus 5.5 migration guide).
+// Neither is sent, so the model uses its own defaults.
+type CohereMessagesNoSamplingCompletion struct{}
+
+func (a *CohereMessagesNoSamplingCompletion) GetCompletion(ctx context.Context, prompt string, modelConfig BedrockModelConfig) ([]byte, error) {
+	request := map[string]interface{}{
+		"max_tokens":        modelConfig.MaxTokens,
+		"anthropic_version": "bedrock-2023-05-31",
+		"messages": []map[string]interface{}{
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+	}
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		return []byte{}, err
+	}
+	return body, nil
+}
+
 type AI21 struct {
 	completion ICompletion
 }
