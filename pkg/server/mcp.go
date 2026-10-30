@@ -138,6 +138,9 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 		mcp.WithString("backend",
 			mcp.Description("AI backend to use for analysis (e.g., openai, azure, localai)"),
 		),
+		mcp.WithString("language",
+			mcp.Description("Language for analysis results (e.g., english, spanish)"),
+		),
 		mcp.WithBoolean("explain",
 			mcp.Description("Send each detected problem to the configured AI backend and return its explanation and suggested fix in the result's details field"),
 		),
@@ -146,23 +149,30 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 			// without below line MCP server fails with Google Agent Development Kit (ADK), interestingly works fine with mcpinspector
 			mcp.WithStringItems(),
 		),
-		mcp.WithString("language",
-			mcp.Description("Language of the AI explanation (e.g. english); only used with explain"),
+		mcp.WithString("labelSelector",
+			mcp.Description("Label selector to filter resources (e.g., 'app=myapp')"),
 		),
 		mcp.WithBoolean("noCache",
-			mcp.Description("Skip cached AI explanations; only used with explain"),
-		),
-		mcp.WithBoolean("anonymize",
-			mcp.Description("Mask sensitive data before sending it to the AI backend; only used with explain"),
-		),
-		mcp.WithString("labelSelector",
-			mcp.Description("Label selector to narrow down the analyzed resources (e.g. app=nginx)"),
+			mcp.Description("Bypass cache for analysis"),
 		),
 		mcp.WithNumber("maxConcurrency",
-			mcp.Description("Maximum number of analyzers run in parallel (default 10, max 100)"),
+			mcp.Description("Maximum number of concurrent analyses"),
 		),
 		mcp.WithBoolean("withDoc",
-			mcp.Description("Include Kubernetes API documentation for the affected fields"),
+			mcp.Description("Include Kubernetes documentation in the analysis"),
+		),
+		mcp.WithBoolean("interactiveMode",
+			mcp.Description("Run analysis in interactive mode"),
+		),
+		mcp.WithArray("customHeaders",
+			mcp.Description("Custom headers to pass to AI provider"),
+			mcp.WithStringItems(),
+		),
+		mcp.WithBoolean("withStats",
+			mcp.Description("Include statistics in the analysis output"),
+		),
+		mcp.WithBoolean("anonymize",
+			mcp.Description("Anonymize sensitive data (names, IPs, namespaces) in AI requests"),
 		),
 	)
 	s.server.AddTool(analyzeTool, s.handleAnalyze)
@@ -176,23 +186,26 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 	// Register config tool with proper JSON schema
 	configTool := mcp.NewTool("config",
 		mcp.WithDescription("Configure K8sGPT settings including custom analyzers and cache"),
-		mcp.WithObject("customAnalyzers",
+		mcp.WithArray("customAnalyzers",
 			mcp.Description("Custom analyzer configurations"),
-			mcp.Properties(map[string]any{
-				"name": map[string]any{
-					"type":        "string",
-					"description": "Name of the custom analyzer",
-				},
-				"connection": map[string]any{
-					"type": "object",
-					"properties": map[string]any{
-						"url": map[string]any{
-							"type":        "string",
-							"description": "URL of the custom analyzer service",
-						},
-						"port": map[string]any{
-							"type":        "integer",
-							"description": "Port of the custom analyzer service",
+			mcp.Items(map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"name": map[string]any{
+						"type":        "string",
+						"description": "Name of the custom analyzer",
+					},
+					"connection": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"url": map[string]any{
+								"type":        "string",
+								"description": "URL of the custom analyzer service",
+							},
+							"port": map[string]any{
+								"type":        "integer",
+								"description": "Port of the custom analyzer service",
+							},
 						},
 					},
 				},

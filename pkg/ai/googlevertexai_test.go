@@ -25,7 +25,10 @@ func TestGetVertexAIModelOrDefault(t *testing.T) {
 		model string
 		want  string
 	}{
-		{"latest stable pro is preserved", ModelGeminiProV2_5, "gemini-2.5-pro"},
+		{"latest stable flash is preserved", "gemini-3.8-flash", "gemini-3.8-flash"},
+		{"latest stable flash lite is preserved", "gemini-3.1-flash-lite", "gemini-3.1-flash-lite"},
+		{"latest stable flash is the default", "", "gemini-3.8-flash"},
+		{"2.5 pro is preserved", ModelGeminiProV2_5, "gemini-2.5-pro"},
 		{"legacy stable pro is preserved", "gemini-1.5-pro-002", "gemini-1.5-pro-002"},
 		{"legacy stable flash is preserved", "gemini-1.5-flash-002", "gemini-1.5-flash-002"},
 		{"unknown model falls back to default", "does-not-exist", VERTEXAI_MODELS[0]},
