@@ -32,13 +32,13 @@ func TestGoogleAICandidateText(t *testing.T) {
 
 	t.Run("a candidate without content is an error", func(t *testing.T) {
 		_, err := googleAICandidateText(&googlegenai.Candidate{
-			FinishReason: googlegenai.FinishReasonSafety,
+			FinishReason: googlegenai.FinishReasonOther,
 			SafetyRatings: []*googlegenai.SafetyRating{
 				{Category: googlegenai.HarmCategoryHarassment, Probability: googlegenai.HarmProbabilityHigh, Blocked: true},
 				{Category: googlegenai.HarmCategoryDangerousContent, Probability: googlegenai.HarmProbabilityLow},
 			},
 		})
-		assert.ErrorContains(t, err, "finish reason: FinishReasonSafety")
+		assert.ErrorContains(t, err, "finish reason: FinishReasonOther")
 		assert.ErrorContains(t, err, "HarmCategoryHarassment")
 		assert.NotContains(t, err.Error(), "HarmCategoryDangerousContent")
 	})

@@ -181,7 +181,9 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 }
 
 // vertexAICandidateText returns the text parts of a candidate. Gemini sends a
-// candidate without content when it stops generating early, e.g. on SAFETY or RECITATION.
+// candidate without content when it stops generating before any text, e.g. on MAX_TOKENS
+// (a thinking model can spend its whole budget first) or OTHER; the SDK already turns
+// the blocked prompts and safety stops into errors before they get here.
 func vertexAICandidateText(got *genai.Candidate) (string, error) {
 	if got.Content == nil || len(got.Content.Parts) == 0 {
 		return "", fmt.Errorf("completion returned no content; finish reason: %v, finish message: %q, safety ratings: %v",
