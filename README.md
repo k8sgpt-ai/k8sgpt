@@ -782,7 +782,17 @@ Please read our [contributing guide](./CONTRIBUTING.md).
 
 ## Community
 
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+Find us in `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io) (get an invite at https://slack.cncf.io, then join `#k8sgpt`).
+
+### Community meeting
+
+k8sgpt will hold a monthly public community meeting, open to everyone. Each meeting will have an agenda and a notes link.
+
+The schedule is still to be confirmed. The date, time, agenda and notes link will be announced in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io) and on the [issue tracker](https://github.com/k8sgpt-ai/k8sgpt/issues).
+
+## Code of Conduct
+
+k8sgpt follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md). See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for how to report a concern.
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />
