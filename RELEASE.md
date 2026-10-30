@@ -50,6 +50,15 @@ Each release publishes:
 - Homebrew formula via [k8sgpt-ai/homebrew-k8sgpt](https://github.com/k8sgpt-ai/homebrew-k8sgpt)
 - Krew plugin via [krew registry](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.krew.yaml)
 - Package repositories (RPM, DEB, APK)
+- A cosign keyless signature bundle for the release checksum (`checksums.txt.sigstore.json`)
+
+## Release signing
+
+The `goreleaser` job in [`.github/workflows/release.yaml`](.github/workflows/release.yaml) signs `checksums.txt` with [cosign](https://docs.sigstore.dev/cosign/signing/overview/) keyless signing (Sigstore, GitHub OIDC). That job is the only one granted `id-token: write` for this signing step. The `.sigstore.json` bundle is uploaded with the GitHub release.
+
+The checksum covers the binaries, OS packages and archive SBOMs from GoReleaser. The container image built by the `build-container` job is not signed by this step.
+
+Releases published before this workflow is on `main` do not include the bundle. Verify a signed checksum with `cosign verify-blob`, using the GitHub Actions OIDC issuer `https://token.actions.githubusercontent.com` and the certificate identity for `.github/workflows/release.yaml` at the release tag.
 
 ## Release Configuration
 
