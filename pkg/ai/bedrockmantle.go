@@ -20,6 +20,7 @@ type AmazonBedrockMantleClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 }
 
 func (c *AmazonBedrockMantleClient) Configure(config IAIConfig) error {
@@ -65,6 +66,7 @@ func (c *AmazonBedrockMantleClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
 }
 
@@ -78,7 +80,7 @@ func (c *AmazonBedrockMantleClient) GetCompletion(ctx context.Context, prompt st
 			},
 		},
 		Temperature:      c.temperature,
-		MaxTokens:        maxToken,
+		MaxTokens:        c.maxTokens,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
