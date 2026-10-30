@@ -139,6 +139,9 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 		mcp.WithString("backend",
 			mcp.Description("AI backend to use for analysis (e.g., openai, azure, localai)"),
 		),
+		mcp.WithString("language",
+			mcp.Description("Language for analysis results (e.g., english, spanish)"),
+		),
 		mcp.WithBoolean("explain",
 			mcp.Description("Provide detailed explanations for issues"),
 		),
@@ -146,6 +149,31 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 			mcp.Description("Provide filters to narrow down the analysis (e.g. ['Pods', 'Deployments'])"),
 			// without below line MCP server fails with Google Agent Development Kit (ADK), interestingly works fine with mcpinspector
 			mcp.WithStringItems(),
+		),
+		mcp.WithString("labelSelector",
+			mcp.Description("Label selector to filter resources (e.g., 'app=myapp')"),
+		),
+		mcp.WithBoolean("noCache",
+			mcp.Description("Bypass cache for analysis"),
+		),
+		mcp.WithNumber("maxConcurrency",
+			mcp.Description("Maximum number of concurrent analyses"),
+		),
+		mcp.WithBoolean("withDoc",
+			mcp.Description("Include Kubernetes documentation in the analysis"),
+		),
+		mcp.WithBoolean("interactiveMode",
+			mcp.Description("Run analysis in interactive mode"),
+		),
+		mcp.WithArray("customHeaders",
+			mcp.Description("Custom headers to pass to AI provider"),
+			mcp.WithStringItems(),
+		),
+		mcp.WithBoolean("withStats",
+			mcp.Description("Include statistics in the analysis output"),
+		),
+		mcp.WithBoolean("anonymize",
+			mcp.Description("Anonymize sensitive data (names, IPs, namespaces) in AI requests"),
 		),
 	)
 	s.server.AddTool(analyzeTool, s.handleAnalyze)
@@ -159,23 +187,26 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 	// Register config tool with proper JSON schema
 	configTool := mcp.NewTool("config",
 		mcp.WithDescription("Configure K8sGPT settings including custom analyzers and cache"),
-		mcp.WithObject("customAnalyzers",
+		mcp.WithArray("customAnalyzers",
 			mcp.Description("Custom analyzer configurations"),
-			mcp.Properties(map[string]any{
-				"name": map[string]any{
-					"type":        "string",
-					"description": "Name of the custom analyzer",
-				},
-				"connection": map[string]any{
-					"type": "object",
-					"properties": map[string]any{
-						"url": map[string]any{
-							"type":        "string",
-							"description": "URL of the custom analyzer service",
-						},
-						"port": map[string]any{
-							"type":        "integer",
-							"description": "Port of the custom analyzer service",
+			mcp.Items(map[string]any{
+				"type": "object",
+				"properties": map[string]any{
+					"name": map[string]any{
+						"type":        "string",
+						"description": "Name of the custom analyzer",
+					},
+					"connection": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"url": map[string]any{
+								"type":        "string",
+								"description": "URL of the custom analyzer service",
+							},
+							"port": map[string]any{
+								"type":        "integer",
+								"description": "Port of the custom analyzer service",
+							},
 						},
 					},
 				},
