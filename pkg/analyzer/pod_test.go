@@ -514,6 +514,73 @@ func TestPodAnalyzer(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Succeeded pod with a non-zero container exit code is not reported",
+			config: common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(
+						&v1.Pod{
+							// Completed on purpose; the leftover exit code 255
+							// (e.g. a sidecar killed at job completion) must not
+							// be reported as a failure.
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "Pod1",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Phase: v1.PodSucceeded,
+								ContainerStatuses: []v1.ContainerStatus{
+									{
+										Name:  "Container1",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 255,
+												Reason:   "Error",
+											},
+										},
+									},
+								},
+							},
+						},
+						&v1.Pod{
+							// A genuinely failed pod in the same namespace is
+							// still reported.
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "Pod2",
+								Namespace: "default",
+							},
+							Status: v1.PodStatus{
+								Phase: v1.PodFailed,
+								ContainerStatuses: []v1.ContainerStatus{
+									{
+										Name:  "Container1",
+										Ready: false,
+										State: v1.ContainerState{
+											Terminated: &v1.ContainerStateTerminated{
+												ExitCode: 1,
+												Reason:   "Error",
+											},
+										},
+									},
+								},
+							},
+						},
+					),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			},
+			expectations: []struct {
+				name          string
+				failuresCount int
+			}{
+				{
+					name:          "default/Pod2",
+					failuresCount: 1,
+				},
+			},
+		},
 	}
 
 	podAnalyzer := PodAnalyzer{}
