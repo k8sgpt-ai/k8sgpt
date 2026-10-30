@@ -65,7 +65,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_386.rpm
   ```
   <!---x-release-please-end-->
 
@@ -73,7 +73,7 @@ brew install k8sgpt
 
   <!---x-release-please-start-version-->
   ```
-  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.rpm
+  sudo rpm -ivh https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_amd64.rpm
   ```
   <!---x-release-please-end-->
 </details>
@@ -86,7 +86,7 @@ brew install k8sgpt
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_386.deb
 sudo dpkg -i k8sgpt_386.deb
 ```
 
@@ -97,7 +97,7 @@ sudo dpkg -i k8sgpt_386.deb
   <!---x-release-please-start-version-->
 
 ```
-curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.deb
+curl -LO https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_amd64.deb
 sudo dpkg -i k8sgpt_amd64.deb
 ```
 
@@ -112,7 +112,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_386.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_386.apk
   apk add --allow-untrusted k8sgpt_386.apk
   ```
   <!---x-release-please-end-->
@@ -121,7 +121,7 @@ sudo dpkg -i k8sgpt_amd64.deb
 
   <!---x-release-please-start-version-->
   ```
-  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.39/k8sgpt_amd64.apk
+  wget https://github.com/k8sgpt-ai/k8sgpt/releases/download/v0.4.41/k8sgpt_amd64.apk
   apk add --allow-untrusted k8sgpt_amd64.apk
   ```
   <!---x-release-please-end-->
@@ -282,6 +282,9 @@ you will be able to write your own analyzers.
 - [x] InstallPlan
 - [x] Subscription
 - [x] ValidatingAdmissionPolicy
+- [x] ResourceClaim
+- [x] NodeClaim (Karpenter v1; cluster-scoped, so `--namespace` does not apply)
+- [x] NodePool (Karpenter v1; cluster-scoped, so `--namespace` does not apply; pools at their limit are reported as at capacity)
 
 ## Examples
 
@@ -489,6 +492,7 @@ Unused:
 > customrest
 > ibmwatsonxai
 > litellm
+> gpt2giga
 ```
 
 For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
@@ -505,6 +509,17 @@ needed if your proxy enforces a virtual key.
 ```
 k8sgpt auth add --backend litellm --model gpt-4o
 k8sgpt analyze --explain --backend litellm
+```
+
+_Using GPT2Giga_
+
+The `gpt2giga` backend connects to a GPT2Giga service using the OpenAI-compatible
+Chat Completions API. It defaults to `http://localhost:8090`; use `--baseurl` to
+configure a different endpoint. This backend does not require a password.
+
+```
+k8sgpt auth add --backend gpt2giga --model <model>
+k8sgpt analyze --explain --backend gpt2giga
 ```
 
 _To set a new default provider_

@@ -72,10 +72,7 @@ snapshot:
 
 announce:
   slack:
-    # Whether its enabled or not.
-    #
-    # Templates: allowed (since v2.6).
-    enabled: true
+    enabled: false
 
     # Message template to use while publishing.
     #

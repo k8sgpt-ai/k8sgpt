@@ -16,7 +16,17 @@ package ai
 import (
 	"context"
 	"net/http"
+	"time"
 )
+
+// defaultHTTPTimeout bounds the worst-case duration of a single AI backend
+// HTTP call. It acts as a safety net for backends whose SDK does not
+// propagate the request context's deadline all the way to the transport,
+// and for callers that pass a context with no deadline of its own. It is
+// intentionally generous (rather than a strict SLA) since local/self-hosted
+// backends such as Ollama can legitimately take minutes to generate a
+// completion on constrained hardware.
+const defaultHTTPTimeout = 10 * time.Minute
 
 var (
 	clients = []IAI{
@@ -39,6 +49,7 @@ var (
 		&GroqClient{},
 		&AmazonBedrockMantleClient{},
 		&LiteLLMClient{},
+		&Gpt2GigaClient{},
 	}
 	Backends = []string{
 		openAIClientName,
@@ -60,6 +71,7 @@ var (
 		groqAIClientName,
 		bedrockMantleClientName,
 		liteLLMClientName,
+		gpt2gigaClientName,
 	}
 )
 
@@ -137,7 +149,7 @@ type AIProvider struct {
 	OrganizationId  string        `mapstructure:"organizationid" yaml:"organizationid,omitempty"`
 	AzureAPIType    string        `mapstructure:"azureapitype" yaml:"azureapitype,omitempty"`
 	AzureAPIVersion string        `mapstructure:"azureapiversion" yaml:"azureapiversion,omitempty"`
-	CustomHeaders   []http.Header `mapstructure:"customHeaders"`
+	CustomHeaders   []http.Header `mapstructure:"customHeaders" yaml:"customHeaders,omitempty"`
 }
 
 func (p *AIProvider) GetBaseURL() string {
@@ -211,7 +223,7 @@ func (p *AIProvider) GetCustomHeaders() []http.Header {
 	return p.CustomHeaders
 }
 
-var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "amazonbedrockconverse", "googlevertexai", "oci", "customrest", "bedrockmantle", "litellm"}
+var passwordlessProviders = []string{"localai", "ollama", "amazonsagemaker", "amazonbedrock", "amazonbedrockconverse", "googlevertexai", "oci", "customrest", "bedrockmantle", "litellm", "gpt2giga"}
 
 func NeedPassword(backend string) bool {
 	for _, b := range passwordlessProviders {

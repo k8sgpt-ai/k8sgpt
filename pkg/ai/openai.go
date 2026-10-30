@@ -16,8 +16,10 @@ package ai
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -67,6 +69,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 
 	customHeaders := config.GetCustomHeaders()
 	defaultConfig.HTTPClient = &http.Client{
+		Timeout: defaultHTTPTimeout,
 		Transport: &OpenAIHeaderTransport{
 			Origin:  transport,
 			Headers: customHeaders,
@@ -84,9 +87,19 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	return nil
 }
 
+// rejectsSamplingParams reports whether err is OpenAI's 400 for a temperature or
+// top_p value the model does not support (reasoning models only take the default).
+func rejectsSamplingParams(err error) bool {
+	var apiErr *openai.APIError
+	if !errors.As(err, &apiErr) || apiErr.HTTPStatusCode != http.StatusBadRequest || apiErr.Param == nil {
+		return false
+	}
+	return *apiErr.Param == "temperature" || *apiErr.Param == "top_p"
+}
+
 func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	req := openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
@@ -94,17 +107,27 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 				Content: prompt,
 			},
 		},
-		Temperature:      c.temperature,
+		Temperature:         c.temperature,
 		MaxCompletionTokens: maxToken,
-		PresencePenalty:  presencePenalty,
-		FrequencyPenalty: frequencyPenalty,
-		TopP:             c.topP,
-	})
+		PresencePenalty:     presencePenalty,
+		FrequencyPenalty:    frequencyPenalty,
+		TopP:                c.topP,
+	}
+	resp, err := c.client.CreateChatCompletion(ctx, req)
+	if err != nil && rejectsSamplingParams(err) {
+		// Some models (e.g. reasoning models) only accept the default sampling
+		// values: retry once without them.
+		req.Temperature, req.TopP = 0, 0
+		resp, err = c.client.CreateChatCompletion(ctx, req)
+	}
 	if err != nil {
 		return "", err
 	}
 	if len(resp.Choices) == 0 {
 		return "", errors.New("no completion choices returned from the AI provider")
+	}
+	if strings.TrimSpace(resp.Choices[0].Message.Content) == "" {
+		return "", fmt.Errorf("received an empty completion from the AI provider (finish reason: %v)", resp.Choices[0].FinishReason)
 	}
 	return resp.Choices[0].Message.Content, nil
 }

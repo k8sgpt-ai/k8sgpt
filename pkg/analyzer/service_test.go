@@ -451,6 +451,57 @@ func TestServiceAnalyzer_EventKindFiltering(t *testing.T) {
 		"Should not include the K8sGPT CR event")
 }
 
+func TestServiceAnalyzerScopesEventsToEndpointNamespace(t *testing.T) {
+	clientSet := fake.NewSimpleClientset(
+		&v1.Endpoints{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "api",
+				Namespace: "team-a",
+			},
+			Subsets: []v1.EndpointSubset{{
+				Addresses: []v1.EndpointAddress{{IP: "10.0.0.1"}},
+			}},
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "team-a-warning",
+				Namespace: "team-a",
+			},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Service",
+				Name:      "api",
+				Namespace: "team-a",
+			},
+			Type:    "Warning",
+			Message: "team-a warning",
+		},
+		&v1.Event{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "team-b-warning",
+				Namespace: "team-b",
+			},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Service",
+				Name:      "api",
+				Namespace: "team-b",
+			},
+			Type:    "Warning",
+			Message: "team-b warning",
+		},
+	)
+
+	results, err := (ServiceAnalyzer{}).Analyze(common.Analyzer{
+		Client:  &kubernetes.Client{Client: clientSet},
+		Context: context.Background(),
+	})
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	require.Equal(t, "team-a/api", results[0].Name)
+	require.Len(t, results[0].Error, 1)
+	require.Contains(t, results[0].Error[0].Text, "team-a warning")
+	require.NotContains(t, results[0].Error[0].Text, "team-b warning")
+}
+
 func TestServiceAnalyzerLabelSelectorFiltering(t *testing.T) {
 	clientSet :=
 		fake.NewSimpleClientset(

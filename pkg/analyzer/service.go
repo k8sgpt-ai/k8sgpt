@@ -114,7 +114,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 			}
 		}
 		// fetch event
-		events, err := a.Client.GetClient().CoreV1().Events(a.Namespace).List(a.Context,
+		events, err := a.Client.GetClient().CoreV1().Events(ep.Namespace).List(a.Context,
 			metav1.ListOptions{
 				FieldSelector: fmt.Sprintf("involvedObject.kind=%s,involvedObject.name=%s", kind, ep.Name),
 			})

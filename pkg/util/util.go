@@ -32,6 +32,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	k "k8s.io/client-go/kubernetes"
 )
 
@@ -46,8 +47,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if rs.OwnerReferences != nil {
-					return GetParent(client, rs.ObjectMeta)
+				if parent, found := GetParent(client, rs.ObjectMeta); found {
+					return parent, true
 				}
 				return "ReplicaSet/" + rs.Name, true
 
@@ -56,8 +57,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if dep.OwnerReferences != nil {
-					return GetParent(client, dep.ObjectMeta)
+				if parent, found := GetParent(client, dep.ObjectMeta); found {
+					return parent, true
 				}
 				return "Deployment/" + dep.Name, true
 
@@ -66,8 +67,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if sts.OwnerReferences != nil {
-					return GetParent(client, sts.ObjectMeta)
+				if parent, found := GetParent(client, sts.ObjectMeta); found {
+					return parent, true
 				}
 				return "StatefulSet/" + sts.Name, true
 
@@ -76,8 +77,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if ds.OwnerReferences != nil {
-					return GetParent(client, ds.ObjectMeta)
+				if parent, found := GetParent(client, ds.ObjectMeta); found {
+					return parent, true
 				}
 				return "DaemonSet/" + ds.Name, true
 
@@ -86,8 +87,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if ds.OwnerReferences != nil {
-					return GetParent(client, ds.ObjectMeta)
+				if parent, found := GetParent(client, ds.ObjectMeta); found {
+					return parent, true
 				}
 				return "Ingress/" + ds.Name, true
 
@@ -96,8 +97,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if mw.OwnerReferences != nil {
-					return GetParent(client, mw.ObjectMeta)
+				if parent, found := GetParent(client, mw.ObjectMeta); found {
+					return parent, true
 				}
 				return "MutatingWebhook/" + mw.Name, true
 
@@ -106,8 +107,8 @@ func GetParent(client *kubernetes.Client, meta metav1.ObjectMeta) (string, bool)
 				if err != nil {
 					return "", false
 				}
-				if vw.OwnerReferences != nil {
-					return GetParent(client, vw.ObjectMeta)
+				if parent, found := GetParent(client, vw.ObjectMeta); found {
+					return parent, true
 				}
 				return "ValidatingWebhook/" + vw.Name, true
 			}
@@ -247,12 +248,19 @@ func LabelsIncludeAny(predefinedSelector, Labels map[string]string) bool {
 	return false
 }
 
-func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, namespace string, name string) (*v1.Event, error) {
+func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, object v1.ObjectReference) (*v1.Event, error) {
+	selector := fields.Set{
+		"involvedObject.name": object.Name,
+		"involvedObject.kind": object.Kind,
+	}
+	if object.UID != "" {
+		selector["involvedObject.uid"] = string(object.UID)
+	}
 
 	// get the list of events
-	events, err := kubernetesClient.GetClient().CoreV1().Events(namespace).List(ctx,
+	events, err := kubernetesClient.GetClient().CoreV1().Events(object.Namespace).List(ctx,
 		metav1.ListOptions{
-			FieldSelector: "involvedObject.name=" + name,
+			FieldSelector: selector.AsSelector().String(),
 		})
 
 	if err != nil {
@@ -261,6 +269,10 @@ func FetchLatestEvent(ctx context.Context, kubernetesClient *kubernetes.Client, 
 	// find most recent event
 	var latestEvent *v1.Event
 	for _, event := range events.Items {
+		if event.InvolvedObject.Name != object.Name || event.InvolvedObject.Kind != object.Kind ||
+			(object.UID != "" && event.InvolvedObject.UID != object.UID) {
+			continue
+		}
 		if latestEvent == nil {
 			// this is required, as a pointer to a loop variable would always yield the latest value in the range
 			e := event

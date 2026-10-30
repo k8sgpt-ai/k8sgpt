@@ -126,6 +126,55 @@ func TestScaledObjectAnalyzerReportsMissingTargetWithoutEvent(t *testing.T) {
 	assert.Equal(t, "ScaledObject uses Deployment/missing as ScaleTargetRef which does not exist.", results[0].Error[0].Text)
 }
 
+// TestScaledObjectAnalyzerUnsupportedScaleTargetReportedOnce verifies that a
+// kind the analyzer does not look up is not also reported as missing.
+func TestScaledObjectAnalyzerUnsupportedScaleTargetReportedOnce(t *testing.T) {
+	so := cpuScaledObject("example", "default")
+	so.Spec.ScaleTargetRef.Kind = "Rollout"
+	srv := newScaledObjectServer(t, []kedaSchema.ScaledObject{so})
+	defer srv.Close()
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(),
+			Config: &rest.Config{Host: srv.URL},
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	results, err := (&ScaledObjectAnalyzer{}).Analyze(config)
+	assert.NoError(t, err)
+	assert.Len(t, results, 1)
+	assert.Len(t, results[0].Error, 1)
+	assert.Equal(t, "ScaledObject uses Rollout as ScaleTargetRef which is not an option.", results[0].Error[0].Text)
+}
+
+func TestScaledObjectAnalyzerLooksUpLowercaseStatefulSet(t *testing.T) {
+	so := cpuScaledObject("missing", "default")
+	so.Spec.ScaleTargetRef.Kind = "statefulset"
+	srv := newScaledObjectServer(t, []kedaSchema.ScaledObject{so})
+	defer srv.Close()
+
+	results, err := (&ScaledObjectAnalyzer{}).Analyze(common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(),
+			Config: &rest.Config{Host: srv.URL},
+		},
+		Context: context.Background(), Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || len(results[0].Error) != 1 {
+		t.Fatalf("expected one missing-target failure, got %+v", results)
+	}
+	want := "ScaledObject uses statefulset/missing as ScaleTargetRef which does not exist."
+	if got := results[0].Error[0].Text; got != want {
+		t.Errorf("failure = %q, want %q", got, want)
+	}
+}
+
 // TestScaledObjectAnalyzerReportsWarningEvent verifies the event-based failure
 // path still works: a non-Normal event message is surfaced.
 func TestScaledObjectAnalyzerReportsWarningEvent(t *testing.T) {
@@ -155,7 +204,7 @@ func TestScaledObjectAnalyzerReportsWarningEvent(t *testing.T) {
 		},
 		&corev1.Event{
 			ObjectMeta:     metav1.ObjectMeta{Name: "example.event", Namespace: "default"},
-			InvolvedObject: corev1.ObjectReference{Name: "example", Namespace: "default"},
+			InvolvedObject: corev1.ObjectReference{Kind: "ScaledObject", Name: "example", Namespace: "default"},
 			LastTimestamp:  metav1.Now(),
 			Type:           "Warning",
 			Message:        "ScaledObject doesn't have correct scaleTargetRef specification",
