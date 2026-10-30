@@ -786,9 +786,11 @@ Find us in `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io) (get an invite a
 
 ### Community meeting
 
-k8sgpt will hold a monthly public community meeting, open to everyone. Each meeting will have an agenda and a notes link.
+k8sgpt holds a monthly public community meeting, open to everyone, on the second Thursday, 16:00–17:00 UK time (Europe/London). The first meeting is Thursday 12 November 2026.
 
-The schedule is still to be confirmed. The date, time, agenda and notes link will be announced in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io) and on the [issue tracker](https://github.com/k8sgpt-ai/k8sgpt/issues).
+Join on Google Meet: https://meet.google.com/ugf-zqjt-nwu
+
+Agenda items can be posted in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io) or in the K8sGPT Slack `#general`.
 
 ## Code of Conduct
 
