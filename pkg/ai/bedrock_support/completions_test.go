@@ -71,9 +71,9 @@ func TestCohereMessagesNoSamplingCompletion_GetCompletion(t *testing.T) {
 	assert.Equal(t, 100, int(request["max_tokens"].(float64)))
 	assert.Equal(t, "bedrock-2023-05-31", request["anthropic_version"])
 	_, hasTemperature := request["temperature"]
-	assert.False(t, hasTemperature, "temperature must not be sent - Claude Opus 5.5 and Sonnet 5.5 reject it")
+	assert.False(t, hasTemperature, "temperature must not be sent - Claude Opus 5, Opus 5.5 and Sonnet 5.5 reject it")
 	_, hasTopP := request["top_p"]
-	assert.False(t, hasTopP, "top_p must not be sent - Claude Opus 5.5 and Sonnet 5.5 reject it")
+	assert.False(t, hasTopP, "top_p must not be sent - Claude Opus 5, Opus 5.5 and Sonnet 5.5 reject it")
 }
 
 func TestAI21_GetCompletion(t *testing.T) {
