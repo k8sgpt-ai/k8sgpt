@@ -31,7 +31,7 @@ import (
 const (
 	defaultBackend        = "openai"
 	defaultModel          = "gpt-4o"
-	anthropicDefaultModel = "claude-3-5-sonnet-latest"
+	anthropicDefaultModel = "claude-sonnet-4-6"
 )
 
 var addCmd = &cobra.Command{

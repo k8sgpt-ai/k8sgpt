@@ -176,3 +176,68 @@ func TestAnthropicClientReturnsStructuredErrors(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "bad prompt")
 }
+
+func TestAnthropicClientRetriesWithoutSamplingParamsOn400(t *testing.T) {
+	var bodies []map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&body))
+		bodies = append(bodies, body)
+		w.Header().Set("Content-Type", "application/json")
+		if len(bodies) == 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			_, err := w.Write([]byte(`{"type":"error","error":{"type":"invalid_request_error","message":"` + "`temperature`" + ` is not supported for this model."}}`))
+			require.NoError(t, err)
+			return
+		}
+		_, err := w.Write([]byte(`{"content":[{"type":"text","text":"ok"}]}`))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	client := &AnthropicClient{}
+	require.NoError(t, client.Configure(&anthropicMockConfig{
+		baseURL:     server.URL,
+		password:    "test-token",
+		model:       "claude-test",
+		temperature: 0.7,
+		topK:        40,
+		maxTokens:   512,
+	}))
+
+	completion, err := client.GetCompletion(context.Background(), "hello cluster")
+	require.NoError(t, err)
+	assert.Equal(t, "ok", completion)
+	require.Len(t, bodies, 2)
+	assert.Contains(t, bodies[0], "temperature")
+	assert.Contains(t, bodies[0], "top_k")
+	assert.NotContains(t, bodies[1], "temperature")
+	assert.NotContains(t, bodies[1], "top_p")
+	assert.NotContains(t, bodies[1], "top_k")
+}
+
+func TestAnthropicClientDoesNotRetryOtherErrors(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(`{"type":"error","error":{"type":"invalid_request_error","message":"max_tokens is too large"}}`))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+
+	client := &AnthropicClient{}
+	require.NoError(t, client.Configure(&anthropicMockConfig{
+		baseURL:     server.URL,
+		password:    "test-token",
+		model:       "claude-test",
+		temperature: 0.7,
+		maxTokens:   512,
+	}))
+
+	_, err := client.GetCompletion(context.Background(), "hello cluster")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "max_tokens is too large")
+	assert.Equal(t, 1, calls)
+}

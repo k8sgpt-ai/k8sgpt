@@ -16,6 +16,9 @@ package serve
 import (
 	"net/http"
 	"testing"
+
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/spf13/viper"
 )
 
 func TestProviderFromEnvIncludesAzureAPIVersion(t *testing.T) {
@@ -71,6 +74,7 @@ func TestProviderFromEnvReturnsFalseWhenUnset(t *testing.T) {
 // A restart with a config that already holds the provider must still honour
 // K8SGPT_BACKEND; before the fix it fell back to the "openai" flag default.
 func TestResolveBackendPrefersEnvOverFlagDefault(t *testing.T) {
+	viper.Reset()
 	t.Setenv("K8SGPT_BACKEND", "google")
 
 	if got := resolveBackend(false, "openai"); got != "google" {
@@ -79,17 +83,40 @@ func TestResolveBackendPrefersEnvOverFlagDefault(t *testing.T) {
 }
 
 func TestResolveBackendKeepsExplicitFlag(t *testing.T) {
+	viper.Reset()
 	t.Setenv("K8SGPT_BACKEND", "google")
+	viper.Set("ai", ai.AIConfiguration{DefaultProvider: "azureopenai"})
 
 	if got := resolveBackend(true, "localai"); got != "localai" {
-		t.Fatalf("expected an explicitly set --backend to win over the environment, got %q", got)
+		t.Fatalf("expected an explicitly set --backend to win over the environment and default provider, got %q", got)
 	}
 }
 
 func TestResolveBackendKeepsDefaultWhenEnvUnset(t *testing.T) {
+	viper.Reset()
 	t.Setenv("K8SGPT_BACKEND", "")
 
 	if got := resolveBackend(false, "openai"); got != "openai" {
-		t.Fatalf("expected the flag default to be kept when K8SGPT_BACKEND is unset, got %q", got)
+		t.Fatalf("expected the flag default to be kept when K8SGPT_BACKEND and default provider are unset, got %q", got)
+	}
+}
+
+func TestResolveBackendPrefersDefaultProviderOverFlagDefault(t *testing.T) {
+	viper.Reset()
+	t.Setenv("K8SGPT_BACKEND", "")
+	viper.Set("ai", ai.AIConfiguration{DefaultProvider: "azureopenai"})
+
+	if got := resolveBackend(false, "openai"); got != "azureopenai" {
+		t.Fatalf("expected configured default provider to override unchanged flag default, got %q", got)
+	}
+}
+
+func TestResolveBackendPrefersEnvOverDefaultProvider(t *testing.T) {
+	viper.Reset()
+	t.Setenv("K8SGPT_BACKEND", "google")
+	viper.Set("ai", ai.AIConfiguration{DefaultProvider: "azureopenai"})
+
+	if got := resolveBackend(false, "openai"); got != "google" {
+		t.Fatalf("expected K8SGPT_BACKEND to override configured default provider, got %q", got)
 	}
 }
