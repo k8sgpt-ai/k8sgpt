@@ -23,11 +23,14 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/tools/clientcmd"
@@ -148,6 +151,102 @@ func TestHandleListEventsAppliesInvolvedObjectFieldSelector(t *testing.T) {
 			for i, e := range tt.expected {
 				require.Equal(t, e.InvolvedObject.Name, got[i].InvolvedObject.Name)
 				require.Equal(t, e.InvolvedObject.Kind, got[i].InvolvedObject.Kind)
+			}
+		})
+	}
+}
+
+// newAnalyzeFixture starts an httptest server that stands in for the
+// Kubernetes API with a single pod the Pod analyzer reports as unschedulable.
+func newAnalyzeFixture(t *testing.T, namespace string) *httptest.Server {
+	writeJSON := func(w http.ResponseWriter, v any) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(v)
+	}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, &version.Info{GitVersion: "v1.32.0"})
+	})
+	mux.HandleFunc("/api/v1/namespaces/"+namespace, func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}})
+	})
+	mux.HandleFunc("/api/v1/namespaces/"+namespace+"/pods", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, &corev1.PodList{Items: []corev1.Pod{{
+			ObjectMeta: metav1.ObjectMeta{Name: "broken-pod", Namespace: namespace},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodPending,
+				Conditions: []corev1.PodCondition{{
+					Type:    corev1.PodScheduled,
+					Reason:  "Unschedulable",
+					Message: "0/1 nodes are available: 1 Insufficient cpu.",
+				}},
+			},
+		}}})
+	})
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+	return server
+}
+
+func TestHandleAnalyzeExplainReturnsAIDetails(t *testing.T) {
+	const namespace = "default"
+	fixture := newAnalyzeFixture(t, namespace)
+
+	kubeconfig := filepath.Join(t.TempDir(), "config")
+	require.NoError(t, clientcmd.WriteToFile(clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			"test": {Server: fixture.URL},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			"test": {Cluster: "test"},
+		},
+		CurrentContext: "test",
+	}, kubeconfig))
+	t.Setenv("KUBECONFIG", kubeconfig)
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	viper.Set("ai", ai.AIConfiguration{Providers: []ai.AIProvider{{Name: "noopai"}}})
+
+	tests := []struct {
+		name        string
+		explain     bool
+		wantDetails bool
+	}{
+		{name: "explain fills details from the AI backend", explain: true, wantDetails: true},
+		{name: "without explain details stay empty", explain: false, wantDetails: false},
+	}
+
+	s := &K8sGptMCPServer{aiProvider: &ai.AIProvider{Name: "noopai"}}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := s.handleAnalyze(context.Background(), mcp.CallToolRequest{
+				Params: mcp.CallToolParams{Arguments: map[string]any{
+					"namespace": namespace,
+					"filters":   []any{"Pod"},
+					"explain":   tt.explain,
+					"noCache":   true,
+				}},
+			})
+			require.NoError(t, err)
+			require.False(t, result.IsError, "unexpected tool error: %+v", result.Content)
+
+			text, ok := mcp.AsTextContent(result.Content[0])
+			require.True(t, ok, "expected text content")
+
+			// Both paths return the same JSON document so clients can parse
+			// it the same way whether or not they asked for an explanation.
+			var got analysis.JsonOutput
+			require.NoError(t, json.Unmarshal([]byte(text.Text), &got))
+			require.Equal(t, 1, got.Problems)
+			require.Len(t, got.Results, 1)
+			require.Equal(t, "default/broken-pod", got.Results[0].Name)
+			if tt.wantDetails {
+				require.Contains(t, got.Results[0].Details, "I am a noop response")
+			} else {
+				require.Empty(t, got.Results[0].Details)
 			}
 		})
 	}

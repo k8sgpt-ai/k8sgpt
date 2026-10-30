@@ -17,7 +17,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -143,7 +142,7 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 			mcp.Description("Language for analysis results (e.g., english, spanish)"),
 		),
 		mcp.WithBoolean("explain",
-			mcp.Description("Provide detailed explanations for issues"),
+			mcp.Description("Send each detected problem to the configured AI backend and return its explanation and suggested fix in the result's details field"),
 		),
 		mcp.WithArray("filters",
 			mcp.Description("Provide filters to narrow down the analysis (e.g. ['Pods', 'Deployments'])"),
@@ -479,28 +478,18 @@ func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToo
 	// Run the analysis
 	analysis.RunAnalysis()
 	if req.Explain {
-
-		var output string
-		err := analysis.GetAIResults(output, req.Anonymize)
-		if err != nil {
+		// "json" keeps GetAIResults from drawing a progress bar, which has no
+		// place in a server; the explanations land in each result's Details.
+		if err := analysis.GetAIResults("json", req.Anonymize); err != nil {
 			return mcp.NewToolResultErrorf("Failed to get results from AI: %v", err), nil
 		}
-
-		// Convert results to JSON string using PrintOutput
-		outputBytes, err := analysis.PrintOutput("text")
-		if err != nil {
-			return mcp.NewToolResultErrorf("Failed to convert results to string: %v", err), nil
-		}
-		plainText := stripANSI(string(outputBytes))
-		return mcp.NewToolResultText(plainText), nil
-	} else {
-		// Get the output
-		output, err := analysis.PrintOutput("json")
-		if err != nil {
-			return mcp.NewToolResultErrorf("Failed to print output: %v", err), nil
-		}
-		return mcp.NewToolResultText(string(output)), nil
 	}
+
+	output, err := analysis.PrintOutput("json")
+	if err != nil {
+		return mcp.NewToolResultErrorf("Failed to print output: %v", err), nil
+	}
+	return mcp.NewToolResultText(string(output)), nil
 }
 
 // validateMaxConcurrency validates and bounds the MaxConcurrency parameter
@@ -774,10 +763,4 @@ func (z *zapLoggerAdapter) Infof(format string, v ...any) {
 
 func (z *zapLoggerAdapter) Errorf(format string, v ...any) {
 	z.logger.Error(fmt.Sprintf(format, v...))
-}
-
-// stripANSI removes ANSI escape sequences from a string
-func stripANSI(input string) string {
-	re := regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	return re.ReplaceAllString(input, "")
 }
