@@ -155,7 +155,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef.kind")
 
 				failures = append(failures, common.Failure{
-					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, a.Namespace, scaleTargetRef.Name),
+					Text:          fmt.Sprintf("%s %s/%s does not have resource configured.", scaleTargetRef.Kind, hpa.Namespace, scaleTargetRef.Name),
 					KubernetesDoc: doc,
 					Sensitive: []common.Sensitive{
 						{
