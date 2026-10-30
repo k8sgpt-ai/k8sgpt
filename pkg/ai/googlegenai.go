@@ -90,15 +90,9 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 	// TODO(bwplotka): Provider richer output in certain cases e.g. suddenly finished
 	// completion based on finish reasons or safety rankings.
 	got := resp.Candidates[0]
-	var output string
-	for _, part := range got.Content.Parts {
-		switch o := part.(type) {
-		case genai.Text:
-			output += string(o)
-			output += "\n"
-		default:
-			color.Yellow("found unsupported AI response part of type %T; ignoring", part)
-		}
+	output, err := googleAICandidateText(got)
+	if err != nil {
+		return "", err
 	}
 
 	if got.CitationMetadata != nil && len(got.CitationMetadata.CitationSources) > 0 {
@@ -109,6 +103,37 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 		}
 	}
 	return output, nil
+}
+
+// googleAICandidateText returns the text parts of a candidate. Gemini sends a
+// candidate without content when it stops generating early, e.g. on SAFETY or RECITATION.
+func googleAICandidateText(got *genai.Candidate) (string, error) {
+	if got.Content == nil || len(got.Content.Parts) == 0 {
+		return "", fmt.Errorf("completion returned no content; finish reason: %v, safety ratings: %v",
+			got.FinishReason.String(), blockedGoogleAIRatings(got.SafetyRatings))
+	}
+
+	var output string
+	for _, part := range got.Content.Parts {
+		switch o := part.(type) {
+		case genai.Text:
+			output += string(o)
+			output += "\n"
+		default:
+			color.Yellow("found unsupported AI response part of type %T; ignoring", part)
+		}
+	}
+	return output, nil
+}
+
+func blockedGoogleAIRatings(ratings []*genai.SafetyRating) []string {
+	var blocked []string
+	for _, r := range ratings {
+		if r.Blocked {
+			blocked = append(blocked, fmt.Sprintf("%v (%v)", r.Category.String(), r.Probability.String()))
+		}
+	}
+	return blocked
 }
 
 func (c *GoogleGenAIClient) GetName() string {
