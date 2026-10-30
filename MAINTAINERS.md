@@ -2,6 +2,12 @@
 
 This file lists all current maintainers of k8sgpt and their areas of responsibility.
 
+**This file is the single source of truth for k8sgpt maintainers.** The organization-level lists in
+[k8sgpt-ai/community/MAINTAINERS.md](https://github.com/k8sgpt-ai/community/blob/main/MAINTAINERS.md) and
+[k8sgpt-ai/.project/maintainers.yaml](https://github.com/k8sgpt-ai/.project/blob/main/maintainers.yaml) must
+match it. Any PR that changes this file must also update those two files (see
+[GOVERNANCE.md](GOVERNANCE.md#maintainer-lifecycle)). Affiliations must be updated within 30 days of a change.
+
 ## Maintainer Roles
 
 - **Maintainer**: Has write access to the repository. Can review and merge PRs, triage issues, and manage releases.
@@ -9,23 +15,25 @@ This file lists all current maintainers of k8sgpt and their areas of responsibil
 
 ## Current Maintainers
 
+Active maintainers are Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs). Affiliations below are the values already recorded in this file; each person still needs to confirm their own.
+
 | Name | Affiliation | Domain of Responsibility | Contact |
 |------|-------------|--------------------------|---------|
-| AlexsJones | AWS | Project lead, core analyzers, architecture | @AlexsJones (GitHub), contact@k8sgpt.ai |
-| thschue | Independent | CLI, core logic, releases | @thschue (GitHub) |
-| matthisholleville | Agicap | Analyzers, integrations | @matthisholleville (GitHub) |
-| AnaisUrlichs | Independent | Documentation, community | @AnaisUrlichs (GitHub) |
-| bradmccoydev | @basiqio | CNCF community, governance | @bradmccoydev (GitHub) |
-| rakshitgondwal | Independent | Analyzers, testing | @rakshitgondwal (GitHub) |
-| roberthstrand | Independent | Community, outreach | @roberthstrand (GitHub) |
+| Alex Jones (@AlexsJones) | AWS | Project lead, core analyzers, architecture | @AlexsJones (GitHub), contact@k8sgpt.ai |
+| Anais Urlichs (@AnaisUrlichs) | Independent | Documentation, community | @AnaisUrlichs (GitHub) |
 
 ## Emeritus Maintainers
 
-Maintainers who have stepped back from active roles:
+Maintainers who have stepped back from active roles. Periods of service are not recorded here unless a public step-down already exists.
 
 | Name | Period | Reason |
 |------|--------|--------|
-| _(None yet)_ | | |
+| thschue | stepped down 2024-09 | Moved to emeritus. Previously listed for CLI, core logic and releases. Stepped down from the community maintainer list in September 2024 ([community#61](https://github.com/k8sgpt-ai/community/pull/61)). |
+| matthisholleville | not recorded | Moved to emeritus. Previously listed for analyzers and integrations. |
+| bradmccoydev | not recorded | Moved to emeritus. Previously listed for CNCF community and governance. |
+| rakshitgondwal | not recorded | Moved to emeritus. Previously listed for analyzers and testing. |
+| roberthstrand | not recorded | Moved to emeritus. Previously listed for community and outreach. |
+| Aris Boutselis (@arbreezy) | not recorded | Moved to emeritus. Listed in [k8sgpt-ai/community](https://github.com/k8sgpt-ai/community/blob/main/MAINTAINERS.md) and [k8sgpt-ai/.project](https://github.com/k8sgpt-ai/.project/blob/main/maintainers.yaml), not as an active maintainer. Affiliation is not recorded in this repository. |
 
 ## Adding New Maintainers
 
