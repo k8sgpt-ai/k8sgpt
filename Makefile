@@ -6,7 +6,7 @@
 # define the default goal
 #
 ROOT_PACKAGE=github.com/k8sgpt-ai/k8sgpt
-
+ 
 SHELL := /bin/bash
 DIRS=$(shell ls)
 GO=go
