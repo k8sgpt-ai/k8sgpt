@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -96,23 +97,23 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		var podInfo PodInfo
 		supportedKind := true
 
-		switch scaleTargetRef.Kind {
-		case "Deployment":
+		switch strings.ToLower(scaleTargetRef.Kind) {
+		case "deployment":
 			deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = DeploymentInfo{deployment}
 			}
-		case "ReplicationController":
+		case "replicationcontroller":
 			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = ReplicationControllerInfo{rc}
 			}
-		case "ReplicaSet":
+		case "replicaset":
 			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = ReplicaSetInfo{rs}
 			}
-		case "StatefulSet":
+		case "statefulset":
 			ss, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
 			if err == nil {
 				podInfo = StatefulSetInfo{ss}

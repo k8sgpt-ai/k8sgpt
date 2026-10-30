@@ -178,6 +178,29 @@ func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 	}
 }
 
+func TestHPAAnalyzerLooksUpLowercaseStatefulSet(t *testing.T) {
+	clientset := fake.NewSimpleClientset(&autoscalingv2.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+		Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "statefulset", Name: "missing"},
+		},
+	})
+	results, err := (HpaAnalyzer{}).Analyze(common.Analyzer{
+		Client:  &kubernetes.Client{Client: clientset},
+		Context: context.Background(), Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || len(results[0].Error) != 1 {
+		t.Fatalf("expected one missing-target failure, got %+v", results)
+	}
+	want := "HorizontalPodAutoscaler uses statefulset/missing as ScaleTargetRef which does not exist."
+	if got := results[0].Error[0].Text; got != want {
+		t.Errorf("failure = %q, want %q", got, want)
+	}
+}
+
 func TestHPAAnalyzerWithExistingScaleTargetRefAsDeployment(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(

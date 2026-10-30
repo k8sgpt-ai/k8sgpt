@@ -58,6 +58,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 			Proxy: http.ProxyFromEnvironment,
 		}
 		defaultConfig.HTTPClient = &http.Client{
+			Timeout: defaultHTTPTimeout,
 			Transport: &customHeaderRoundTripper{
 				headers: customHeaders,
 				rt:      transport,
@@ -73,6 +74,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 		}
 
 		defaultConfig.HTTPClient = &http.Client{
+			Timeout:   defaultHTTPTimeout,
 			Transport: transport,
 		}
 	}
@@ -116,6 +118,9 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 	})
 	if err != nil {
 		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned")
 	}
 	return resp.Choices[0].Message.Content, nil
 }

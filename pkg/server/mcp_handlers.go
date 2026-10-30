@@ -483,6 +483,10 @@ func (s *K8sGptMCPServer) handleAddFilters(ctx context.Context, request mcp.Call
 	}
 
 	activeFilters := viper.GetStringSlice("active_filters")
+	// No active filters means the core analyzers run, so start from them.
+	if len(activeFilters) == 0 {
+		activeFilters, _, _ = analyzer.ListFilters()
+	}
 	addedFilters := []string{}
 	
 	for _, filter := range req.Filters {
@@ -518,6 +522,9 @@ func (s *K8sGptMCPServer) handleRemoveFilters(ctx context.Context, request mcp.C
 	}
 
 	activeFilters := viper.GetStringSlice("active_filters")
+	if len(activeFilters) == 0 {
+		activeFilters, _, _ = analyzer.ListFilters()
+	}
 	newFilters := []string{}
 	removedFilters := []string{}
 	
