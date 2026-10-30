@@ -776,6 +776,10 @@ k8sgpt serve --mcp --mcp-http --mcp-port 8089
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)
 
+## Adopters
+
+Using k8sgpt? See [ADOPTERS.md](ADOPTERS.md) and add your organization, or tell us on [#1886](https://github.com/k8sgpt-ai/k8sgpt/issues/1886).
+
 ## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
