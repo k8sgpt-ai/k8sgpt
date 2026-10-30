@@ -62,6 +62,10 @@ type Analysis struct {
 	WithDoc            bool
 	WithStats          bool
 	Stats              []common.AnalysisStats
+	// CustomAnalysisEnabled mirrors the --custom-analysis flag. Filter
+	// resolution uses it to explain why a configured custom analyzer did not
+	// run: without the flag the analyzer is skipped even when --filter names it.
+	CustomAnalysisEnabled bool
 }
 
 type (
@@ -256,6 +260,49 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 	return len(customAnalyzers) > 0
 }
 
+// customAnalyzerNames returns the names of the custom analyzers configured in viper.
+func customAnalyzerNames() []string {
+	var customAnalyzers []custom.CustomAnalyzer
+	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
+		return nil
+	}
+	names := make([]string, 0, len(customAnalyzers))
+	for _, cAnalyzer := range customAnalyzers {
+		names = append(names, cAnalyzer.Name)
+	}
+	return names
+}
+
+// customAnalyzerSelected reports whether a custom analyzer passes the --filter
+// flag. Custom analyzer names are user-defined, so matching is case-insensitive;
+// an empty filter list selects every configured analyzer.
+func customAnalyzerSelected(name string, filters []string) bool {
+	if len(filters) == 0 {
+		return true
+	}
+	for _, filter := range filters {
+		if strings.EqualFold(strings.TrimSpace(filter), name) {
+			return true
+		}
+	}
+	return false
+}
+
+// filterResolutionError explains why a --filter value did not select a core
+// analyzer. It returns an empty string when the filter names a custom analyzer
+// that RunCustomAnalysis is going to run, so the caller stays silent then.
+func filterResolutionError(filter string, customNames []string, customAnalysisEnabled bool) string {
+	for _, name := range customNames {
+		if strings.EqualFold(strings.TrimSpace(filter), name) {
+			if customAnalysisEnabled {
+				return ""
+			}
+			return fmt.Sprintf("%q is a custom analyzer, re-run with --custom-analysis to include it.", filter)
+		}
+	}
+	return fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter)
+}
+
 func (a *Analysis) RunCustomAnalysis() {
 	// Validate namespace if specified, consistent with built-in filter behavior
 	if a.Namespace != "" && a.Client != nil {
@@ -270,6 +317,20 @@ func (a *Analysis) RunCustomAnalysis() {
 	if err := viper.UnmarshalKey("custom_analyzers", &customAnalyzers); err != nil {
 		a.Errors = append(a.Errors, err.Error())
 		return
+	}
+
+	// Honour the --filter flag for custom analyzers as well, so that
+	// `k8sgpt analyze --custom-analysis --filter <name>` runs only the requested
+	// analyzer instead of every configured one.
+	configured := len(customAnalyzers)
+	if len(a.Filters) > 0 {
+		selected := make([]custom.CustomAnalyzer, 0, configured)
+		for _, cAnalyzer := range customAnalyzers {
+			if customAnalyzerSelected(cAnalyzer.Name, a.Filters) {
+				selected = append(selected, cAnalyzer)
+			}
+		}
+		customAnalyzers = selected
 	}
 
 	// Set a reasonable maximum for concurrency to prevent excessive memory allocation
@@ -287,7 +348,11 @@ func (a *Analysis) RunCustomAnalysis() {
 	verbose := viper.GetBool("verbose")
 	if verbose {
 		if len(customAnalyzers) == 0 {
-			fmt.Println("Debug: No custom analyzers found.")
+			if configured > 0 {
+				fmt.Println("Debug: No custom analyzers matched the given filters.")
+			} else {
+				fmt.Println("Debug: No custom analyzers found.")
+			}
 		} else {
 			cAnalyzerNames := make([]string, len(customAnalyzers))
 			for i, cAnalyzer := range customAnalyzers {
@@ -451,8 +516,8 @@ func (a *Analysis) RunAnalysis() {
 				semaphore <- struct{}{}
 				wg.Add(1)
 				go a.executeAnalyzer(analyzer, filter, analyzerConfig, semaphore, &wg, &mutex)
-			} else {
-				a.Errors = append(a.Errors, fmt.Sprintf("\"%s\" filter does not exist. Please run k8sgpt filters list.", filter))
+			} else if msg := filterResolutionError(filter, customAnalyzerNames(), a.CustomAnalysisEnabled); msg != "" {
+				a.Errors = append(a.Errors, msg)
 			}
 		}
 		wg.Wait()

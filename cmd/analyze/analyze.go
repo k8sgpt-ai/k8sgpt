@@ -80,6 +80,7 @@ var AnalyzeCmd = &cobra.Command{
 		// and MCP callers are untouched by this change.
 		if config != nil {
 			config.ResourceName = resourceName
+			config.CustomAnalysisEnabled = customAnalysis
 		}
 
 		verbose := viper.GetBool("verbose")
