@@ -1,9 +1,9 @@
 # General Technical Review - k8sgpt / Incubation
 
 - **Project:** https://github.com/k8sgpt-ai/k8sgpt
-- **Project Version:** v0.4.32
+- **Project Version:** v0.4.41 (k8sgpt-operator: latest release)
 - **Website:** https://k8sgpt.ai
-- **Date Updated:** 2026-04-24
+- **Date Updated:** 2026-10-30
 - **Template Version:** v1.0
 - **Description:** k8sgpt is a tool for scanning Kubernetes clusters, diagnosing, and triaging issues in simple English. It has SRE experience codified into analyzers and helps pull out the most relevant information, enriching it with AI from various LLM providers.
 
@@ -43,7 +43,7 @@ Contributions follow a clear ladder documented in [GOVERNANCE.md](https://github
 
 **Explain which use cases have been identified as unsupported by the project.**
 
-- k8sgpt does not modify or remediate cluster state (read-only by design)
+- The k8sgpt CLI and server do not modify or remediate cluster state (read-only by design). The operator's optional auto-remediation (alpha, off by default) is the only component that writes, and only through a deny-by-default policy gate ([AUTO_REMEDIATION.md](https://github.com/k8sgpt-ai/k8sgpt-operator/blob/main/AUTO_REMEDIATION.md)); it is not intended for production changes without independent review
 - k8sgpt does not replace comprehensive security scanning tools (focuses on operational issues, not security posture)
 - k8sgpt does not provide its own AI model (consumes external AI APIs)
 - k8sgpt does not persistently store cluster data (except optional remote caching)
@@ -98,8 +98,8 @@ k8sgpt integrates with:
 **Explain the design principles and best practices the project is following.**
 
 - **Vendor neutrality:** Support for 13+ AI backends (OpenAI, Azure, Cohere, Ollama, Amazon Bedrock, Google Gemini, etc.)
-- **Read-only operation:** Never modifies cluster state, reducing risk
-- **Anonymization:** Sensitive data masked before sending to AI backends
+- **Read-only analysis:** analyzers never modify cluster state; writes are limited to the operator's opt-in, policy-gated auto-remediation
+- **Anonymization (opt-in):** with `--anonymize`, object names and labels are masked before sending to AI backends (events are not yet covered)
 - **Extensibility:** Plugin-style analyzer framework for custom analyzers
 - **Convention over configuration:** Sensible defaults, optional overrides
 - **Modular architecture:** Analyzers are independent and composable
@@ -121,14 +121,14 @@ k8sgpt has no in-cluster service dependencies. It reads directly from the Kubern
 
 - Uses the user's existing kubeconfig for cluster authentication (in-cluster or local)
 - No additional IAM roles or service accounts required
-- Operator runs as a standard Kubernetes deployment with RBAC permissions for read-only access to cluster resources
+- Operator runs as a standard Kubernetes deployment with its own ServiceAccount and RBAC; it reads cluster resources, manages its own CRDs (`K8sGPT`, `Result`, `Mutation`) and the k8sgpt server Deployment, and only patches workloads when auto-remediation is enabled
 - AI backend API keys are managed by the user and stored locally
 
 **Describe how the project has addressed sovereignty.**
 
 - Local AI options (Ollama, LocalAI) keep data within the user's network
 - Users can configure any AI backend including self-hosted models
-- Anonymization feature masks sensitive data before sending to external AI providers
+- The opt-in anonymization feature masks object names and labels before sending to external AI providers
 - Remote caching (S3, Azure Blob, GCS) can be configured with user-controlled storage
 
 **Describe any compliance requirements addressed by the project.**
@@ -161,7 +161,7 @@ k8sgpt is a stateless tool:
 
 **Please outline the project's API Design:**
 
-- **Kubernetes API:** Read-only access to standard Kubernetes resources (Pods, Deployments, Services, etc.)
+- **Kubernetes API:** Read-only access to standard Kubernetes resources (Pods, Deployments, Services, etc.) for analysis; the operator additionally defines the `K8sGPT`, `Result` and `Mutation` CRDs
 - **AI Backend API:** Standard REST/HTTP API following OpenAI chat completion format
 - **Custom Analyzer API:** gRPC-based protocol defined in [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/custom_analyzer.proto)
 - **MCP Server:** Model Context Protocol for AI assistant integration
@@ -196,21 +196,21 @@ Run `k8sgpt analyze --explain` to verify the tool connects to the cluster and pr
 **Please review the Cloud Native Security Tenets from TAG Security.**
 
 k8sgpt satisfies these cloud native security tenets:
-- **Secure by default:** Anonymization is enabled by default, read-only access is the default mode
-- **Least privilege:** Only reads cluster state, no write operations
+- **Secure by default:** analysis is read-only and auto-remediation is off by default; anonymization is available but opt-in (`--anonymize`)
+- **Least privilege:** the CLI/server only read cluster state; the operator writes only its own resources unless auto-remediation is enabled
 - **Defense in depth:** Multiple layers of security (anonymization, TLS, RBAC, DCO, OpenSSF badge)
 - **Transparency:** All code is open source, security policy is documented
 
 **Describe how each of the cloud native principles apply to your project.**
 
-- **Secure by default:** Sensitive data is masked before AI queries
+- **Secure by default:** read-only analysis by default; sensitive names and labels can be masked before AI queries with `--anonymize`
 - **Least privilege:** Read-only Kubernetes API access
 - **Zero trust:** Each AI backend call is authenticated independently
 - **Defense in depth:** Multiple security layers (anonymization, TLS, RBAC, DCO, OpenSSF)
 
 **How do you recommend users alter security defaults in order to "loosen" the security of the project?**
 
-Users who need to send unmasked data to AI backends can disable anonymization. Users who need write access should use k8sgpt as a read-only tool and implement remediation through separate Kubernetes admission controllers or operators.
+Anonymization is off unless `--anonymize` is passed, so by default finding text (including object names) is sent to the configured AI backend when `--explain` is used. Users can loosen the operator by enabling auto-remediation and widening its resource allowlist; this is alpha and should not be used for production changes without independent review.
 
 **Security Hygiene**
 
@@ -242,7 +242,7 @@ Users who need to send unmasked data to AI backends can disable anonymization. U
 
 **Describe how enabling the project changes any default behavior of the cluster or running workloads.**
 
-k8sgpt is purely read-only. It has no impact on cluster behavior or running workloads.
+The CLI and server are read-only and have no impact on cluster behavior or running workloads. The operator adds its CRDs and a k8sgpt server Deployment; with auto-remediation enabled it can change workload images through normal rollouts.
 
 **Describe how the project tests enablement and disablement.**
 
@@ -268,7 +268,7 @@ The operator creates no persistent resources. Helm uninstall removes all resourc
 
 **How can a rollout or rollback fail? Describe any impact to already running workloads.**
 
-No impact on running workloads — k8sgpt is read-only. Rollback failures would only affect k8sgpt's ability to function, not cluster operations.
+No impact on running workloads for the CLI/server, which are read-only. For the operator, a failed rollout or rollback affects only k8sgpt's own Deployment and CRDs, unless auto-remediation is enabled, in which case remediation rollouts follow normal Kubernetes rollout semantics.
 
 **Describe any specific metrics that should inform a rollback.**
 
@@ -296,7 +296,7 @@ k8sgpt uses only stable Kubernetes API versions. Custom analyzers can leverage a
 
 **Describe how the project increases the size or count of existing API objects.**
 
-Not applicable — k8sgpt is a read-only analysis tool, not a controller that manages API objects.
+The CLI/server create no API objects. The operator creates `Result` objects for findings (and `Mutation` proposals when auto-remediation is enabled), so object count grows with the number of open findings.
 
 **Describe how the project defines Service Level Objectives (SLOs) and Service Level Indicators (SLIs).**
 
@@ -453,7 +453,7 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 **How is the project executing access control?**
 
 - GitHub CODEOWNERS enforces PR review requirements
-- Maintainer team (7 members) with clear roles and responsibilities
+- Active maintainers are Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs), listed in [MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md). Everyone else previously listed there is emeritus.
 - DCO enforcement on all commits
 - Branch protection requires PR review and passing CI
 - GitHub organization membership controls write access
@@ -462,18 +462,12 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 
 **How does the project ensure its security reporting and response team is representative of its community diversity (organizational and individual)?**
 
-The maintainer team includes contributors from:
-- AWS (AlexsJones)
-- Agicap (matthisholleville)
-- DaoCloud (yankay)
-- @basiqio (bradmccoydev)
-- Independent contributors (thschue, AnaisUrlichs, roberthstrand, rakshitgondwal)
+The Security Response Team is Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs). Affiliations are the values recorded in
+[MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md) (AWS and Independent) and still need confirmation by each person.
 
 **How does the project invite and rotate security reporting team members?**
 
-Security reports are handled via:
-- Email: contact@k8sgpt.ai
-- Slack: Any maintainer in #k8sgpt
-- GitHub Security Advisories
-
-Any maintainer can respond to security reports. The process is documented in SECURITY.md and the security self-assessment.
+Security reports are received through GitHub private vulnerability reporting and contact@k8sgpt.ai (not Slack).
+Members are assigned, onboarded, rotated and removed as described in
+[GOVERNANCE.md § Security Response Team](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md#security-response-team);
+the triage lead rotates per report. The response process is in [SECURITY.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md).
