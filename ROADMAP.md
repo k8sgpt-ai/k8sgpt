@@ -1,79 +1,78 @@
 # k8sgpt Roadmap
 
-This document outlines the strategic direction and roadmap for k8sgpt. The roadmap is updated regularly based on community feedback and project needs.
+This document describes the direction of k8sgpt and k8sgpt-operator. It is kept in sync with the [k8sgpt-ai project board](https://github.com/orgs/k8sgpt-ai/projects/1), where every roadmap item carries a **Horizon** (Now / Next / Later) and an **Area** field.
+
+_Last updated: 30 October 2026_
 
 ## Project Vision
 
-k8sgpt aims to give Kubernetes superpowers to everyone by providing AI-powered cluster analysis that is accessible to users of all skill levels. We believe every Kubernetes practitioner should have access to SRE-grade diagnostics, regardless of their experience.
+k8sgpt gives every Kubernetes practitioner SRE-grade diagnostics. Our focus is to be the **precise, low-false-positive diagnosis layer** for Kubernetes: humans use it directly through the CLI, it runs continuously in-cluster through the operator, and AI agents call it over MCP.
 
-## Current Focus Areas
+## Horizons
 
-### 1. Multi-Provider AI Backend Support
-- Expand support for diverse LLM providers beyond OpenAI
-- Support for local/offline models (Ollama, LocalAI) as first-class citizens
-- Improved model selection and fallback mechanisms
-- Support for custom REST backends
+- **Now**: the next ~3 months
+- **Next**: roughly 3 to 6 months
+- **Later**: after that, or waiting on design or demand
 
-### 2. Analyzer Expansion
-- Add analyzers for emerging Kubernetes features
-- Improve existing analyzer accuracy
-- Custom analyzer framework improvements
-- Integration with OPA/Gatekeeper for policy analysis
+## k8sgpt (CLI)
 
-### 3. Observability & Integration
-- Deeper Prometheus and OpenTelemetry integration
-- Grafana dashboard support
-- Slack, Discord, and Teams integrations
-- Webhook-based alerting
+### Now
+- Keep `main` green and releasable: License Compliance fix (#1850), regular releases
+- Security dependency updates that build cleanly (#1791, #1637, #1690, #1837)
+- MCP server on mcp-go v1 with structured output (#1788, #1501)
+- Analyzer findings as first-class MCP tools and resources (#1878)
+- Finish open false-positive fixes (#1581, #1668) and the custom-analyzer filter (#1374)
+- Mute known findings via configuration (#372)
+- False-positive regression corpus for analyzers (#1879)
+- Reliable Azure and private/enterprise OpenAI-compatible endpoints (#1074, #1538)
 
-### 4. Performance & Scalability
-- Optimize analysis speed for large clusters
-- Improve caching mechanisms
-- Reduce memory footprint
-- Support for multi-cluster analysis
+### Next
+- Opt-in, CLI-only action classification behind a feature gate (#1813)
+- Generic CRD analyzer (#1528)
+- Custom prompt prefix (#842)
+- AI backend support tiers: core vs community (#1880)
+- Analyzers for new Kubernetes APIs as they mature (DRA, ValidatingAdmissionPolicy, Gateway API)
 
-### 5. Security
-- Enhanced data anonymization during AI queries
-- Improved security analyzers
-- Compliance reporting features
-- Secret detection and redaction
+### Later
+- Findings in a standard format (OpenTelemetry logs / CloudEvents) (#1881)
+- Bedrock Knowledge Base support (#1514)
 
-## Planned Initiatives
+## k8sgpt-operator
 
-### Near Term (Next 3-6 months)
-- [ ] Kubernetes 1.30+ feature support
-- [ ] Improved MCP server capabilities
-- [ ] Enhanced serve mode with metrics
-- [ ] Better error handling and diagnostics
-- [ ] Community analyzer marketplace
+### Now
+- Regular releases in step with the CLI (next: 0.2.30)
+- Rebuild images on patched Go and CA bundles (k8sgpt-operator#860)
+- Triage open bugs (k8sgpt-operator#769, #752, #311, #717, #816)
+- A single contributor sign-off gate: DCO or EasyCLA (k8sgpt-operator#861)
 
-### Medium Term (6-12 months)
-- [ ] Multi-cluster analysis
-- [ ] Advanced anomaly detection
-- [ ] Historical trend analysis
-- [ ] Custom dashboard generation
-- [ ] Plugin ecosystem for third-party analyzers
+### Next
+- Serve MCP from the operator (k8sgpt-operator#748)
+- Keyless cloud auth: IRSA and Entra Workload Identity (k8sgpt-operator#643, #801)
+- Parity with CLI configuration: customHeaders, customrest (k8sgpt-operator#517, k8sgpt#1452)
+- kubebuilder v4 migration (k8sgpt-operator#421)
 
-### Long Term (12+ months)
-- [ ] Self-healing recommendations with automated remediation
-- [ ] Cross-cluster best practice benchmarking
-- [ ] AI model fine-tuning for Kubernetes diagnostics
-- [ ] Enterprise-grade access control and auditing
+### Later
+- Custom analysis via the operator (k8sgpt-operator#475)
+- Emit findings for agent runtimes and observability stacks (#1881)
+
+## Community and Adoption
+
+- CNCF Incubation preparation is tracked in #1641
+- If your organisation uses k8sgpt, please add it to [ADOPTERS.md](ADOPTERS.md)
+- New contributors: see [CONTRIBUTING.md](CONTRIBUTING.md); issues labelled `good first issue` are a good place to start
 
 ## How to Contribute
 
 The roadmap is community-driven. To suggest new items:
 1. Open a GitHub issue with the `enhancement` label
-2. Discuss your idea in the [#k8sgpt Slack channel](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+2. Discuss your idea in `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io/)
 3. Submit a PR implementing the feature
 
 ## Previous Roadmaps
 
-- _(Initial roadmap created 2026-04-24)_
+- 2026-04-24: initial roadmap
+- 2026-10-30: restructured into Now / Next / Later, aligned with the project board
 
 ## Feedback
 
-We welcome feedback on this roadmap. Please share your thoughts via:
-- GitHub Issues
-- Slack: [#k8sgpt](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
-- GitHub Discussions
+We welcome feedback on this roadmap through GitHub Issues, GitHub Discussions, or `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io/).
