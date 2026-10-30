@@ -1,0 +1,97 @@
+header:
+  schema-version: 2.2.0
+  last-updated: '2026-10-30'
+  last-reviewed: '2026-10-30'
+  url: https://raw.githubusercontent.com/k8sgpt-ai/k8sgpt/main/SECURITY-INSIGHTS.yml
+  comment: |
+    OpenSSF Security Insights for the k8sgpt CLI/server repository.
+    Maintainers: re-review this file at least yearly and whenever SECURITY.md changes.
+
+project:
+  name: K8sGPT
+  homepage: https://k8sgpt.ai
+  roadmap: https://github.com/k8sgpt-ai/k8sgpt/blob/main/ROADMAP.md
+  administrators:
+    - name: Alex Jones
+      email: contact@k8sgpt.ai
+      social: https://github.com/AlexsJones
+      primary: true
+  repositories:
+    - name: k8sgpt
+      url: https://github.com/k8sgpt-ai/k8sgpt
+      comment: |
+        CLI, server (gRPC/HTTP and MCP) and analyzers.
+    - name: k8sgpt-operator
+      url: https://github.com/k8sgpt-ai/k8sgpt-operator
+      comment: |
+        Kubernetes operator for continuous in-cluster analysis.
+  vulnerability-reporting:
+    reports-accepted: true
+    bug-bounty-available: false
+    policy: https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md
+    contact:
+      name: k8sgpt maintainers
+      email: contact@k8sgpt.ai
+      primary: true
+    comment: |
+      Preferred channel is GitHub private vulnerability reporting:
+      https://github.com/k8sgpt-ai/k8sgpt/security/advisories/new
+  documentation:
+    detailed-guide: https://docs.k8sgpt.ai
+    code-of-conduct: https://github.com/k8sgpt-ai/k8sgpt/blob/main/CODE_OF_CONDUCT.md
+    release-process: https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE.md
+    support-policy: https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md#supported-versions
+
+repository:
+  url: https://github.com/k8sgpt-ai/k8sgpt
+  status: active
+  accepts-change-request: true
+  accepts-automated-change-request: true
+  core-team:
+    - name: Alex Jones
+      email: contact@k8sgpt.ai
+      social: https://github.com/AlexsJones
+      primary: true
+    - name: Anais Urlichs
+      email: contact@k8sgpt.ai
+      social: https://github.com/AnaisUrlichs
+      primary: false
+  documentation:
+    contributing-guide: https://github.com/k8sgpt-ai/k8sgpt/blob/main/CONTRIBUTING.md
+    security-policy: https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md
+    governance: https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md
+    dependency-management-policy: https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md
+  license:
+    url: https://github.com/k8sgpt-ai/k8sgpt/blob/main/LICENSE
+    expression: Apache-2.0
+  release:
+    changelog: https://github.com/k8sgpt-ai/k8sgpt/blob/main/CHANGELOG.md
+    automated-pipeline: true
+    distribution-points:
+      - uri: https://github.com/k8sgpt-ai/k8sgpt/releases
+        comment: Binaries, OS packages and SBOMs (GoReleaser)
+      - uri: ghcr.io/k8sgpt-ai/k8sgpt
+        comment: Container image
+  security:
+    assessments:
+      self:
+        evidence: https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY_SELF_ASSESSMENT.md
+        comment: |
+          Self-assessment following the CNCF TAG Security and Compliance template.
+    tools:
+      - name: OpenSSF Scorecard
+        type: other
+        rulesets:
+          - default
+        integration:
+          adhoc: true
+          ci: false
+          release: false
+        results:
+          adhoc:
+            name: OpenSSF Scorecard results
+            location: https://scorecard.dev/viewer/?uri=github.com/k8sgpt-ai/k8sgpt
+            predicate-uri: https://docs.oasis-open.org/sarif/sarif/v2.1.0
+        comment: |
+          Weekly and on-push Scorecard analysis (.github/workflows/scorecard.yaml);
+          results are published to scorecard.dev and GitHub code scanning.
