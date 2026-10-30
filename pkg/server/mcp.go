@@ -551,6 +551,12 @@ func (s *K8sGptMCPServer) handleConfig(ctx context.Context, request mcp.CallTool
 	// Add custom analyzers if present
 	if len(req.CustomAnalyzers) > 0 {
 		for _, ca := range req.CustomAnalyzers {
+			if ca.Name == "" {
+				return mcp.NewToolResultErrorf("custom analyzer name is required"), nil
+			}
+			if ca.Connection.Url == "" {
+				return mcp.NewToolResultErrorf("custom analyzer connection url is required for %s", ca.Name), nil
+			}
 			addConfigReq.CustomAnalyzers = append(addConfigReq.CustomAnalyzers, &schemav1.CustomAnalyzer{
 				Name: ca.Name,
 				Connection: &schemav1.Connection{
