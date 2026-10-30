@@ -178,6 +178,29 @@ func TestHPAAnalyzerWithNonExistentScaleTargetRef(t *testing.T) {
 	}
 }
 
+func TestHPAAnalyzerLooksUpLowercaseStatefulSet(t *testing.T) {
+	clientset := fake.NewSimpleClientset(&autoscalingv2.HorizontalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+		Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "statefulset", Name: "missing"},
+		},
+	})
+	results, err := (HpaAnalyzer{}).Analyze(common.Analyzer{
+		Client:  &kubernetes.Client{Client: clientset},
+		Context: context.Background(), Namespace: "default",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || len(results[0].Error) != 1 {
+		t.Fatalf("expected one missing-target failure, got %+v", results)
+	}
+	want := "HorizontalPodAutoscaler uses statefulset/missing as ScaleTargetRef which does not exist."
+	if got := results[0].Error[0].Text; got != want {
+		t.Errorf("failure = %q, want %q", got, want)
+	}
+}
+
 func TestHPAAnalyzerWithExistingScaleTargetRefAsDeployment(t *testing.T) {
 
 	clientset := fake.NewSimpleClientset(
@@ -498,6 +521,65 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 	}
 	if !errorFound {
 		t.Error("expected error 'does not have resource configured.' not found in analysis results")
+	}
+}
+
+func TestHPAAnalyzerResourceNotConfiguredNamesHPANamespace(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "team-a"},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "Deployment", Name: "example"},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "team-a"},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: "example", Image: "nginx"}}},
+				},
+			},
+		},
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "team-b"},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "Deployment", Name: "example"},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "team-b"},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: "example", Image: "nginx"}}},
+				},
+			},
+		})
+	hpaAnalyzer := HpaAnalyzer{}
+
+	// no Namespace: the analyzer reads every namespace, as without -n
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context: context.Background(),
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+
+	want := map[string]string{
+		"team-a/example": "Deployment team-a/example does not have resource configured.",
+		"team-b/example": "Deployment team-b/example does not have resource configured.",
+	}
+	if len(analysisResults) != len(want) {
+		t.Fatalf("expected %d results, got %d", len(want), len(analysisResults))
+	}
+	for _, analysis := range analysisResults {
+		if len(analysis.Error) != 1 {
+			t.Fatalf("%s: expected 1 failure, got %d", analysis.Name, len(analysis.Error))
+		}
+		assert.Equal(t, analysis.Error[0].Text, want[analysis.Name])
 	}
 }
 

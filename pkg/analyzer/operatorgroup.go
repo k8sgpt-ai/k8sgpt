@@ -20,8 +20,10 @@ func (OperatorGroupAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 		return nil, fmt.Errorf("dynamic client is nil in %s analyzer", kind)
 	}
 
+	// Groups are counted per namespace, so a label or name filter would hide
+	// the second group in a namespace.
 	list, err := a.Client.GetDynamicClient().
-		Resource(ogGVR).Namespace(metav1.NamespaceAll).
+		Resource(ogGVR).Namespace(a.Namespace).
 		List(a.Context, metav1.ListOptions{})
 	if err != nil {
 		return nil, err

@@ -51,7 +51,7 @@ func (c *OllamaClient) Configure(config IAIConfig) error {
 	}
 
 	proxyEndpoint := config.GetProxyEndpoint()
-	httpClient := http.DefaultClient
+	httpClient := &http.Client{Timeout: defaultHTTPTimeout}
 	if proxyEndpoint != "" {
 		proxyUrl, err := url.Parse(proxyEndpoint)
 		if err != nil {
@@ -62,6 +62,7 @@ func (c *OllamaClient) Configure(config IAIConfig) error {
 		}
 
 		httpClient = &http.Client{
+			Timeout:   defaultHTTPTimeout,
 			Transport: transport,
 		}
 	}

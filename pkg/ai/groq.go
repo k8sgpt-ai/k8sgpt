@@ -34,6 +34,7 @@ type GroqClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 }
 
 func (c *GroqClient) Configure(config IAIConfig) error {
@@ -59,6 +60,7 @@ func (c *GroqClient) Configure(config IAIConfig) error {
 
 	customHeaders := config.GetCustomHeaders()
 	defaultConfig.HTTPClient = &http.Client{
+		Timeout: defaultHTTPTimeout,
 		Transport: &OpenAIHeaderTransport{
 			Origin:  transport,
 			Headers: customHeaders,
@@ -73,6 +75,7 @@ func (c *GroqClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
 }
 
@@ -86,13 +89,16 @@ func (c *GroqClient) GetCompletion(ctx context.Context, prompt string) (string, 
 			},
 		},
 		Temperature:      c.temperature,
-		MaxTokens:        maxToken,
+		MaxTokens:        c.maxTokens,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,
 	})
 	if err != nil {
 		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned")
 	}
 	return resp.Choices[0].Message.Content, nil
 }
