@@ -33,6 +33,7 @@ type OpenAIClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 	// organizationId string
 }
 
@@ -42,6 +43,14 @@ const (
 	presencePenalty  = 0.0
 	frequencyPenalty = 0.0
 )
+
+// maxTokensOrDefault returns the configured output limit, or maxToken when none is set.
+func maxTokensOrDefault(configured int) int {
+	if configured <= 0 {
+		return maxToken
+	}
+	return configured
+}
 
 func (c *OpenAIClient) Configure(config IAIConfig) error {
 	token := config.GetPassword()
@@ -69,6 +78,7 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 
 	customHeaders := config.GetCustomHeaders()
 	defaultConfig.HTTPClient = &http.Client{
+		Timeout: defaultHTTPTimeout,
 		Transport: &OpenAIHeaderTransport{
 			Origin:  transport,
 			Headers: customHeaders,
@@ -83,12 +93,23 @@ func (c *OpenAIClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
+}
+
+// rejectsSamplingParams reports whether err is OpenAI's 400 for a temperature or
+// top_p value the model does not support (reasoning models only take the default).
+func rejectsSamplingParams(err error) bool {
+	var apiErr *openai.APIError
+	if !errors.As(err, &apiErr) || apiErr.HTTPStatusCode != http.StatusBadRequest || apiErr.Param == nil {
+		return false
+	}
+	return *apiErr.Param == "temperature" || *apiErr.Param == "top_p"
 }
 
 func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	req := openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
@@ -96,12 +117,19 @@ func (c *OpenAIClient) GetCompletion(ctx context.Context, prompt string) (string
 				Content: prompt,
 			},
 		},
-		Temperature:      c.temperature,
-		MaxCompletionTokens: maxToken,
-		PresencePenalty:  presencePenalty,
-		FrequencyPenalty: frequencyPenalty,
-		TopP:             c.topP,
-	})
+		Temperature:         c.temperature,
+		MaxCompletionTokens: c.maxTokens,
+		PresencePenalty:     presencePenalty,
+		FrequencyPenalty:    frequencyPenalty,
+		TopP:                c.topP,
+	}
+	resp, err := c.client.CreateChatCompletion(ctx, req)
+	if err != nil && rejectsSamplingParams(err) {
+		// Some models (e.g. reasoning models) only accept the default sampling
+		// values: retry once without them.
+		req.Temperature, req.TopP = 0, 0
+		resp, err = c.client.CreateChatCompletion(ctx, req)
+	}
 	if err != nil {
 		return "", err
 	}

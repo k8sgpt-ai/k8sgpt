@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -23,8 +22,8 @@ func (ClusterServiceVersionAnalyzer) Analyze(a common.Analyzer) ([]common.Result
 	}
 
 	list, err := a.Client.GetDynamicClient().
-		Resource(csvGVR).Namespace(metav1.NamespaceAll).
-		List(a.Context, metav1.ListOptions{})
+		Resource(csvGVR).Namespace(a.Namespace).
+		List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +36,16 @@ func (ClusterServiceVersionAnalyzer) Analyze(a common.Analyzer) ([]common.Result
 
 		var failures []common.Failure
 		if phase != "" && phase != "Succeeded" {
-			// Superfície de condições para contexto
-			if conds, _, _ := unstructured.NestedSlice(item.Object, "status", "conditions"); len(conds) > 0 {
-				if msg := pickWorstCondition(conds); msg != "" {
-					failures = append(failures, common.Failure{Text: fmt.Sprintf("phase=%q: %s", phase, msg)})
-				}
-			} else {
+			// status.conditions is a history of phase changes, oldest first.
+			// The current reason and message are kept on status itself.
+			reason, _, _ := unstructured.NestedString(item.Object, "status", "reason")
+			msg, _, _ := unstructured.NestedString(item.Object, "status", "message")
+			switch {
+			case reason != "" && msg != "":
+				failures = append(failures, common.Failure{Text: fmt.Sprintf("phase=%q: %s: %s", phase, reason, msg)})
+			case reason != "" || msg != "":
+				failures = append(failures, common.Failure{Text: fmt.Sprintf("phase=%q: %s%s", phase, reason, msg)})
+			default:
 				failures = append(failures, common.Failure{Text: fmt.Sprintf("phase=%q (see status.conditions)", phase)})
 			}
 		}
@@ -56,27 +59,4 @@ func (ClusterServiceVersionAnalyzer) Analyze(a common.Analyzer) ([]common.Result
 		}
 	}
 	return results, nil
-}
-
-// reaproveitamos o heurístico já usado em outros pontos
-func pickWorstCondition(conds []interface{}) string {
-	for _, c := range conds {
-		m, ok := c.(map[string]any)
-		if !ok {
-			continue
-		}
-		if s, _ := m["status"].(string); s == "True" {
-			continue
-		}
-		r, _ := m["reason"].(string)
-		msg, _ := m["message"].(string)
-		if r == "" && msg == "" {
-			continue
-		}
-		if r != "" && msg != "" {
-			return r + ": " + msg
-		}
-		return r + msg
-	}
-	return ""
 }

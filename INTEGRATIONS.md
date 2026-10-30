@@ -26,6 +26,7 @@ k8sgpt integrates with a variety of cloud native tools, platforms, and services.
 | [Amazon SageMaker](https://aws.amazon.com/sagemaker/) | `amazonsagemaker` | AWS SageMaker JumpStart models |
 | [Google Gemini](https://ai.google/gemini) | `google` | Google's Gemini models |
 | [Google Vertex AI](https://cloud.google.com/vertex-ai) | `googlevertexai` | Google Cloud Vertex AI models |
+| GPT2Giga | `gpt2giga` | GPT2Giga service using the OpenAI-compatible Chat Completions API |
 | [Ollama](https://ollama.com/) | `ollama` | Local LLM inference with Ollama |
 | [LocalAI](https://localai.io/) | `localai` | Self-hosted OpenAI-compatible API |
 | [Hugging Face](https://huggingface.co/) | `huggingface` | Hugging Face Inference API |
