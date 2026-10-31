@@ -92,10 +92,26 @@ func (c *CustomRestClient) GetCompletion(ctx context.Context, prompt string) (st
 		Message  string `json:"message"`
 		Prompt   string `json:"prompt,omitempty"`
 	}
-	prompt = strings.NewReplacer("\n", "\\n", "\t", "\\t").Replace(prompt)
+
+	// Try parsing structured JSON prompt (as sent by analysis package).
+	// If unmarshaling fails (e.g. plain text prompt from query, CLI, or interactive mode),
+	// treat the input string directly as the prompt.
 	if err := json.Unmarshal([]byte(prompt), &promptDetail); err != nil {
-		return "", err
+		sanitized := strings.NewReplacer("\n", "\\n", "\t", "\\t").Replace(prompt)
+		if err := json.Unmarshal([]byte(sanitized), &promptDetail); err != nil {
+			promptDetail.Prompt = prompt
+			promptDetail.Message = prompt
+		}
 	}
+	if promptDetail.Prompt == "" && promptDetail.Message == "" {
+		promptDetail.Prompt = prompt
+		promptDetail.Message = prompt
+	} else if promptDetail.Prompt == "" {
+		promptDetail.Prompt = promptDetail.Message
+	} else if promptDetail.Message == "" {
+		promptDetail.Message = promptDetail.Prompt
+	}
+
 	generateRequest := &CustomRestRequest{
 		Model:  c.model,
 		Prompt: promptDetail.Prompt,
