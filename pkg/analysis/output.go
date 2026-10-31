@@ -130,8 +130,8 @@ func (a *Analysis) textOutput() ([]byte, error) {
 			// The trailing hash is what a user copies into the exclusions
 			// config; without it the feature is unusable without recomputing
 			// SHA-256 by hand.
-			output.WriteString(fmt.Sprintf("- %s %s %s\n", color.RedString("Error:"), color.RedString(err.Text),
-				color.HiBlackString("hash=%s", FindingHash(result.Kind, result.Name, err.Text))))
+			fmt.Fprintf(&output, "- %s %s %s\n", color.RedString("Error:"), color.RedString(err.Text),
+				color.HiBlackString("hash=%s", FindingHash(result.Kind, result.Name, err.Text)))
 			if err.KubernetesDoc != "" {
 				output.WriteString(fmt.Sprintf("  %s %s\n", color.RedString("Kubernetes Doc:"), color.RedString(err.KubernetesDoc)))
 			}
