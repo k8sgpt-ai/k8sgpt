@@ -63,7 +63,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 
 	{
 		Name:       "anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -74,7 +74,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -85,7 +85,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-opus-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -96,7 +96,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -107,7 +107,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -118,7 +118,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-sonnet-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -129,7 +129,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -140,7 +140,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "us.anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,
@@ -151,7 +151,7 @@ var defaultModels = []bedrock_support.BedrockModel{
 	},
 	{
 		Name:       "global.anthropic.claude-opus-5-5",
-		Completion: &bedrock_support.CohereMessagesSingleSamplingCompletion{},
+		Completion: &bedrock_support.CohereMessagesNoSamplingCompletion{},
 		Response:   &bedrock_support.CohereMessagesResponse{},
 		Config: bedrock_support.BedrockModelConfig{
 			MaxTokens:   100,

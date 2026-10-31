@@ -242,6 +242,27 @@ func TestDefaultModels(t *testing.T) {
 	}
 }
 
+func TestClaude5ModelsSendNoSamplingParameters(t *testing.T) {
+	client := &AmazonBedRockClient{}
+	assert.NoError(t, client.Configure(&AIProvider{Model: "anthropic.claude-v2"}))
+
+	for _, name := range []string{
+		"anthropic.claude-opus-5",
+		"us.anthropic.claude-opus-5",
+		"global.anthropic.claude-opus-5",
+		"anthropic.claude-sonnet-5-5",
+		"us.anthropic.claude-sonnet-5-5",
+		"global.anthropic.claude-sonnet-5-5",
+		"anthropic.claude-opus-5-5",
+		"us.anthropic.claude-opus-5-5",
+		"global.anthropic.claude-opus-5-5",
+	} {
+		model, err := client.getModelFromString(name)
+		assert.NoError(t, err)
+		assert.IsType(t, &bedrock_support.CohereMessagesNoSamplingCompletion{}, model.Completion, name)
+	}
+}
+
 func TestValidateInferenceProfileArn(t *testing.T) {
 	tests := []struct {
 		name  string
