@@ -17,6 +17,8 @@ type AzureAIClient struct {
 	client      *openai.Client
 	model       string
 	temperature float32
+	topP        float32
+	maxTokens   int
 	// organizationId string
 }
 
@@ -101,6 +103,10 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
+	c.topP = config.GetTopP()
+	// Left unset (omitted from the request) unless configured, so deployments that
+	// reject max_tokens keep working with the default settings.
+	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
 
@@ -115,6 +121,8 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 			},
 		},
 		Temperature: c.temperature,
+		TopP:        c.topP,
+		MaxTokens:   c.maxTokens,
 	})
 	if err != nil {
 		return "", err
