@@ -495,7 +495,7 @@ Unused:
 > gpt2giga
 ```
 
-For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
+For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/). The [AI backend support tiers](https://docs.k8sgpt.ai/reference/providers/backend-tiers/) page explains which backends are Core and which are Community-maintained.
 
 _Using LiteLLM (route to 100+ providers through one proxy)_
 
