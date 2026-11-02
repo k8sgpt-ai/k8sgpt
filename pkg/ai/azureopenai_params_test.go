@@ -56,3 +56,38 @@ func TestAzureOpenAI_OmitsMaxTokensAndTopPWhenUnset(t *testing.T) {
 	assert.NotContains(t, body, "max_tokens")
 	assert.NotContains(t, body, "top_p")
 }
+
+func TestAzureOpenAI_RetriesWithoutSamplingParamsWhenRejected(t *testing.T) {
+	var bodies []map[string]any
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		var body map[string]any
+		require.NoError(t, json.Unmarshal(raw, &body))
+		bodies = append(bodies, body)
+		w.Header().Set("Content-Type", "application/json")
+		if len(bodies) == 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"error": map[string]any{"message": "Unsupported value: 'top_p'", "type": "invalid_request_error", "param": "top_p"},
+			})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"choices": []map[string]any{
+				{"message": map[string]string{"role": "assistant", "content": "ok"}, "finish_reason": "stop"},
+			},
+		})
+	}))
+	t.Cleanup(server.Close)
+
+	client := &AzureAIClient{}
+	require.NoError(t, client.Configure(&AIProvider{Model: "test-model", Password: "test-key", BaseURL: server.URL, TopP: 0.5}))
+	got, err := client.GetCompletion(context.Background(), "why is my pod crashing?")
+	require.NoError(t, err)
+
+	assert.Equal(t, "ok", got)
+	require.Len(t, bodies, 2)
+	assert.EqualValues(t, 0.5, bodies[0]["top_p"])
+	assert.NotContains(t, bodies[1], "top_p")
+}

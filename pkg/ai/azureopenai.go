@@ -112,7 +112,7 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 
 func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	req := openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
@@ -123,7 +123,14 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 		Temperature: c.temperature,
 		TopP:        c.topP,
 		MaxTokens:   c.maxTokens,
-	})
+	}
+	resp, err := c.client.CreateChatCompletion(ctx, req)
+	if err != nil && rejectsSamplingParams(err) {
+		// Reasoning deployments only accept the default sampling values: retry
+		// once without them, as the openai backend does.
+		req.Temperature, req.TopP = 0, 0
+		resp, err = c.client.CreateChatCompletion(ctx, req)
+	}
 	if err != nil {
 		return "", err
 	}
