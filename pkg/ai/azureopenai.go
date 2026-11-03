@@ -125,6 +125,19 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 		MaxCompletionTokens: c.maxTokens,
 	}
 	resp, err := c.client.CreateChatCompletion(ctx, req)
+	if err != nil && c.maxTokens > 0 {
+		// Which token-limit field a deployment accepts depends on its model and
+		// api-version: reasoning models reject max_tokens, and older api-versions
+		// reject max_completion_tokens. Retry once with the other field.
+		switch rejectedParam(err) {
+		case "max_completion_tokens":
+			req.MaxCompletionTokens, req.MaxTokens = 0, c.maxTokens
+			resp, err = c.client.CreateChatCompletion(ctx, req)
+		case "max_tokens":
+			req.MaxCompletionTokens, req.MaxTokens = c.maxTokens, 0
+			resp, err = c.client.CreateChatCompletion(ctx, req)
+		}
+	}
 	if err != nil && rejectsSamplingParams(err) {
 		// Reasoning deployments only accept the default sampling values: retry
 		// once without them, as the openai backend does.
@@ -138,6 +151,15 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 		return "", errors.New("no completion choices returned")
 	}
 	return resp.Choices[0].Message.Content, nil
+}
+
+// rejectedParam returns the request parameter named by a 400 response, or "".
+func rejectedParam(err error) string {
+	var apiErr *openai.APIError
+	if !errors.As(err, &apiErr) || apiErr.HTTPStatusCode != http.StatusBadRequest || apiErr.Param == nil {
+		return ""
+	}
+	return *apiErr.Param
 }
 
 func (c *AzureAIClient) GetName() string {
