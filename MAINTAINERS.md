@@ -48,5 +48,5 @@ To become a maintainer:
 
 For maintainer-related inquiries, reach out via:
 - GitHub: [k8sgpt-ai organization](https://github.com/k8sgpt-ai)
-- Slack: [#k8sgpt](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+- Slack: `#k8sgpt` on [CNCF Slack](https://slack.cncf.io)
 - Email: contact@k8sgpt.ai
