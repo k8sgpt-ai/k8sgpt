@@ -104,8 +104,8 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
-	// Left unset (omitted from the request) unless configured, so deployments that
-	// reject max_tokens keep working with the default settings.
+	// Sent as max_completion_tokens (like the openai backend): reasoning
+	// deployments reject max_tokens. Omitted from the request when unset.
 	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
@@ -120,9 +120,9 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 				Content: prompt,
 			},
 		},
-		Temperature: c.temperature,
-		TopP:        c.topP,
-		MaxTokens:   c.maxTokens,
+		Temperature:         c.temperature,
+		TopP:                c.topP,
+		MaxCompletionTokens: c.maxTokens,
 	}
 	resp, err := c.client.CreateChatCompletion(ctx, req)
 	if err != nil && rejectsSamplingParams(err) {

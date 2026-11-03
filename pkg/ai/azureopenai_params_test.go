@@ -46,7 +46,10 @@ func azureRequestBody(t *testing.T, provider *AIProvider) map[string]any {
 func TestAzureOpenAI_UsesConfiguredMaxTokensAndTopP(t *testing.T) {
 	body := azureRequestBody(t, &AIProvider{MaxTokens: 512, TopP: 0.5})
 
-	assert.EqualValues(t, 512, body["max_tokens"])
+	// Sent as max_completion_tokens: reasoning deployments (o-series, gpt-5)
+	// reject max_tokens.
+	assert.EqualValues(t, 512, body["max_completion_tokens"])
+	assert.NotContains(t, body, "max_tokens")
 	assert.EqualValues(t, 0.5, body["top_p"])
 }
 
@@ -54,6 +57,7 @@ func TestAzureOpenAI_OmitsMaxTokensAndTopPWhenUnset(t *testing.T) {
 	body := azureRequestBody(t, &AIProvider{})
 
 	assert.NotContains(t, body, "max_tokens")
+	assert.NotContains(t, body, "max_completion_tokens")
 	assert.NotContains(t, body, "top_p")
 }
 
