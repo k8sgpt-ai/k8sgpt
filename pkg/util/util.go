@@ -320,18 +320,15 @@ func NewHeaders(customHeaders []string) []http.Header {
 	return result
 }
 
-func LabelStrToSelector(labelStr string) labels.Selector {
+// LabelStrToSelector parses a label selector string, such as the value of the
+// --selector flag, with the same syntax as kubectl and the API server, so the
+// '=', '==', '!=', set-based and existence requirements are all honored.
+// An empty string yields a nil selector.
+func LabelStrToSelector(labelStr string) (labels.Selector, error) {
 	if labelStr == "" {
-		return nil
+		return nil, nil
 	}
-	labelSelectorMap := make(map[string]string)
-	for _, s := range strings.Split(labelStr, ",") {
-		parts := strings.SplitN(s, "=", 2)
-		if len(parts) == 2 {
-			labelSelectorMap[parts[0]] = parts[1]
-		}
-	}
-	return labels.SelectorFromSet(labels.Set(labelSelectorMap))
+	return labels.Parse(labelStr)
 }
 
 // CaptureOutput captures the output of a function that writes to stdout
