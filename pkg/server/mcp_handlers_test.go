@@ -204,3 +204,212 @@ func TestFilterToolsStartFromCoreFilters(t *testing.T) {
 		})
 	}
 }
+
+
+func TestHandleConfigCustomAnalyzersValidation(t *testing.T) {
+	s := &K8sGptMCPServer{}
+
+	t.Run("fails when custom analyzer name is empty", func(t *testing.T) {
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "",
+							"connection": map[string]any{
+								"url":  "http://localhost",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "custom analyzer name is required")
+	})
+
+	t.Run("fails when custom analyzer connection url is empty", func(t *testing.T) {
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "test-analyzer",
+							"connection": map[string]any{
+								"url":  "",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.True(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "custom analyzer connection url is required for test-analyzer")
+	})
+
+	t.Run("succeeds with valid custom analyzer", func(t *testing.T) {
+		viper.Reset()
+		t.Cleanup(viper.Reset)
+		viper.SetConfigFile(filepath.Join(t.TempDir(), "config.yaml"))
+
+		result, err := s.handleConfig(context.Background(), mcp.CallToolRequest{
+			Params: mcp.CallToolParams{
+				Arguments: map[string]any{
+					"customAnalyzers": []map[string]any{
+						{
+							"name": "test-analyzer",
+							"connection": map[string]any{
+								"url":  "http://localhost",
+								"port": 8080,
+							},
+						},
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		require.False(t, result.IsError)
+		text := result.Content[0].(mcp.TextContent).Text
+		require.Contains(t, text, "Successfully added configuration")
+	})
+}
+
+func TestHandleAddFilters_Validation(t *testing.T) {
+	s := &K8sGptMCPServer{}
+
+	tests := []struct {
+		name        string
+		args        map[string]any
+		expectedErr string
+	}{
+		{
+			name:        "empty filters array",
+			args:        map[string]any{"filters": []string{}},
+			expectedErr: "filters array is required and cannot be empty",
+		},
+		{
+			name:        "empty filter name",
+			args:        map[string]any{"filters": []string{""}},
+			expectedErr: "filter name cannot be empty",
+		},
+		{
+			name:        "non-existent filter",
+			args:        map[string]any{"filters": []string{"NonExistentFilter"}},
+			expectedErr: "Filter NonExistentFilter does not exist. Please use list-filters to view available filters",
+		},
+		{
+			name:        "multiple non-existent filters",
+			args:        map[string]any{"filters": []string{"FakeFilter1", "FakeFilter2"}},
+			expectedErr: "Filter FakeFilter1, FakeFilter2 does not exist. Please use list-filters to view available filters",
+		},
+		{
+			name:        "mixture of valid and non-existent filters",
+			args:        map[string]any{"filters": []string{"Pod", "FakeFilter"}},
+			expectedErr: "Filter FakeFilter does not exist. Please use list-filters to view available filters",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			t.Cleanup(viper.Reset)
+			configPath := filepath.Join(t.TempDir(), "config.yaml")
+			viper.SetConfigFile(configPath)
+			viper.Set("active_filters", []string{"Service"})
+
+			result, err := s.handleAddFilters(context.Background(), mcp.CallToolRequest{
+				Params: mcp.CallToolParams{Arguments: tt.args},
+			})
+			require.NoError(t, err)
+			require.True(t, result.IsError)
+			text, ok := mcp.AsTextContent(result.Content[0])
+			require.True(t, ok)
+			require.Contains(t, text.Text, tt.expectedErr)
+			// Ensure active_filters was not modified on error
+			require.Equal(t, []string{"Service"}, viper.GetStringSlice("active_filters"))
+		})
+	}
+}
+
+func TestHandleAddFilters_AlreadyActive(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	configPath := filepath.Join(t.TempDir(), "config.yaml")
+	viper.SetConfigFile(configPath)
+	viper.Set("active_filters", []string{"Pod", "Service"})
+
+	s := &K8sGptMCPServer{}
+	result, err := s.handleAddFilters(context.Background(), mcp.CallToolRequest{
+		Params: mcp.CallToolParams{Arguments: map[string]any{"filters": []string{"Pod"}}},
+	})
+	require.NoError(t, err)
+	require.False(t, result.IsError)
+	text, ok := mcp.AsTextContent(result.Content[0])
+	require.True(t, ok)
+	require.Contains(t, text.Text, "All specified filters were already active")
+}
+
+func TestHandleRemoveFilters_Validation(t *testing.T) {
+	s := &K8sGptMCPServer{}
+
+	tests := []struct {
+		name        string
+		args        map[string]any
+		expectedErr string
+	}{
+		{
+			name:        "empty filters array",
+			args:        map[string]any{"filters": []string{}},
+			expectedErr: "filters array is required and cannot be empty",
+		},
+		{
+			name:        "empty filter name",
+			args:        map[string]any{"filters": []string{""}},
+			expectedErr: "filter name cannot be empty",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Reset()
+			t.Cleanup(viper.Reset)
+			configPath := filepath.Join(t.TempDir(), "config.yaml")
+			viper.SetConfigFile(configPath)
+			viper.Set("active_filters", []string{"Pod"})
+
+			result, err := s.handleRemoveFilters(context.Background(), mcp.CallToolRequest{
+				Params: mcp.CallToolParams{Arguments: tt.args},
+			})
+			require.NoError(t, err)
+			require.True(t, result.IsError)
+			text, ok := mcp.AsTextContent(result.Content[0])
+			require.True(t, ok)
+			require.Contains(t, text.Text, tt.expectedErr)
+			require.Equal(t, []string{"Pod"}, viper.GetStringSlice("active_filters"))
+		})
+	}
+}
+
+func TestHandleRemoveFilters_NoneActive(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	configPath := filepath.Join(t.TempDir(), "config.yaml")
+	viper.SetConfigFile(configPath)
+	viper.Set("active_filters", []string{"Pod"})
+
+	s := &K8sGptMCPServer{}
+	result, err := s.handleRemoveFilters(context.Background(), mcp.CallToolRequest{
+		Params: mcp.CallToolParams{Arguments: map[string]any{"filters": []string{"Service"}}},
+	})
+	require.NoError(t, err)
+	require.False(t, result.IsError)
+	text, ok := mcp.AsTextContent(result.Content[0])
+	require.True(t, ok)
+	require.Contains(t, text.Text, "None of the specified filters were active")
+}

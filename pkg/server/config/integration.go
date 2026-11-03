@@ -20,6 +20,9 @@ func (h *Handler) syncIntegration(ctx context.Context,
 	fmt.Println("WARNING: syncIntegration is deprecated.")
 
 	response := &schemav1.AddConfigResponse{}
+	if i == nil {
+		return response, nil
+	}
 	integrationProvider := integration.NewIntegration()
 	if i.Integrations == nil {
 		// If there are locally activate integrations, disable them

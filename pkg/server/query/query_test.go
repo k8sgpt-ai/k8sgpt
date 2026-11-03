@@ -120,7 +120,6 @@ func TestQuery_Success(t *testing.T) {
 
 func TestQuery_UnmarshalError(t *testing.T) {
 	// Setup mocks
-	mockAI := new(MockAI)
 	mockFactory := new(MockAIClientFactory)
 	mockConfig := new(MockConfigProvider)
 
@@ -128,10 +127,6 @@ func TestQuery_UnmarshalError(t *testing.T) {
 	ai.SetTestAIClientFactory(mockFactory)
 	ai.SetTestConfigProvider(mockConfig)
 	defer ai.ResetTestImplementations()
-
-	// Setup expectations
-	mockFactory.On("NewClient", "test-backend").Return(mockAI)
-	mockAI.On("Close").Return()
 
 	// Mock unmarshal error
 	mockConfig.On("UnmarshalKey", "ai", mock.Anything).Return(errors.New("unmarshal error"))
@@ -150,7 +145,6 @@ func TestQuery_UnmarshalError(t *testing.T) {
 	assert.Contains(t, response.Error.Message, "Failed to unmarshal AI configuration")
 
 	// Verify mocks
-	mockAI.AssertExpectations(t)
 	mockFactory.AssertExpectations(t)
 	mockConfig.AssertExpectations(t)
 }
@@ -302,6 +296,118 @@ func TestQuery_GetCompletionError(t *testing.T) {
 	assert.NotNil(t, response)
 	assert.Equal(t, "", response.Response)
 	assert.Equal(t, "completion error", response.Error.Message)
+
+	// Verify mocks
+	mockAI.AssertExpectations(t)
+	mockFactory.AssertExpectations(t)
+	mockConfig.AssertExpectations(t)
+}
+
+func TestQuery_FallbackToDefaultProvider(t *testing.T) {
+	// Setup mocks
+	mockAI := new(MockAI)
+	mockFactory := new(MockAIClientFactory)
+	mockConfig := new(MockConfigProvider)
+
+	// Set test implementations
+	ai.SetTestAIClientFactory(mockFactory)
+	ai.SetTestConfigProvider(mockConfig)
+	defer ai.ResetTestImplementations()
+
+	// Define test data
+	defaultBackend := "azureopenai"
+	testQuery := "test query"
+	testResponse := "test response"
+
+	// Setup expectations
+	mockFactory.On("NewClient", defaultBackend).Return(mockAI)
+	mockAI.On("Close").Return()
+
+	// Set up configuration with a default provider
+	mockConfig.On("UnmarshalKey", "ai", mock.Anything).Run(func(args mock.Arguments) {
+		config := args.Get(1).(*ai.AIConfiguration)
+		*config = ai.AIConfiguration{
+			DefaultProvider: defaultBackend,
+			Providers: []ai.AIProvider{
+				{
+					Name:     defaultBackend,
+					Password: "test-password",
+					Model:    "test-model",
+				},
+			},
+		}
+	}).Return(nil)
+
+	mockAI.On("Configure", mock.AnythingOfType("*ai.AIProvider")).Return(nil)
+	mockAI.On("GetCompletion", mock.Anything, testQuery).Return(testResponse, nil)
+
+	// Create handler and call Query with empty backend
+	handler := &Handler{}
+	response, err := handler.Query(context.Background(), &schemav1.QueryRequest{
+		Backend: "",
+		Query:   testQuery,
+	})
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.Equal(t, testResponse, response.Response)
+	assert.Equal(t, "", response.Error.Message)
+
+	// Verify mocks
+	mockAI.AssertExpectations(t)
+	mockFactory.AssertExpectations(t)
+	mockConfig.AssertExpectations(t)
+}
+
+func TestQuery_FallbackToOpenAI(t *testing.T) {
+	// Setup mocks
+	mockAI := new(MockAI)
+	mockFactory := new(MockAIClientFactory)
+	mockConfig := new(MockConfigProvider)
+
+	// Set test implementations
+	ai.SetTestAIClientFactory(mockFactory)
+	ai.SetTestConfigProvider(mockConfig)
+	defer ai.ResetTestImplementations()
+
+	// Define test data
+	testQuery := "test query"
+	testResponse := "test response"
+
+	// Setup expectations: fallback when both Backend and DefaultProvider are empty
+	mockFactory.On("NewClient", "openai").Return(mockAI)
+	mockAI.On("Close").Return()
+
+	mockConfig.On("UnmarshalKey", "ai", mock.Anything).Run(func(args mock.Arguments) {
+		config := args.Get(1).(*ai.AIConfiguration)
+		*config = ai.AIConfiguration{
+			DefaultProvider: "",
+			Providers: []ai.AIProvider{
+				{
+					Name:     "openai",
+					Password: "test-password",
+					Model:    "test-model",
+				},
+			},
+		}
+	}).Return(nil)
+
+	mockAI.On("Configure", mock.AnythingOfType("*ai.AIProvider")).Return(nil)
+	mockAI.On("GetCompletion", mock.Anything, testQuery).Return(testResponse, nil)
+
+	// Create handler and call Query with empty backend
+	handler := &Handler{}
+	response, err := handler.Query(context.Background(), &schemav1.QueryRequest{
+		Backend: "",
+		Query:   testQuery,
+	})
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.Equal(t, testResponse, response.Response)
+	assert.Equal(t, "", response.Error.Message)
 
 	// Verify mocks
 	mockAI.AssertExpectations(t)

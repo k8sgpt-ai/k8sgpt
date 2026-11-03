@@ -101,10 +101,10 @@ func (s *Config) Serve() error {
 		return err
 	}
 
-	s.ConfigHandler = &config.Handler{}
+	s.listener = lis
+	s.ConfigHandler = &config.Handler{ShutdownFunc: s.Shutdown}
 	s.AnalyzeHandler = &analyze.Handler{}
 	s.QueryHandler = &query.Handler{}
-	s.listener = lis
 	s.Logger.Info(fmt.Sprintf("binding api to %s", s.Port))
 	grpcServerUnaryInterceptor := grpc.UnaryInterceptor(LogInterceptor(s.Logger))
 	grpcServer := grpc.NewServer(grpcServerUnaryInterceptor)

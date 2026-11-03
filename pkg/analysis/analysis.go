@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"reflect"
 	"regexp"
 	"slices"
@@ -490,7 +491,8 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	}
 	results, err := analyzer.Analyze(analyzerConfig)
 	if err != nil {
-		fmt.Println(err)
+		// stdout carries the report (json output must stay parseable)
+		fmt.Fprintln(os.Stderr, err)
 	}
 	// Measure the time taken
 	if a.WithStats {

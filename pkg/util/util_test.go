@@ -17,6 +17,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io/fs"
 	"testing"
 	"time"
 
@@ -744,29 +745,19 @@ func TestFileExists(t *testing.T) {
 }
 
 func TestEnsureDirExists(t *testing.T) {
-	tests := []struct {
-		dir string
-		err string
-	}{
-		{
-			dir: "",
-			err: "mkdir : no such file or directory",
-		},
-		{
-			dir: "./",
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.dir, func(t *testing.T) {
-			err := EnsureDirExists(tt.dir)
-			if tt.err == "" {
-				require.NoError(t, err)
-			} else {
-				require.ErrorContains(t, err, tt.err)
-			}
-		})
-	}
+	t.Run("empty dir", func(t *testing.T) {
+		// An empty name cannot be turned into a directory. Assert the failure
+		// itself rather than the surrounding wording: mkdir says "no such file
+		// or directory" on Unix and "The system cannot find the path specified."
+		// on Windows, so matching on the text only ever passed on one platform.
+		err := EnsureDirExists("")
+		require.Error(t, err)
+		require.ErrorIs(t, err, fs.ErrNotExist, "an empty name reports a missing path on every platform")
+	})
+
+	t.Run("./", func(t *testing.T) {
+		require.NoError(t, EnsureDirExists("./"))
+	})
 }
 
 func TestMapToString(t *testing.T) {

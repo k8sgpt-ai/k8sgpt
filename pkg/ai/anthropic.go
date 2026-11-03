@@ -17,7 +17,7 @@ const (
 	anthropicClientName       = "anthropic"
 	anthropicDefaultBaseURL   = "https://api.anthropic.com"
 	anthropicMessagesPath     = "/v1/messages"
-	anthropicDefaultModel     = "claude-3-5-sonnet-latest"
+	anthropicDefaultModel     = "claude-sonnet-4-6"
 	anthropicDefaultMaxTokens = 2048
 )
 
@@ -113,6 +113,12 @@ func (c *AnthropicClient) GetCompletion(ctx context.Context, prompt string) (str
 
 	var textBlocks []string
 	message, err := c.client.Messages.New(ctx, params)
+	if err != nil && anthropicRejectsSamplingParams(err) {
+		// Newer Claude models only accept the default sampling values: retry once without them.
+		var unset anthropic.MessageNewParams
+		params.Temperature, params.TopP, params.TopK = unset.Temperature, unset.TopP, unset.TopK
+		message, err = c.client.Messages.New(ctx, params)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -128,6 +134,17 @@ func (c *AnthropicClient) GetCompletion(ctx context.Context, prompt string) (str
 		return "", errors.New("anthropic response did not include any text content")
 	}
 	return strings.Join(textBlocks, "\n"), nil
+}
+
+// anthropicRejectsSamplingParams reports whether err is Anthropic's 400 for a temperature, top_p or
+// top_k the model does not accept (newer Claude models take only the default sampling).
+func anthropicRejectsSamplingParams(err error) bool {
+	var apiErr *anthropic.Error
+	if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusBadRequest {
+		return false
+	}
+	msg := apiErr.Error()
+	return strings.Contains(msg, "temperature") || strings.Contains(msg, "top_p") || strings.Contains(msg, "top_k")
 }
 
 func (c *AnthropicClient) GetName() string {

@@ -482,10 +482,30 @@ func (s *K8sGptMCPServer) handleAddFilters(ctx context.Context, request mcp.Call
 		return mcp.NewToolResultErrorf("filters array is required and cannot be empty"), nil
 	}
 
+	for _, filter := range req.Filters {
+		if filter == "" {
+			return mcp.NewToolResultErrorf("filter name cannot be empty"), nil
+		}
+	}
+
+	coreFilters, additionalFilters, integrationFilters := analyzer.ListFilters()
+	availableFilters := append(append(coreFilters, additionalFilters...), integrationFilters...)
+
+	var invalidFilters []string
+	for _, filter := range req.Filters {
+		if !contains(availableFilters, filter) && !contains(invalidFilters, filter) {
+			invalidFilters = append(invalidFilters, filter)
+		}
+	}
+
+	if len(invalidFilters) > 0 {
+		return mcp.NewToolResultErrorf("Filter %s does not exist. Please use list-filters to view available filters", strings.Join(invalidFilters, ", ")), nil
+	}
+
 	activeFilters := viper.GetStringSlice("active_filters")
 	// No active filters means the core analyzers run, so start from them.
 	if len(activeFilters) == 0 {
-		activeFilters, _, _ = analyzer.ListFilters()
+		activeFilters = coreFilters
 	}
 	addedFilters := []string{}
 	
@@ -519,6 +539,12 @@ func (s *K8sGptMCPServer) handleRemoveFilters(ctx context.Context, request mcp.C
 
 	if len(req.Filters) == 0 {
 		return mcp.NewToolResultErrorf("filters array is required and cannot be empty"), nil
+	}
+
+	for _, filter := range req.Filters {
+		if filter == "" {
+			return mcp.NewToolResultErrorf("filter name cannot be empty"), nil
+		}
 	}
 
 	activeFilters := viper.GetStringSlice("active_filters")

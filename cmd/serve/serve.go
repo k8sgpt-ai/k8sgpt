@@ -242,13 +242,18 @@ var ServeCmd = &cobra.Command{
 // resolveBackend returns the backend name to look up in the configuration. The
 // config written on the first start makes the env block in ServeCmd unreachable
 // on later starts, so K8SGPT_BACKEND is read here too. An explicit --backend
-// still takes precedence.
+// takes highest precedence, followed by K8SGPT_BACKEND, followed by the configured
+// default provider, falling back to current (defaulting to "openai").
 func resolveBackend(flagChanged bool, current string) string {
 	if flagChanged {
 		return current
 	}
 	if envBackend := os.Getenv("K8SGPT_BACKEND"); envBackend != "" {
 		return envBackend
+	}
+	var configAI ai.AIConfiguration
+	if err := viper.UnmarshalKey("ai", &configAI); err == nil && configAI.DefaultProvider != "" {
+		return configAI.DefaultProvider
 	}
 	return current
 }

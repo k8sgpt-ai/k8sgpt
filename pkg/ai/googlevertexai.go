@@ -165,15 +165,9 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 	// TODO(bwplotka): Provider richer output in certain cases e.g. suddenly finished
 	// completion based on finish reasons or safety rankings.
 	got := resp.Candidates[0]
-	var output string
-	for _, part := range got.Content.Parts {
-		switch o := part.(type) {
-		case genai.Text:
-			output += string(o)
-			output += "\n"
-		default:
-			color.Yellow("found unsupported AI response part of type %T; ignoring", part)
-		}
+	output, err := vertexAICandidateText(got)
+	if err != nil {
+		return "", err
 	}
 
 	if got.CitationMetadata != nil && len(got.CitationMetadata.Citations) > 0 {
@@ -184,6 +178,39 @@ func (g *GoogleVertexAIClient) GetCompletion(ctx context.Context, prompt string)
 		}
 	}
 	return output, nil
+}
+
+// vertexAICandidateText returns the text parts of a candidate. Gemini sends a
+// candidate without content when it stops generating before any text, e.g. on MAX_TOKENS
+// (a thinking model can spend its whole budget first) or OTHER; the SDK already turns
+// the blocked prompts and safety stops into errors before they get here.
+func vertexAICandidateText(got *genai.Candidate) (string, error) {
+	if got.Content == nil || len(got.Content.Parts) == 0 {
+		return "", fmt.Errorf("completion returned no content; finish reason: %v, finish message: %q, safety ratings: %v",
+			got.FinishReason.String(), got.FinishMessage, blockedVertexAIRatings(got.SafetyRatings))
+	}
+
+	var output string
+	for _, part := range got.Content.Parts {
+		switch o := part.(type) {
+		case genai.Text:
+			output += string(o)
+			output += "\n"
+		default:
+			color.Yellow("found unsupported AI response part of type %T; ignoring", part)
+		}
+	}
+	return output, nil
+}
+
+func blockedVertexAIRatings(ratings []*genai.SafetyRating) []string {
+	var blocked []string
+	for _, r := range ratings {
+		if r.Blocked {
+			blocked = append(blocked, fmt.Sprintf("%v (%v)", r.Category.String(), r.Probability.String()))
+		}
+	}
+	return blocked
 }
 
 func (g *GoogleVertexAIClient) GetName() string {

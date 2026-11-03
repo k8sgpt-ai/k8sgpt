@@ -8,6 +8,8 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/k8sgpt-ai/k8sgpt/release.yaml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/k8sgpt-ai/k8sgpt)
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/7272/badge)](https://bestpractices.coreinfrastructure.org/projects/7272)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/k8sgpt-ai/k8sgpt/badge)](https://scorecard.dev/viewer/?uri=github.com/k8sgpt-ai/k8sgpt)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/k8sgpt)](https://artifacthub.io/packages/search?repo=k8sgpt)
 [![Link to documentation](https://img.shields.io/static/v1?label=%F0%9F%93%96&message=Documentation&color=blue)](https://docs.k8sgpt.ai/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Go version](https://img.shields.io/github/go-mod/go-version/k8sgpt-ai/k8sgpt.svg)](https://github.com/k8sgpt-ai/k8sgpt)
@@ -495,7 +497,7 @@ Unused:
 > gpt2giga
 ```
 
-For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/).
+For detailed documentation on how to configure and use each provider see [here](https://docs.k8sgpt.ai/reference/providers/backend/). The [AI backend support tiers](https://docs.k8sgpt.ai/reference/providers/backend-tiers/) page explains which backends are Core and which are Community-maintained.
 
 _Using LiteLLM (route to 100+ providers through one proxy)_
 
@@ -776,13 +778,29 @@ k8sgpt serve --mcp --mcp-http --mcp-port 8089
 
 Find our official documentation available [here](https://docs.k8sgpt.ai)
 
+## Adopters
+
+Using k8sgpt? See [ADOPTERS.md](ADOPTERS.md) and add your organization, or tell us on [#1886](https://github.com/k8sgpt-ai/k8sgpt/issues/1886).
+
 ## Contributing
 
 Please read our [contributing guide](./CONTRIBUTING.md).
 
 ## Community
 
-Find us on [Slack](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+Find us in `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io) (get an invite at https://slack.cncf.io, then join `#k8sgpt`).
+
+### Community meeting
+
+k8sgpt holds a monthly public community meeting, open to everyone, on the second Thursday, 16:00–17:00 UK time (Europe/London). The first meeting is Thursday 12 November 2026.
+
+Join on Google Meet: https://meet.google.com/ugf-zqjt-nwu
+
+Agenda items can be posted in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io) or in the K8sGPT Slack `#general`.
+
+## Code of Conduct
+
+k8sgpt follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md). See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for how to report a concern.
 
 <a href="https://github.com/k8sgpt-ai/k8sgpt/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=k8sgpt-ai/k8sgpt" />

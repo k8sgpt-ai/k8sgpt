@@ -249,6 +249,40 @@ func TestAnalysis_RunAnalysisNamespaceForbidden(t *testing.T) {
 	require.Len(t, analysis.Results, 1)
 }
 
+// Test: an analyzer that fails (here a service account that cannot list
+// nodes) is reported through the Errors of the analysis, and nothing is
+// written to stdout, which carries only the report of `analyze -o json`.
+func TestAnalysis_AnalyzerErrorKeepsStdoutClean(t *testing.T) {
+	viper.Set("verbose", false)
+
+	clientset := fake.NewSimpleClientset()
+	clientset.PrependReactor("list", "nodes", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(
+			schema.GroupResource{Resource: "nodes"}, "", fmt.Errorf("user cannot list nodes"))
+	})
+
+	analysis := Analysis{
+		Context:        context.Background(),
+		Results:        []common.Result{},
+		MaxConcurrency: 1,
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Filters: []string{"Node"},
+	}
+	output := util.CaptureOutput(func() {
+		analysis.RunAnalysis()
+	})
+
+	require.Empty(t, output, "an analyzer error must not be printed to stdout")
+	require.Len(t, analysis.Errors, 1)
+	require.Contains(t, analysis.Errors[0], "[Node]")
+
+	jsonOutput, err := analysis.PrintOutput("json")
+	require.NoError(t, err)
+	require.True(t, json.Valid(jsonOutput))
+}
+
 func TestAnalysis_NoProblemJsonOutput(t *testing.T) {
 
 	analysis := Analysis{

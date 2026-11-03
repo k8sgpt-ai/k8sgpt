@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 
 	schemav1 "buf.build/gen/go/k8sgpt-ai/k8sgpt/protocolbuffers/go/schema/v1"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/cache"
@@ -23,6 +24,9 @@ const (
 
 // ApplyConfig applies the configuration changes from the request
 func (h *Handler) ApplyConfig(ctx context.Context, i *schemav1.AddConfigRequest) error {
+	if i == nil {
+		return status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	if i.CustomAnalyzers != nil {
 		// We need to add the custom analyzers to the viper config and save them
 		var customAnalyzers = make([]custom.CustomAnalyzer, 0)
@@ -31,6 +35,15 @@ func (h *Handler) ApplyConfig(ctx context.Context, i *schemav1.AddConfigRequest)
 		} else {
 			// If there are analyzers are already in the config we will append the ones with new names
 			for _, ca := range i.CustomAnalyzers {
+				if ca == nil {
+					return status.Error(codes.InvalidArgument, "custom analyzer cannot be nil")
+				}
+				if ca.Name == "" {
+					return status.Error(codes.InvalidArgument, "custom analyzer name cannot be empty")
+				}
+				if ca.Connection == nil {
+					return status.Error(codes.InvalidArgument, fmt.Sprintf("custom analyzer %s connection cannot be nil", ca.Name))
+				}
 				exists := false
 				for _, c := range customAnalyzers {
 					if c.Name == ca.Name {
@@ -84,6 +97,9 @@ func (h *Handler) ApplyConfig(ctx context.Context, i *schemav1.AddConfigRequest)
 }
 
 func (h *Handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (*schemav1.AddConfigResponse, error) {
+	if i == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	resp, err := h.syncIntegration(ctx, i)
 	if err != nil {
 		return resp, err
@@ -98,6 +114,9 @@ func (h *Handler) AddConfig(ctx context.Context, i *schemav1.AddConfigRequest) (
 
 func (h *Handler) RemoveConfig(ctx context.Context, i *schemav1.RemoveConfigRequest) (*schemav1.RemoveConfigResponse, error,
 ) {
+	if i == nil {
+		return nil, status.Error(codes.InvalidArgument, "request cannot be nil")
+	}
 	err := cache.RemoveRemoteCache()
 	if err != nil {
 		return &schemav1.RemoveConfigResponse{}, err

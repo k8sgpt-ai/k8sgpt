@@ -37,6 +37,7 @@ type LiteLLMClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 }
 
 func (c *LiteLLMClient) Configure(config IAIConfig) error {
@@ -76,6 +77,7 @@ func (c *LiteLLMClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
 }
 
@@ -89,7 +91,7 @@ func (c *LiteLLMClient) GetCompletion(ctx context.Context, prompt string) (strin
 			},
 		},
 		Temperature:      c.temperature,
-		MaxTokens:        maxToken,
+		MaxTokens:        c.maxTokens,
 		PresencePenalty:  presencePenalty,
 		FrequencyPenalty: frequencyPenalty,
 		TopP:             c.topP,

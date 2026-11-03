@@ -16,10 +16,6 @@ func (h *Handler) Query(ctx context.Context, i *schemav1.QueryRequest) (
 	factory := ai.GetAIClientFactory()
 	configProvider := ai.GetConfigProvider()
 
-	// Use the factory to create the client
-	aiClient := factory.NewClient(i.Backend)
-	defer aiClient.Close()
-
 	var configAI ai.AIConfiguration
 	if err := configProvider.UnmarshalKey("ai", &configAI); err != nil {
 		return &schemav1.QueryResponse{
@@ -30,9 +26,21 @@ func (h *Handler) Query(ctx context.Context, i *schemav1.QueryRequest) (
 		}, nil
 	}
 
+	backend := i.Backend
+	if backend == "" && configAI.DefaultProvider != "" {
+		backend = configAI.DefaultProvider
+	}
+	if backend == "" {
+		backend = "openai"
+	}
+
+	// Use the factory to create the client
+	aiClient := factory.NewClient(backend)
+	defer aiClient.Close()
+
 	var aiProvider ai.AIProvider
 	for _, provider := range configAI.Providers {
-		if i.Backend == provider.Name {
+		if backend == provider.Name {
 			aiProvider = provider
 			break
 		}
@@ -41,7 +49,7 @@ func (h *Handler) Query(ctx context.Context, i *schemav1.QueryRequest) (
 		return &schemav1.QueryResponse{
 			Response: "",
 			Error: &schemav1.QueryError{
-				Message: fmt.Sprintf("AI provider %s not found in configuration", i.Backend),
+				Message: fmt.Sprintf("AI provider %s not found in configuration", backend),
 			},
 		}, nil
 	}

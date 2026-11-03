@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fatih/color"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -63,7 +64,7 @@ func (ServiceAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 
 			svc, err := a.Client.GetClient().CoreV1().Services(ep.Namespace).Get(a.Context, ep.Name, metav1.GetOptions{})
 			if err != nil {
-				color.Yellow("Service %s/%s does not exist", ep.Namespace, ep.Name)
+				fmt.Fprintln(os.Stderr, color.YellowString("Service %s/%s does not exist", ep.Namespace, ep.Name))
 				continue
 			}
 
