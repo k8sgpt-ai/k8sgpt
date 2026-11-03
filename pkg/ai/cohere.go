@@ -31,6 +31,8 @@ type CohereClient struct {
 	model       string
 	temperature float32
 	maxTokens   int
+	topP        float32
+	topK        int32
 }
 
 func (c *CohereClient) Configure(config IAIConfig) error {
@@ -54,21 +56,27 @@ func (c *CohereClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.maxTokens = config.GetMaxTokens()
+	c.topP = config.GetTopP()
+	c.topK = config.GetTopK()
 
 	return nil
 }
 
 func (c *CohereClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	response, err := c.client.Chat(ctx, &api.ChatRequest{
+	request := &api.ChatRequest{
 		Message:      prompt,
 		Model:        &c.model,
-		K:            api.Int(0),
+		K:            api.Int(int(c.topK)),
 		Preamble:     api.String(""),
 		Temperature:  api.Float64(float64(c.temperature)),
 		RawPrompting: api.Bool(false),
 		MaxTokens:    api.Int(c.maxTokens),
-	})
+	}
+	if c.topP > 0 {
+		request.P = api.Float64(float64(c.topP))
+	}
+	response, err := c.client.Chat(ctx, request)
 	if err != nil {
 		return "", err
 	}
