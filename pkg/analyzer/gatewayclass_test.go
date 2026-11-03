@@ -139,6 +139,66 @@ func TestGatewayClassAnalyzerLabelSelectorFiltering(t *testing.T) {
 	assert.Equal(t, len(analysisResults), 1)
 }
 
+func TestGatewayClassAnalyzerSelectorSyntax(t *testing.T) {
+	condition := metav1.Condition{
+		Type:    "Accepted",
+		Status:  "Ready",
+		Message: "Ready",
+		Reason:  "Ready",
+	}
+
+	labeled := &gtwapi.GatewayClass{}
+	labeled.Name = "labeled"
+	labeled.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	labeled.Labels = map[string]string{"app": "gatewayclass"}
+	labeled.Status.Conditions = []metav1.Condition{condition}
+
+	unlabeled := &gtwapi.GatewayClass{}
+	unlabeled.Name = "unlabeled"
+	unlabeled.Spec.ControllerName = "gateway.fooproxy.io/gatewayclass-controller"
+	unlabeled.Status.Conditions = []metav1.Condition{condition}
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(labeled, unlabeled).Build()
+	analyzerInstance := GatewayClassAnalyzer{}
+
+	cases := []struct {
+		selector string
+		want     int
+	}{
+		{"", 2},
+		{"app=gatewayclass", 1},
+		{"app==gatewayclass", 1},
+		{"app!=gatewayclass", 1},
+		{"app!=other", 2},
+		{"app in (gatewayclass,other)", 1},
+		{"app notin (gatewayclass)", 1},
+		{"app", 1},
+		{"!app", 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.selector, func(t *testing.T) {
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					CtrlClient: fakeClient,
+				},
+				Context:       context.Background(),
+				Namespace:     "default",
+				LabelSelector: tc.selector,
+			}
+			results, err := analyzerInstance.Analyze(config)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, len(results), "selector %q", tc.selector)
+		})
+	}
+}
+
 func TestGatewayClassAnalyzer_MultipleConditionsOrdering(t *testing.T) {
 	scheme := scheme.Scheme
 	err := gtwapi.Install(scheme)
@@ -208,3 +268,13 @@ func TestGatewayClassAnalyzer_MultipleConditionsOrdering(t *testing.T) {
 	assert.Contains(t, analysisResults[0].Error[0].Text, "Controller rejected configuration")
 }
 
+func TestGatewayClassAnalyzerInvalidSelector(t *testing.T) {
+	_, err := GatewayClassAnalyzer{}.Analyze(common.Analyzer{
+		Client:        &kubernetes.Client{CtrlClient: fakeclient.NewClientBuilder().Build()},
+		Context:       context.Background(),
+		LabelSelector: "app in (",
+	})
+	if err == nil {
+		t.Fatal("expected an error for an invalid label selector")
+	}
+}
