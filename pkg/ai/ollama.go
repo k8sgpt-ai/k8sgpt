@@ -33,6 +33,7 @@ type OllamaClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 }
 
 const (
@@ -77,6 +78,7 @@ func (c *OllamaClient) Configure(config IAIConfig) error {
 	}
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
 func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
@@ -115,14 +117,18 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 		fmt.Printf("\n[Ollama] Successfully pulled model %s!\n", c.model)
 	}
 
+	options := map[string]interface{}{
+		"temperature": c.temperature,
+		"top_p":       c.topP,
+	}
+	if c.maxTokens > 0 {
+		options["num_predict"] = c.maxTokens
+	}
 	req := &ollama.GenerateRequest{
-		Model:  c.model,
-		Prompt: prompt,
-		Stream: new(bool),
-		Options: map[string]interface{}{
-			"temperature": c.temperature,
-			"top_p":       c.topP,
-		},
+		Model:   c.model,
+		Prompt:  prompt,
+		Stream:  new(bool),
+		Options: options,
 	}
 	completion := ""
 	respFunc := func(resp ollama.GenerateResponse) error {
