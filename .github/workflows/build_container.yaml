@@ -13,6 +13,9 @@ on:
     paths-ignore:
       - "**.md"
 
+permissions:
+  contents: read
+
 env:
   GO_VERSION: "~1.26"
   IMAGE_NAME: "k8sgpt"

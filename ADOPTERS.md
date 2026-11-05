@@ -1,41 +1,29 @@
 # Adopters
 
-This file lists organizations that are adopting k8sgpt. If your organization uses k8sgpt, please add yourself!
+This file lists organizations that use k8sgpt (the CLI, the operator, or the MCP server).
+k8sgpt is preparing its CNCF Incubation application (see [#1641](https://github.com/k8sgpt-ai/k8sgpt/issues/1641)),
+and the CNCF TOC looks for real, independent adopters. If your organization uses k8sgpt, please add yourself!
 
-## How to Add Your Organization
+Not ready to be listed publicly? That's fine. Comment on the call-for-adopters issue
+([#1886](https://github.com/k8sgpt-ai/k8sgpt/issues/1886)) or contact a maintainer privately
+(see [MAINTAINERS.md](MAINTAINERS.md) or email contact@k8sgpt.ai).
 
-Open a pull request to add your organization to this list. Include:
-- Organization name
-- Website (optional)
-- Level of adoption (Development, Trial, Production)
-- Brief description of use case (optional)
+## How to add your organization
 
-## Adopters
+Open a pull request adding a row to the table below. Please sign off your commit
+([DCO](CONTRIBUTING.md#dco), `git commit -s`).
 
-### Production
-
-| Organization | Website | Level | Description |
-|-------------|---------|-------|-------------|
+| Organization | Contact (GitHub handle) | Description of use | Status |
+|--------------|-------------------------|--------------------|--------|
 | _(Add your organization here)_ | | | |
 
-### Development / Trialing
+- **Description of use**: how you use k8sgpt (CLI / operator / MCP), the environment, and rough scale if you can share it.
+- **Status**: `Production`, `Evaluation`, or `Development`.
 
-| Organization | Website | Level | Description |
-|-------------|---------|-------|-------------|
-| _(Add your organization here)_ | | | |
+By adding your organization, you confirm that you are authorized to list it publicly.
 
-## Verified Adopters
-
-The following organizations have been verified by the TOC during the incubation process:
-
-| Organization | Adoption Level | Verified By | Date |
-|-------------|----------------|-------------|------|
-| _(TBD)_ | | | |
-
-> **Note:** For incubation, the TOC requires at least 3 independent adopters in dev/test or production. Please reach out if you'd like to be included in the verified list.
-
-## Need Help Getting Started?
+## Need help getting started?
 
 - [Documentation](https://docs.k8sgpt.ai)
 - [Quick Start Guide](https://docs.k8sgpt.ai/getting-started/getting-started/)
-- [Slack Community](https://join.slack.com/t/k8sgpt/shared_invite/zt-332vhyaxv-bfjJwHZLXWVCB3QaXafEYQ)
+- Slack: `#k8sgpt` on [CNCF Slack](https://slack.cncf.io)
