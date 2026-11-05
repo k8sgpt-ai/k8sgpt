@@ -67,6 +67,20 @@ brews:
 checksum:
   name_template: "checksums.txt"
 
+# Keyless cosign (Sigstore, GitHub OIDC). The goreleaser job in
+# .github/workflows/release.yaml has id-token: write. Signing the checksum
+# covers the archives, packages and archive SBOMs published with it.
+signs:
+  - cmd: cosign
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - --bundle=${signature}
+      - ${artifact}
+      - --yes
+    artifacts: checksum
+    output: true
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 

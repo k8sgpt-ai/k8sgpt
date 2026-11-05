@@ -1,3 +1,14 @@
+# Code of Conduct
+
+k8sgpt is a [Cloud Native Computing Foundation](https://www.cncf.io) project and follows the
+[CNCF Code of Conduct](https://github.com/cncf/foundation/blob/main/code-of-conduct.md).
+The Contributor Covenant below is the project's code of conduct and is applied consistently with the CNCF Code of Conduct;
+where they differ, the CNCF Code of Conduct takes precedence.
+
+To report a concern, email the maintainers at contact@k8sgpt.ai. If the concern involves a maintainer, or you are not
+comfortable reporting to the project, contact the [CNCF Code of Conduct Committee](https://www.cncf.io/conduct/committee/)
+at conduct@cncf.io (see the CNCF [incident resolution procedures](https://github.com/cncf/foundation/blob/main/code-of-conduct/coc-incident-resolution-procedures.md)).
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge
