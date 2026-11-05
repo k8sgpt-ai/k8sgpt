@@ -335,3 +335,41 @@ func TestGetName(t *testing.T) {
 	client := &AmazonBedrockConverseClient{}
 	assert.Equal(t, "amazonbedrockconverse", client.GetName())
 }
+
+func TestGetCompletion_SamplingRejectingModels_SendNoSamplingParameters(t *testing.T) {
+	for _, model := range []string{
+		"anthropic.claude-opus-5",
+		"us.anthropic.claude-opus-5-5",
+		"global.anthropic.claude-sonnet-5-5",
+	} {
+		t.Run(model, func(t *testing.T) {
+			mock := &mockConverseClient{
+				converseFunc: func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
+					return &bedrockruntime.ConverseOutput{
+						Output: &types.ConverseOutputMemberMessage{
+							Value: types.Message{
+								Content: []types.ContentBlock{
+									&types.ContentBlockMemberText{Value: "ok"},
+								},
+							},
+						},
+					}, nil
+				},
+			}
+
+			client := &AmazonBedrockConverseClient{
+				client:      mock,
+				model:       model,
+				temperature: 0.5,
+				topP:        0.9,
+				maxTokens:   100,
+			}
+
+			_, err := client.GetCompletion(context.Background(), "hello")
+
+			assert.NoError(t, err)
+			assert.Nil(t, mock.lastInput.InferenceConfig.Temperature)
+			assert.Nil(t, mock.lastInput.InferenceConfig.TopP)
+		})
+	}
+}
