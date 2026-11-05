@@ -55,7 +55,7 @@ func (c *GoogleGenAIClient) Configure(config IAIConfig) error {
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
-	c.maxTokens = config.GetMaxTokens()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	return nil
 }
 
