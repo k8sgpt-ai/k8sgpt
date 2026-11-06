@@ -95,7 +95,7 @@ func (a *AmazonBedrockConverseClient) Configure(config IAIConfig) error {
 	// Set common configuration parameters
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
-	a.maxTokens = config.GetMaxTokens()
+	a.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	a.stopSequences = config.GetStopSequences()
 
 	return nil
