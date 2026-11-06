@@ -162,6 +162,12 @@ var resourceRegistry = map[string]struct {
 	},
 }
 
+// clusterScopedResources lists the registry types that are not namespaced
+var clusterScopedResources = map[string]bool{
+	"node":             true,
+	"persistentvolume": true,
+}
+
 // Resource type aliases for convenience
 var resourceTypeAliases = map[string]string{
 	"pods":                      "pod",
@@ -295,6 +301,9 @@ func (s *K8sGptMCPServer) handleGetResource(ctx context.Context, request mcp.Cal
 	resourceType, err := normalizeResourceType(req.ResourceType)
 	if err != nil {
 		return mcp.NewToolResultErrorf("%v", err), nil
+	}
+	if req.Namespace == "" && !clusterScopedResources[resourceType] {
+		return mcp.NewToolResultErrorf("namespace is required for %s", resourceType), nil
 	}
 
 	client, err := kubernetes.NewClient("", "")

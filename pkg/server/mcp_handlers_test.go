@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/tools/clientcmd"
@@ -149,6 +150,76 @@ func TestHandleListEventsAppliesInvolvedObjectFieldSelector(t *testing.T) {
 				require.Equal(t, e.InvolvedObject.Name, got[i].InvolvedObject.Name)
 				require.Equal(t, e.InvolvedObject.Kind, got[i].InvolvedObject.Kind)
 			}
+		})
+	}
+}
+
+func TestHandleGetResourceNamespace(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(&version.Info{GitVersion: "v1.32.0"})
+	})
+	mux.HandleFunc("/api/v1/nodes/worker", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(&corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: "worker"}})
+	})
+	mux.HandleFunc("/api/v1/namespaces/default/pods/app", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(&corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "app", Namespace: "default"}})
+	})
+	fixture := httptest.NewServer(mux)
+	t.Cleanup(fixture.Close)
+
+	kubeconfig := filepath.Join(t.TempDir(), "config")
+	require.NoError(t, clientcmd.WriteToFile(clientcmdapi.Config{
+		Clusters:       map[string]*clientcmdapi.Cluster{"test": {Server: fixture.URL}},
+		Contexts:       map[string]*clientcmdapi.Context{"test": {Cluster: "test"}},
+		CurrentContext: "test",
+	}, kubeconfig))
+	t.Setenv("KUBECONFIG", kubeconfig)
+
+	tests := []struct {
+		name     string
+		args     map[string]any
+		wantErr  string
+		wantName string
+	}{
+		{
+			name:    "namespaced resource without namespace",
+			args:    map[string]any{"resourceType": "pod", "name": "app"},
+			wantErr: "namespace is required for pod",
+		},
+		{
+			name:     "namespaced resource with namespace",
+			args:     map[string]any{"resourceType": "pods", "name": "app", "namespace": "default"},
+			wantName: "app",
+		},
+		{
+			name:     "cluster-scoped resource without namespace",
+			args:     map[string]any{"resourceType": "node", "name": "worker"},
+			wantName: "worker",
+		},
+	}
+
+	s := &K8sGptMCPServer{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := s.handleGetResource(context.Background(), mcp.CallToolRequest{
+				Params: mcp.CallToolParams{Arguments: tt.args},
+			})
+			require.NoError(t, err)
+			text, ok := mcp.AsTextContent(result.Content[0])
+			require.True(t, ok, "expected text content")
+
+			if tt.wantErr != "" {
+				require.True(t, result.IsError)
+				require.Equal(t, tt.wantErr, text.Text)
+				return
+			}
+			require.False(t, result.IsError, "unexpected tool error: %s", text.Text)
+			var got metav1.PartialObjectMetadata
+			require.NoError(t, json.Unmarshal([]byte(text.Text), &got))
+			require.Equal(t, tt.wantName, got.Name)
 		})
 	}
 }
