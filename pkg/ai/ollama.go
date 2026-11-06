@@ -144,6 +144,9 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 	if err != nil {
 		return "", err
 	}
+	if err := checkCompletionContent(completion, ""); err != nil {
+		return "", err
+	}
 	return completion, nil
 }
 func (a *OllamaClient) GetName() string {

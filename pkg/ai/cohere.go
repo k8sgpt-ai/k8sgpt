@@ -72,6 +72,9 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt string) (string
 	if err != nil {
 		return "", err
 	}
+	if err := checkCompletionContent(response.Text, ""); err != nil {
+		return "", err
+	}
 	return response.Text, nil
 }
 
