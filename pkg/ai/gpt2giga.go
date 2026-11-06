@@ -110,6 +110,9 @@ func (c *Gpt2GigaClient) GetCompletion(ctx context.Context, prompt string) (stri
 		return "", errors.New("no choices in response")
 	}
 
+	if err := checkCompletionContent(response.Choices[0].Message.Content, ""); err != nil {
+		return "", err
+	}
 	return response.Choices[0].Message.Content, nil
 }
 

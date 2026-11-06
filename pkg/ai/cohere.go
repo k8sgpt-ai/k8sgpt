@@ -53,7 +53,7 @@ func (c *CohereClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 
 	return nil
 }
