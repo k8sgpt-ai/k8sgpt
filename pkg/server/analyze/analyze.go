@@ -41,6 +41,7 @@ func (h *Handler) Analyze(ctx context.Context, i *schemav1.AnalyzeRequest) (
 	defer config.Close()
 
 	if config.CustomAnalyzersAreAvailable() {
+		config.CustomAnalysisEnabled = true
 		config.RunCustomAnalysis()
 	}
 	config.RunAnalysis()
