@@ -105,6 +105,7 @@ var AnalyzeCmd = &cobra.Command{
 		if verbose {
 			fmt.Println("Debug: All core analyzers completed.")
 		}
+		config.ApplyExclusions()
 
 		if explain {
 			err := config.GetAIResults(output, anonymize)
