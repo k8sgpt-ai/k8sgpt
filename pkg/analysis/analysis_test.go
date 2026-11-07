@@ -14,11 +14,13 @@ limitations under the License.
 package analysis
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -253,7 +255,8 @@ func TestAnalysis_RunAnalysisNamespaceForbidden(t *testing.T) {
 // nodes) is reported through the Errors of the analysis, and nothing is
 // written to stdout, which carries only the report of `analyze -o json`.
 func TestAnalysis_AnalyzerErrorKeepsStdoutClean(t *testing.T) {
-	viper.Set("verbose", false)
+	viper.Set("verbose", true)
+	t.Cleanup(func() { viper.Set("verbose", false) })
 
 	clientset := fake.NewSimpleClientset()
 	clientset.PrependReactor("list", "nodes", func(action k8stesting.Action) (bool, runtime.Object, error) {
@@ -270,11 +273,12 @@ func TestAnalysis_AnalyzerErrorKeepsStdoutClean(t *testing.T) {
 		},
 		Filters: []string{"Node"},
 	}
-	output := util.CaptureOutput(func() {
+	stderr := captureStderr(t, func() {
 		analysis.RunAnalysis()
 	})
 
-	require.Empty(t, output, "an analyzer error must not be printed to stdout")
+	require.Contains(t, stderr, "user cannot list nodes")
+	require.Contains(t, stderr, "Debug: NodeAnalyzer completed with errors.")
 	require.Len(t, analysis.Errors, 1)
 	require.Contains(t, analysis.Errors[0], "[Node]")
 
@@ -545,6 +549,26 @@ func TestGetAIResultForSanitizedFailures(t *testing.T) {
 	}
 }
 
+// captureStderr returns what f writes to os.Stderr. Debug output must leave
+// stdout free for the report of `analyze -o json`, so a write to stdout fails
+// the test.
+func captureStderr(t *testing.T, f func()) string {
+	t.Helper()
+	old := os.Stderr
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stderr = w
+	defer func() { os.Stderr = old }()
+
+	stdout := util.CaptureOutput(f)
+	require.NoError(t, w.Close())
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(r)
+	require.NoError(t, err)
+	require.Empty(t, stdout, "nothing but the report may be written to stdout")
+	return buf.String()
+}
+
 // Test: Verbose output in NewAnalysis with explain=false
 func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
 	// Set viper config.
@@ -560,7 +584,7 @@ func TestVerbose_NewAnalysisWithoutExplain(t *testing.T) {
 	})
 	defer patches.Reset()
 
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		a, err := NewAnalysis(
 			"", "english", []string{"Pod"}, "default", "", true,
 			false, // explain
@@ -619,7 +643,7 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 	})
 	defer patches2.Reset()
 
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		a, err := NewAnalysis(
 			"", "english", []string{"Pod"}, "default", "", true,
 			true, // explain
@@ -647,7 +671,7 @@ func TestVerbose_NewAnalysisWithExplain(t *testing.T) {
 func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	// Run analysis with a filter flag ("Pod") to trigger debug output.
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		_ = analysis_RunAnalysisFilterTester(t, "Pod")
 	})
 
@@ -668,7 +692,7 @@ func TestVerbose_RunAnalysisWithFilter(t *testing.T) {
 func TestVerbose_RunAnalysisWithActiveFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	viper.SetDefault("active_filters", "Ingress")
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		_ = analysis_RunAnalysisFilterTester(t, "")
 	})
 
@@ -690,7 +714,7 @@ func TestVerbose_RunAnalysisWithoutFilter(t *testing.T) {
 	viper.Set("verbose", true)
 	// Clear filter flag and active_filters to run all core analyzers.
 	viper.SetDefault("active_filters", []string{})
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		_ = analysis_RunAnalysisFilterTester(t, "")
 	})
 
@@ -723,7 +747,7 @@ func TestVerbose_RunCustomAnalysisWithoutCustomAnalyzer(t *testing.T) {
 	analysisObj := &Analysis{
 		MaxConcurrency: 1,
 	}
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		analysisObj.RunCustomAnalysis()
 	})
 	expected := "Debug: No custom analyzers found."
@@ -746,7 +770,7 @@ func TestVerbose_RunCustomAnalysisWithCustomAnalyzer(t *testing.T) {
 	analysisObj := &Analysis{
 		MaxConcurrency: 1,
 	}
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		analysisObj.RunCustomAnalysis()
 	})
 	assert.Equal(t, 1, len(analysisObj.Errors)) // connection error
@@ -826,7 +850,7 @@ func TestVerbose_GetAIResults(t *testing.T) {
 		},
 		Namespace: "default",
 	}
-	output := util.CaptureOutput(func() {
+	output := captureStderr(t, func() {
 		_ = analysisObj.GetAIResults("json", false)
 	})
 
@@ -870,15 +894,16 @@ func serveFakeAnalyzer(t *testing.T, resp *schemav1.RunResponse) (string, string
 // CRD validation and aborting the reconcile before the remaining analyzers' results are written.
 func TestRunCustomAnalysisNilResultProducesNoResult(t *testing.T) {
 	host, port := serveFakeAnalyzer(t, &schemav1.RunResponse{})
-	viper.Set("verbose", false)
+	viper.Set("verbose", true)
 	viper.Set("custom_analyzers", []map[string]interface{}{
 		{"name": "EmptyAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
 	})
 	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
 
 	a := &Analysis{MaxConcurrency: 1}
-	a.RunCustomAnalysis()
+	stderr := captureStderr(t, func() { a.RunCustomAnalysis() })
 
+	require.Contains(t, stderr, "Debug: EmptyAnalyzer completed with no findings.")
 	require.Empty(t, a.Errors, "an analyzer with no findings is not an error")
 	require.Empty(t, a.Results, "a nil Result must not be recorded as a result")
 }
@@ -892,15 +917,16 @@ func TestRunCustomAnalysisPopulatedResultIsRecorded(t *testing.T) {
 			Error: []*schemav1.ErrorDetail{{Text: "something is wrong"}},
 		},
 	})
-	viper.Set("verbose", false)
+	viper.Set("verbose", true)
 	viper.Set("custom_analyzers", []map[string]interface{}{
 		{"name": "EmptyAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
 	})
 	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
 
 	a := &Analysis{MaxConcurrency: 1}
-	a.RunCustomAnalysis()
+	stderr := captureStderr(t, func() { a.RunCustomAnalysis() })
 
+	require.Contains(t, stderr, "Debug: EmptyAnalyzer completed without errors.")
 	require.Empty(t, a.Errors)
 	require.Len(t, a.Results, 1)
 	require.Equal(t, "EmptyAnalyzer", a.Results[0].Name)

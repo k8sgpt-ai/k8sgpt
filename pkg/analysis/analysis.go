@@ -102,31 +102,31 @@ func NewAnalysis(
 	verbose := viper.GetBool("verbose")
 	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
 	if verbose {
-		fmt.Println("Debug: Checking kubernetes client initialization.")
+		fmt.Fprintln(os.Stderr, "Debug: Checking kubernetes client initialization.")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("initialising kubernetes client: %w", err)
 	}
 	if verbose {
-		fmt.Printf("Debug: Kubernetes client initialized, server=%s.\n", client.Config.Host)
+		fmt.Fprintf(os.Stderr, "Debug: Kubernetes client initialized, server=%s.\n", client.Config.Host)
 	}
 
 	// Load remote cache if it is configured.
 	cache, err := cache.GetCacheConfiguration()
 	if verbose {
-		fmt.Println("Debug: Checking cache configuration.")
+		fmt.Fprintln(os.Stderr, "Debug: Checking cache configuration.")
 	}
 	if err != nil {
 		return nil, err
 	}
 	if verbose {
-		fmt.Printf("Debug: Cache configuration loaded, type=%s.\n", cache.GetName())
+		fmt.Fprintf(os.Stderr, "Debug: Cache configuration loaded, type=%s.\n", cache.GetName())
 	}
 
 	if noCache {
 		cache.DisableCache()
 		if verbose {
-			fmt.Println("Debug: Cache disabled.")
+			fmt.Fprintln(os.Stderr, "Debug: Cache disabled.")
 		}
 	}
 
@@ -144,20 +144,20 @@ func NewAnalysis(
 		WithStats:      withStats,
 	}
 	if verbose {
-		fmt.Print("Debug: Analysis configuration loaded, ")
-		fmt.Printf("filters=%v, language=%s, ", filters, language)
+		fmt.Fprint(os.Stderr, "Debug: Analysis configuration loaded, ")
+		fmt.Fprintf(os.Stderr, "filters=%v, language=%s, ", filters, language)
 		if namespace == "" {
-			fmt.Printf("namespace=none, ")
+			fmt.Fprintf(os.Stderr, "namespace=none, ")
 		} else {
-			fmt.Printf("namespace=%s, ", namespace)
+			fmt.Fprintf(os.Stderr, "namespace=%s, ", namespace)
 		}
 		if labelSelector == "" {
-			fmt.Printf("labelSelector=none, ")
+			fmt.Fprintf(os.Stderr, "labelSelector=none, ")
 		} else {
-			fmt.Printf("labelSelector=%s, ", labelSelector)
+			fmt.Fprintf(os.Stderr, "labelSelector=%s, ", labelSelector)
 		}
-		fmt.Printf("explain=%t, maxConcurrency=%d, ", explain, maxConcurrency)
-		fmt.Printf("withDoc=%t, withStats=%t.\n", withDoc, withStats)
+		fmt.Fprintf(os.Stderr, "explain=%t, maxConcurrency=%d, ", explain, maxConcurrency)
+		fmt.Fprintf(os.Stderr, "withDoc=%t, withStats=%t.\n", withDoc, withStats)
 	}
 	if !explain {
 		// Return early if AI use was not requested.
@@ -166,7 +166,7 @@ func NewAnalysis(
 
 	var configAI ai.AIConfiguration
 	if verbose {
-		fmt.Println("Debug: Checking AI configuration.")
+		fmt.Fprintln(os.Stderr, "Debug: Checking AI configuration.")
 	}
 	if err := viper.UnmarshalKey("ai", &configAI); err != nil {
 		return nil, err
@@ -181,14 +181,14 @@ func NewAnalysis(
 	if configAI.DefaultProvider != "" && backend == "" {
 		backend = configAI.DefaultProvider
 		if verbose {
-			fmt.Printf("Debug: Using default AI provider %s.\n", backend)
+			fmt.Fprintf(os.Stderr, "Debug: Using default AI provider %s.\n", backend)
 		}
 	}
 
 	if backend == "" {
 		backend = "openai"
 		if verbose {
-			fmt.Printf("Debug: Using default AI provider %s.\n", backend)
+			fmt.Fprintf(os.Stderr, "Debug: Using default AI provider %s.\n", backend)
 		}
 	}
 
@@ -205,8 +205,8 @@ func NewAnalysis(
 	}
 
 	if verbose {
-		fmt.Printf("Debug: AI configuration loaded, provider=%s, ", backend)
-		fmt.Printf("baseUrl=%s, model=%s.\n", aiProvider.BaseURL, aiProvider.Model)
+		fmt.Fprintf(os.Stderr, "Debug: AI configuration loaded, provider=%s, ", backend)
+		fmt.Fprintf(os.Stderr, "baseUrl=%s, model=%s.\n", aiProvider.BaseURL, aiProvider.Model)
 	}
 
 	aiClient := ai.NewClient(aiProvider.Name)
@@ -235,13 +235,13 @@ func NewAnalysis(
 
 	aiProvider.CustomHeaders = customHeaders
 	if verbose {
-		fmt.Println("Debug: Checking AI client initialization.")
+		fmt.Fprintln(os.Stderr, "Debug: Checking AI client initialization.")
 	}
 	if err := aiClient.Configure(&aiProvider); err != nil {
 		return nil, err
 	}
 	if verbose {
-		fmt.Println("Debug: AI client initialized.")
+		fmt.Fprintln(os.Stderr, "Debug: AI client initialized.")
 	}
 	a.AIClient = aiClient
 	a.AnalysisAIProvider = aiProvider.Name
@@ -287,13 +287,13 @@ func (a *Analysis) RunCustomAnalysis() {
 	verbose := viper.GetBool("verbose")
 	if verbose {
 		if len(customAnalyzers) == 0 {
-			fmt.Println("Debug: No custom analyzers found.")
+			fmt.Fprintln(os.Stderr, "Debug: No custom analyzers found.")
 		} else {
 			cAnalyzerNames := make([]string, len(customAnalyzers))
 			for i, cAnalyzer := range customAnalyzers {
 				cAnalyzerNames[i] = cAnalyzer.Name
 			}
-			fmt.Printf("Debug: Found custom analyzers %v.\n", cAnalyzerNames)
+			fmt.Fprintf(os.Stderr, "Debug: Found custom analyzers %v.\n", cAnalyzerNames)
 		}
 	}
 	for _, cAnalyzer := range customAnalyzers {
@@ -316,7 +316,7 @@ func (a *Analysis) RunCustomAnalysis() {
 				}
 			}()
 			if verbose {
-				fmt.Printf("Debug: %s launched.\n", cAnalyzer.Name)
+				fmt.Fprintf(os.Stderr, "Debug: %s launched.\n", cAnalyzer.Name)
 			}
 
 			result, err := canClient.Run()
@@ -336,7 +336,7 @@ func (a *Analysis) RunCustomAnalysis() {
 				// Skipping it is also what the CLI already implies: a custom analyzer with nothing
 				// to report should contribute nothing, not an empty entry.
 				if verbose {
-					fmt.Printf("Debug: %s completed with no findings.\n", cAnalyzer.Name)
+					fmt.Fprintf(os.Stderr, "Debug: %s completed with no findings.\n", cAnalyzer.Name)
 				}
 				<-semaphore
 				return
@@ -352,14 +352,14 @@ func (a *Analysis) RunCustomAnalysis() {
 				a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", cAnalyzer.Name, err))
 				mutex.Unlock()
 				if verbose {
-					fmt.Printf("Debug: %s completed with errors.\n", cAnalyzer.Name)
+					fmt.Fprintf(os.Stderr, "Debug: %s completed with errors.\n", cAnalyzer.Name)
 				}
 			} else {
 				mutex.Lock()
 				a.Results = append(a.Results, result)
 				mutex.Unlock()
 				if verbose {
-					fmt.Printf("Debug: %s completed without errors.\n", cAnalyzer.Name)
+					fmt.Fprintf(os.Stderr, "Debug: %s completed without errors.\n", cAnalyzer.Name)
 				}
 			}
 			<-semaphore
@@ -394,11 +394,11 @@ func (a *Analysis) RunAnalysis() {
 		var openApiErr error
 
 		if verbose {
-			fmt.Println("Debug: Fetching Kubernetes docs.")
+			fmt.Fprintln(os.Stderr, "Debug: Fetching Kubernetes docs.")
 		}
 		openapiSchema, openApiErr = a.Client.Client.Discovery().OpenAPISchema()
 		if verbose {
-			fmt.Println("Debug: Checking Kubernetes docs.")
+			fmt.Fprintln(os.Stderr, "Debug: Checking Kubernetes docs.")
 		}
 		if openApiErr != nil {
 			a.Errors = append(a.Errors, fmt.Sprintf("[KubernetesDoc] %s", openApiErr))
@@ -430,7 +430,7 @@ func (a *Analysis) RunAnalysis() {
 	// if there are no filters selected and no active_filters then run coreAnalyzer
 	if len(a.Filters) == 0 && len(activeFilters) == 0 {
 		if verbose {
-			fmt.Println("Debug: No filters selected and no active filters found, run all core analyzers.")
+			fmt.Fprintln(os.Stderr, "Debug: No filters selected and no active filters found, run all core analyzers.")
 		}
 		for name, analyzer := range coreAnalyzerMap {
 			wg.Add(1)
@@ -444,7 +444,7 @@ func (a *Analysis) RunAnalysis() {
 	// if the filters flag is specified
 	if len(a.Filters) != 0 {
 		if verbose {
-			fmt.Printf("Debug: Filter flags %v specified, run selected core analyzers.\n", a.Filters)
+			fmt.Fprintf(os.Stderr, "Debug: Filter flags %v specified, run selected core analyzers.\n", a.Filters)
 		}
 		for _, filter := range a.Filters {
 			if analyzer, ok := analyzerMap[filter]; ok {
@@ -461,7 +461,7 @@ func (a *Analysis) RunAnalysis() {
 
 	// use active_filters
 	if len(activeFilters) > 0 && verbose {
-		fmt.Printf("Debug: Found active filters %v, run selected core analyzers.\n", activeFilters)
+		fmt.Fprintf(os.Stderr, "Debug: Found active filters %v, run selected core analyzers.\n", activeFilters)
 	}
 	for _, filter := range activeFilters {
 		if analyzer, ok := analyzerMap[filter]; ok {
@@ -487,7 +487,7 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 	// Run the analyzer
 	verbose := viper.GetBool("verbose")
 	if verbose {
-		fmt.Printf("Debug: %s launched.\n", reflect.TypeOf(analyzer).Name())
+		fmt.Fprintf(os.Stderr, "Debug: %s launched.\n", reflect.TypeOf(analyzer).Name())
 	}
 	results, err := analyzer.Analyze(analyzerConfig)
 	if err != nil {
@@ -512,7 +512,7 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 		}
 		a.Errors = append(a.Errors, fmt.Sprintf("[%s] %s", filter, err))
 		if verbose {
-			fmt.Printf("Debug: %s completed with errors.\n", reflect.TypeOf(analyzer).Name())
+			fmt.Fprintf(os.Stderr, "Debug: %s completed with errors.\n", reflect.TypeOf(analyzer).Name())
 		}
 	} else {
 		if a.WithStats {
@@ -520,7 +520,7 @@ func (a *Analysis) executeAnalyzer(analyzer common.IAnalyzer, filter string, ana
 		}
 		a.Results = append(a.Results, results...)
 		if verbose {
-			fmt.Printf("Debug: %s completed without errors.\n", reflect.TypeOf(analyzer).Name())
+			fmt.Fprintf(os.Stderr, "Debug: %s completed without errors.\n", reflect.TypeOf(analyzer).Name())
 		}
 	}
 	<-semaphore
@@ -651,7 +651,7 @@ func (a *Analysis) GetAIResults(output string, anonymize bool) error {
 
 	verbose := viper.GetBool("verbose")
 	if verbose {
-		fmt.Println("Debug: Generating AI analysis.")
+		fmt.Fprintln(os.Stderr, "Debug: Generating AI analysis.")
 	}
 
 	var bar *progressbar.ProgressBar
@@ -736,11 +736,11 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 		if response != "" {
 			output, err := base64.StdEncoding.DecodeString(response)
 			if err != nil {
-				color.Red("error decoding cached data; ignoring cache item: %v", err)
+				fmt.Fprintln(os.Stderr, color.RedString("error decoding cached data; ignoring cache item: %v", err))
 			} else if strings.TrimSpace(string(output)) != "" {
 				return string(output), nil
 			} else {
-				color.Red("cached data is empty; ignoring cache item")
+				fmt.Fprintln(os.Stderr, color.RedString("cached data is empty; ignoring cache item"))
 			}
 		}
 	}
@@ -771,7 +771,7 @@ func (a *Analysis) getAIResultForSanitizedFailures(texts []string, promptTmpl st
 	}
 
 	if err = a.Cache.Store(cacheKey, base64.StdEncoding.EncodeToString([]byte(response))); err != nil {
-		color.Red("error storing value to cache; value won't be cached: %v", err)
+		fmt.Fprintln(os.Stderr, color.RedString("error storing value to cache; value won't be cached: %v", err))
 	}
 	return response, nil
 }
