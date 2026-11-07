@@ -32,6 +32,7 @@ func TestGetCompletion_EmptyContentIsAnError_OllamaCohere(t *testing.T) {
 		require.Error(t, err)
 		assert.Empty(t, out)
 		assert.Contains(t, err.Error(), "empty completion")
+		assert.Contains(t, err.Error(), "finish reason: length")
 	})
 
 	t.Run("cohere", func(t *testing.T) {
@@ -49,5 +50,6 @@ func TestGetCompletion_EmptyContentIsAnError_OllamaCohere(t *testing.T) {
 		require.Error(t, err)
 		assert.Empty(t, out)
 		assert.Contains(t, err.Error(), "empty completion")
+		assert.Contains(t, err.Error(), "finish reason: MAX_TOKENS")
 	})
 }
