@@ -38,7 +38,10 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	gcList := &gtwapi.GatewayClassList{}
 	client := a.Client.CtrlClient
 
-	labelSelector := util.LabelStrToSelector(a.LabelSelector)
+	labelSelector, err := util.LabelStrToSelector(a.LabelSelector)
+	if err != nil {
+		return nil, err
+	}
 	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
 	// Same push-down as the typed analyzers: the CtrlClient is a direct
 	// (uncached) client, so a field selector is served by the API server.

@@ -863,9 +863,12 @@ func TestNewHeaders(t *testing.T) {
 
 func TestLabelStrToSelector(t *testing.T) {
 	// empty case returns nil
-	require.Nil(t, LabelStrToSelector(""))
+	sel, err := LabelStrToSelector("")
+	require.NoError(t, err)
+	require.Nil(t, sel)
 
-	sel := LabelStrToSelector("key=value,foo=bar")
+	sel, err = LabelStrToSelector("key=value,foo=bar")
+	require.NoError(t, err)
 	require.NotNil(t, sel)
 
 	// matches exact set
@@ -875,6 +878,36 @@ func TestLabelStrToSelector(t *testing.T) {
 	// does not match different values
 	m2 := map[string]string{"key": "other", "foo": "bar"}
 	require.False(t, sel.Matches(labels.Set(m2)))
+}
+
+func TestLabelStrToSelectorOperators(t *testing.T) {
+	web := labels.Set{"app": "web", "tier": "frontend"}
+	db := labels.Set{"app": "db"}
+
+	tests := []struct {
+		selector string
+		matchWeb bool
+		matchDB  bool
+	}{
+		{selector: "app==web", matchWeb: true, matchDB: false},
+		{selector: "app!=web", matchWeb: false, matchDB: true},
+		{selector: "app = web", matchWeb: true, matchDB: false},
+		{selector: "app in (web,api)", matchWeb: true, matchDB: false},
+		{selector: "app notin (web)", matchWeb: false, matchDB: true},
+		{selector: "tier", matchWeb: true, matchDB: false},
+		{selector: "!tier", matchWeb: false, matchDB: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.selector, func(t *testing.T) {
+			sel, err := LabelStrToSelector(tt.selector)
+			require.NoError(t, err)
+			require.Equal(t, tt.matchWeb, sel.Matches(web))
+			require.Equal(t, tt.matchDB, sel.Matches(db))
+		})
+	}
+
+	_, err := LabelStrToSelector("app in (web")
+	require.Error(t, err)
 }
 
 func TestCaptureOutput(t *testing.T) {
