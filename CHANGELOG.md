@@ -1,5 +1,66 @@
 # Changelog
 
+## [0.4.42](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.41...v0.4.42) (2026-11-07)
+
+
+### Features
+
+* add NodeClaim analyzer for Karpenter v1 ([#1842](https://github.com/k8sgpt-ai/k8sgpt/issues/1842)) ([ae3863a](https://github.com/k8sgpt-ai/k8sgpt/commit/ae3863a10db8ccce6d7e80f71c2be98df53b11a1))
+* add NodePool analyzer for Karpenter v1 ([#1843](https://github.com/k8sgpt-ai/k8sgpt/issues/1843)) ([783b6ca](https://github.com/k8sgpt-ai/k8sgpt/commit/783b6ca4772abd0af41fe829b20920e6e5187eae))
+* add support of gpt2giga ([#1635](https://github.com/k8sgpt-ai/k8sgpt/issues/1635)) ([30f886d](https://github.com/k8sgpt-ai/k8sgpt/commit/30f886dfdbfe98dd007a5329aa8c6262f68b48e3))
+
+
+### Bug Fixes
+
+* accept case-insensitive scale target kinds ([#1862](https://github.com/k8sgpt-ai/k8sgpt/issues/1862)) ([650c650](https://github.com/k8sgpt-ai/k8sgpt/commit/650c650fe74e1d9b09d03a21d97d84cd3592a1d2))
+* default max tokens for Bedrock Converse, Cohere, SageMaker, OCI and Google backends ([#1916](https://github.com/k8sgpt-ai/k8sgpt/issues/1916)) ([e00f3c4](https://github.com/k8sgpt-ai/k8sgpt/commit/e00f3c4e7bee25df086233177bb9eb6cab8da1d4))
+* default Vertex AI to gemini-3.8-flash and accept Gemini 3 models ([#1852](https://github.com/k8sgpt-ai/k8sgpt/issues/1852)) ([7e62dac](https://github.com/k8sgpt-ai/k8sgpt/commit/7e62daceb491144138b75cc3c0f905ce082e8df1))
+* **deps:** bump helm.sh/helm/v3 to v3.20.2 to address CVE-2025-53547 ([#1791](https://github.com/k8sgpt-ai/k8sgpt/issues/1791)) ([c2dc667](https://github.com/k8sgpt-ai/k8sgpt/commit/c2dc667b0713436056af881e15288fe94c2732aa))
+* **deps:** update k8s.io/utils digest to ca04ba5 ([#1865](https://github.com/k8sgpt-ai/k8sgpt/issues/1865)) ([5a6543a](https://github.com/k8sgpt-ai/k8sgpt/commit/5a6543a13ff98d639e93af88b8a42d3e71863b92))
+* ensure MCP tool schemas are compatible with Copilot and Draft-07 validators ([#1866](https://github.com/k8sgpt-ai/k8sgpt/issues/1866)) ([63ebbea](https://github.com/k8sgpt-ai/k8sgpt/commit/63ebbea556863473829f8de1402207ec6fbe0092)), closes [#1507](https://github.com/k8sgpt-ai/k8sgpt/issues/1507)
+* honor default AI provider in serve and query ([#1872](https://github.com/k8sgpt-ai/k8sgpt/issues/1872)) ([9ec6030](https://github.com/k8sgpt-ai/k8sgpt/commit/9ec6030769415c7b869bbf4dba71c9e37bcd566d)), closes [#1074](https://github.com/k8sgpt-ai/k8sgpt/issues/1074)
+* honor namespace, label and resource filters in the OLM analyzers ([#1859](https://github.com/k8sgpt-ai/k8sgpt/issues/1859)) ([e07d9e0](https://github.com/k8sgpt-ai/k8sgpt/commit/e07d9e05cec9daf17bbb2c7c75241176dc289e7a))
+* implement graceful Shutdown RPC instead of panicking ([#1730](https://github.com/k8sgpt-ai/k8sgpt/issues/1730)) ([309d52a](https://github.com/k8sgpt-ai/k8sgpt/commit/309d52a9e8744766d32b8b74963a91724e6ad3a2))
+* keep analyzer warnings off stdout ([#1849](https://github.com/k8sgpt-ai/k8sgpt/issues/1849)) ([c9279f8](https://github.com/k8sgpt-ai/k8sgpt/commit/c9279f8e2d244033c9422766c96422f8207af8c5))
+* keep the core analyzers when adding or removing filters over MCP ([#1857](https://github.com/k8sgpt-ai/k8sgpt/issues/1857)) ([d77b535](https://github.com/k8sgpt-ai/k8sgpt/commit/d77b5357a309a26abd9055fdd768b284f657313c))
+* keep verbose and cache messages off stdout ([#1906](https://github.com/k8sgpt-ai/k8sgpt/issues/1906)) ([024a977](https://github.com/k8sgpt-ai/k8sgpt/commit/024a977821dd927872f57c8f40e40abf883d2f77))
+* omit temperature and top_p for Bedrock Converse Claude 5 models that reject them ([#1921](https://github.com/k8sgpt-ai/k8sgpt/issues/1921)) ([f9af390](https://github.com/k8sgpt-ai/k8sgpt/commit/f9af39098213f0cc88c4df18b0725146a6f20e92))
+* reject empty completions from azureopenai, groq, litellm, gpt2giga and bedrockmantle ([#1902](https://github.com/k8sgpt-ai/k8sgpt/issues/1902)) ([ba40183](https://github.com/k8sgpt-ai/k8sgpt/commit/ba401838cb4cf08f669c8ace9a856858e6397006))
+* replace retired Claude 3.5 Sonnet default for the anthropic backend ([#1844](https://github.com/k8sgpt-ai/k8sgpt/issues/1844)) ([e6e688b](https://github.com/k8sgpt-ai/k8sgpt/commit/e6e688bbced81d7c4d53b9b59635944dfe2434c7))
+* report the current failure reason for OLM CSVs and Subscriptions ([#1855](https://github.com/k8sgpt-ai/k8sgpt/issues/1855)) ([99f3fc3](https://github.com/k8sgpt-ai/k8sgpt/commit/99f3fc38000f60898396e8264c87083ba47a8f81))
+* retry the Anthropic request without sampling parameters when the model rejects them ([#1871](https://github.com/k8sgpt-ai/k8sgpt/issues/1871)) ([c532c01](https://github.com/k8sgpt-ai/k8sgpt/commit/c532c017c240a8af440d3c9ed095665712a4b707))
+* retry without temperature/top_p when the model rejects them ([#1869](https://github.com/k8sgpt-ai/k8sgpt/issues/1869)) ([4d3f4af](https://github.com/k8sgpt-ai/k8sgpt/commit/4d3f4af6d9155f81c3d6e840420e44c970d246e6))
+* return an error instead of panicking when Gemini sends a candidate without content ([#1898](https://github.com/k8sgpt-ai/k8sgpt/issues/1898)) ([7b6f7fb](https://github.com/k8sgpt-ai/k8sgpt/commit/7b6f7fb88a5d2cd266ea45d9fb2c4f2387559cea))
+* return error instead of panicking on chart repo failure in keda deploy ([#1877](https://github.com/k8sgpt-ai/k8sgpt/issues/1877)) ([1d108bb](https://github.com/k8sgpt-ai/k8sgpt/commit/1d108bb4adf5e3bcfd13f52be23ca398b4463b0b))
+* send --maxtokens and --topk to Ollama ([#1905](https://github.com/k8sgpt-ai/k8sgpt/issues/1905)) ([77230e0](https://github.com/k8sgpt-ai/k8sgpt/commit/77230e0093e2f03525e68a5aa8b38fd8495b7b37))
+* stop sending temperature and top_p to Claude Opus 5, Opus 5.5 and Sonnet 5.5 on Bedrock ([#1899](https://github.com/k8sgpt-ai/k8sgpt/issues/1899)) ([d840b13](https://github.com/k8sgpt-ai/k8sgpt/commit/d840b137c12643228124e95b478fd8538c3179c0))
+* support plain text prompts in custom rest AI client ([#1875](https://github.com/k8sgpt-ai/k8sgpt/issues/1875)) ([edef31f](https://github.com/k8sgpt-ai/k8sgpt/commit/edef31fd6d5bd2a5ac75e104025563a5227d0cba))
+* use the configured maxtokens for the OpenAI-compatible backends ([#1870](https://github.com/k8sgpt-ai/k8sgpt/issues/1870)) ([c74a85d](https://github.com/k8sgpt-ai/k8sgpt/commit/c74a85d46265dc9026c99deb905311f7e0b1b205))
+* use the HPA namespace in the resource-configured message ([#1847](https://github.com/k8sgpt-ai/k8sgpt/issues/1847)) ([260d09f](https://github.com/k8sgpt-ai/k8sgpt/commit/260d09fc413da5b980f3e42f205330a1b11c5911))
+* validate custom analyzers and requests in config handlers ([#1873](https://github.com/k8sgpt-ai/k8sgpt/issues/1873)) ([2863f87](https://github.com/k8sgpt-ai/k8sgpt/commit/2863f87d19e0d4167f9f1bf5da26fdc029b76433))
+* validate filter names in MCP add-filters and remove-filters ([#1874](https://github.com/k8sgpt-ai/k8sgpt/issues/1874)) ([61812be](https://github.com/k8sgpt-ai/k8sgpt/commit/61812bea62061f0b629546940b7bc15464c8d549))
+
+
+### Other
+
+* **deps:** update docker/login-action digest to 81c6f93 ([#1864](https://github.com/k8sgpt-ai/k8sgpt/issues/1864)) ([192b355](https://github.com/k8sgpt-ai/k8sgpt/commit/192b355ceb52c1144f791742aebe19fb3bfdfe2a))
+* **deps:** update jlumbroso/free-disk-space digest to cf1e78c ([#1917](https://github.com/k8sgpt-ai/k8sgpt/issues/1917)) ([29a1f0b](https://github.com/k8sgpt-ai/k8sgpt/commit/29a1f0b080d001173ee430ad038b65284f652a00))
+* **deps:** update module github.com/go-jose/go-jose/v4 to v4.1.6 [security] ([#1884](https://github.com/k8sgpt-ai/k8sgpt/issues/1884)) ([c39a95d](https://github.com/k8sgpt-ai/k8sgpt/commit/c39a95d0c234f182b4dfd153d364f5c2cefd239c))
+* **deps:** update module github.com/klauspost/compress to v1.18.7 [security] ([#1853](https://github.com/k8sgpt-ai/k8sgpt/issues/1853)) ([49763a9](https://github.com/k8sgpt-ai/k8sgpt/commit/49763a97656b7e11b54499869bc69f50ba6ab76c))
+
+
+### Docs
+
+* add adopters template and README Adopters section ([#1893](https://github.com/k8sgpt-ai/k8sgpt/issues/1893)) ([1a3e933](https://github.com/k8sgpt-ai/k8sgpt/commit/1a3e9339a09b36d57479138df2d0bcc6888307f7))
+* add self-assessed CNCF governance review ([#1890](https://github.com/k8sgpt-ai/k8sgpt/issues/1890)) ([42d8333](https://github.com/k8sgpt-ai/k8sgpt/commit/42d8333c4069dc865834535d7ee0bb955d270789))
+* correct the general technical review (anonymization default, operator writes, security team) ([#1891](https://github.com/k8sgpt-ai/k8sgpt/issues/1891)) ([41291f1](https://github.com/k8sgpt-ai/k8sgpt/commit/41291f160b488454fdba384b2b15d7f5f2d50f51))
+* document sub-teams, security response team, affiliation and emeritus policies ([#1888](https://github.com/k8sgpt-ai/k8sgpt/issues/1888)) ([247e580](https://github.com/k8sgpt-ai/k8sgpt/commit/247e58024edf3996928bd5215a3323252effd37d))
+* expand security policy with reporting channels, response roles and timelines ([#1896](https://github.com/k8sgpt-ai/k8sgpt/issues/1896)) ([2bec93d](https://github.com/k8sgpt-ai/k8sgpt/commit/2bec93d3c746723387862b7c2ad799089d02159c))
+* link AI backend support tiers from README ([#1900](https://github.com/k8sgpt-ai/k8sgpt/issues/1900)) ([8ab97fb](https://github.com/k8sgpt-ai/k8sgpt/commit/8ab97fb71c844e358f5387601c944ab92ba3c18d)), closes [#1880](https://github.com/k8sgpt-ai/k8sgpt/issues/1880)
+* make MAINTAINERS.md the single source of truth for maintainers ([#1895](https://github.com/k8sgpt-ai/k8sgpt/issues/1895)) ([38fd52e](https://github.com/k8sgpt-ai/k8sgpt/commit/38fd52e75d67e354ac55105bc776b62b760e9ed2))
+* point community links to CNCF Slack #k8sgpt and cross-link the CNCF Code of Conduct ([#1892](https://github.com/k8sgpt-ai/k8sgpt/issues/1892)) ([2678ee1](https://github.com/k8sgpt-ai/k8sgpt/commit/2678ee1d1bd15875dcd04391524bd154183c897e))
+* update security self-assessment to the current TAG Security template ([#1897](https://github.com/k8sgpt-ai/k8sgpt/issues/1897)) ([62df70d](https://github.com/k8sgpt-ai/k8sgpt/commit/62df70d04f7ea83b78a028c383efb60f69f75880))
+
 ## [0.4.41](https://github.com/k8sgpt-ai/k8sgpt/compare/v0.4.40...v0.4.41) (2026-10-20)
 
 
