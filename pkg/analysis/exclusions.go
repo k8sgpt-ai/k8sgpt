@@ -36,10 +36,10 @@ type Exclusion struct {
 
 // FindingHash derives the exclusion hash of a finding: first 12 hex chars of
 // SHA-256 over Kind, the result's namespace/name key, and the whitespace-
-// normalized failure text, before any anonymization. Event messages embed
-// container-restart counts that drift between runs, so whitespace runs are
-// collapsed to keep the hash stable across restarts while still changing when
-// the finding's substance changes.
+// normalized failure text, before any anonymization. Only whitespace drift is
+// ignored: whitespace runs are collapsed so re-wrapped text still matches,
+// while any other change, including a changed container-restart count,
+// changes the hash.
 func FindingHash(kind, name, text string) string {
 	normalized := strings.Join(strings.Fields(text), " ")
 	sum := sha256.Sum256([]byte(kind + "\x00" + name + "\x00" + normalized))

@@ -23,13 +23,20 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/analysis"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/analyzer"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -278,4 +285,62 @@ func TestHandleConfigCustomAnalyzersValidation(t *testing.T) {
 		text := result.Content[0].(mcp.TextContent).Text
 		require.Contains(t, text, "Successfully added configuration")
 	})
+}
+
+// The MCP analyze tool is the last entry point that ran analysis without
+// applying the exclusions config: a muted finding still reached MCP clients
+// and, with Explain set, still cost an AI call. The CLI and the server-mode
+// handler both apply exclusions; this asserts the MCP path does too.
+func TestHandleAnalyzeAppliesExclusions(t *testing.T) {
+	pod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Name: "web", Namespace: "default"},
+		Status: corev1.PodStatus{
+			Phase: corev1.PodRunning,
+			ContainerStatuses: []corev1.ContainerStatus{{
+				Name: "app",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{Reason: "CrashLoopBackOff"},
+				},
+				LastTerminationState: corev1.ContainerState{
+					Terminated: &corev1.ContainerStateTerminated{Reason: "OOMKilled", ExitCode: 137},
+				},
+			}},
+		},
+	}
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{
+			Client: fake.NewSimpleClientset(&pod),
+			Config: &rest.Config{Host: "fake-server"},
+		}, nil
+	})
+	t.Cleanup(patches.Reset)
+
+	viper.Set("verbose", false)
+	viper.Set("custom_analyzers", []interface{}{})
+	t.Cleanup(func() { viper.Set("exclusions", []interface{}{}) })
+
+	s := &K8sGptMCPServer{aiProvider: &ai.AIProvider{}}
+	request := mcp.CallToolRequest{Params: mcp.CallToolParams{Arguments: map[string]any{"output": "json"}}}
+
+	// Without exclusions the CrashLoopBackOff finding reaches the MCP client.
+	result, err := s.handleAnalyze(context.Background(), request)
+	require.NoError(t, err)
+	require.False(t, result.IsError, "unexpected tool error: %+v", result.Content)
+	text, ok := mcp.AsTextContent(result.Content[0])
+	require.True(t, ok, "expected text content")
+	require.Contains(t, text.Text, "the last termination reason is OOMKilled")
+
+	// Muting that finding's hash must remove it from the MCP output too.
+	viper.Set("exclusions", []map[string]interface{}{
+		{
+			"reason": "OOMKilled on restarts is a known downstream effect of the JVM heap config",
+			"hash":   analysis.FindingHash("Pod", "default/web", "the last termination reason is OOMKilled container=app pod=web"),
+		},
+	})
+	result, err = s.handleAnalyze(context.Background(), request)
+	require.NoError(t, err)
+	require.False(t, result.IsError, "unexpected tool error: %+v", result.Content)
+	text, ok = mcp.AsTextContent(result.Content[0])
+	require.True(t, ok, "expected text content")
+	require.NotContains(t, text.Text, "the last termination reason is OOMKilled")
 }
