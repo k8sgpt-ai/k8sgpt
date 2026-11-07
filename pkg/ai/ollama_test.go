@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -114,11 +115,54 @@ func TestOllamaGetCompletionModelExists(t *testing.T) {
 	assert.Equal(t, "Here is a response for existing model", resp)
 }
 
+func ollamaGenerateOptions(t *testing.T, cfg *mockIAIConfig) map[string]interface{} {
+	t.Helper()
+	var body struct {
+		Options map[string]interface{} `json:"options"`
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/tags":
+			_, _ = w.Write([]byte(`{"models": [{"name": "m:latest"}]}`))
+		case "/api/generate":
+			_ = json.NewDecoder(r.Body).Decode(&body)
+			_, _ = w.Write([]byte(`{"response": "ok", "done": true}` + "\n"))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	cfg.baseURL = server.URL
+	cfg.model = "m"
+	client := &OllamaClient{}
+	assert.NoError(t, client.Configure(cfg))
+	_, err := client.GetCompletion(context.Background(), "Hello")
+	assert.NoError(t, err)
+	return body.Options
+}
+
+func TestOllamaSendsMaxTokensAndTopK(t *testing.T) {
+	opts := ollamaGenerateOptions(t, &mockIAIConfig{temperature: 0.7, topP: 1.0, topK: 40, maxTokens: 512})
+
+	assert.EqualValues(t, 512, opts["num_predict"])
+	assert.EqualValues(t, 40, opts["top_k"])
+}
+
+func TestOllamaOmitsUnsetMaxTokensAndTopK(t *testing.T) {
+	opts := ollamaGenerateOptions(t, &mockIAIConfig{temperature: 0.7, topP: 1.0})
+
+	assert.NotContains(t, opts, "num_predict")
+	assert.NotContains(t, opts, "top_k")
+}
+
 type mockIAIConfig struct {
 	baseURL     string
 	model       string
 	temperature float32
 	topP        float32
+	topK        int32
+	maxTokens   int
 }
 
 func (m *mockIAIConfig) GetBaseURL() string {
@@ -141,8 +185,8 @@ func (m *mockIAIConfig) GetPassword() string { return "" }
 func (m *mockIAIConfig) GetEndpointName() string { return "" }
 func (m *mockIAIConfig) GetEngine() string { return "" }
 func (m *mockIAIConfig) GetProviderRegion() string { return "" }
-func (m *mockIAIConfig) GetTopK() int32 { return 0 }
-func (m *mockIAIConfig) GetMaxTokens() int { return 0 }
+func (m *mockIAIConfig) GetTopK() int32 { return m.topK }
+func (m *mockIAIConfig) GetMaxTokens() int { return m.maxTokens }
 func (m *mockIAIConfig) GetStopSequences() []string { return nil }
 func (m *mockIAIConfig) GetProviderId() string { return "" }
 func (m *mockIAIConfig) GetCompartmentId() string { return "" }
