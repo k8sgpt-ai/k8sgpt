@@ -2,6 +2,7 @@ package analyzer
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
@@ -617,5 +618,70 @@ func TestHTTPRouteAnalyzerNamespaceFilter(t *testing.T) {
 			names = append(names, result.Name)
 		}
 		t.Fatalf("expected only default/foohttproute, got %v", names)
+	}
+}
+
+// Only core Services are checked as backendRefs. A ref to another Group/Kind,
+// such as Envoy Gateway's gateway.envoyproxy.io/Backend, must not be reported
+// as a missing Service, while a missing core Service still is.
+func TestHTTPRouteBackendRefGroupKind(t *testing.T) {
+	ptr := func(s string) *string { return &s }
+	tests := []struct {
+		name        string
+		group       *string
+		kind        *string
+		wantMissing bool
+	}{
+		{name: "envoy gateway Backend", group: ptr("gateway.envoyproxy.io"), kind: ptr("Backend"), wantMissing: false},
+		{name: "non-core group with Service kind", group: ptr("example.com"), kind: ptr("Service"), wantMissing: false},
+		{name: "core group with other kind", group: ptr(""), kind: ptr("ServiceImport"), wantMissing: false},
+		{name: "unset group and kind default to Service", wantMissing: true},
+		{name: "explicit core Service", group: ptr(""), kind: ptr("Service"), wantMissing: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			route := BuildHTTPRoute("missing-backend", "gatewayname", "default", nil, "default")
+			ref := &route.Spec.Rules[0].BackendRefs[0].BackendObjectReference
+			if tt.group != nil {
+				group := gtwapi.Group(*tt.group)
+				ref.Group = &group
+			}
+			if tt.kind != nil {
+				kind := gtwapi.Kind(*tt.kind)
+				ref.Kind = &kind
+			}
+			gateway := BuildRouteGateway("default", "gatewayname", "All")
+
+			scheme := scheme.Scheme
+			if err := gtwapi.Install(scheme); err != nil {
+				t.Fatal(err)
+			}
+			if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+				t.Fatal(err)
+			}
+			fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&route, &gateway).Build()
+
+			results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+				Client:    &kubernetes.Client{CtrlClient: fakeClient},
+				Context:   context.Background(),
+				Namespace: "default",
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			gotMissing := false
+			for _, result := range results {
+				for _, failure := range result.Error {
+					if strings.Contains(failure.Text, "uses the Service 'default/missing-backend' which does not exist") {
+						gotMissing = true
+					}
+				}
+			}
+			if gotMissing != tt.wantMissing {
+				t.Fatalf("missing-Service failure reported = %v, want %v", gotMissing, tt.wantMissing)
+			}
+		})
 	}
 }
