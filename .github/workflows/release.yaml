@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@36e9a5af4eddb91fc11aec4c6f6f79b3cc0cb523 # main
+        uses: jlumbroso/free-disk-space@cf1e78c50ca91e757bab3edc229027eebfc07871 # main
         with:
           # this might remove tools that are actually needed,
           # if set to "true" but frees about 6 GB
