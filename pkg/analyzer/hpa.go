@@ -146,7 +146,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		} else {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {
-				if container.Resources.Requests == nil || container.Resources.Limits == nil {
+				if len(container.Resources.Requests) == 0 {
 					containers--
 				}
 			}
