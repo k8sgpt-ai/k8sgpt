@@ -136,12 +136,17 @@ func (c *OllamaClient) GetCompletion(ctx context.Context, prompt string) (string
 		Options: options,
 	}
 	completion := ""
+	doneReason := ""
 	respFunc := func(resp ollama.GenerateResponse) error {
 		completion = resp.Response
+		doneReason = resp.DoneReason
 		return nil
 	}
 	err = c.client.Generate(ctx, req, respFunc)
 	if err != nil {
+		return "", err
+	}
+	if err := checkCompletionContent(completion, doneReason); err != nil {
 		return "", err
 	}
 	return completion, nil
