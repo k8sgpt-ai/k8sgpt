@@ -74,7 +74,7 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt string) (string
 		MaxTokens:    api.Int(c.maxTokens),
 	}
 	if c.topP > 0 {
-		request.P = api.Float64(float64(c.topP))
+		request.P = api.Float64(min(float64(c.topP), 0.99))
 	}
 	response, err := c.client.Chat(ctx, request)
 	if err != nil {

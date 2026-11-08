@@ -49,3 +49,9 @@ func TestCohereKeepsDefaultsWhenTopPAndTopKUnset(t *testing.T) {
 	assert.NotContains(t, body, "p")
 	assert.EqualValues(t, 0, body["k"])
 }
+
+func TestCohereClampsTopPToAPIUpperLimit(t *testing.T) {
+	body := cohereRequestBody(t, &AIProvider{TopP: 1.0})
+
+	assert.EqualValues(t, 0.99, body["p"])
+}
