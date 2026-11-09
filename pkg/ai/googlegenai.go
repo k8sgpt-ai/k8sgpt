@@ -96,13 +96,16 @@ func (c *GoogleGenAIClient) GetCompletion(ctx context.Context, prompt string) (s
 	}
 
 	if got.CitationMetadata != nil && len(got.CitationMetadata.CitationSources) > 0 {
-		output += "Citations:\n"
+		var citations string
 		for _, source := range got.CitationMetadata.CitationSources {
 			if source.URI == nil {
 				continue
 			}
 			// TODO(bwplotka): Give details around what exactly words could be attributed to the citation.
-			output += fmt.Sprintf("* %s, %s\n", *source.URI, source.License)
+			citations += fmt.Sprintf("* %s, %s\n", *source.URI, source.License)
+		}
+		if citations != "" {
+			output += "Citations:\n" + citations
 		}
 	}
 	return output, nil
