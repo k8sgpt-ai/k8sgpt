@@ -53,7 +53,7 @@ func (c *CohereClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 
 	return nil
 }
@@ -70,6 +70,13 @@ func (c *CohereClient) GetCompletion(ctx context.Context, prompt string) (string
 		MaxTokens:    api.Int(c.maxTokens),
 	})
 	if err != nil {
+		return "", err
+	}
+	finishReason := ""
+	if response.FinishReason != nil {
+		finishReason = string(*response.FinishReason)
+	}
+	if err := checkCompletionContent(response.Text, finishReason); err != nil {
 		return "", err
 	}
 	return response.Text, nil
