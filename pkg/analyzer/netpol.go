@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -58,8 +59,13 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 			return nil, err
 		}
 
-		// Check if policy allows traffic to all pods in the namespace
+		// An empty podSelector selects every pod in the namespace. That on its
+		// own does not allow any traffic (a default-deny policy looks like this),
+		// so only report it when a rule actually allows all traffic.
 		if selector.Empty() {
+			if !allowsAllTraffic(policy.Spec) {
+				continue
+			}
 			doc := apiDoc.GetApiDocV2("spec.podSelector.matchLabels")
 
 			failures = append(failures, common.Failure{
@@ -113,4 +119,37 @@ func (NetworkPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error)
 	}
 
 	return a.Results, nil
+}
+
+// allowsAllTraffic reports whether the policy has an effective ingress or
+// egress rule that matches all peers on all ports (an empty rule, `{}`).
+func allowsAllTraffic(spec networkingv1.NetworkPolicySpec) bool {
+	// When policyTypes is unset, Ingress always applies and Egress applies
+	// only if the policy has egress rules.
+	ingressApplies := len(spec.PolicyTypes) == 0
+	egressApplies := len(spec.PolicyTypes) == 0 && len(spec.Egress) > 0
+	for _, policyType := range spec.PolicyTypes {
+		switch policyType {
+		case networkingv1.PolicyTypeIngress:
+			ingressApplies = true
+		case networkingv1.PolicyTypeEgress:
+			egressApplies = true
+		}
+	}
+
+	if ingressApplies {
+		for _, rule := range spec.Ingress {
+			if len(rule.From) == 0 && len(rule.Ports) == 0 {
+				return true
+			}
+		}
+	}
+	if egressApplies {
+		for _, rule := range spec.Egress {
+			if len(rule.To) == 0 && len(rule.Ports) == 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
