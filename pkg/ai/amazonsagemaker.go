@@ -74,7 +74,7 @@ func (c *SageMakerAIClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.endpoint = config.GetEndpointName()
 	c.temperature = config.GetTemperature()
-	c.maxTokens = config.GetMaxTokens()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
 	return nil

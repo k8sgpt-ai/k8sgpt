@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
@@ -90,4 +91,52 @@ func TestGetAIResult_PromptVersionedKeyInvalidatesStale(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, "STALE PRE-REWORD ANSWER", out)
 	require.Equal(t, "I am a noop response to the prompt NEW reworded template in English: prompt-version-input", out)
+}
+
+// failingStoreCache is a file cache whose Store always fails.
+type failingStoreCache struct{ cache.ICache }
+
+func (failingStoreCache) Store(string, string) error { return errors.New("disk full") }
+
+// The cache messages printed while `analyze --explain` fetches an AI result go
+// to stderr, so stdout carries only the report.
+func TestGetAIResult_CacheMessagesKeepStdoutClean(t *testing.T) {
+	aiClient := &ai.NoOpAIClient{}
+	texts := []string{"cache-message-input"}
+	promptTmpl := "Respond in %s: %s"
+	key := util.GetCacheKey(aiClient.GetName(), "English", promptTmpl+texts[0])
+
+	tests := []struct {
+		name  string
+		cache func(t *testing.T) cache.ICache
+		want  string
+	}{
+		{"empty entry", func(t *testing.T) cache.ICache {
+			c := cache.New("message-empty-cache")
+			seedCache(t, c, key, "   ")
+			return c
+		}, "cached data is empty; ignoring cache item"},
+		{"undecodable entry", func(t *testing.T) cache.ICache {
+			c := cache.New("message-decode-cache")
+			require.NoError(t, c.Store(key, "not base64!"))
+			cleanupKey(t, c, key)
+			return c
+		}, "error decoding cached data; ignoring cache item"},
+		{"store failure", func(t *testing.T) cache.ICache {
+			return failingStoreCache{cache.New("message-store-cache")}
+		}, "error storing value to cache; value won't be cached: disk full"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := Analysis{AIClient: aiClient, Cache: tt.cache(t), Language: "English"}
+			var out string
+			var err error
+			stderr := captureStderr(t, func() {
+				out, err = a.getAIResultForSanitizedFailures(texts, promptTmpl)
+			})
+			require.NoError(t, err)
+			require.NotEmpty(t, out)
+			require.Contains(t, stderr, tt.want)
+		})
+	}
 }
