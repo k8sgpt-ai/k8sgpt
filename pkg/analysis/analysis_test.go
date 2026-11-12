@@ -347,6 +347,7 @@ func TestAnalysis_ProblemJsonOutput(t *testing.T) {
 					{
 						Text:      "test-problem",
 						Sensitive: []common.Sensitive{},
+						Hash:      FindingHash("Deployment", "test-deployment", "test-problem"),
 					},
 				},
 				Details:      "test-solution",
@@ -404,10 +405,12 @@ func TestAnalysis_MultipleProblemJsonOutput(t *testing.T) {
 					{
 						Text:      "test-problem",
 						Sensitive: []common.Sensitive{},
+						Hash:      FindingHash("Deployment", "test-deployment", "test-problem"),
 					},
 					{
 						Text:      "another-test-problem",
 						Sensitive: []common.Sensitive{},
+						Hash:      FindingHash("Deployment", "test-deployment", "another-test-problem"),
 					},
 				},
 				Details:      "test-solution",
