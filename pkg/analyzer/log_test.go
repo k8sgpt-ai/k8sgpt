@@ -15,6 +15,7 @@ package analyzer
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"sort"
 	"testing"
@@ -24,6 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	clienttesting "k8s.io/client-go/testing"
 )
@@ -241,3 +243,68 @@ func TestLogAnalyzerReadsPreviousLogsForRestartedContainers(t *testing.T) {
 	require.Equal(t, 1, currentLogRequests)
 	require.Equal(t, 1, previousLogRequests)
 }
+
+func BenchmarkLogAnalyzer(b *testing.B) {
+	oldPattern := errorPattern
+	errorPattern = regexp.MustCompile(`(fake logs)`)
+	b.Cleanup(func() {
+		errorPattern = oldPattern
+	})
+
+	// Create 100 mock pods with 2 containers each to simulate a realistic cluster
+	const numPods = 100
+	objects := make([]v1.Pod, numPods)
+	for i := 0; i < numPods; i++ {
+		podName := fmt.Sprintf("pod-%d", i)
+		objects[i] = v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      podName,
+				Namespace: "default",
+			},
+			Spec: v1.PodSpec{
+				Containers: []v1.Container{
+					{Name: "app"},
+					{Name: "sidecar"},
+				},
+			},
+			Status: v1.PodStatus{
+				ContainerStatuses: []v1.ContainerStatus{
+					{
+						Name:         "app",
+						RestartCount: int32(i % 2), // 50% restarted pods
+					},
+					{
+						Name:         "sidecar",
+						RestartCount: 0,
+					},
+				},
+			},
+		}
+	}
+
+	runtimeObjects := make([]runtime.Object, numPods)
+	for i := range objects {
+		runtimeObjects[i] = &objects[i]
+	}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(runtimeObjects...),
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	analyzer := LogAnalyzer{}
+
+	// Reset timer so setup time is not counted
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		_, err := analyzer.Analyze(config)
+		if err != nil {
+			b.Fatalf("Analyze failed: %v", err)
+		}
+	}
+}
+
