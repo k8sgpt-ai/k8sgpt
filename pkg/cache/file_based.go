@@ -15,6 +15,16 @@ type FileBasedCache struct {
 	noCache bool
 }
 
+// cachePath resolves key to a file inside the k8sgpt cache directory. The key
+// is checked before xdg.CacheFile runs, because xdg.CacheFile creates the
+// parent directories of whatever path it is given.
+func cachePath(key string) (string, error) {
+	if !filepath.IsLocal(key) {
+		return "", fmt.Errorf("invalid cache key %q: must be a relative path inside the cache directory", key)
+	}
+	return xdg.CacheFile(filepath.Join("k8sgpt", key))
+}
+
 func (f *FileBasedCache) Configure(cacheInfo CacheProvider) error {
 	return nil
 }
@@ -50,7 +60,7 @@ func (*FileBasedCache) List() ([]CacheObjectDetails, error) {
 }
 
 func (*FileBasedCache) Exists(key string) bool {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "warning: error while testing if cache key exists:", err)
@@ -68,7 +78,7 @@ func (*FileBasedCache) Exists(key string) bool {
 }
 
 func (*FileBasedCache) Load(key string) (string, error) {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return "", err
@@ -84,7 +94,7 @@ func (*FileBasedCache) Load(key string) (string, error) {
 }
 
 func (*FileBasedCache) Remove(key string) error {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return err
@@ -98,7 +108,7 @@ func (*FileBasedCache) Remove(key string) error {
 }
 
 func (*FileBasedCache) Store(key string, data string) error {
-	path, err := xdg.CacheFile(filepath.Join("k8sgpt", key))
+	path, err := cachePath(key)
 
 	if err != nil {
 		return err
