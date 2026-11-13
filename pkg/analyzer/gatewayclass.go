@@ -21,6 +21,7 @@ import (
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 	gtwapi "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -38,7 +39,10 @@ func (GatewayClassAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) 
 	gcList := &gtwapi.GatewayClassList{}
 	client := a.Client.CtrlClient
 
-	labelSelector := util.LabelStrToSelector(a.LabelSelector)
+	labelSelector, err := labels.Parse(a.LabelSelector)
+	if err != nil {
+		return nil, err
+	}
 	listOpts := &ctrl.ListOptions{LabelSelector: labelSelector}
 	// Same push-down as the typed analyzers: the CtrlClient is a direct
 	// (uncached) client, so a field selector is served by the API server.
