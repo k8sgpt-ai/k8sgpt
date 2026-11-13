@@ -1,0 +1,11 @@
+issues: []
+description: positive control - a NotReady node must still be reported
+expectResults: ["broken-node"]
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: broken-node
+status:
+  conditions:
+  - {type: Ready, status: "False", reason: KubeletNotReady}

@@ -1,0 +1,23 @@
+issues: ["#1723", "#1725"]
+description: a Job that completed after failed attempts is not a failure
+namespace: default
+expectResults: []
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: flaky-but-done
+  namespace: default
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - {name: main, image: busybox}
+status:
+  succeeded: 1
+  failed: 2
+  conditions:
+  - {type: SuccessCriteriaMet, status: "True"}
+  - {type: Complete, status: "True"}
