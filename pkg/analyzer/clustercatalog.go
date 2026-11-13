@@ -49,7 +49,7 @@ func (ClusterCatalogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error
 		return nil, fmt.Errorf("dynamic client is nil in ClusterCatalogAnalyzer")
 	}
 
-	list, err := a.Client.GetDynamicClient().Resource(clusterCatalogGVR).Namespace("").List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetDynamicClient().Resource(clusterCatalogGVR).Namespace("").List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

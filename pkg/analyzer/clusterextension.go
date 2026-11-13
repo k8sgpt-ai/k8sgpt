@@ -46,7 +46,7 @@ func (ClusterExtensionAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 		return nil, fmt.Errorf("dynamic client is nil in ClusterExtensionAnalyzer")
 	}
 
-	list, err := a.Client.GetDynamicClient().Resource(clusterExtensionGVR).Namespace("").List(a.Context, metav1.ListOptions{})
+	list, err := a.Client.GetDynamicClient().Resource(clusterExtensionGVR).Namespace("").List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
