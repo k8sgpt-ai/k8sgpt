@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -275,6 +276,108 @@ func TestNetpolMatchExpressions(t *testing.T) {
 	}
 }
 
+func TestNetpolEmptyPodSelector(t *testing.T) {
+	const allowsAll = "Network policy allows traffic to all pods: example"
+	port := intstr.FromInt32(80)
+
+	tests := []struct {
+		name         string
+		spec         networkingv1.NetworkPolicySpec
+		expectedText []string
+	}{
+		{
+			name: "default deny ingress, policyTypes unset",
+			spec: networkingv1.NetworkPolicySpec{},
+		},
+		{
+			name: "default deny ingress",
+			spec: networkingv1.NetworkPolicySpec{
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
+			},
+		},
+		{
+			name: "default deny ingress and egress",
+			spec: networkingv1.NetworkPolicySpec{
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress, networkingv1.PolicyTypeEgress},
+			},
+		},
+		{
+			name: "allow all ingress",
+			spec: networkingv1.NetworkPolicySpec{
+				Ingress: []networkingv1.NetworkPolicyIngressRule{{}},
+			},
+			expectedText: []string{allowsAll},
+		},
+		{
+			name: "allow all egress",
+			spec: networkingv1.NetworkPolicySpec{
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+				Egress:      []networkingv1.NetworkPolicyEgressRule{{}},
+			},
+			expectedText: []string{allowsAll},
+		},
+		{
+			name: "ingress restricted to a port",
+			spec: networkingv1.NetworkPolicySpec{
+				Ingress: []networkingv1.NetworkPolicyIngressRule{
+					{Ports: []networkingv1.NetworkPolicyPort{{Port: &port}}},
+				},
+			},
+		},
+		{
+			name: "ingress restricted to a peer",
+			spec: networkingv1.NetworkPolicySpec{
+				Ingress: []networkingv1.NetworkPolicyIngressRule{
+					{From: []networkingv1.NetworkPolicyPeer{{PodSelector: &metav1.LabelSelector{}}}},
+				},
+			},
+		},
+		{
+			name: "allow all ingress rule ignored when only egress applies",
+			spec: networkingv1.NetworkPolicySpec{
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+				Ingress:     []networkingv1.NetworkPolicyIngressRule{{}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clientset := fake.NewSimpleClientset(
+				&networkingv1.NetworkPolicy{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "example",
+						Namespace: "default",
+					},
+					Spec: tt.spec,
+				},
+			)
+
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			}
+
+			analyzer := NetworkPolicyAnalyzer{}
+			results, err := analyzer.Analyze(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var texts []string
+			for _, result := range results {
+				for _, failure := range result.Error {
+					texts = append(texts, failure.Text)
+				}
+			}
+			assert.Equal(t, texts, tt.expectedText)
+		})
+	}
+}
+
 func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&networkingv1.NetworkPolicy{
@@ -284,10 +387,11 @@ func TestNetpolNoPodsNamespaceFiltering(t *testing.T) {
 			},
 			Spec: networkingv1.NetworkPolicySpec{
 				PodSelector: metav1.LabelSelector{
-					// len(MatchLabels) == 0 should trigger a failure.
-					// Allowing traffic to all pods.
+					// An empty selector with an allow-all ingress rule
+					// should trigger a failure.
 					MatchLabels: map[string]string{},
 				},
+				Ingress: []networkingv1.NetworkPolicyIngressRule{{}},
 			},
 		},
 		&networkingv1.NetworkPolicy{
