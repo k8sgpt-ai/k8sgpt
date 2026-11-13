@@ -17,12 +17,14 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -536,6 +538,119 @@ func TestPodAnalyzer(t *testing.T) {
 					require.Equal(t, tt.expectations[i].name, result.Name)
 					require.Equal(t, tt.expectations[i].failuresCount, len(result.Error))
 				}
+			}
+		})
+	}
+}
+
+func TestPodAnalyzerProbeKills(t *testing.T) {
+	probeEvent := func(name, container, message string, at time.Time) *v1.Event {
+		return &v1.Event{
+			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default"},
+			InvolvedObject: v1.ObjectReference{
+				Kind:      "Pod",
+				Name:      "web",
+				Namespace: "default",
+				FieldPath: "spec.containers{" + container + "}",
+			},
+			Reason:        "Unhealthy",
+			Message:       message,
+			Type:          v1.EventTypeWarning,
+			LastTimestamp: metav1.NewTime(at),
+		}
+	}
+	pod := func(status v1.ContainerStatus) *v1.Pod {
+		return &v1.Pod{
+			ObjectMeta: metav1.ObjectMeta{Name: "web", Namespace: "default"},
+			Status:     v1.PodStatus{Phase: v1.PodRunning, ContainerStatuses: []v1.ContainerStatus{status}},
+		}
+	}
+	killed := func(exitCode int32) v1.ContainerState {
+		return v1.ContainerState{Terminated: &v1.ContainerStateTerminated{ExitCode: exitCode, Reason: "Error"}}
+	}
+	now := time.Now()
+	liveness := `Liveness probe failed: Get "http://10.244.0.14:9090/": dial tcp 10.244.0.14:9090: connect: connection refused`
+
+	tests := []struct {
+		name    string
+		objects []runtime.Object
+		want    []string // substrings of the single failure; nil means no result
+	}{
+		{
+			name: "crash loop caused by a failing liveness probe names the probe",
+			objects: []runtime.Object{
+				pod(v1.ContainerStatus{
+					Name:                 "web",
+					RestartCount:         4,
+					State:                v1.ContainerState{Waiting: &v1.ContainerStateWaiting{Reason: "CrashLoopBackOff"}},
+					LastTerminationState: killed(143),
+				}),
+				probeEvent("old", "web", "Liveness probe failed: HTTP probe failed with statuscode: 500", now.Add(-time.Minute)),
+				probeEvent("new", "web", liveness, now),
+			},
+			want: []string{"its probe fails", liveness, "container=web"},
+		},
+		{
+			name: "running container restarted by its liveness probe is reported",
+			objects: []runtime.Object{
+				pod(v1.ContainerStatus{
+					Name:                 "web",
+					Ready:                true,
+					RestartCount:         2,
+					State:                v1.ContainerState{Running: &v1.ContainerStateRunning{}},
+					LastTerminationState: killed(137),
+				}),
+				probeEvent("new", "web", liveness, now),
+			},
+			want: []string{"restarted 2 times because its probe fails", liveness},
+		},
+		{
+			name: "a crash with its own exit code is not blamed on an old probe failure",
+			objects: []runtime.Object{
+				pod(v1.ContainerStatus{
+					Name:                 "web",
+					RestartCount:         3,
+					State:                v1.ContainerState{Waiting: &v1.ContainerStateWaiting{Reason: "CrashLoopBackOff"}},
+					LastTerminationState: killed(1),
+				}),
+				probeEvent("new", "web", liveness, now),
+			},
+			want: []string{"the last termination reason is Error"},
+		},
+		{
+			name: "a probe failure of another container is ignored",
+			objects: []runtime.Object{
+				pod(v1.ContainerStatus{
+					Name:                 "web",
+					Ready:                true,
+					RestartCount:         2,
+					State:                v1.ContainerState{Running: &v1.ContainerStateRunning{}},
+					LastTerminationState: killed(137),
+				}),
+				probeEvent("new", "sidecar", liveness, now),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			results, err := PodAnalyzer{}.Analyze(common.Analyzer{
+				Client:    &kubernetes.Client{Client: fake.NewSimpleClientset(tt.objects...)},
+				Context:   context.Background(),
+				Namespace: "default",
+			})
+			require.NoError(t, err)
+			if tt.want == nil {
+				require.Empty(t, results)
+				return
+			}
+			require.Len(t, results, 1)
+			require.Len(t, results[0].Error, 1)
+			for _, s := range tt.want {
+				require.Contains(t, results[0].Error[0].Text, s)
+			}
+			if tt.name == "a crash with its own exit code is not blamed on an old probe failure" {
+				require.NotContains(t, results[0].Error[0].Text, "probe")
 			}
 		})
 	}
