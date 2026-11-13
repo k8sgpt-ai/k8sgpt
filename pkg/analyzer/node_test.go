@@ -368,8 +368,32 @@ func TestHealthyNodeConditionStatus(t *testing.T) {
 			known:         true,
 		},
 		{
-			name:          "KubeletProblem is not known",
+			name:          "ContainerRuntimeProblem from the AKS node problem detector is healthy when False",
+			conditionType: "ContainerRuntimeProblem",
+			healthy:       v1.ConditionFalse,
+			known:         true,
+		},
+		{
+			name:          "FilesystemCorruptionProblem from the AKS node problem detector is healthy when False",
+			conditionType: "FilesystemCorruptionProblem",
+			healthy:       v1.ConditionFalse,
+			known:         true,
+		},
+		{
+			name:          "KubeletProblem from the AKS node problem detector is healthy when False",
 			conditionType: "KubeletProblem",
+			healthy:       v1.ConditionFalse,
+			known:         true,
+		},
+		{
+			name:          "VMEventScheduled from the AKS node problem detector is healthy when False",
+			conditionType: "VMEventScheduled",
+			healthy:       v1.ConditionFalse,
+			known:         true,
+		},
+		{
+			name:          "custom condition is not known",
+			conditionType: "ExampleCustomCondition",
 			healthy:       "",
 			known:         false,
 		},
@@ -388,6 +412,52 @@ func TestHealthyNodeConditionStatus(t *testing.T) {
 			require.Equal(t, tt.healthy, healthy)
 		})
 	}
+}
+
+func TestNodeAnalyzerAKSNodeProblemDetectorConditions(t *testing.T) {
+	healthyConditions := []v1.NodeCondition{
+		{Type: v1.NodeReady, Status: v1.ConditionTrue},
+		{Type: v1.NodeMemoryPressure, Status: v1.ConditionFalse},
+		{Type: v1.NodeDiskPressure, Status: v1.ConditionFalse},
+		{Type: v1.NodePIDPressure, Status: v1.ConditionFalse},
+		{Type: "ContainerRuntimeProblem", Status: v1.ConditionFalse, Reason: "ContainerRuntimeIsUp", Message: "container runtime service is up"},
+		{Type: "FilesystemCorruptionProblem", Status: v1.ConditionFalse, Reason: "FilesystemIsOK", Message: "Filesystem is healthy"},
+		{Type: "KubeletProblem", Status: v1.ConditionFalse},
+		{Type: "VMEventScheduled", Status: v1.ConditionFalse},
+	}
+
+	analyze := func(conditions []v1.NodeCondition) []common.Result {
+		config := common.Analyzer{
+			Client: &kubernetes.Client{
+				Client: fake.NewSimpleClientset(&v1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: "Node1"},
+					Status:     v1.NodeStatus{Conditions: conditions},
+				}),
+			},
+			Context: context.Background(),
+		}
+		results, err := NodeAnalyzer{}.Analyze(config)
+		require.NoError(t, err)
+		return results
+	}
+
+	t.Run("healthy AKS node is not reported", func(t *testing.T) {
+		require.Empty(t, analyze(healthyConditions))
+	})
+
+	t.Run("scheduled VM event is reported", func(t *testing.T) {
+		conditions := append([]v1.NodeCondition{}, healthyConditions...)
+		conditions[len(conditions)-1] = v1.NodeCondition{
+			Type:    "VMEventScheduled",
+			Status:  v1.ConditionTrue,
+			Reason:  "VMEventScheduled",
+			Message: "Redeploy Scheduled",
+		}
+		results := analyze(conditions)
+		require.Len(t, results, 1)
+		require.Len(t, results[0].Error, 1)
+		require.Contains(t, results[0].Error[0].Text, "VMEventScheduled")
+	})
 }
 
 func TestNodeAnalyzerEKSNodeMonitoringAgentConditionsTrueIgnored(t *testing.T) {
