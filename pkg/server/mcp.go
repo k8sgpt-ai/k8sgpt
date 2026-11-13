@@ -653,6 +653,8 @@ func (s *K8sGptMCPServer) registerResources() error {
 	)
 	s.server.AddResource(activeFiltersResource, s.getActiveFiltersResource)
 
+	s.registerFindings()
+
 	return nil
 }
 
