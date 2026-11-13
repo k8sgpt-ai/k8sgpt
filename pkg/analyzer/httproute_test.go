@@ -458,6 +458,9 @@ func TestSvcDifferentPortHTTRouteAnalyzer(t *testing.T) {
 		for _, got := range analysis.Error {
 			if want == got.Text {
 				errorFound = true
+				if !hasMaskedSensitive(got.Sensitive, "default") {
+					t.Errorf("namespace is not masked in Sensitive values: %+v", got.Sensitive)
+				}
 			}
 		}
 		if errorFound {
@@ -618,4 +621,61 @@ func TestHTTPRouteAnalyzerNamespaceFilter(t *testing.T) {
 		}
 		t.Fatalf("expected only default/foohttproute, got %v", names)
 	}
+}
+
+// The names in a failure's text must be listed in its Sensitive values,
+// otherwise --anonymize sends them to the AI backend unmasked.
+func TestHTTPRouteMissingReferencesAreSensitive(t *testing.T) {
+	svcPort := gtwapi.PortNumber(1027)
+	route := BuildHTTPRoute("missing-svc", "missing-gw", "gw-ns", &svcPort, "default")
+
+	s := scheme.Scheme
+	if err := gtwapi.Install(s); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(s).WithRuntimeObjects(&route).Build()
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			CtrlClient: fakeClient,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	results, err := HTTPRouteAnalyzer{}.Analyze(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	want := map[string][]string{
+		"HTTPRoute uses the Gateway 'gw-ns/missing-gw' which does not exist in the same namespace.": {"gw-ns", "missing-gw"},
+		"HTTPRoute uses the Service 'default/missing-svc' which does not exist.":                    {"default", "missing-svc"},
+	}
+	found := 0
+	for _, result := range results {
+		for _, failure := range result.Error {
+			names, ok := want[failure.Text]
+			if !ok {
+				continue
+			}
+			found++
+			for _, name := range names {
+				if !hasMaskedSensitive(failure.Sensitive, name) {
+					t.Errorf("failure %q: %q is not in its masked Sensitive values: %+v", failure.Text, name, failure.Sensitive)
+				}
+			}
+		}
+	}
+	if found != len(want) {
+		t.Fatalf("expected %d failures, found %d: %+v", len(want), found, results)
+	}
+}
+
+func hasMaskedSensitive(sensitive []common.Sensitive, value string) bool {
+	for _, s := range sensitive {
+		if s.Unmasked == value && s.Masked != "" && s.Masked != value {
+			return true
+		}
+	}
+	return false
 }
