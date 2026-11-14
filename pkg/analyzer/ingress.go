@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -103,7 +104,9 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// check default backend
 		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
 			_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, ing.Spec.DefaultBackend.Service.Name, metav1.GetOptions{})
-			if err != nil {
+			// only a NotFound means the service is missing; any other error (for
+			// example Forbidden) means it could not be checked
+			if apierrors.IsNotFound(err) {
 				doc := apiDoc.GetApiDocV2("spec.defaultBackend.service")
 
 				failures = append(failures, common.Failure{
@@ -134,7 +137,7 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						continue
 					}
 					_, err := a.Client.GetClient().CoreV1().Services(ing.Namespace).Get(a.Context, path.Backend.Service.Name, metav1.GetOptions{})
-					if err != nil {
+					if apierrors.IsNotFound(err) {
 						doc := apiDoc.GetApiDocV2("spec.rules.http.paths.backend.service")
 
 						failures = append(failures, common.Failure{
@@ -161,7 +164,7 @@ func (IngressAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				continue
 			}
 			_, err := a.Client.GetClient().CoreV1().Secrets(ing.Namespace).Get(a.Context, tls.SecretName, metav1.GetOptions{})
-			if err != nil {
+			if apierrors.IsNotFound(err) {
 				doc := apiDoc.GetApiDocV2("spec.tls.secretName")
 
 				failures = append(failures, common.Failure{
