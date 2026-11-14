@@ -51,7 +51,7 @@ func (ValidatingAdmissionPolicyAnalyzer) Analyze(a common.Analyzer) ([]common.Re
 	bindingDoc.Kind = bindingKind
 
 	client := a.Client.GetClient().AdmissionregistrationV1()
-	listOptions := metav1.ListOptions{LabelSelector: a.LabelSelector}
+	listOptions := a.ListOptions()
 
 	policies, err := client.ValidatingAdmissionPolicies().List(a.Context, listOptions)
 	if err != nil {
