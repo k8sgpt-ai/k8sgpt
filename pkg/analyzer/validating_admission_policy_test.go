@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestValidatingAdmissionPolicyAnalyzer(t *testing.T) {
@@ -154,6 +155,46 @@ func TestValidatingAdmissionPolicyAnalyzerLabelSelector(t *testing.T) {
 	require.Len(t, results, 2)
 	requireAnalyzerResult(t, results, "ValidatingAdmissionPolicy", "selected-warning-policy")
 	requireAnalyzerResult(t, results, "ValidatingAdmissionPolicyBinding", "selected-dangling-binding")
+}
+
+// The fake clientset ignores field selectors, so this test records the list
+// options the analyzer sends to the API server and checks that the
+// metadata.name selector built from --resource is present on both list calls.
+func TestValidatingAdmissionPolicyAnalyzerResourceName(t *testing.T) {
+	config := newValidatingAdmissionPolicyAnalyzerConfig()
+	config.ResourceName = "my-policy"
+	config.LabelSelector = "analyze=true"
+
+	fakeClient := config.Client.GetClient().(*fake.Clientset)
+	listed := map[string]string{}
+	fakeClient.PrependReactor("list", "*", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		listAction := action.(k8stesting.ListAction)
+		listed[action.GetResource().Resource] = listAction.GetListRestrictions().Fields.String() +
+			"|" + listAction.GetListRestrictions().Labels.String()
+		return false, nil, nil
+	})
+
+	_, err := (ValidatingAdmissionPolicyAnalyzer{}).Analyze(config)
+	require.NoError(t, err)
+
+	expected := "metadata.name=my-policy|analyze=true"
+	require.Equal(t, expected, listed["validatingadmissionpolicies"])
+	require.Equal(t, expected, listed["validatingadmissionpolicybindings"])
+}
+
+func TestValidatingAdmissionPolicyAnalyzerNoResourceName(t *testing.T) {
+	config := newValidatingAdmissionPolicyAnalyzerConfig()
+
+	fakeClient := config.Client.GetClient().(*fake.Clientset)
+	var fieldSelectors []string
+	fakeClient.PrependReactor("list", "*", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		fieldSelectors = append(fieldSelectors, action.(k8stesting.ListAction).GetListRestrictions().Fields.String())
+		return false, nil, nil
+	})
+
+	_, err := (ValidatingAdmissionPolicyAnalyzer{}).Analyze(config)
+	require.NoError(t, err)
+	require.Equal(t, []string{"", ""}, fieldSelectors)
 }
 
 func TestValidatingAdmissionPolicyAnalyzerIsOptional(t *testing.T) {
