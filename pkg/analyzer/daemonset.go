@@ -6,6 +6,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -56,7 +57,9 @@ func (DaemonSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 		for _, imagePullSecret := range ds.Spec.Template.Spec.ImagePullSecrets {
 			_, err := a.Client.GetClient().CoreV1().Secrets(ds.Namespace).Get(a.Context, imagePullSecret.Name, metav1.GetOptions{})
-			if err != nil {
+			// only a NotFound means the secret is missing; any other error (for
+			// example Forbidden) means it could not be checked
+			if apierrors.IsNotFound(err) {
 				failures = append(failures, common.Failure{
 					Text: fmt.Sprintf("DaemonSet %s/%s references non-existent ImagePullSecret %s", ds.Namespace, ds.Name, imagePullSecret.Name),
 					Sensitive: []common.Sensitive{
