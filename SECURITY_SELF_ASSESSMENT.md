@@ -1,10 +1,12 @@
 # k8sgpt Self-assessment
 
-This self-assessment follows the CNCF TAG Security and Compliance
-[self-assessment template](https://github.com/cncf/tag-security/blob/main/community/assessments/guide/self-assessment.md).
-Statements are based on the k8sgpt and k8sgpt-operator repositories and their documentation as of
-2026-10-30. Items marked **TODO (maintainers)** could not be verified from public sources and must be
-confirmed by a maintainer before this document is marked Complete.
+This self-assessment follows the security self-assessment guide linked from the cncf/toc incubation template v1.6
+([security-assessments.openssf.org](https://security-assessments.openssf.org/self-assessment/getting-started-self-assessment/), link updated 2 Nov 2026);
+its section headings match the item list in that guide (Metadata, Overview, Self-assessment use, Security functions and features,
+Project compliance, Secure development practices, Security issue resolution, Appendix; checked 2026-11-16).
+Statements are based on the `main` branches of k8sgpt and k8sgpt-operator as of 2026-11-16 (k8sgpt `332d607`, operator `7cb2d94`),
+including the incubation changes merged on 2026-11-03 (k8sgpt-ai/k8sgpt #1888–#1897). Items marked **TODO (maintainers)** could not be
+verified from public sources and must be confirmed by a maintainer before this document is marked Complete.
 
 ## Table of contents
 
@@ -25,9 +27,9 @@ confirmed by a maintainer before this document is marked Complete.
 
 ## Metadata
 
-|||
+| | |
 | -- | -- |
-| Assessment Stage | Incomplete (draft for maintainer review; becomes Complete once the TODOs below are resolved) |
+| Assessment Stage | Incomplete (draft for maintainer review; becomes Complete once the remaining maintainer TODOs below are resolved) |
 | Software | https://github.com/k8sgpt-ai/k8sgpt (CLI and server), https://github.com/k8sgpt-ai/k8sgpt-operator (operator) |
 | Security Provider | No. k8sgpt is a diagnostics tool; it is not primarily a security control for integrating systems. |
 | Languages | Go |
@@ -39,6 +41,10 @@ confirmed by a maintainer before this document is marked Complete.
 | -- | -- |
 | Security policy | https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md |
 | Published security advisories | https://github.com/k8sgpt-ai/k8sgpt/security/advisories |
+| Security Insights | https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY-INSIGHTS.yml |
+| Dependency update policy | https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md |
+| Release process and signature verification | https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE.md |
+| OpenSSF Scorecard | https://scorecard.dev/viewer/?uri=github.com/k8sgpt-ai/k8sgpt |
 | Private vulnerability reporting | https://github.com/k8sgpt-ai/k8sgpt/security/advisories/new |
 | Default config location and options | `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` ([cmd/root.go](https://github.com/k8sgpt-ai/k8sgpt/blob/main/cmd/root.go)); https://docs.k8sgpt.ai |
 | Operator auto-remediation safety model | https://github.com/k8sgpt-ai/k8sgpt-operator/blob/main/AUTO_REMEDIATION.md |
@@ -68,8 +74,8 @@ and inside clusters through the k8sgpt-operator.
    exactly the Kubernetes permissions of that kubeconfig.
 2. **k8sgpt server (`k8sgpt serve`).** Exposes the analysis API over gRPC with an HTTP gateway, plus an
    optional MCP server (default port 8089). Isolation: separate process/Pod; it uses its own ServiceAccount
-   or kubeconfig. See the TODO under [Security functions and features](#security-functions-and-features)
-   about authentication on these ports.
+   or kubeconfig. Neither port has built-in authentication or TLS; see `k8sgpt serve` network exposure under
+   [Security functions and features](#security-functions-and-features).
 3. **k8sgpt-operator.** A Kubernetes controller that deploys the k8sgpt server in-cluster, schedules
    analyses from `K8sGPT` custom resources, and writes `Result` resources. Optionally (alpha, off by default)
    it creates `Mutation` proposals and applies narrowly allow-listed changes (auto-remediation).
@@ -145,7 +151,7 @@ security audit.
 | Kubernetes RBAC boundary | All cluster access goes through the Kubernetes API with the caller's credentials; k8sgpt cannot see more than its kubeconfig or ServiceAccount allows. |
 | Read-only analysis | Analyzers only read resources and events; no analyzer writes to the cluster. |
 | Auto-remediation policy gate (operator) | Deny-by-default; executes only a single allow-listed image-field change after re-fetch, UID/resourceVersion checks and a server-side dry run. |
-| Transport to AI backends | Hosted backends are called over HTTPS using their Go SDKs/HTTP clients. **TODO (maintainers):** confirm no backend allows plaintext HTTP except explicitly configured local endpoints (e.g. LocalAI/Ollama base URLs). |
+| Transport to AI backends | Hosted backends are called over HTTPS using their Go SDKs/HTTP clients. Plaintext `http://` defaults in `pkg/ai` are the local backends Ollama (`http://localhost:11434` in `pkg/ai/ollama.go`), LiteLLM (`http://localhost:4000/v1`) and gpt2giga (`http://localhost:8090`). `customrest` has no URL of its own: when the base URL is empty it uses the package-level `defaultBaseURL` constant from `ollama.go`, which is `http://localhost:11434`. A user can override a backend's base URL (`k8sgpt auth add/update --baseurl`), including to a plain-HTTP endpoint; that is the user's choice. No AI backend client disables TLS verification (no `InsecureSkipVerify` in `pkg/ai`); the only such option is the opt-in `insecure` flag for an S3-compatible remote cache (`pkg/cache/s3_based.go`). |
 
 ### Security relevant
 
@@ -154,11 +160,11 @@ security audit.
 | `--anonymize` | Masks object names and labels before sending to the AI backend. Off by default; does not cover events. |
 | AI backend choice | Self-hosted backends (Ollama, LocalAI, custom REST) keep data inside the user's network. |
 | Credential storage | AI API keys are stored in plaintext in `$XDG_CONFIG_HOME/k8sgpt/k8sgpt.yaml` (CLI) or a Kubernetes Secret referenced by the `K8sGPT` resource (operator). Users must restrict access to both. |
-| `k8sgpt serve` network exposure | The gRPC API binds to `:<port>` on all interfaces and the in-process HTTP gateway dials it with insecure (plaintext) gRPC credentials ([pkg/server/server.go](https://github.com/k8sgpt-ai/k8sgpt/blob/main/pkg/server/server.go)). **TODO (maintainers):** document whether the server or MCP endpoint offers any authentication/TLS, and recommend NetworkPolicy or localhost binding. |
+| `k8sgpt serve` network exposure | The gRPC API (default port 8080) binds to `:<port>` on all interfaces with no TLS and no authentication; the optional HTTP gateway is served on the same listener over h2c and dials the gRPC server with insecure (plaintext) credentials ([pkg/server/server.go](https://github.com/k8sgpt-ai/k8sgpt/blob/main/pkg/server/server.go)). The MCP server (`--mcp`) uses stdio by default; with `--mcp-http` it serves streamable HTTP on `:<mcp-port>` (default 8089) on all interfaces, also with no TLS or authentication ([pkg/server/mcp.go](https://github.com/k8sgpt-ai/k8sgpt/blob/main/pkg/server/mcp.go)). Anyone who can reach these ports can run analyses with the server's Kubernetes and AI-backend credentials. Recommended: keep the server on localhost or behind a Kubernetes NetworkPolicy, and terminate TLS/authentication in front of it. **TODO (maintainers):** decide whether to add built-in TLS/auth or a localhost-only default, and document the recommendation in the docs. |
 | Filters and namespaces | Users choose which analyzers run and which namespaces are read, limiting what data is processed. |
 | Remote cache | Optional S3/Azure/GCS/Interplex; users supply and must protect the storage credentials. |
 | Custom headers | Extra headers (e.g. for gateway authentication) can be added to AI requests. |
-| Operator RBAC | **TODO (maintainers):** link the ClusterRole shipped with the operator chart and state the minimum permissions needed with auto-remediation off vs on. |
+| Operator RBAC | The operator chart's manager ClusterRole ([manager-rbac.yaml](https://github.com/k8sgpt-ai/k8sgpt-operator/blob/main/chart/operator/templates/manager-rbac.yaml)) grants `create, delete, get, list, patch, update, watch` on all resources in all API groups (`'*'/'*'`), plus `'*'` on `apiextensions.k8s.io`, whether or not auto-remediation is enabled. The k8sgpt workload ClusterRole ([k8sgpt-rbac.yaml](https://github.com/k8sgpt-ai/k8sgpt-operator/blob/main/chart/operator/templates/k8sgpt-rbac.yaml)) is read-only: `get/list/watch` on the resources it analyzes, except `persistentvolumeclaims` and `events`, which are `list` only. The operator creates that role at runtime by default (`dynamicRBAC.enabled: true`); the Helm template is rendered only when dynamic RBAC is off. **TODO (maintainers):** decide whether to narrow the manager ClusterRole (it is broader than analysis needs, and broader than the image-only change auto-remediation can apply), and state the minimum permissions with auto-remediation off vs on. |
 
 ## Project compliance
 
@@ -167,37 +173,55 @@ k8sgpt does not claim compliance with any external security standard (PCI-DSS, I
 Related project practices:
 
 - OpenSSF Best Practices badge: passing, [project 7272](https://www.bestpractices.dev/projects/7272).
-- License: Apache-2.0. A License Compliance check runs on dependencies (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850)).
-- Code of Conduct: Contributor Covenant 2.0, under the CNCF Code of Conduct (see [GOVERNANCE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md)).
+- License: Apache-2.0. A `License Compliance` status check runs on pull requests from an external integration (there is no workflow file for it in the repository; see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851), which pinned a dependency that had relicensed to MPL-2.0). The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so no license-scan results are linked publicly and CLOMonitor's `license_scanning` check fails (2026-11-16).
+- Code of Conduct: the CNCF Code of Conduct, cross-linked from [GOVERNANCE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md), [CODE_OF_CONDUCT.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/CODE_OF_CONDUCT.md) and the README.
 
 ## Secure development practices
 
 ### Development pipeline
 
-- **Contributor sign-off:** a DCO check is a required status check on `main` (per
-  [.github/settings.yml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/settings.yml)). Commits are not required to be cryptographically signed.
-- **Review:** branch protection in `.github/settings.yml` requires 1 approving review, code owner review
+- **Contributor sign-off:** `.github/settings.yml` lists `DCO` as the only required status check on `main`.
+  k8sgpt-operator documents DCO as its only contributor sign-off ([k8sgpt-operator#864](https://github.com/k8sgpt-ai/k8sgpt-operator/pull/864), merged 2026-10-30).
+  That PR does not disable the EasyCLA GitHub App; that is an organization setting outside the repository.
+  Commits are not required to be cryptographically signed.
+- **Review:** `.github/settings.yml` declares 1 approving review, code owner review
   ([CODEOWNERS](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/CODEOWNERS)), resolved conversations,
-  linear history, and applies to admins. **TODO (maintainers):** confirm these settings are applied on GitHub.
+  linear history, and `enforce_admins: true`. OpenSSF Scorecard's Code-Review check found 16 of the
+  last 26 changesets approved (score 6, run 2026-11-16). Scorecard's Branch-Protection check did not score:
+  it returned an internal error reading classic branch protection. **TODO (maintainers):** confirm the review-count, code-owner, conversation-resolution and DCO rules
+  are applied on GitHub. The branch-protection API returned HTTP 403 on 16 Nov 2026, so live enforcement was not re-checked.
 - **Automated checks on PRs:** `go test ./...` with coverage (Codecov), golangci-lint, semantic PR title
   validation, container image build.
 - **Dependencies:** Renovate opens dependency PRs (Go modules, GitHub Actions, Dockerfiles), with GitHub
   Actions pinned to commit digests (`helpers:pinGitHubActionDigests`).
 - **Releases:** release-please + GoReleaser from GitHub Actions; SBOMs are produced for archives and the
-  container image. The GoReleaser checksum file is signed with cosign keyless signing (Sigstore, GitHub OIDC),
-  and the `.sigstore.json` bundle is published on the GitHub release. That signing step is added in the release
-  workflow; releases published before it is on `main` are not signed. The container image is built in a separate
-  job and is not signed by this step.
+  container image. Keyless cosign signing (Sigstore, GitHub OIDC) of the GoReleaser checksum file, with verification
+  steps in [RELEASE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE.md), is on `main` since 2026-11-03
+  ([release.yaml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/workflows/release.yaml), [.goreleaser.yaml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.goreleaser.yaml)).
+  No release has been cut since, so the latest release (v0.4.41, 2026-10-21) and all earlier releases are **not** signed;
+  the container image is not signed by this step.
 - **Access control:** **TODO (maintainers):** confirm whether two-factor authentication is enforced for the
   k8sgpt-ai GitHub organization (the contributor ladder requires 2FA for members).
-- **Vulnerability scanning:** **TODO (maintainers):** no SAST/dependency-vulnerability workflow (e.g. CodeQL,
-  govulncheck, OpenSSF Scorecard) runs in this repository today; a Scorecard workflow is proposed.
+- **Workflow hardening:** workflows default to read-only token permissions, and an
+  [OpenSSF Scorecard workflow](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/workflows/scorecard.yaml),
+  [SECURITY-INSIGHTS.yml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY-INSIGHTS.yml) and a
+  [dependency-update policy](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md) are on `main`
+  (merged 2026-11-03). The published Scorecard result is **7.2/10** (run 2026-11-16, commit `332d607`;
+  [scorecard.dev](https://scorecard.dev/viewer/?uri=github.com/k8sgpt-ai/k8sgpt); re-read from the Scorecard API on 16 Nov 2026).
+  Lowest scored checks: Vulnerabilities 0 (31 known OSV vulnerabilities in dependencies), Signed-Releases 0, Fuzzing 0,
+  CII-Best-Practices 5 (passing badge), Code-Review 6. Branch-Protection, SAST and CI-Tests were not scored: each returned an internal error
+  from the Scorecard run (the branch-protection error is that the token cannot read classic branch protection).
+- **Static analysis and vulnerability scanning:** GitHub CodeQL code scanning (default setup, no workflow file) runs
+  `Analyze (go)` and `Analyze (actions)` on `main` (seen on commit `332d607`, 2026-11-13/14), and golangci-lint runs on PRs.
+  No govulncheck job runs; dependency CVEs are handled through Renovate PRs (including `[security]` updates such as #1911),
+  and Scorecard's Vulnerabilities check reports 31 open OSV findings in dependencies (2026-11-16).
+  **TODO (maintainers):** triage the Scorecard OSV findings and decide whether to add govulncheck.
 
 ### Communication channels
 
 - **Internal:** GitHub issues and pull requests; `#k8sgpt` on [CNCF Slack](https://slack.cncf.io).
   **TODO (maintainers):** list any private maintainer channel and its purpose.
-- **Inbound:** GitHub issues and discussions; `#k8sgpt` on CNCF Slack; contact@k8sgpt.ai; private
+- **Inbound:** GitHub issues (GitHub Discussions are not enabled on this repository); `#k8sgpt` on CNCF Slack; contact@k8sgpt.ai; private
   vulnerability reports through GitHub Security Advisories.
 - **Outbound:** GitHub Releases and changelog, GitHub Security Advisories, `#k8sgpt` on CNCF Slack,
   https://k8sgpt.ai and https://docs.k8sgpt.ai, and @k8sgpt on X.
@@ -216,13 +240,16 @@ It integrates with CNCF projects such as Prometheus, Keda and Kyverno (see
 
 Described in [SECURITY.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md): reports go through
 GitHub private vulnerability reporting (enabled on k8sgpt-ai/k8sgpt) or contact@k8sgpt.ai; public issues and
-Slack must not be used for vulnerabilities.
+Slack must not be used for vulnerabilities. As of operator commit `7cb2d94`, k8sgpt-operator has no SECURITY.md on `main`.
+A SECURITY.md that points at this policy and at [private vulnerability reporting](https://github.com/k8sgpt-ai/k8sgpt/security/advisories/new) is proposed in that repository.
 
 ### Vulnerability response process
 
-The Security Response Team defined in SECURITY.md and GOVERNANCE.md triages reports, assigns severity,
+The Security Response Team, Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs), named in
+[SECURITY.md § Security Response Team](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md#security-response-team) and governed by
+[GOVERNANCE.md § Security Response Team](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md#security-response-team), triages reports, assigns severity,
 develops the fix in a private advisory fork, releases a patch, and publishes a GitHub Security Advisory.
-Target timelines are in SECURITY.md. The Security Response Team is Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs).
+Target timelines are in SECURITY.md.
 
 ### Incident response
 
@@ -245,7 +272,8 @@ Dependency CVEs are otherwise handled through Renovate PRs (for example #1837, #
 
 ### OpenSSF Best Practices
 
-k8sgpt holds the passing OpenSSF Best Practices badge ([project 7272](https://www.bestpractices.dev/projects/7272)).
+k8sgpt holds the passing OpenSSF Best Practices badge ([project 7272](https://www.bestpractices.dev/projects/7272)): 100% of passing
+criteria, achieved 2023-04-26 (checked 2026-11-16).
 **TODO (maintainers):** the badge record was last updated in 2023; review it against current practices.
 
 ### Case studies
