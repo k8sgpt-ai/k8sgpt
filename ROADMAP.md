@@ -2,7 +2,7 @@
 
 This document describes the direction of k8sgpt and k8sgpt-operator. It is kept in sync with the [k8sgpt-ai project board](https://github.com/orgs/k8sgpt-ai/projects/1), where every roadmap item carries a **Horizon** (Now / Next / Later) and an **Area** field.
 
-_Last updated: 30 October 2026_
+_Last updated: 16 November 2026_
 
 ## Project Vision
 
@@ -43,7 +43,7 @@ k8sgpt gives every Kubernetes practitioner SRE-grade diagnostics. Our focus is t
 - Regular releases in step with the CLI (next: 0.2.30)
 - Rebuild images on patched Go and CA bundles (k8sgpt-operator#860)
 - Triage open bugs (k8sgpt-operator#769, #752, #311, #717, #816)
-- A single contributor sign-off gate: DCO or EasyCLA (k8sgpt-operator#861)
+- Contributor sign-off on the operator is DCO. [k8sgpt-operator#864](https://github.com/k8sgpt-ai/k8sgpt-operator/pull/864) closed #861 and documents DCO as the only sign-off. Disabling the EasyCLA GitHub App is an organization setting and is not done by that pull request
 
 ### Next
 - Serve MCP from the operator (k8sgpt-operator#748)
@@ -61,6 +61,12 @@ k8sgpt gives every Kubernetes practitioner SRE-grade diagnostics. Our focus is t
 - If your organisation uses k8sgpt, please add it to [ADOPTERS.md](ADOPTERS.md)
 - New contributors: see [CONTRIBUTING.md](CONTRIBUTING.md); issues labelled `good first issue` are a good place to start
 
+## How the roadmap changes
+
+Propose a change by opening a GitHub issue, or by discussing it in `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io/). Proposals are reviewed at the monthly public community meeting (second Thursday, 16:00–17:00 UK time; see [GOVERNANCE.md](GOVERNANCE.md#community-meeting)).
+
+Maintainers approve changes under [GOVERNANCE.md](GOVERNANCE.md#decision-making). A change of project direction is a significant decision and takes a formal vote.
+
 ## How to Contribute
 
 The roadmap is community-driven. To suggest new items:
@@ -72,7 +78,8 @@ The roadmap is community-driven. To suggest new items:
 
 - 2026-04-24: initial roadmap
 - 2026-10-30: restructured into Now / Next / Later, aligned with the project board
+- 2026-11-16: added how roadmap items are proposed and approved
 
 ## Feedback
 
-We welcome feedback on this roadmap through GitHub Issues, GitHub Discussions, or `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io/).
+We welcome feedback on this roadmap through GitHub Issues or `#k8sgpt` on the [CNCF Slack](https://slack.cncf.io/). GitHub Discussions are not enabled on this repository.
