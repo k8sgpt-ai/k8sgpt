@@ -137,7 +137,7 @@ k8sgpt has no in-cluster service dependencies. It reads directly from the Kubern
 - CNCF Code of Conduct
 - OpenSSF Best Practices badge
 - Developer Certificate of Origin (DCO) is the required status check on `main` in both repositories. [k8sgpt-operator#864](https://github.com/k8sgpt-ai/k8sgpt-operator/pull/864) documents DCO as the operator's only contributor sign-off. Disabling the EasyCLA GitHub App is an organization setting outside the repository; that PR does not turn the app off
-- Dependency license scanning: a `License Compliance` status check runs on pull requests from an external integration (no workflow file in the repo; see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850), [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851)). The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so results are not linked publicly and CLOMonitor's `license_scanning` check fails (16 Nov 2026)
+- Dependency license scanning: a `License Compliance` status check runs on pull requests. There is no workflow file for it in this repo. On 16 Nov 2026 the check's details URL was on app.fossa.com, so FOSSA is the integration that posts it. The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so results are not linked from the README (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850), [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851)). CLOMonitor's `license_scanning` check fails (16 Nov 2026)
 - GitHub CodeQL code scanning (default setup) analyzes Go and GitHub Actions on `main`
 
 **Describe the project's High Availability requirements.**
@@ -404,7 +404,7 @@ Documented in [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8
 
 **How does the project incorporate and consider source composition analysis as part of its development and security hygiene?**
 
-- A `License Compliance` status check runs on pull requests from an external integration. There is no FOSSA workflow and no FOSSA license scan in CI (the README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644); see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851))
+- A `License Compliance` status check on pull requests. There is no FOSSA GitHub Actions workflow in this repository. The check's details URL on 16 Nov 2026 was on app.fossa.com, so FOSSA posts the check. The README badge that linked the scan was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644) (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851))
 - Renovate for dependency tracking
 - SPDX SBOMs from GoReleaser (release archives) and Syft (release container image)
 - OpenSSF Best Practices badge
@@ -437,7 +437,7 @@ Follows [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/b
 - Apache-2.0 `LICENSE` at the repository root. There is not a `LICENSE` file in every subdirectory
 - Go module metadata in `go.mod`
 - Apache copyright headers on many Go files. Not every file has one (for example `pkg/ai/customrest.go` does not)
-- New and updated dependencies are checked against the CNCF allowed-third-party-license policy, as described in [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md). There is no FOSSA license scan in CI
+- New and updated dependencies are checked against the CNCF allowed-third-party-license policy, as described in [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md). License scanning is the external `License Compliance` check described above, not a workflow file in this repo
 
 **Describe how the project ensures alignment with CNCF recommendations for attribution notices.**
 

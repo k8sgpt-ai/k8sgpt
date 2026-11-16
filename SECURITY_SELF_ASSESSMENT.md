@@ -173,7 +173,7 @@ k8sgpt does not claim compliance with any external security standard (PCI-DSS, I
 Related project practices:
 
 - OpenSSF Best Practices badge: passing, [project 7272](https://www.bestpractices.dev/projects/7272).
-- License: Apache-2.0. A `License Compliance` status check runs on pull requests from an external integration (there is no workflow file for it in the repository; see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851), which pinned a dependency that had relicensed to MPL-2.0). The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so no license-scan results are linked publicly and CLOMonitor's `license_scanning` check fails (2026-11-16).
+- License: Apache-2.0. A `License Compliance` status check runs on pull requests. There is no workflow file for it in the repository. On 2026-11-16 the check's details URL was on app.fossa.com, so FOSSA is the integration that posts it (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851), which pinned a dependency that had relicensed to MPL-2.0). The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so no license-scan results are linked from the README and CLOMonitor's `license_scanning` check fails (2026-11-16).
 - Code of Conduct: the CNCF Code of Conduct, cross-linked from [GOVERNANCE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md), [CODE_OF_CONDUCT.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/CODE_OF_CONDUCT.md) and the README.
 
 ## Secure development practices
