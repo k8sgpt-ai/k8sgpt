@@ -251,6 +251,69 @@ func TestAnalysis_RunAnalysisNamespaceForbidden(t *testing.T) {
 	require.Len(t, analysis.Results, 1)
 }
 
+// Test: a nonexistent (e.g. typo'd) --namespace aborts custom analysis with
+// an error, the same way it aborts RunAnalysis.
+func TestRunCustomAnalysisNamespaceNotFound(t *testing.T) {
+	host, port := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{
+			Name:  "CustomAnalyzer",
+			Error: []*schemav1.ErrorDetail{{Text: "something is wrong"}},
+		},
+	})
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "CustomAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	a := &Analysis{
+		Context:        context.Background(),
+		Namespace:      "typo-namespace",
+		MaxConcurrency: 1,
+		Client: &kubernetes.Client{
+			Client: fake.NewSimpleClientset(),
+		},
+	}
+	a.RunCustomAnalysis()
+
+	require.Empty(t, a.Results, "no custom analyzer should have run against a nonexistent namespace")
+	require.Len(t, a.Errors, 1)
+	require.Contains(t, a.Errors[0], `namespace "typo-namespace" not found`)
+}
+
+// Test: a Forbidden error when checking whether the namespace exists must not
+// block custom analysis, the same way it does not block RunAnalysis.
+func TestRunCustomAnalysisNamespaceForbidden(t *testing.T) {
+	host, port := serveFakeAnalyzer(t, &schemav1.RunResponse{
+		Result: &schemav1.Result{
+			Name:  "CustomAnalyzer",
+			Error: []*schemav1.ErrorDetail{{Text: "something is wrong"}},
+		},
+	})
+	viper.Set("custom_analyzers", []map[string]interface{}{
+		{"name": "CustomAnalyzer", "connection": map[string]interface{}{"url": host, "port": port}},
+	})
+	t.Cleanup(func() { viper.Set("custom_analyzers", []interface{}{}) })
+
+	clientset := fake.NewSimpleClientset()
+	clientset.PrependReactor("get", "namespaces", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(
+			schema.GroupResource{Resource: "namespaces"}, "default", fmt.Errorf("user cannot get namespaces"))
+	})
+
+	a := &Analysis{
+		Context:        context.Background(),
+		Namespace:      "default",
+		MaxConcurrency: 1,
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+	}
+	a.RunCustomAnalysis()
+
+	require.Empty(t, a.Errors, "a Forbidden namespace check must not abort custom analysis")
+	require.Len(t, a.Results, 1)
+}
+
 // Test: an analyzer that fails (here a service account that cannot list
 // nodes) is reported through the Errors of the analysis, and nothing is
 // written to stdout, which carries only the report of `analyze -o json`.
