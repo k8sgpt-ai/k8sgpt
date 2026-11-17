@@ -19,6 +19,7 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -59,6 +60,11 @@ func (MutatingWebhookAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			// Get the service
 			service, err := a.Client.GetClient().CoreV1().Services(svc.Namespace).Get(a.Context, svc.Name, v1.GetOptions{})
 			if err != nil {
+				// Only a NotFound means the service is missing. Any other error
+				// (for example Forbidden) means it could not be checked.
+				if !apierrors.IsNotFound(err) {
+					continue
+				}
 				// If the service is not found, we can't check the pods
 				failures = append(failures, common.Failure{
 					Text:          fmt.Sprintf("Service %s not found as mapped to by Mutating Webhook %s", svc.Name, webhook.Name),
