@@ -24,6 +24,7 @@ type Gpt2GigaClient struct {
 	model       string
 	temperature float32
 	topP        float32
+	maxTokens   int
 }
 
 func (c *Gpt2GigaClient) Configure(config IAIConfig) error {
@@ -46,6 +47,7 @@ func (c *Gpt2GigaClient) Configure(config IAIConfig) error {
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 
 	return nil
 }
@@ -59,6 +61,7 @@ func (c *Gpt2GigaClient) GetCompletion(ctx context.Context, prompt string) (stri
 		},
 		"temperature": c.temperature,
 		"top_p":       c.topP,
+		"max_tokens":  c.maxTokens,
 	}
 
 	jsonBody, err := json.Marshal(requestBody)

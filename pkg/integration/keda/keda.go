@@ -109,20 +109,54 @@ func (k *Keda) UnDeploy(namespace string) error {
 	kubeconfig := viper.GetString("kubeconfig")
 	client, err := kubernetes.NewClient(kubecontext, kubeconfig)
 	if err != nil {
-		// TODO: better error handling
-		color.Red("Error initialising kubernetes client: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("initialising kubernetes client: %w", err)
 	}
 
 	kedaNamespace, _ := k.GetNamespace()
 	color.Blue(fmt.Sprintf("Keda namespace: %s\n", kedaNamespace))
 
-	kClient, _ := v1alpha1.NewForConfig(client.Config)
+	kClient, err := v1alpha1.NewForConfig(client.Config)
+	if err != nil {
+		return fmt.Errorf("initialising KEDA client: %w", err)
+	}
 
-	scaledObjectList, _ := kClient.ScaledObjects("").List(context.Background(), v1.ListOptions{})
-	scaledJobList, _ := kClient.ScaledJobs("").List(context.Background(), v1.ListOptions{})
-	triggerAuthenticationList, _ := kClient.TriggerAuthentications("").List(context.Background(), v1.ListOptions{})
-	clusterTriggerAuthenticationsList, _ := kClient.ClusterTriggerAuthentications().List(context.Background(), v1.ListOptions{})
+	if err := deleteKedaResources(kClient); err != nil {
+		return err
+	}
+
+	chartSpec := helmclient.ChartSpec{
+		ReleaseName: ReleaseName,
+		ChartName:   fmt.Sprintf("%s/%s", RepoShortName, ChartName),
+		Namespace:   namespace,
+		UpgradeCRDs: true,
+		Wait:        false,
+		Timeout:     300,
+	}
+	// Uninstall the chart release.
+	// Note that helmclient.Options.Namespace should ideally match the namespace in chartSpec.Namespace.
+	if err := k.helm.UninstallRelease(&chartSpec); err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteKedaResources(kClient v1alpha1.KedaV1alpha1Interface) error {
+	scaledObjectList, err := kClient.ScaledObjects("").List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("listing scaledobjects: %w", err)
+	}
+	scaledJobList, err := kClient.ScaledJobs("").List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("listing scaledjobs: %w", err)
+	}
+	triggerAuthenticationList, err := kClient.TriggerAuthentications("").List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("listing triggerauthentications: %w", err)
+	}
+	clusterTriggerAuthenticationsList, err := kClient.ClusterTriggerAuthentications().List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("listing clustertriggerauthentications: %w", err)
+	}
 
 	// Before uninstalling the Helm chart, we need to delete Keda resources
 	for _, scaledObject := range scaledObjectList.Items {
@@ -161,19 +195,6 @@ func (k *Keda) UnDeploy(namespace string) error {
 		}
 	}
 
-	chartSpec := helmclient.ChartSpec{
-		ReleaseName: ReleaseName,
-		ChartName:   fmt.Sprintf("%s/%s", RepoShortName, ChartName),
-		Namespace:   namespace,
-		UpgradeCRDs: true,
-		Wait:        false,
-		Timeout:     300,
-	}
-	// Uninstall the chart release.
-	// Note that helmclient.Options.Namespace should ideally match the namespace in chartSpec.Namespace.
-	if err := k.helm.UninstallRelease(&chartSpec); err != nil {
-		return err
-	}
 	return nil
 }
 

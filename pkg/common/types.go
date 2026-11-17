@@ -106,6 +106,10 @@ type Failure struct {
 	Text          string
 	KubernetesDoc string
 	Sensitive     []Sensitive
+	// Hash carries the exclusion hash of this finding in analyze output. It is
+	// populated by the analysis package when rendering results, never in the
+	// analyzer pipeline, so it stays out of the AI provider payload.
+	Hash string `json:"hash,omitempty"`
 }
 
 type Sensitive struct {
