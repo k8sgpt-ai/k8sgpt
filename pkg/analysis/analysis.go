@@ -259,10 +259,12 @@ func (a *Analysis) CustomAnalyzersAreAvailable() bool {
 }
 
 func (a *Analysis) RunCustomAnalysis() {
-	// Validate namespace if specified, consistent with built-in filter behavior
+	// Validate namespace if specified, consistent with built-in filter behavior.
+	// Only abort on a confirmed NotFound, as RunAnalysis does: a Forbidden (or
+	// any other) error from Get does not mean the namespace is missing.
 	if a.Namespace != "" && a.Client != nil {
 		_, err := a.Client.Client.CoreV1().Namespaces().Get(a.Context, a.Namespace, metav1.GetOptions{})
-		if err != nil {
+		if apierrors.IsNotFound(err) {
 			a.Errors = append(a.Errors, fmt.Sprintf("namespace %q not found: %s", a.Namespace, err))
 			return
 		}
