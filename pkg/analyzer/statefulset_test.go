@@ -29,6 +29,8 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
+// spec.serviceName is optional, so a StatefulSet without one has no
+// governing Service to look up and must not be reported as missing it.
 func TestStatefulSetAnalyzer(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&appsv1.StatefulSet{
@@ -50,7 +52,11 @@ func TestStatefulSetAnalyzer(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.Equal(t, len(analysisResults), 1)
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			t.Errorf("unexpected failure for %s: %s", analysis.Name, got.Text)
+		}
+	}
 }
 
 func TestStatefulSetAnalyzerWithoutService(t *testing.T) {
@@ -216,11 +222,17 @@ func TestStatefulSetAnalyzerNamespaceFiltering(t *testing.T) {
 				Name:      "example",
 				Namespace: "default",
 			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+			},
 		},
 		&appsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example",
 				Namespace: "other-namespace",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
 			},
 		})
 	statefulSetAnalyzer := StatefulSetAnalyzer{}
@@ -250,11 +262,17 @@ func TestStatefulSetAnalyzerLabelSelectorFiltering(t *testing.T) {
 					"part-of": "test",
 				},
 			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+			},
 		},
 		&appsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "example2",
 				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
 			},
 		},
 	)
@@ -329,7 +347,8 @@ func TestStatefulSetAnalyzerReplica(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: appsv1.StatefulSetSpec{
-				Replicas: &replicas,
+				ServiceName: "example-svc",
+				Replicas:    &replicas,
 			},
 			Status: appsv1.StatefulSetStatus{
 				AvailableReplicas: 3,
@@ -362,7 +381,8 @@ func TestStatefulSetAnalyzerUnavailableReplicas(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: appsv1.StatefulSetSpec{
-				Replicas: &replicas,
+				ServiceName: "example-svc",
+				Replicas:    &replicas,
 			},
 			Status: appsv1.StatefulSetStatus{
 				AvailableReplicas: 0,
