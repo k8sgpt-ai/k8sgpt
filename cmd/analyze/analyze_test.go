@@ -14,8 +14,20 @@ limitations under the License.
 package analyze
 
 import (
+	"bytes"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
+
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/ai"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
+	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/require"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 )
 
 // --resource hands the name to every analyzer that runs, so the filter set and
@@ -104,4 +116,50 @@ func TestResolveResourceSelection(t *testing.T) {
 			}
 		})
 	}
+}
+
+// With --verbose the Debug lines go to stderr, so `analyze -o json --verbose`
+// still writes a single JSON document to stdout.
+func TestAnalyzeVerboseJSONKeepsStdoutClean(t *testing.T) {
+	viper.Set("verbose", true)
+	t.Cleanup(func() { viper.Set("verbose", false) })
+	viper.Set("ai", map[string]interface{}{
+		"providers": []map[string]interface{}{
+			{"name": "openai", "baseUrl": "http://dummy", "model": "dummy-model", "customHeaders": map[string]string{}},
+		},
+	})
+	t.Cleanup(func() { viper.Set("ai", nil) })
+	oldFilters, oldOutput, oldNocache, oldConcurrency := filters, output, nocache, maxConcurrency
+	oldExplain, oldCustom, oldSelector := explain, customAnalysis, labelSelector
+	t.Cleanup(func() {
+		filters, output, nocache, maxConcurrency = oldFilters, oldOutput, oldNocache, oldConcurrency
+		explain, customAnalysis, labelSelector = oldExplain, oldCustom, oldSelector
+	})
+	filters, output, nocache, maxConcurrency = []string{"Pod"}, "json", true, 1
+	labelSelector = "app=web"
+	explain, customAnalysis = true, true
+
+	patches := gomonkey.ApplyFunc(kubernetes.NewClient, func(kubecontext, kubeconfig string) (*kubernetes.Client, error) {
+		return &kubernetes.Client{Client: fake.NewSimpleClientset(), Config: &rest.Config{Host: "fake-server"}}, nil
+	})
+	defer patches.Reset()
+	patches2 := gomonkey.ApplyFunc(ai.NewClient, func(name string) ai.IAI { return &ai.NoOpAIClient{} })
+	defer patches2.Reset()
+
+	oldStderr := os.Stderr
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
+	os.Stderr = w
+	defer func() { os.Stderr = oldStderr }()
+
+	stdout := util.CaptureOutput(func() {
+		AnalyzeCmd.Run(AnalyzeCmd, nil)
+	})
+	require.NoError(t, w.Close())
+	var stderr bytes.Buffer
+	_, err = stderr.ReadFrom(r)
+	require.NoError(t, err)
+
+	require.True(t, json.Valid([]byte(stdout)), "stdout must hold only the JSON document, got %q", stdout)
+	require.Contains(t, stderr.String(), "Debug: Checking output.")
 }

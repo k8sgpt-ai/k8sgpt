@@ -84,32 +84,33 @@ var AnalyzeCmd = &cobra.Command{
 
 		verbose := viper.GetBool("verbose")
 		if verbose {
-			fmt.Println("Debug: Checking analysis configuration.")
+			fmt.Fprintln(os.Stderr, "Debug: Checking analysis configuration.")
 		}
 		if err != nil {
 			color.Red("Error: %v", err)
 			os.Exit(1)
 		}
 		if verbose {
-			fmt.Println("Debug: Analysis initialized.")
+			fmt.Fprintln(os.Stderr, "Debug: Analysis initialized.")
 		}
 		defer config.Close()
 
 		if customAnalysis {
 			config.RunCustomAnalysis()
 			if verbose {
-				fmt.Println("Debug: All custom analyzers completed.")
+				fmt.Fprintln(os.Stderr, "Debug: All custom analyzers completed.")
 			}
 		}
 		config.RunAnalysis()
 		if verbose {
-			fmt.Println("Debug: All core analyzers completed.")
+			fmt.Fprintln(os.Stderr, "Debug: All core analyzers completed.")
 		}
+		config.ApplyExclusions()
 
 		if explain {
 			err := config.GetAIResults(output, anonymize)
 			if verbose {
-				fmt.Println("Debug: Checking AI results.")
+				fmt.Fprintln(os.Stderr, "Debug: Checking AI results.")
 			}
 			if err != nil {
 				color.Red("Error: %v", err)
@@ -119,7 +120,7 @@ var AnalyzeCmd = &cobra.Command{
 		// print results
 		output_data, err := config.PrintOutput(output)
 		if verbose {
-			fmt.Println("Debug: Checking output.")
+			fmt.Fprintln(os.Stderr, "Debug: Checking output.")
 		}
 		if err != nil {
 			color.Red("Error: %v", err)

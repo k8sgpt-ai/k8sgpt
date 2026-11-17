@@ -19,7 +19,6 @@ import (
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type StorageAnalyzer struct{}
@@ -60,7 +59,7 @@ func (StorageAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 func analyzeStorageClasses(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	scs, err := a.Client.GetClient().StorageV1().StorageClasses().List(a.Context, metav1.ListOptions{})
+	scs, err := a.Client.GetClient().StorageV1().StorageClasses().List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +100,7 @@ func analyzeStorageClasses(a common.Analyzer) ([]common.Result, error) {
 func analyzePersistentVolumes(a common.Analyzer) ([]common.Result, error) {
 	var results []common.Result
 
-	pvs, err := a.Client.GetClient().CoreV1().PersistentVolumes().List(a.Context, metav1.ListOptions{})
+	pvs, err := a.Client.GetClient().CoreV1().PersistentVolumes().List(a.Context, a.ListOptions())
 	if err != nil {
 		return nil, err
 	}

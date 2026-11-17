@@ -335,3 +335,88 @@ func TestGetName(t *testing.T) {
 	client := &AmazonBedrockConverseClient{}
 	assert.Equal(t, "amazonbedrockconverse", client.GetName())
 }
+
+func TestGetCompletion_SamplingRejectingModels_SendNoSamplingParameters(t *testing.T) {
+	for _, model := range []string{
+		"anthropic.claude-opus-5",
+		"us.anthropic.claude-opus-5-5",
+		"global.anthropic.claude-sonnet-5-5",
+		"anthropic.claude-sonnet-5",
+		"us.anthropic.claude-haiku-5-5",
+		"anthropic.claude-fable-5",
+		"global.anthropic.claude-fable-5-1",
+		"anthropic.claude-opus-4-7",
+		"us.anthropic.claude-opus-4-8",
+	} {
+		t.Run(model, func(t *testing.T) {
+			mock := &mockConverseClient{
+				converseFunc: func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
+					return &bedrockruntime.ConverseOutput{
+						Output: &types.ConverseOutputMemberMessage{
+							Value: types.Message{
+								Content: []types.ContentBlock{
+									&types.ContentBlockMemberText{Value: "ok"},
+								},
+							},
+						},
+					}, nil
+				},
+			}
+
+			client := &AmazonBedrockConverseClient{
+				client:      mock,
+				model:       model,
+				temperature: 0.5,
+				topP:        0.9,
+				maxTokens:   100,
+			}
+
+			_, err := client.GetCompletion(context.Background(), "hello")
+
+			assert.NoError(t, err)
+			assert.Nil(t, mock.lastInput.InferenceConfig.Temperature)
+			assert.Nil(t, mock.lastInput.InferenceConfig.TopP)
+		})
+	}
+}
+
+func TestGetCompletion_SamplingAcceptingModels_KeepSamplingParameters(t *testing.T) {
+	for _, model := range []string{
+		"anthropic.claude-sonnet-4-5",
+		"us.anthropic.claude-opus-4-6",
+		"anthropic.claude-haiku-4-5",
+	} {
+		t.Run(model, func(t *testing.T) {
+			mock := &mockConverseClient{
+				converseFunc: func(ctx context.Context, input *bedrockruntime.ConverseInput) (*bedrockruntime.ConverseOutput, error) {
+					return &bedrockruntime.ConverseOutput{
+						Output: &types.ConverseOutputMemberMessage{
+							Value: types.Message{
+								Content: []types.ContentBlock{
+									&types.ContentBlockMemberText{Value: "ok"},
+								},
+							},
+						},
+					}, nil
+				},
+			}
+
+			client := &AmazonBedrockConverseClient{
+				client:      mock,
+				model:       model,
+				temperature: 0.5,
+				topP:        0.9,
+				maxTokens:   100,
+			}
+
+			_, err := client.GetCompletion(context.Background(), "hello")
+
+			assert.NoError(t, err)
+			if assert.NotNil(t, mock.lastInput.InferenceConfig.Temperature) {
+				assert.InDelta(t, 0.5, *mock.lastInput.InferenceConfig.Temperature, 0.001)
+			}
+			// Claude models only get temperature, never top_p
+			assert.Nil(t, mock.lastInput.InferenceConfig.TopP)
+		})
+	}
+}

@@ -129,7 +129,7 @@ func (g *GoogleVertexAIClient) Configure(config IAIConfig) error {
 	g.temperature = config.GetTemperature()
 	g.topP = config.GetTopP()
 	g.topK = config.GetTopK()
-	g.maxTokens = config.GetMaxTokens()
+	g.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 
 	return nil
 }

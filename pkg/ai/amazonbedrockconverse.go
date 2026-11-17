@@ -66,6 +66,26 @@ func isClaudeModel(modelId string) bool {
 	return strings.Contains(m, "claude")
 }
 
+// bedrockRejectsSampling reports whether the model answers HTTP 400 when the
+// request carries temperature or top_p (Claude Opus 4.7/4.8, Opus 5, Sonnet 5,
+// Haiku 5.5 and Fable 5 families). Claude 4.5/4.6 IDs still accept sampling.
+func bedrockRejectsSampling(modelId string) bool {
+	m := strings.ToLower(modelId)
+	for _, id := range []string{
+		"claude-opus-5",
+		"claude-sonnet-5",
+		"claude-haiku-5-5",
+		"claude-fable-5",
+		"claude-opus-4-7",
+		"claude-opus-4-8",
+	} {
+		if strings.Contains(m, id) {
+			return true
+		}
+	}
+	return false
+}
+
 func (a *AmazonBedrockConverseClient) Configure(config IAIConfig) error {
 	modelInput := config.GetModel()
 
@@ -95,7 +115,7 @@ func (a *AmazonBedrockConverseClient) Configure(config IAIConfig) error {
 	// Set common configuration parameters
 	a.temperature = config.GetTemperature()
 	a.topP = config.GetTopP()
-	a.maxTokens = config.GetMaxTokens()
+	a.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	a.stopSequences = config.GetStopSequences()
 
 	return nil
@@ -145,14 +165,16 @@ func (a *AmazonBedrockConverseClient) GetCompletion(ctx context.Context, prompt 
 	}
 
 	// Claude models only support temperature OR topP, while others support both temperature and topP. Prefer temperature for now
-	if !isClaudeModel(a.model) {
-		infConfig.TopP = aws.Float32(a.topP)
+	if !bedrockRejectsSampling(a.model) {
+		if !isClaudeModel(a.model) {
+			infConfig.TopP = aws.Float32(a.topP)
+		}
+		infConfig.Temperature = aws.Float32(a.temperature)
 	}
-	infConfig.Temperature = aws.Float32(a.temperature)
-		
+
 	var converseInput = bedrockruntime.ConverseInput{
-		ModelId:  aws.String(a.model),
-		Messages: []types.Message{message},
+		ModelId:         aws.String(a.model),
+		Messages:        []types.Message{message},
 		InferenceConfig: infConfig,
 	}
 	response, err := a.client.Converse(ctx, &converseInput)

@@ -102,6 +102,9 @@ func (c *LiteLLMClient) GetCompletion(ctx context.Context, prompt string) (strin
 	if len(resp.Choices) == 0 {
 		return "", errors.New("no completion choices returned from LiteLLM")
 	}
+	if err := checkCompletionContent(resp.Choices[0].Message.Content, string(resp.Choices[0].FinishReason)); err != nil {
+		return "", err
+	}
 	return resp.Choices[0].Message.Content, nil
 }
 

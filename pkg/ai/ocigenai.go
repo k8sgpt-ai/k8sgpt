@@ -55,7 +55,7 @@ func (c *OCIGenAIClient) Configure(config IAIConfig) error {
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
-	c.maxTokens = config.GetMaxTokens()
+	c.maxTokens = maxTokensOrDefault(config.GetMaxTokens())
 	c.compartmentId = config.GetCompartmentId()
 	provider := common.DefaultConfigProvider()
 	client, err := generativeaiinference.NewGenerativeAiInferenceClientWithConfigurationProvider(provider)
@@ -136,12 +136,26 @@ func extractGeneratedText(llmInferenceResponse generativeaiinference.BaseChatRes
 	switch response := llmInferenceResponse.(type) {
 	case generativeaiinference.GenericChatResponse:
 		if len(response.Choices) > 0 && len(response.Choices[0].Message.GetContent()) > 0 {
-			if content, ok := response.Choices[0].Message.GetContent()[0].(generativeaiinference.TextContent); ok {
+			content, ok := response.Choices[0].Message.GetContent()[0].(generativeaiinference.TextContent)
+			if ok && content.Text != nil {
+				finishReason := ""
+				if response.Choices[0].FinishReason != nil {
+					finishReason = *response.Choices[0].FinishReason
+				}
+				if err := checkCompletionContent(*content.Text, finishReason); err != nil {
+					return "", err
+				}
 				return *content.Text, nil
 			}
 		}
 		return "", errors.New("no text found in oci response")
 	case generativeaiinference.CohereChatResponse:
+		if response.Text == nil {
+			return "", errors.New("no text found in oci response")
+		}
+		if err := checkCompletionContent(*response.Text, string(response.FinishReason)); err != nil {
+			return "", err
+		}
 		return *response.Text, nil
 	default:
 		return "", fmt.Errorf("unknown oci response type: %s", reflect.TypeOf(llmInferenceResponse).Name())

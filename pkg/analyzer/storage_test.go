@@ -252,3 +252,48 @@ func TestStorageAnalyzer(t *testing.T) {
 		})
 	}
 }
+
+func TestStorageAnalyzerLabelSelector(t *testing.T) {
+	clientSet := fake.NewSimpleClientset(
+		&storagev1.StorageClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "sc-selected",
+				Labels:      map[string]string{"app": "test"},
+				Annotations: map[string]string{"storageclass.kubernetes.io/is-default-class": "true"},
+			},
+		},
+		&storagev1.StorageClass{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "sc-other",
+				Annotations: map[string]string{"storageclass.kubernetes.io/is-default-class": "true"},
+			},
+		},
+		&v1.PersistentVolume{
+			ObjectMeta: metav1.ObjectMeta{Name: "pv-selected", Labels: map[string]string{"app": "test"}},
+			Status:     v1.PersistentVolumeStatus{Phase: v1.VolumeFailed},
+		},
+		&v1.PersistentVolume{
+			ObjectMeta: metav1.ObjectMeta{Name: "pv-other"},
+			Status:     v1.PersistentVolumeStatus{Phase: v1.VolumeFailed},
+		},
+	)
+
+	config := common.Analyzer{
+		Client:        &kubernetes.Client{Client: clientSet},
+		Context:       context.Background(),
+		LabelSelector: "app=test",
+	}
+
+	results, err := StorageAnalyzer{}.Analyze(config)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	for _, r := range results {
+		if r.Name != "pv-selected" {
+			t.Errorf("result %s/%s should have been filtered out by the label selector", r.Kind, r.Name)
+		}
+	}
+	if len(results) != 1 {
+		t.Errorf("expected 1 result (pv-selected), got %d", len(results))
+	}
+}

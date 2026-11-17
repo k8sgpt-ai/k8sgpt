@@ -88,6 +88,12 @@ func (c *AmazonBedrockMantleClient) GetCompletion(ctx context.Context, prompt st
 	if err != nil {
 		return "", err
 	}
+	if len(resp.Choices) == 0 {
+		return "", errors.New("no completion choices returned from the AI provider")
+	}
+	if err := checkCompletionContent(resp.Choices[0].Message.Content, string(resp.Choices[0].FinishReason)); err != nil {
+		return "", err
+	}
 	return resp.Choices[0].Message.Content, nil
 }
 
