@@ -188,7 +188,7 @@ jobs:
         uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4
         with:
           registry: "ghcr.io"
           username: ${{ github.actor }}
@@ -216,7 +216,7 @@ jobs:
           output-file: ./sbom-${{ env.IMAGE_NAME }}.spdx.json
 
       - name: Attach SBOM to release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: ${{ needs.release-target.outputs.tag }}
           files: ./sbom-${{ env.IMAGE_NAME }}.spdx.json

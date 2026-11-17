@@ -478,6 +478,7 @@ func (s *K8sGptMCPServer) handleAnalyze(ctx context.Context, request mcp.CallToo
 
 	// Run the analysis
 	analysis.RunAnalysis()
+	analysis.ApplyExclusions()
 	if req.Explain {
 
 		var output string

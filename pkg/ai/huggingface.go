@@ -57,6 +57,9 @@ func (c *HuggingfaceClient) GetCompletion(ctx context.Context, prompt string) (s
 	if err != nil {
 		return "", err
 	}
+	if err := checkCompletionContent(resp.GeneratedText, ""); err != nil {
+		return "", err
+	}
 	return resp.GeneratedText, nil
 }
 
