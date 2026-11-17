@@ -22,8 +22,12 @@ import (
 	"github.com/stretchr/testify/require"
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	v1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	clienttesting "k8s.io/client-go/testing"
 )
 
 func TestValidatingWebhookAnalyzer(t *testing.T) {
@@ -282,4 +286,35 @@ func TestValidatingWebhookAnalyzerDistinctNames(t *testing.T) {
 		names[result.Name] = true
 	}
 	require.Equal(t, map[string]bool{"config-a/hook": true, "config-b/hook": true}, names)
+}
+
+// Only a NotFound means the webhook's Service is missing. When the Service
+// can't be read, for example without RBAC to get Services, it must not be
+// reported as missing.
+func TestValidatingWebhookAnalyzerServiceGetErrorNotReportedAsMissing(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&admissionregistrationv1.ValidatingWebhookConfiguration{
+			ObjectMeta: metav1.ObjectMeta{Name: "config"},
+			Webhooks: []admissionregistrationv1.ValidatingWebhook{{
+				Name: "hook",
+				ClientConfig: admissionregistrationv1.WebhookClientConfig{
+					Service: &admissionregistrationv1.ServiceReference{Name: "webhook-svc", Namespace: "default"},
+				},
+			}},
+		},
+	)
+	clientset.PrependReactor("get", "services", func(clienttesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(schema.GroupResource{Resource: "services"}, "webhook-svc", nil)
+	})
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context: context.Background(),
+	}
+
+	results, err := ValidatingWebhookAnalyzer{}.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
 }

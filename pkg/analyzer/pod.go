@@ -15,10 +15,14 @@ package analyzer
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 )
 
 type PodAnalyzer struct {
@@ -140,8 +144,12 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 				}
 			} else if containerStatus.State.Waiting.Reason == "CrashLoopBackOff" && containerStatus.LastTerminationState.Terminated != nil {
 				// This represents container that is in CrashLoopBackOff state due to conditions such as OOMKilled
+				text := fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, pod.Name)
+				if msg := probeKillMessage(a, pod, containerStatus); msg != "" {
+					text = fmt.Sprintf("the container is restarted because its probe fails: %s container=%s pod=%s", msg, containerStatus.Name, pod.Name)
+				}
 				failures = append(failures, common.Failure{
-					Text:      fmt.Sprintf("the last termination reason is %s container=%s pod=%s", containerStatus.LastTerminationState.Terminated.Reason, containerStatus.Name, pod.Name),
+					Text:      text,
 					Sensitive: []common.Sensitive{},
 				})
 			} else if isErrorReason(containerStatus.State.Waiting.Reason) && containerStatus.State.Waiting.Message != "" {
@@ -165,6 +173,14 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 				})
 			}
 		} else {
+			// when the container runs again after the kubelet killed it for failing its liveness or startup probe
+			if msg := probeKillMessage(a, pod, containerStatus); msg != "" && containerStatus.State.Running != nil {
+				failures = append(failures, common.Failure{
+					Text:      fmt.Sprintf("the container was restarted %d times because its probe fails: %s container=%s pod=%s", containerStatus.RestartCount, msg, containerStatus.Name, pod.Name),
+					Sensitive: []common.Sensitive{},
+				})
+				continue
+			}
 			// when pod is Running but its ReadinessProbe fails
 			if !containerStatus.Ready && statusPhase == "Running" {
 				// parse the event log and append details
@@ -183,6 +199,58 @@ func analyzeContainerStatusFailures(a common.Analyzer, statuses []v1.ContainerSt
 	}
 
 	return failures
+}
+
+// probeKillMessage returns the newest liveness or startup probe failure reported for a container that the kubelet
+// has since restarted. A container killed for a failing probe exits on SIGTERM or SIGKILL, so its termination reason
+// ("Error", exit code 143 or 137) does not say why it keeps restarting; the probe's Unhealthy event does.
+func probeKillMessage(a common.Analyzer, pod v1.ObjectReference, status v1.ContainerStatus) string {
+	last := status.LastTerminationState.Terminated
+	if status.RestartCount == 0 || last == nil || last.Reason == "OOMKilled" || (last.ExitCode != 137 && last.ExitCode != 143) {
+		return ""
+	}
+	selector := fields.Set{"involvedObject.kind": pod.Kind, "involvedObject.name": pod.Name}
+	events, err := a.Client.GetClient().CoreV1().Events(pod.Namespace).List(a.Context,
+		metav1.ListOptions{FieldSelector: selector.AsSelector().String()})
+	if err != nil {
+		return ""
+	}
+	var newest *v1.Event
+	for i := range events.Items {
+		evt := &events.Items[i]
+		if evt.InvolvedObject.Kind != pod.Kind || evt.InvolvedObject.Name != pod.Name ||
+			(pod.UID != "" && evt.InvolvedObject.UID != "" && evt.InvolvedObject.UID != pod.UID) || evt.Reason != "Unhealthy" {
+			continue
+		}
+		msg := strings.ToLower(evt.Message)
+		if !strings.HasPrefix(msg, "liveness probe failed") && !strings.HasPrefix(msg, "startup probe failed") {
+			continue
+		}
+		// The kubelet sets fieldPath to spec.containers{name} for container events.
+		if fp := evt.InvolvedObject.FieldPath; fp != "" && !strings.Contains(fp, "{"+status.Name+"}") {
+			continue
+		}
+		if newest == nil || eventTime(evt).After(eventTime(newest)) {
+			newest = evt
+		}
+	}
+	if newest == nil {
+		return ""
+	}
+	return newest.Message
+}
+
+// eventTime is when an event was last seen, from whichever timestamp its reporter filled in.
+func eventTime(evt *v1.Event) time.Time {
+	switch {
+	case evt.Series != nil && !evt.Series.LastObservedTime.IsZero():
+		return evt.Series.LastObservedTime.Time
+	case !evt.LastTimestamp.IsZero():
+		return evt.LastTimestamp.Time
+	case !evt.EventTime.IsZero():
+		return evt.EventTime.Time
+	}
+	return evt.FirstTimestamp.Time
 }
 
 func isErrorReason(reason string) bool {
