@@ -23,6 +23,7 @@ var maxTokensBackends = []struct {
 	{"groq", func() IAI { return &GroqClient{} }, "max_tokens"},
 	{"litellm", func() IAI { return &LiteLLMClient{} }, "max_tokens"},
 	{"bedrockmantle", func() IAI { return &AmazonBedrockMantleClient{} }, "max_tokens"},
+	{"gpt2giga", func() IAI { return &Gpt2GigaClient{} }, "max_tokens"},
 }
 
 // requestedMaxTokens configures the backend with maxTokens, sends one completion to a test

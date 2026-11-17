@@ -17,6 +17,8 @@ type AzureAIClient struct {
 	client      *openai.Client
 	model       string
 	temperature float32
+	topP        float32
+	maxTokens   int
 	// organizationId string
 }
 
@@ -101,12 +103,16 @@ func (c *AzureAIClient) Configure(config IAIConfig) error {
 	c.client = client
 	c.model = config.GetModel()
 	c.temperature = config.GetTemperature()
+	c.topP = config.GetTopP()
+	// Sent as max_completion_tokens (like the openai backend): reasoning
+	// deployments reject max_tokens. Omitted from the request when unset.
+	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
 
 func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
 	// Create a completion request
-	resp, err := c.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+	req := openai.ChatCompletionRequest{
 		Model: c.model,
 		Messages: []openai.ChatCompletionMessage{
 			{
@@ -114,8 +120,30 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 				Content: prompt,
 			},
 		},
-		Temperature: c.temperature,
-	})
+		Temperature:         c.temperature,
+		TopP:                c.topP,
+		MaxCompletionTokens: c.maxTokens,
+	}
+	resp, err := c.client.CreateChatCompletion(ctx, req)
+	if err != nil && c.maxTokens > 0 {
+		// Which token-limit field a deployment accepts depends on its model and
+		// api-version: reasoning models reject max_tokens, and older api-versions
+		// reject max_completion_tokens. Retry once with the other field.
+		switch rejectedParam(err) {
+		case "max_completion_tokens":
+			req.MaxCompletionTokens, req.MaxTokens = 0, c.maxTokens
+			resp, err = c.client.CreateChatCompletion(ctx, req)
+		case "max_tokens":
+			req.MaxCompletionTokens, req.MaxTokens = c.maxTokens, 0
+			resp, err = c.client.CreateChatCompletion(ctx, req)
+		}
+	}
+	if err != nil && rejectsSamplingParams(err) {
+		// Reasoning deployments only accept the default sampling values: retry
+		// once without them, as the openai backend does.
+		req.Temperature, req.TopP = 0, 0
+		resp, err = c.client.CreateChatCompletion(ctx, req)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -126,6 +154,15 @@ func (c *AzureAIClient) GetCompletion(ctx context.Context, prompt string) (strin
 		return "", err
 	}
 	return resp.Choices[0].Message.Content, nil
+}
+
+// rejectedParam returns the request parameter named by a 400 response, or "".
+func rejectedParam(err error) string {
+	var apiErr *openai.APIError
+	if !errors.As(err, &apiErr) || apiErr.HTTPStatusCode != http.StatusBadRequest || apiErr.Param == nil {
+		return ""
+	}
+	return *apiErr.Param
 }
 
 func (c *AzureAIClient) GetName() string {
