@@ -837,8 +837,11 @@ func (a *AmazonBedRockClient) extractModelFromInferenceProfile(profile *bedrock.
 
 // GetCompletion sends a request to the model for generating completion based on the provided prompt.
 func (a *AmazonBedRockClient) GetCompletion(ctx context.Context, prompt string) (string, error) {
-	// override config defaults
-	a.model.Config.MaxTokens = a.maxTokens
+	// override config defaults. 0 means maxtokens was omitted (a hand-written
+	// config); copying it over the catalog limit sends 0, which Bedrock rejects.
+	if a.maxTokens > 0 {
+		a.model.Config.MaxTokens = a.maxTokens
+	}
 	a.model.Config.Temperature = a.temperature
 	a.model.Config.TopP = a.topP
 
