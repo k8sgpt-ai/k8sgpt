@@ -15,8 +15,10 @@ package analyzer
 
 import (
 	"context"
+	"math"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -198,6 +200,52 @@ func TestCronJobAnalyzer(t *testing.T) {
 				require.Equal(t, expectation.name, results[i].Name)
 				require.Len(t, results[i].Error, expectation.failuresCount)
 			}
+		})
+	}
+}
+
+func TestCronJobAnalyzerStartingDeadlineSeconds(t *testing.T) {
+	tests := []struct {
+		name        string
+		deadline    *int64
+		wantFailure bool
+	}{
+		{name: "unset"},
+		{name: "zero", deadline: int64Ptr(0)},
+		{name: "positive", deadline: int64Ptr(60)},
+		{name: "maximum duration seconds", deadline: int64Ptr(math.MaxInt64 / int64(time.Second))},
+		{name: "duration overflow", deadline: int64Ptr(math.MaxInt64/int64(time.Second) + 1)},
+		{name: "maximum seconds", deadline: int64Ptr(math.MaxInt64)},
+		{name: "negative", deadline: int64Ptr(-1), wantFailure: true},
+		{name: "minimum seconds", deadline: int64Ptr(math.MinInt64), wantFailure: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: fake.NewSimpleClientset(&batchv1.CronJob{
+						ObjectMeta: metav1.ObjectMeta{Name: "deadline-job", Namespace: "default"},
+						Spec: batchv1.CronJobSpec{
+							Schedule:                "*/5 * * * *",
+							StartingDeadlineSeconds: tt.deadline,
+						},
+					}),
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			}
+
+			results, err := (CronJobAnalyzer{}).Analyze(config)
+			require.NoError(t, err)
+			if !tt.wantFailure {
+				require.Empty(t, results)
+				return
+			}
+			require.Len(t, results, 1)
+			require.Equal(t, "default/deadline-job", results[0].Name)
+			require.Len(t, results[0].Error, 1)
+			require.Equal(t, "CronJob deadline-job has a negative starting deadline", results[0].Error[0].Text)
 		})
 	}
 }
