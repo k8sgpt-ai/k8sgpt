@@ -15,7 +15,6 @@ package analyzer
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/kubernetes"
@@ -91,8 +90,7 @@ func (analyzer CronJobAnalyzer) Analyze(a common.Analyzer) ([]common.Result, err
 
 			// check the starting deadline
 			if cronJob.Spec.StartingDeadlineSeconds != nil {
-				deadline := time.Duration(*cronJob.Spec.StartingDeadlineSeconds) * time.Second
-				if deadline < 0 {
+				if *cronJob.Spec.StartingDeadlineSeconds < 0 {
 					doc := apiDoc.GetApiDocV2("spec.startingDeadlineSeconds")
 
 					failures = append(failures, common.Failure{
