@@ -23,6 +23,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -95,26 +96,31 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		// check ScaleTargetRef exist
 		scaleTargetRef := hpa.Spec.ScaleTargetRef
 		var podInfo PodInfo
+		var targetErr error
 		supportedKind := true
 
 		switch strings.ToLower(scaleTargetRef.Kind) {
 		case "deployment":
 			deployment, err := a.Client.GetClient().AppsV1().Deployments(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			targetErr = err
 			if err == nil {
 				podInfo = DeploymentInfo{deployment}
 			}
 		case "replicationcontroller":
 			rc, err := a.Client.GetClient().CoreV1().ReplicationControllers(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			targetErr = err
 			if err == nil {
 				podInfo = ReplicationControllerInfo{rc}
 			}
 		case "replicaset":
 			rs, err := a.Client.GetClient().AppsV1().ReplicaSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			targetErr = err
 			if err == nil {
 				podInfo = ReplicaSetInfo{rs}
 			}
 		case "statefulset":
 			ss, err := a.Client.GetClient().AppsV1().StatefulSets(hpa.Namespace).Get(a.Context, scaleTargetRef.Name, metav1.GetOptions{})
+			targetErr = err
 			if err == nil {
 				podInfo = StatefulSetInfo{ss}
 			}
@@ -127,9 +133,9 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		}
 
 		if podInfo == nil {
-			// an unsupported kind was never looked up, so it is not a missing
-			// target and the failure for it has already been recorded
-			if supportedKind {
+			// Only NotFound confirms that the target is missing. Other lookup
+			// errors leave it unverified; independent HPA findings still apply.
+			if supportedKind && apierrors.IsNotFound(targetErr) {
 				doc := apiDoc.GetApiDocV2("spec.scaleTargetRef")
 
 				failures = append(failures, common.Failure{
