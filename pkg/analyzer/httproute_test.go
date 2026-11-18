@@ -619,3 +619,66 @@ func TestHTTPRouteAnalyzerNamespaceFilter(t *testing.T) {
 		t.Fatalf("expected only default/foohttproute, got %v", names)
 	}
 }
+
+func TestHTTPRouteAnalyzerSelectorSyntax(t *testing.T) {
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+
+	gtwNamespace := gtwapi.Namespace("default")
+	gtwName := gtwapi.ObjectName("missing")
+	port := gtwapi.PortNumber(80)
+
+	labeled := BuildHTTPRoute(gtwapi.ObjectName("svc"), gtwName, gtwNamespace, &port, "default")
+	labeled.Labels = map[string]string{"app": "route"}
+	unlabeled := BuildHTTPRoute(gtwapi.ObjectName("svc"), gtwName, gtwNamespace, &port, "default")
+	unlabeled.Name = "foohttproute2"
+
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&labeled, &unlabeled).Build()
+
+	cases := []struct {
+		selector string
+		want     int
+	}{
+		{"", 2},
+		{"app=route", 1},
+		{"app==route", 1},
+		{"app!=route", 1},
+		{"app!=other", 2},
+		{"app in (route,other)", 1},
+		{"app notin (route)", 1},
+		{"app", 1},
+		{"!app", 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.selector, func(t *testing.T) {
+			results, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+				Client:        &kubernetes.Client{CtrlClient: fakeClient},
+				Context:       context.Background(),
+				Namespace:     "default",
+				LabelSelector: tc.selector,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(results) != tc.want {
+				t.Fatalf("selector %q: want %d results, got %d", tc.selector, tc.want, len(results))
+			}
+		})
+	}
+}
+
+func TestHTTPRouteAnalyzerInvalidSelector(t *testing.T) {
+	_, err := HTTPRouteAnalyzer{}.Analyze(common.Analyzer{
+		Client:        &kubernetes.Client{CtrlClient: fakeclient.NewClientBuilder().Build()},
+		Context:       context.Background(),
+		LabelSelector: "app in (",
+	})
+	if err == nil {
+		t.Fatal("expected an error for an invalid label selector")
+	}
+}

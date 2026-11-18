@@ -471,6 +471,58 @@ func TestGatewayAnalyzerLabelSelectorFiltering(t *testing.T) {
 
 }
 
+func TestGatewayAnalyzerSelectorSyntax(t *testing.T) {
+	className := gtwapi.ObjectName("non-existed")
+
+	labeled := BuildGateway(className, metav1.ConditionTrue, map[string]string{"app": "gateway"})
+	unlabeled := BuildGateway(className, metav1.ConditionTrue, nil)
+	unlabeled.Name = "foobar2"
+
+	scheme := scheme.Scheme
+	if err := gtwapi.Install(scheme); err != nil {
+		t.Fatal(err)
+	}
+	if err := apiextensionsv1.AddToScheme(scheme); err != nil {
+		t.Fatal(err)
+	}
+	fakeClient := fakeclient.NewClientBuilder().WithScheme(scheme).WithRuntimeObjects(&labeled, &unlabeled).Build()
+	analyzerInstance := GatewayAnalyzer{}
+
+	cases := []struct {
+		selector string
+		want     int
+	}{
+		{"", 2},
+		{"app=gateway", 1},
+		{"app==gateway", 1},
+		{"app!=gateway", 1},
+		{"app!=other", 2},
+		{"app in (gateway,other)", 1},
+		{"app notin (gateway)", 1},
+		{"app", 1},
+		{"!app", 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.selector, func(t *testing.T) {
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					CtrlClient: fakeClient,
+				},
+				Context:       context.Background(),
+				Namespace:     "default",
+				LabelSelector: tc.selector,
+			}
+			results, err := analyzerInstance.Analyze(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(results) != tc.want {
+				t.Fatalf("selector %q: want %d results, got %d", tc.selector, tc.want, len(results))
+			}
+		})
+	}
+}
+
 func TestGatewayAnalyzerNamespaceFilter(t *testing.T) {
 	class := BuildGatewayClass("exists")
 	inNamespace := BuildGateway("exists", metav1.ConditionFalse, nil)
@@ -501,5 +553,16 @@ func TestGatewayAnalyzerNamespaceFilter(t *testing.T) {
 			names = append(names, result.Name)
 		}
 		t.Fatalf("expected only default/foobar, got %v", names)
+	}
+}
+
+func TestGatewayAnalyzerInvalidSelector(t *testing.T) {
+	_, err := GatewayAnalyzer{}.Analyze(common.Analyzer{
+		Client:        &kubernetes.Client{CtrlClient: fakeclient.NewClientBuilder().Build()},
+		Context:       context.Background(),
+		LabelSelector: "app in (",
+	})
+	if err == nil {
+		t.Fatal("expected an error for an invalid label selector")
 	}
 }
