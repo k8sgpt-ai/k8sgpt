@@ -1,9 +1,9 @@
 # General Technical Review - k8sgpt / Incubation
 
 - **Project:** https://github.com/k8sgpt-ai/k8sgpt
-- **Project Version:** v0.4.41 (k8sgpt-operator: latest release)
+- **Project Version:** v0.4.41 (k8sgpt-operator: v0.2.29)
 - **Website:** https://k8sgpt.ai
-- **Date Updated:** 2026-10-30
+- **Date Updated:** 2026-11-16
 - **Template Version:** v1.0
 - **Description:** k8sgpt is a tool for scanning Kubernetes clusters, diagnosing, and triaging issues in simple English. It has SRE experience codified into analyzers and helps pull out the most relevant information, enriching it with AI from various LLM providers.
 
@@ -18,10 +18,12 @@
 The roadmap is documented in [ROADMAP.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/ROADMAP.md). Scope is determined through:
 - GitHub Issues and PRs from the community
 - Slack discussions in `#k8sgpt` on [CNCF Slack](https://slack.cncf.io)
-- GitHub Discussions
+- The monthly public community meeting (second Thursday, 16:00–17:00 UK time, from 12 Nov 2026; https://meet.google.com/ugf-zqjt-nwu)
 - Maintainer retrospectives and planning sessions
 
-Contributions follow a clear ladder documented in [GOVERNANCE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md): contributors → approvers → maintainers. Roadmap items are prioritized by maintainer consensus, with feature requests evaluated through GitHub issues.
+GitHub Discussions are not enabled on this repository.
+
+Contributions follow the contributor ladder ([community-membership.md](https://github.com/k8sgpt-ai/community/blob/main/community-membership.md), linked from [GOVERNANCE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md)): contributors → members → approvers → maintainers. Roadmap items are prioritized by consensus of the active maintainers (Alex Jones and Anais Urlichs), with feature requests evaluated through GitHub issues; roadmap tracking issues #1878–#1881 are open for contribution.
 
 **Describe the target persona or user(s) for the project?**
 
@@ -36,9 +38,8 @@ Contributions follow a clear ladder documented in [GOVERNANCE.md](https://github
 - **Primary:** Real-time cluster diagnostics — scan a Kubernetes cluster and get AI-powered explanations of issues in plain English
 - **Additional:**
   - Continuous monitoring via k8sgpt operator
-  - Slack/Teams integration for alerting
-  - Prometheus/Alertmanager integration for monitoring
-  - Custom analyzer framework for extensibility
+  - Prometheus metrics from `k8sgpt serve` (`/metrics`) and an optional operator ServiceMonitor (off by default)
+  - Custom analyzer framework for extensibility (gRPC)
   - MCP server integration for AI assistant workflows
 
 **Explain which use cases have been identified as unsupported by the project.**
@@ -86,12 +87,11 @@ k8sgpt provides:
 **Describe how this project integrates with other projects in a production environment.**
 
 k8sgpt integrates with:
-- **Prometheus/Alertmanager:** Export analysis results as metrics and send alerts
-- **Slack/Discord/Teams:** Send analysis results to chat channels
-- **Helm:** Deploy via standard Helm charts
-- **ArgoCD/FluxCD:** Compatible with GitOps workflows
-- **MCP:** Server integration for AI assistants
-- **Custom analyzers:** HTTP-based external analyzers for extensibility
+- **Prometheus:** `k8sgpt serve` exposes `/metrics`. The operator chart can create a ServiceMonitor and a Grafana dashboard; both are off by default (`serviceMonitor.enabled`, `grafanaDashboard.enabled`)
+- **Helm:** Deploy via the operator Helm chart
+- **GitOps:** The Helm chart can be applied by tools such as Argo CD or Flux
+- **MCP:** `k8sgpt serve --mcp` (stdio by default; `--mcp-http` listens on port 8089)
+- **Custom analyzers:** external analyzers over the gRPC API in [schema](https://github.com/k8sgpt-ai/schemas/blob/main/protobuf/schema/v1/custom_analyzer.proto) (`pkg/custom/client.go`)
 
 ### Design
 
@@ -115,7 +115,7 @@ The architecture does not change between environments — only the configuration
 
 **Define any specific service dependencies the project relies on in the cluster.**
 
-k8sgpt has no in-cluster service dependencies. It reads directly from the Kubernetes API server. Optional integrations (Prometheus, Slack, custom analyzers) are external services that the user configures.
+k8sgpt has no in-cluster service dependencies. It reads directly from the Kubernetes API server. Optional integrations (a Prometheus ServiceMonitor, a remote cache, custom gRPC analyzers, an AI backend) are services the user configures.
 
 **Describe how the project implements Identity and Access Management.**
 
@@ -129,35 +129,36 @@ k8sgpt has no in-cluster service dependencies. It reads directly from the Kubern
 - Local AI options (Ollama, LocalAI) keep data within the user's network
 - Users can configure any AI backend including self-hosted models
 - The opt-in anonymization feature masks object names and labels before sending to external AI providers
-- Remote caching (S3, Azure Blob, GCS) can be configured with user-controlled storage
+- Remote caching (S3, Azure Blob, GCS, Interplex) can be configured with user-controlled storage
 
 **Describe any compliance requirements addressed by the project.**
 
 - Apache 2.0 license compliance
 - CNCF Code of Conduct
 - OpenSSF Best Practices badge
-- Developer Certificate of Origin (DCO) enforced on all commits
-- FOSSA license scanning in CI
+- Developer Certificate of Origin (DCO) is the required status check on `main` in both repositories. [k8sgpt-operator#864](https://github.com/k8sgpt-ai/k8sgpt-operator/pull/864) documents DCO as the operator's only contributor sign-off. Disabling the EasyCLA GitHub App is an organization setting outside the repository; that PR does not turn the app off
+- Dependency license scanning: a `License Compliance` status check runs on pull requests. There is no workflow file for it in this repo. On 16 Nov 2026 the check's details URL was on app.fossa.com, so FOSSA is the integration that posts it. The FOSSA README badge was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644), so results are not linked from the README (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850), [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851)). CLOMonitor's `license_scanning` check fails (16 Nov 2026)
+- GitHub CodeQL code scanning (default setup) analyzes Go and GitHub Actions on `main`
 
 **Describe the project's High Availability requirements.**
 
 k8sgpt is a stateless tool:
 - **CLI:** Single-process, no HA requirements
-- **Operator:** Standard Kubernetes deployment with configurable replicas. No leader election needed for basic operation.
-- **MCP server:** Stateless HTTP server, can be horizontally scaled
+- **Operator:** Deployment replicas come from `controllerManager.replicas` (default 1). The chart passes `--leader-elect`, and the manager supports leader election (`--leader-elect`, default off in the binary, on in the chart; `cmd/main.go`)
+- **MCP server:** stdio by default. With `--mcp-http` it is a stateless HTTP server on port 8089 with no built-in TLS or authentication
 
 **Describe the project's resource requirements, including CPU, Network and Memory.**
 
-- **CLI:** ~50MB memory, minimal CPU (analysis time depends on cluster size and AI backend response time)
-- **Operator:** ~100MB memory, minimal CPU (periodic scanning)
-- **Network:** Outbound HTTPS to AI backend (when using --explain flag), outbound to Kubernetes API
-- **Storage:** Config file (~1KB), optional remote caching (user-configured)
+- **CLI:** a single local process. This repository does not publish a measured CPU or memory figure for it. Analysis time depends on cluster size and AI backend response time
+- **Operator chart requests/limits** (`chart/operator/values.yaml`): manager 10m CPU / 64Mi memory requested, 500m / 128Mi limited; kube-rbac-proxy 5m / 64Mi requested, 500m / 128Mi limited
+- **Network:** Outbound HTTPS to the AI backend when `--explain` is used (local backends may use HTTP; see the self-assessment), outbound to the Kubernetes API
+- **Storage:** local config file, optional remote cache (user-configured)
 
 **Describe the project's storage requirements, including its use of ephemeral and/or persistent storage.**
 
 - **Ephemeral:** No persistent storage required. Config stored locally.
-- **Optional:** Remote caching (S3, Azure Blob, GCS) for analysis results
-- **Operator:** No persistent volumes required
+- **Optional:** Remote caching (S3, Azure Blob, GCS, Interplex) for analysis results
+- **Operator:** The chart does not create a PersistentVolume. It does create `Result` objects, and `Mutation` objects when auto-remediation is enabled
 
 **Please outline the project's API Design:**
 
@@ -171,7 +172,8 @@ k8sgpt is a stateless tool:
 
 Documented in [RELEASE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE.md):
 - Automated via release-please (tracks conventional commits) and GoReleaser
-- Monthly release cadence
+- Regular release cadence: 15 releases in the 12 months to 16 Nov 2026 (v0.4.27 → v0.4.41, median 17 days apart)
+- Release archives carry SPDX SBOMs. Keyless cosign signing (Sigstore, GitHub OIDC) of the release checksum file has been in the release workflow since 3 Nov 2026, with verification steps in [RELEASE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE.md); no release has been cut since, so v0.4.41 and earlier are unsigned
 - Semantic versioning (MAJOR.MINOR.PATCH)
 - Binaries, container images, Helm charts, Homebrew packages, RPM/DEB/APK packages
 
@@ -181,7 +183,7 @@ Documented in [RELEASE.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/RELEASE
 
 - **CLI:** `brew install k8sgpt` or download binary — requires only an AI API key (`k8sgpt auth add`)
 - **Operator:** `helm install k8sgpt-operator k8sgpt-ai/k8sgpt` — requires AI backend configuration
-- **MCP:** `k8sgpt serve --mcp` — zero configuration needed
+- **MCP:** `k8sgpt serve --mcp` uses stdio by default. `--mcp-http` listens on port 8089 on all interfaces, with no built-in TLS or authentication
 
 **How does an adopter test and validate the installation?**
 
@@ -189,9 +191,9 @@ Run `k8sgpt analyze --explain` to verify the tool connects to the cluster and pr
 
 ### Security
 
-**Please provide a link to the project's cloud native security self assessment.**
+**Please provide a link to the project's cloud native [security self assessment](https://security-assessments.openssf.org/self-assessment/getting-started-self-assessment/).**
 
-[SECURITY_SELF_ASSESSMENT.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY_SELF_ASSESSMENT.md)
+[SECURITY_SELF_ASSESSMENT.md](SECURITY_SELF_ASSESSMENT.md) in this repository. The cncf/toc incubation copy is intended to live at `projects/k8sgpt/security-assessment/self-assessment.md`; that path is not in this repository.
 
 **Please review the Cloud Native Security Tenets from TAG Security.**
 
@@ -219,9 +221,9 @@ Anonymization is off unless `--anonymize` is passed, so by default finding text 
 
 **Cloud Native Threat Modeling**
 
-- **Least privilege:** k8sgpt only reads from the Kubernetes API. No write operations, no cluster modifications.
+- **Least privilege:** analyzers only read the Kubernetes API. The operator writes its own resources, and with auto-remediation enabled it can patch an allow-listed container image.
 - **Certificate rotation:** Not applicable — k8sgpt does not manage certificates. Uses standard Kubernetes API TLS.
-- **Secure software supply chain:** SBOM generated via Syft in release workflow. Renovate for automated dependency updates. OpenSSF Best Practices badge.
+- **Secure software supply chain:** SBOM generated via Syft in release workflow. Renovate for automated dependency updates. OpenSSF Best Practices badge (passing). Keyless cosign signing of the release checksum file via Sigstore and GitHub OIDC ([release.yaml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/workflows/release.yaml)). Workflow token permissions default to read-only; [SECURITY-INSIGHTS.yml](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY-INSIGHTS.yml), a [dependency-update policy](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md) and an [OpenSSF Scorecard workflow](https://github.com/k8sgpt-ai/k8sgpt/blob/main/.github/workflows/scorecard.yaml) are in place (Scorecard 7.2/10 on 16 Nov 2026: https://scorecard.dev/viewer/?uri=github.com/k8sgpt-ai/k8sgpt).
 
 ## Day 1 - Installation and Deployment Phase
 
@@ -231,14 +233,14 @@ Anonymization is off unless `--anonymize` is passed, so by default finding text 
 
 - **CLI:** `brew install k8sgpt` → `k8sgpt auth add --backend openai` → `k8sgpt analyze --explain`
 - **Operator:** Helm chart with configurable AI backends, analyzers, and integrations
-- **Custom analyzers:** gRPC-based HTTP service + k8sgpt config
+- **Custom analyzers:** gRPC service (URL and port in config) plus the k8sgpt config
 
 ### Project Enablement and Rollback
 
 **How can this project be enabled or disabled in a live cluster?**
 
 - **CLI:** No enable/disable needed — run when needed
-- **Operator:** `helm upgrade --set enabled=false` or `helm uninstall`
+- **Operator:** `helm uninstall`, or scale the controller with `--set controllerManager.replicas=0`. The chart has no top-level `enabled` value
 
 **Describe how enabling the project changes any default behavior of the cluster or running workloads.**
 
@@ -246,19 +248,19 @@ The CLI and server are read-only and have no impact on cluster behavior or runni
 
 **Describe how the project tests enablement and disablement.**
 
-CI tests cover both CLI and operator modes. The operator is tested with Minikube and Kind clusters.
+k8sgpt CI runs `go test ./...`, which includes CLI and server unit tests. Operator CI runs `make test` (envtest). A Kind cluster is created only when the operator Helm chart changes. There is no Minikube job.
 
 **How does the project clean up any resources created, including CRDs?**
 
-The operator creates no persistent resources. Helm uninstall removes all resources. CLI creates no cluster resources.
+The CLI creates no cluster resources. Helm uninstall removes the release's chart resources. CRDs installed from `chart/operator/crds/` (`K8sGPT`, `Result`, `Mutation`) are not deleted by Helm, and `Result` / `Mutation` objects remain until those CRDs are removed.
 
 ### Rollout, Upgrade and Rollback Planning
 
 **How does the project intend to provide and maintain compatibility with infrastructure and orchestration management tools like Kubernetes and with what frequency?**
 
 - Uses client-go for Kubernetes API interaction
-- Tests against current and previous 2 Kubernetes versions
-- Monthly release cadence ensures timely updates
+- k8sgpt CI runs `go test ./...`. It does not matrix Kubernetes versions. The operator's `make test` uses envtest pinned to Kubernetes 1.26.0 (`ENVTEST_K8S_VERSION`). Operator CI creates a Kind cluster only when the Helm chart changes. `make e2e-remediation` is a Kind test and is not a CI job. Neither workflow runs Minikube
+- Frequent releases (15 in the 12 months to 16 Nov 2026) ship client-go updates with the rest of the tree
 
 **Describe how the project handles rollback procedures.**
 
@@ -278,7 +280,7 @@ No impact on running workloads for the CLI/server, which are read-only. For the 
 
 **Explain how upgrades and rollbacks were tested.**
 
-Each release includes CI tests against multiple Kubernetes versions. Operator tests run in Kind and Minikube environments.
+k8sgpt CI runs `go test ./...` on every PR and on `main`. The operator runs `make test` (envtest, Kubernetes 1.26.0) on pull requests, and a Kind chart install when the chart changes. There is no Minikube job and no matrix of current plus two previous Kubernetes versions in either workflow.
 
 **Explain how the project informs users of deprecations and removals of features and APIs.**
 
@@ -309,21 +311,21 @@ Larger clusters and more analyzers increase analysis time proportionally. The op
 
 **Describe the increase in resource usage in any components as a result of enabling this project.**
 
-- **CLI:** ~50MB memory, minimal CPU
-- **Operator:** ~100MB memory, minimal CPU
-- **Network:** Outbound HTTPS to AI backend per analysis
+- **CLI:** one local process; no measured figure is published in this repository
+- **Operator:** the chart requests 64Mi for the manager and 64Mi for kube-rbac-proxy (see resource requirements above)
+- **Network:** Outbound HTTPS to the AI backend per explained analysis, plus Kubernetes API traffic
 
 **Describe which conditions enabling / using this project would result in resource exhaustion.**
 
-Not applicable — k8sgpt is read-only and does not create persistent resources.
+The CLI and server do not create cluster objects. The operator creates `Result` objects for findings and `Mutation` objects when auto-remediation is enabled, so object count grows with open findings. The chart does not request a PersistentVolume.
 
 **Describe the load testing that has been performed on the project and the results.**
 
-Load testing is performed by the community during development. The project scales to clusters with 1000+ nodes. Operator scanning is configurable for different intervals.
+This repository does not contain a load-test report or a measured cluster-size limit. Operator scan interval is configurable on the `K8sGPT` resource.
 
 **Describe the recommended limits of users, requests, system resources, etc.**
 
-No hard limits. The CLI works with any cluster size. The operator is recommended for clusters with 100+ nodes where continuous monitoring is valuable.
+The repository does not publish a hard limit on users, requests or cluster size. The CLI runs against whatever the kubeconfig can read. The operator is the in-cluster mode for scheduled scans.
 
 **Describe which resilience pattern the project uses.**
 
@@ -337,22 +339,20 @@ No hard limits. The CLI works with any cluster size. The operator is recommended
 
 - **Logs:** Standard Kubernetes operator logging (info, warn, error levels)
 - **Metrics:** Prometheus-compatible metrics for operator mode (analysis duration, error rates)
-- **Traces:** Not currently implemented, but the architecture supports it
+- **Traces:** Not implemented in this repository
 - **Formats:** JSON logs, Prometheus exposition format
 
 **Describe how the project captures audit logging.**
 
-k8sgpt does not modify cluster state, so audit logging is not applicable. The Kubernetes API server audit logs capture all k8sgpt read operations.
+The CLI and server analyzers do not write cluster objects. The operator writes its own CRDs and, when auto-remediation is enabled, can patch a workload image. k8sgpt does not write its own audit log. Kubernetes API server audit logs record the API calls those credentials make.
 
 **Describe any dashboards the project uses or implements.**
 
-k8sgpt does not include built-in dashboards, but integrates with:
-- **Prometheus:** Metrics can be visualized in Grafana
-- **Custom integrations:** Slack, Teams for alerting
+k8sgpt does not ship a dashboard. The server exposes Prometheus metrics, and the operator chart can install a Grafana dashboard ConfigMap (`grafanaDashboard.enabled`, off by default). This repository does not send findings to Slack, Discord or Teams.
 
 **Describe how the project surfaces project resource requirements for adopters to monitor cloud and infrastructure costs.**
 
-k8sgpt has minimal resource requirements (~100MB memory for operator). No persistent storage needed. Cost tracking is via standard Kubernetes resource monitoring.
+The operator chart publishes CPU and memory requests and limits (64Mi requested for the manager and for kube-rbac-proxy). The chart does not create a PersistentVolume. Adopters monitor cost with ordinary Kubernetes resource metrics.
 
 **Which parameters is the project covering to ensure the health of the application/service and its workloads?**
 
@@ -370,7 +370,7 @@ k8sgpt's analyzers cover:
 k8sgpt is a monitoring tool, not a workload. Operators can check:
 - k8sgpt Pod status (operator mode)
 - Analysis result metrics (Prometheus)
-- Slack/Teams alert channels
+- `Result` objects created by the operator
 
 **How can someone using this project know that it is working for their instance?**
 
@@ -397,23 +397,24 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 
 **Describe the project's dependency lifecycle policy.**
 
-- Automated via Renovate with auto-merge for non-major updates
-- Go modules with strict version pinning
-- Monthly release cadence ensures timely dependency updates
-- Security vulnerabilities tracked via OpenSSF badge and FOSSA
+Documented in [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md):
+- Renovate opens PRs for Go modules, GitHub Actions, Dockerfiles and `# renovate:` pins. Non-major updates are grouped. Patch and minor updates auto-merge when CI is green. Major updates, and `0.x` dependencies, are reviewed and are not auto-merged
+- Security updates (Renovate `[security]` PRs and GitHub advisories) are reviewed within 7 days. Critical and High fixes follow the timelines in [SECURITY.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md). <!-- TODO (maintainers): confirm Dependabot alerts are enabled. The dependency-update policy already marks this as unconfirmed. -->
+- A reachable vulnerable dependency is merged to `main` and shipped in the next patch release
 
 **How does the project incorporate and consider source composition analysis as part of its development and security hygiene?**
 
-- FOSSA license scanning in CI
-- Renovate for automated dependency tracking
-- SBOM generated via Syft in release workflow
+- A `License Compliance` status check on pull requests. There is no FOSSA GitHub Actions workflow in this repository. The check's details URL on 16 Nov 2026 was on app.fossa.com, so FOSSA posts the check. The README badge that linked the scan was removed in [#1644](https://github.com/k8sgpt-ai/k8sgpt/pull/1644) (see [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851))
+- Renovate for dependency tracking
+- SPDX SBOMs from GoReleaser (release archives) and Syft (release container image)
 - OpenSSF Best Practices badge
+- GitHub CodeQL default setup (`Analyze (go)` and `Analyze (actions)` on `main`; no CodeQL workflow file in the repo)
 
 **Describe how the project implements changes based on source composition analysis (SCA) and the timescale.**
 
-- FOSSA findings are reviewed and addressed within the next release cycle
-- Critical security vulnerabilities in dependencies are patched immediately
-- Non-critical license issues are addressed within 30 days
+Follows [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md):
+- A dependency update that introduces a license outside the CNCF allow list is held or pinned until it is resolved (for example [#1850](https://github.com/k8sgpt-ai/k8sgpt/issues/1850) and the MPL-2.0 pin in [#1851](https://github.com/k8sgpt-ai/k8sgpt/pull/1851))
+- Security PRs are reviewed within 7 days. If the vulnerable code affects k8sgpt, the fix ships in the next patch release. Critical and High timelines are in SECURITY.md
 
 ### Troubleshooting
 
@@ -433,18 +434,16 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 
 **What steps does the project take to ensure that all third-party code and components have correct and complete attribution and license notices?**
 
-- Apache 2.0 license file in repository root
-- LICENSE in all subdirectories
-- FOSSA license scanning in CI
-- Go modules with license metadata
-- Copyright headers in source files
+- Apache-2.0 `LICENSE` at the repository root. There is not a `LICENSE` file in every subdirectory
+- Go module metadata in `go.mod`
+- Apache copyright headers on many Go files. Not every file has one (for example `pkg/ai/customrest.go` does not)
+- New and updated dependencies are checked against the CNCF allowed-third-party-license policy, as described in [docs/dependency-update-policy.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/docs/dependency-update-policy.md). License scanning is the external `License Compliance` check described above, not a workflow file in this repo
 
 **Describe how the project ensures alignment with CNCF recommendations for attribution notices.**
 
-- Standard Go module attribution
-- LICENSE files in all packages
-- FOSSA license compliance scanning
-- Copyright headers in source files following Apache 2.0 conventions
+- The root `LICENSE` file and Go module attribution
+- Apache copyright headers where source files include them
+- The dependency-update policy holds or pins a dependency whose license is outside the CNCF allow list
 
 ## Day 2 - Security
 
@@ -453,7 +452,8 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 **How is the project executing access control?**
 
 - GitHub CODEOWNERS enforces PR review requirements
-- Active maintainers are Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs), listed in [MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md). Everyone else previously listed there is emeritus.
+- Two active maintainers, Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs), listed in [MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md) (single source of truth); thschue, matthisholleville, bradmccoydev, rakshitgondwal, roberthstrand and arbreezy are emeritus; the org-level lists in [k8sgpt-ai/community MAINTAINERS.md](https://github.com/k8sgpt-ai/community/blob/main/MAINTAINERS.md) and [k8sgpt-ai/.project maintainers.yaml](https://github.com/k8sgpt-ai/.project/blob/main/maintainers.yaml) match
+- Workflow tokens default to read-only. `.github/settings.yml` declares branch protection on `main`: one approving review, code-owner review, resolved conversations, linear history, `enforce_admins`, and a required `DCO` check. <!-- TODO (maintainers): confirm these rules are applied on GitHub. The branch-protection API returned HTTP 403 to the token used on 16 Nov 2026, and OpenSSF Scorecard's Branch-Protection check errored while reading classic branch protection. Also confirm org-level 2FA enforcement. -->
 - DCO enforcement on all commits
 - Branch protection requires PR review and passing CI
 - GitHub organization membership controls write access
@@ -462,8 +462,9 @@ k8sgpt has no in-cluster dependencies. It reads directly from the Kubernetes API
 
 **How does the project ensure its security reporting and response team is representative of its community diversity (organizational and individual)?**
 
-The Security Response Team is Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs). Affiliations are the values recorded in
-[MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md) (AWS and Independent) and still need confirmation by each person.
+The Security Response Team is Alex Jones (@AlexsJones) and Anais Urlichs (@AnaisUrlichs), named in
+[SECURITY.md § Security Response Team](https://github.com/k8sgpt-ai/k8sgpt/blob/main/SECURITY.md#security-response-team); affiliations are recorded in [MAINTAINERS.md](https://github.com/k8sgpt-ai/k8sgpt/blob/main/MAINTAINERS.md).
+With two members the team is small and not yet organizationally diverse. [GOVERNANCE.md § Security Response Team](https://github.com/k8sgpt-ai/k8sgpt/blob/main/GOVERNANCE.md#security-response-team) requires at least two members drawn from the maintainers, so the team grows as maintainers are added through the contributor ladder. <!-- TODO (Alex, Anais): confirm current affiliations. -->
 
 **How does the project invite and rotate security reporting team members?**
 
