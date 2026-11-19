@@ -1,0 +1,16 @@
+issues: ["#1461", "#1821"]
+description: node-problem-detector conditions are healthy when False
+expectResults: []
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: npd-node
+status:
+  conditions:
+  - {type: Ready, status: "True"}
+  - {type: KernelDeadlock, status: "False"}
+  - {type: ReadonlyFilesystem, status: "False"}
+  - {type: FrequentKubeletRestart, status: "False"}
+  - {type: FrequentContainerdRestart, status: "False"}
+  - {type: CorruptDockerOverlay2, status: "False"}
