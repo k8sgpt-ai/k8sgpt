@@ -266,6 +266,9 @@ func (s *K8sGptMCPServer) registerToolsAndResources() error {
 		mcp.WithString("labelSelector",
 			mcp.Description("Label selector to filter resources (e.g., 'app=myapp')"),
 		),
+		mcp.WithNumber("limit",
+			mcp.Description("Maximum number of resources to return (default: 100, max: 1000)"),
+		),
 	)
 	s.server.AddTool(listResourcesTool, s.handleListResources)
 
