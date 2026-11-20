@@ -524,6 +524,54 @@ func TestHPAAnalyzerWithExistingScaleTargetRefWithoutSpecifyingResources(t *test
 	}
 }
 
+// The HPA controller computes resource utilization from container requests
+// only, so a target whose containers set requests but no limits can still be
+// autoscaled and must not be reported as having no resources configured.
+func TestHPAAnalyzerRequestsWithoutLimitsNotReported(t *testing.T) {
+	clientset := fake.NewSimpleClientset(
+		&autoscalingv2.HorizontalPodAutoscaler{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "Deployment", Name: "example"},
+			},
+		},
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{Containers: []corev1.Container{{
+						Name:  "example",
+						Image: "nginx",
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceCPU:    resource.MustParse("100m"),
+								corev1.ResourceMemory: resource.MustParse("128Mi"),
+							},
+						},
+					}}},
+				},
+			},
+		})
+	hpaAnalyzer := HpaAnalyzer{}
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := hpaAnalyzer.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			t.Errorf("unexpected failure for %s: %s", analysis.Name, got.Text)
+		}
+	}
+}
+
 func TestHPAAnalyzerResourceNotConfiguredNamesHPANamespace(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{
