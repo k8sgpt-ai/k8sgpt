@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/k8sgpt-ai/k8sgpt/pkg/common"
 	"github.com/k8sgpt-ai/k8sgpt/pkg/util"
@@ -45,24 +46,45 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		return nil, err
 	}
 	var preAnalysis = map[string]common.PreAnalysis{}
+	var mutex sync.Mutex
+
+	// Bounded concurrency: max 10 concurrent pod log requests
+	concurrency := 10
+	semaphore := make(chan struct{}, concurrency)
+	var wg sync.WaitGroup
+
 	// Iterate through each pod
 
 	for _, pod := range list.Items {
-		for _, c := range pod.Spec.Containers {
-			var failures []common.Failure
-			failures = append(failures, analyzeLogs(a, pod, c.Name, false, true)...)
-			if containerHasRestarted(pod.Status.ContainerStatuses, c.Name) {
-				failures = append(failures, analyzeLogs(a, pod, c.Name, true, false)...)
-			}
-			if len(failures) > 0 {
-				preAnalysis[fmt.Sprintf("%s/%s/%s", pod.Namespace, pod.Name, c.Name)] = common.PreAnalysis{
-					FailureDetails: failures,
-					Pod:            pod,
+		wg.Add(1)
+		semaphore <- struct{}{} // Claim a worker slot
+
+		go func(pod v1.Pod) {
+			defer func() {
+				<-semaphore // Release the Worker slot
+				wg.Done()   // Notify waitgroup this pod is finished
+			}()
+			for _, c := range pod.Spec.Containers {
+				var failures []common.Failure
+				failures = append(failures, analyzeLogs(a, pod, c.Name, false, true)...)
+				if containerHasRestarted(pod.Status.ContainerStatuses, c.Name) {
+					failures = append(failures, analyzeLogs(a, pod, c.Name, true, false)...)
 				}
-				AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
+				if len(failures) > 0 {
+					key := fmt.Sprintf("%s/%s/%s", pod.Namespace, pod.Name, c.Name)
+					mutex.Lock()
+					preAnalysis[key] = common.PreAnalysis{
+						FailureDetails: failures,
+						Pod:            pod,
+					}
+					mutex.Unlock()
+					AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
+				}
 			}
-		}
+
+		}(pod)
 	}
+	wg.Wait()
 	for key, value := range preAnalysis {
 		currentAnalysis := common.Result{
 			Kind:  "Pod",
