@@ -71,3 +71,11 @@ func TestBackendsWithoutHTTPTestHook_DefaultMaxTokensWhenUnset(t *testing.T) {
 		assert.EqualValues(t, maxToken, client.maxTokens)
 	})
 }
+
+func TestHuggingface_DefaultMaxTokensWhenUnset(t *testing.T) {
+	client := &HuggingfaceClient{}
+	require.NoError(t, client.Configure(&AIProvider{Model: "test-model", Password: "test-key"}))
+
+	// unset falls back to maxToken, which the backend then caps at 500
+	assert.Equal(t, 500, client.maxTokens)
+}
