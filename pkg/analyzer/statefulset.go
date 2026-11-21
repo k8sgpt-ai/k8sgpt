@@ -57,7 +57,7 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 		serviceName := sts.Spec.ServiceName
 		if serviceName != "" {
 			_, err := a.Client.GetClient().CoreV1().Services(sts.Namespace).Get(a.Context, serviceName, metav1.GetOptions{})
-			if err != nil {
+			if err != nil && errors.IsNotFound(err) {
 				doc := apiDoc.GetApiDocV2("spec.serviceName")
 
 				failures = append(failures, common.Failure{
@@ -86,7 +86,7 @@ func (StatefulSetAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 				// no StorageClass to look up.
 				if volumeClaimTemplate.Spec.StorageClassName != nil && *volumeClaimTemplate.Spec.StorageClassName != "" {
 					_, err := a.Client.GetClient().StorageV1().StorageClasses().Get(a.Context, *volumeClaimTemplate.Spec.StorageClassName, metav1.GetOptions{})
-					if err != nil {
+					if err != nil && errors.IsNotFound(err) {
 						failures = append(failures, common.Failure{
 							Text: fmt.Sprintf("StatefulSet uses the storage class %s which does not exist.", *volumeClaimTemplate.Spec.StorageClassName),
 							Sensitive: []common.Sensitive{
