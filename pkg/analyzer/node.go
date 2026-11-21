@@ -126,7 +126,13 @@ func healthyNodeConditionStatus(conditionType v1.NodeConditionType) (v1.Conditio
 		"KubeletUnhealthy",
 		"NTPProblem",
 		"ReadonlyFilesystem",
-		"XfsShutdown":
+		"XfsShutdown",
+		// AKS node problem detector
+		// https://learn.microsoft.com/azure/aks/node-problem-detector
+		"ContainerRuntimeProblem",
+		"FilesystemCorruptionProblem",
+		"KubeletProblem",
+		"VMEventScheduled":
 		return v1.ConditionFalse, true
 	default:
 		return "", false
