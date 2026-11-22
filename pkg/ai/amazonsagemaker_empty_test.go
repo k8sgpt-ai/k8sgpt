@@ -19,10 +19,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sagemakerruntime"
+	"github.com/aws/aws-sdk-go/aws"                      //nolint:staticcheck // backend still uses aws-sdk-go v1
+	"github.com/aws/aws-sdk-go/aws/credentials"          //nolint:staticcheck // backend still uses aws-sdk-go v1
+	"github.com/aws/aws-sdk-go/aws/session"              //nolint:staticcheck // backend still uses aws-sdk-go v1
+	"github.com/aws/aws-sdk-go/service/sagemakerruntime" //nolint:staticcheck // backend still uses aws-sdk-go v1
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
