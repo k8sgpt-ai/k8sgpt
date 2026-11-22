@@ -133,6 +133,9 @@ func (c *SageMakerAIClient) GetCompletion(_ context.Context, prompt string) (str
 
 	// Access the content
 	content := generations[0].Generation.Content
+	if err := checkCompletionContent(content, ""); err != nil {
+		return "", err
+	}
 	return content, nil
 }
 
