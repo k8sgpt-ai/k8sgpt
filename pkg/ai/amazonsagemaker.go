@@ -81,11 +81,13 @@ func (c *SageMakerAIClient) Configure(config IAIConfig) error {
 }
 
 func (c *SageMakerAIClient) GetCompletion(_ context.Context, prompt string) (string, error) {
-	// Create a completion request
+	// Callers (analyze, query) already pass the full instruction as prompt,
+	// the same text every other backend sends as the user message. A system
+	// turn used to carry the literal "DEFAULT_PROMPT", which the endpoint
+	// forwarded to the model unchanged.
 	request := Request{
 		Inputs: [][]Message{
 			{
-				{Role: "system", Content: "DEFAULT_PROMPT"},
 				{Role: "user", Content: prompt},
 			},
 		},
