@@ -24,9 +24,13 @@ import (
 	"github.com/magiconair/properties/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 // spec.serviceName is optional, so a StatefulSet without one has no
@@ -546,5 +550,48 @@ func TestStatefulSetAnalyzerNotRunningPodSensitiveMasking(t *testing.T) {
 	}
 	if strings.Contains(masked, "namespace default") {
 		t.Errorf("pod namespace leaked after masking: %q still contains %q", masked, "namespace default")
+	}
+}
+
+// A failed lookup that is not NotFound (e.g. Forbidden) must not be
+// reported as the Service or StorageClass not existing.
+func TestStatefulSetAnalyzerLookupErrorIsNotMissing(t *testing.T) {
+	storageClassName := "fast"
+	clientset := fake.NewSimpleClientset(
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "example",
+				Namespace: "default",
+			},
+			Spec: appsv1.StatefulSetSpec{
+				ServiceName: "example-svc",
+				VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+					{
+						ObjectMeta: metav1.ObjectMeta{Name: "pvc-example"},
+						Spec: corev1.PersistentVolumeClaimSpec{
+							StorageClassName: &storageClassName,
+						},
+					},
+				},
+			},
+		})
+	for _, resource := range []string{"services", "storageclasses"} {
+		clientset.PrependReactor("get", resource, func(action k8stesting.Action) (bool, runtime.Object, error) {
+			return true, nil, errors.NewForbidden(schema.GroupResource{Resource: resource}, "x", nil)
+		})
+	}
+	config := common.Analyzer{
+		Client:    &kubernetes.Client{Client: clientset},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+	analysisResults, err := StatefulSetAnalyzer{}.Analyze(config)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, analysis := range analysisResults {
+		for _, got := range analysis.Error {
+			t.Errorf("unexpected failure for %s: %s", analysis.Name, got.Text)
+		}
 	}
 }
