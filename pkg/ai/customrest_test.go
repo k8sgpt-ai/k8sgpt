@@ -373,3 +373,25 @@ func TestCustomRestClient_GetCompletion_JSONWithoutMessageOrPrompt(t *testing.T)
 	}
 }
 
+func TestCustomRestClient_GetCompletion_EmptyResponse(t *testing.T) {
+	for name, body := range map[string]string{
+		"blank":   `{"model":"m","response":"   "}`,
+		"missing": `{"model":"m"}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(body))
+			}))
+			defer server.Close()
+
+			c := &CustomRestClient{}
+			require.NoError(t, c.Configure(&customRestMockConfig{baseURL: server.URL, model: "m"}))
+
+			resp, err := c.GetCompletion(context.Background(), "why?")
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), "empty completion")
+			assert.Empty(t, resp)
+		})
+	}
+}
