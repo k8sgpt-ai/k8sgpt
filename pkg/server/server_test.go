@@ -471,6 +471,15 @@ func TestMCPToolSchemaCompatibility(t *testing.T) {
 		assert.Contains(t, analyzeProps, prop, "analyze tool should include %s parameter", prop)
 	}
 
+	// list-resources tool should declare all parameters supported by handleListResources
+	listResourcesSchema, exists := toolMap["list-resources"]
+	require.True(t, exists, "list-resources tool should be registered")
+	listResourcesProps, ok := listResourcesSchema["properties"].(map[string]any)
+	require.True(t, ok)
+	for _, prop := range []string{"resourceType", "namespace", "labelSelector", "limit"} {
+		assert.Contains(t, listResourcesProps, prop, "list-resources tool should include %s parameter", prop)
+	}
+
 	// Config tool should have customAnalyzers as array
 	configSchema, exists := toolMap["config"]
 	require.True(t, exists, "config tool should be registered")

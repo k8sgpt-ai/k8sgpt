@@ -30,10 +30,10 @@ func (c *HuggingfaceClient) Configure(config IAIConfig) error {
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
 	c.temperature = config.GetTemperature()
-	if config.GetMaxTokens() > 500 {
+	if maxTokens := maxTokensOrDefault(config.GetMaxTokens()); maxTokens > 500 {
 		c.maxTokens = 500
 	} else {
-		c.maxTokens = config.GetMaxTokens()
+		c.maxTokens = maxTokens
 	}
 	return nil
 }
