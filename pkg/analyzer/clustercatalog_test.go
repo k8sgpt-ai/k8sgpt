@@ -343,3 +343,39 @@ func TestClusterCatalogAnalyzerNilResolvedSourceImage(t *testing.T) {
 	require.Len(t, results[0].Error, 1)
 	require.Contains(t, results[0].Error[0].Text, "missing status.resolvedSource.image.ref")
 }
+
+func TestClusterCatalogAnalyzerRepeatedImageSeparators(t *testing.T) {
+	gvr := schema.GroupVersionResource{Group: "olm.operatorframework.io", Version: "v1", Resource: "clustercatalogs"}
+
+	for _, ref := range []string{
+		"quay.io/example/my--catalog:v1",
+		"quay.io/team--operators/my---catalog",
+		"quay.io/example/my__catalog:v1",
+		"quay.io/team__operators/my__catalog@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	} {
+		t.Run(ref, func(t *testing.T) {
+			dynamicClient := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+				runtime.NewScheme(),
+				map[schema.GroupVersionResource]string{gvr: "ClusterCatalogList"},
+				&unstructured.Unstructured{Object: map[string]interface{}{
+					"apiVersion": "olm.operatorframework.io/v1",
+					"kind":       "ClusterCatalog",
+					"metadata":   map[string]interface{}{"name": "catalog"},
+					"spec": map[string]interface{}{
+						"source": map[string]interface{}{
+							"type":  "Image",
+							"image": map[string]interface{}{"ref": ref},
+						},
+					},
+				}},
+			)
+
+			results, err := (ClusterCatalogAnalyzer{}).Analyze(common.Analyzer{
+				Client:  &kubernetes.Client{DynamicClient: dynamicClient},
+				Context: context.Background(),
+			})
+			require.NoError(t, err)
+			require.Empty(t, results)
+		})
+	}
+}

@@ -159,6 +159,6 @@ func ValidateClusterCatalog(failures []common.Failure, catalog *common.ClusterCa
 
 // isValidImageRef does a simple regex check to validate image refs
 func isValidImageRef(ref string) bool {
-	pattern := `^([a-zA-Z0-9\-\.]+(?::[0-9]+)?/)?([a-z0-9]+(?:[._\-\/][a-z0-9]+)*)(:[\w][\w.-]{0,127})?(?:@sha256:[a-f0-9]{64})?$`
+	pattern := `^([a-zA-Z0-9\-\.]+(?::[0-9]+)?/)?([a-z0-9]+(?:(?:[._\/]|__|-+)[a-z0-9]+)*)(:[\w][\w.-]{0,127})?(?:@sha256:[a-f0-9]{64})?$`
 	return regexp.MustCompile(pattern).MatchString(ref)
 }
