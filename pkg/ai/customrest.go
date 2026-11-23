@@ -23,6 +23,7 @@ type CustomRestClient struct {
 	temperature float32
 	topP        float32
 	topK        int32
+	maxTokens   int
 }
 
 type CustomRestRequest struct {
@@ -83,6 +84,7 @@ func (c *CustomRestClient) Configure(config IAIConfig) error {
 	c.temperature = config.GetTemperature()
 	c.topP = config.GetTopP()
 	c.topK = config.GetTopK()
+	c.maxTokens = config.GetMaxTokens()
 	return nil
 }
 
@@ -112,16 +114,21 @@ func (c *CustomRestClient) GetCompletion(ctx context.Context, prompt string) (st
 		promptDetail.Message = promptDetail.Prompt
 	}
 
+	options := map[string]interface{}{
+		"temperature": c.temperature,
+		"top_p":       c.topP,
+		"top_k":       c.topK,
+		"message":     promptDetail.Message,
+		"language":    promptDetail.Language,
+	}
+	// 0 means maxtokens was omitted. Sending it would ask for an empty completion.
+	if c.maxTokens > 0 {
+		options["num_predict"] = c.maxTokens
+	}
 	generateRequest := &CustomRestRequest{
-		Model:  c.model,
-		Prompt: promptDetail.Prompt,
-		Options: map[string]interface{}{
-			"temperature": c.temperature,
-			"top_p":       c.topP,
-			"top_k":       c.topK,
-			"message":     promptDetail.Message,
-			"language":    promptDetail.Language,
-		},
+		Model:   c.model,
+		Prompt:  promptDetail.Prompt,
+		Options: options,
 	}
 	requestBody, err := json.Marshal(generateRequest)
 	if err != nil {
