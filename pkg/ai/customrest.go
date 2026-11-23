@@ -156,6 +156,9 @@ func (c *CustomRestClient) GetCompletion(ctx context.Context, prompt string) (st
 	if err := json.Unmarshal(responseBody, &result); err != nil {
 		return "", err
 	}
+	if err := checkCompletionContent(result.Response, ""); err != nil {
+		return "", err
+	}
 	return result.Response, nil
 }
 

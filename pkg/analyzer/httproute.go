@@ -83,12 +83,12 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					),
 					Sensitive: []common.Sensitive{
 						{
-							Unmasked: gtw.Namespace,
-							Masked:   util.MaskString(gtw.Namespace),
+							Unmasked: namespace,
+							Masked:   util.MaskString(namespace),
 						},
 						{
-							Unmasked: gtw.Name,
-							Masked:   util.MaskString(gtw.Name),
+							Unmasked: string(gtwref.Name),
+							Masked:   util.MaskString(string(gtwref.Name)),
 						},
 					},
 				})
@@ -186,12 +186,12 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						),
 						Sensitive: []common.Sensitive{
 							{
-								Unmasked: service.Namespace,
-								Masked:   util.MaskString(service.Namespace),
+								Unmasked: route.Namespace,
+								Masked:   util.MaskString(route.Namespace),
 							},
 							{
-								Unmasked: service.Name,
-								Masked:   util.MaskString(service.Name),
+								Unmasked: string(backend.Name),
+								Masked:   util.MaskString(string(backend.Name)),
 							},
 						},
 					})
@@ -227,7 +227,7 @@ func (HTTPRouteAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 								},
 								{
 									Unmasked: service.Namespace,
-									Masked:   service.Namespace,
+									Masked:   util.MaskString(service.Namespace),
 								},
 							},
 						})
