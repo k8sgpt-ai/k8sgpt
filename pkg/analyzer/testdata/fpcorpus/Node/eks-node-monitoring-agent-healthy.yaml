@@ -1,0 +1,19 @@
+issues: ["#1461", "#1798"]
+description: Amazon EKS node monitoring agent conditions are healthy when True
+expectResults: []
+---
+apiVersion: v1
+kind: Node
+metadata:
+  name: eks-node
+status:
+  conditions:
+  - {type: Ready, status: "True"}
+  - {type: MemoryPressure, status: "False"}
+  - {type: DiskPressure, status: "False"}
+  - {type: PIDPressure, status: "False"}
+  - {type: AcceleratedHardwareReady, status: "True"}
+  - {type: ContainerRuntimeReady, status: "True"}
+  - {type: KernelReady, status: "True"}
+  - {type: NetworkingReady, status: "True"}
+  - {type: StorageReady, status: "True"}
