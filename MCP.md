@@ -85,7 +85,7 @@ The server runs in stateless mode, so no session management is required. Each re
 
 ## Available Tools
 
-The MCP server exposes 12 tools for Kubernetes operations:
+The MCP server exposes 13 tools for Kubernetes operations:
 
 ### Cluster Analysis
 
@@ -95,6 +95,31 @@ The MCP server exposes 12 tools for Kubernetes operations:
   - `namespace` (optional): Namespace to analyze
   - `explain` (optional): Get AI explanations for issues
   - `filters` (optional): Comma-separated list of analyzers to use
+
+**get-findings**
+- Run the analyzers and return their findings as structured JSON, without calling an AI backend
+- Parameters:
+  - `namespace` (optional): Namespace to analyze; empty analyzes all namespaces
+  - `filters` (optional): Analyzers to run; empty uses the active filters
+  - `labelSelector` (optional): Label selector to narrow down the analyzed resources
+- Returns a `k8sgpt.ai/findings/v1alpha1` document:
+
+```json
+{
+  "schemaVersion": "k8sgpt.ai/findings/v1alpha1",
+  "generatedAt": "2026-10-30T07:00:00Z",
+  "problems": 1,
+  "findings": [
+    {
+      "kind": "Pod",
+      "namespace": "default",
+      "name": "web-1",
+      "parentObject": "Deployment/web",
+      "errors": ["back-off restarting failed container"]
+    }
+  ]
+}
+```
 
 **cluster-info**
 - Get Kubernetes cluster information and version
@@ -177,6 +202,14 @@ Resources provide read-only access to cluster information:
 **active-filters**
 - URI: `active-filters`
 - Get currently active analyzers/filters
+
+**findings**
+- URI: `k8sgpt://findings`
+- Current findings for the whole cluster with the active filters, in the same format as `get-findings`
+
+**namespace-findings** (resource template)
+- URI template: `k8sgpt://findings/{namespace}`
+- Current findings for one namespace with the active filters
 
 ## Available Prompts
 
