@@ -54,6 +54,13 @@
     {
       "matchManagers": ["dockerfile"],
       "addLabels": ["docker"]
+    },
+    {
+      "description": "Hold helm on v3: v4 changes the import path and APIs, so the bump needs a hand migration (see #1914).",
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["helm.sh/helm/v3"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   "regexManagers": [
