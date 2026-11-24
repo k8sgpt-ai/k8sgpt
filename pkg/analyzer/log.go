@@ -78,8 +78,8 @@ func (LogAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 						Pod:            pod,
 					}
 					mutex.Unlock()
-					AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
 				}
+				AnalyzerErrorsMetric.WithLabelValues(kind, pod.Name, pod.Namespace).Set(float64(len(failures)))
 			}
 
 		}(pod)
