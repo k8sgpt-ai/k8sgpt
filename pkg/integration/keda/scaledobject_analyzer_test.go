@@ -101,6 +101,53 @@ func TestScaledObjectAnalyzerReportsResourceFailureWithoutEvent(t *testing.T) {
 	assert.Equal(t, "Deployment default/example does not have resource configured.", results[0].Error[0].Text)
 }
 
+// TestScaledObjectAnalyzerRequestsWithoutLimitsNotReported checks that a
+// target whose container sets resource requests but no limits is not reported
+// as missing resources: CPU and memory utilization is computed against
+// requests, so limits are optional.
+func TestScaledObjectAnalyzerRequestsWithoutLimitsNotReported(t *testing.T) {
+	srv := newScaledObjectServer(t, []kedaSchema.ScaledObject{cpuScaledObject("example", "default")})
+	defer srv.Close()
+
+	clientset := fake.NewSimpleClientset(
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+			Spec: appsv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{{
+							Name: "app",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("100m"),
+									corev1.ResourceMemory: resource.MustParse("128Mi"),
+								},
+							},
+						}},
+					},
+				},
+			},
+		},
+	)
+
+	config := common.Analyzer{
+		Client: &kubernetes.Client{
+			Client: clientset,
+			Config: &rest.Config{Host: srv.URL},
+		},
+		Context:   context.Background(),
+		Namespace: "default",
+	}
+
+	results, err := (&ScaledObjectAnalyzer{}).Analyze(config)
+	assert.NoError(t, err)
+	for _, r := range results {
+		for _, f := range r.Error {
+			t.Errorf("unexpected failure for %s: %s", r.Name, f.Text)
+		}
+	}
+}
+
 // TestScaledObjectAnalyzerReportsMissingTargetWithoutEvent verifies the
 // ScaleTargetRef-does-not-exist failure is also reported when there is no
 // event (another path that the previous early-continue discarded).
