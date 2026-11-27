@@ -93,7 +93,7 @@ func (s *ScaledObjectAnalyzer) Analyze(a common.Analyzer) ([]common.Result, erro
 			for _, container := range podInfo.GetPodSpec().Containers {
 				for _, trigger := range so.Spec.Triggers {
 					if trigger.Type == "cpu" || trigger.Type == "memory" {
-						if container.Resources.Requests == nil || container.Resources.Limits == nil {
+						if len(container.Resources.Requests) == 0 {
 							containers--
 							break
 						}
