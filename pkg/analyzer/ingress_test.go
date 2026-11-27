@@ -23,8 +23,12 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestIngressAnalyzer(t *testing.T) {
@@ -545,6 +549,48 @@ func TestIngressAnalyzerDefaultBackendExistingService(t *testing.T) {
 
 	analyzer := IngressAnalyzer{}
 	results, err := analyzer.Analyze(config)
+	require.NoError(t, err)
+	require.Empty(t, results)
+}
+
+// Services and Secrets that cannot be read (for example no RBAC on them) must
+// not be reported as missing: only a NotFound means the object does not exist.
+func TestIngressAnalyzerLookupForbidden(t *testing.T) {
+	ingressClassName := "gce" // built-in class, so no IngressClass lookup is made
+	backend := &networkingv1.IngressServiceBackend{
+		Name: "svc",
+		Port: networkingv1.ServiceBackendPort{Number: 80},
+	}
+	clientSet := fake.NewSimpleClientset(&networkingv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{Name: "ing", Namespace: "default"},
+		Spec: networkingv1.IngressSpec{
+			IngressClassName: &ingressClassName,
+			DefaultBackend:   &networkingv1.IngressBackend{Service: backend},
+			Rules: []networkingv1.IngressRule{{
+				IngressRuleValue: networkingv1.IngressRuleValue{
+					HTTP: &networkingv1.HTTPIngressRuleValue{
+						Paths: []networkingv1.HTTPIngressPath{{
+							Path:     "/",
+							PathType: pathTypePtr(networkingv1.PathTypePrefix),
+							Backend:  networkingv1.IngressBackend{Service: backend},
+						}},
+					},
+				},
+			}},
+			TLS: []networkingv1.IngressTLS{{SecretName: "tls-secret"}},
+		},
+	})
+	for _, resource := range []string{"services", "secrets"} {
+		clientSet.PrependReactor("get", resource, func(k8stesting.Action) (bool, runtime.Object, error) {
+			return true, nil, apierrors.NewForbidden(schema.GroupResource{Resource: resource}, "x", nil)
+		})
+	}
+
+	results, err := IngressAnalyzer{}.Analyze(common.Analyzer{
+		Client:    &kubernetes.Client{Client: clientSet},
+		Context:   context.Background(),
+		Namespace: "default",
+	})
 	require.NoError(t, err)
 	require.Empty(t, results)
 }
