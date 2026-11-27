@@ -34,6 +34,7 @@ type customRestMockConfig struct {
 	temperature   float32
 	topP          float32
 	topK          int32
+	maxTokens     int
 }
 
 func (m *customRestMockConfig) GetPassword() string             { return m.password }
@@ -46,7 +47,7 @@ func (m *customRestMockConfig) GetTemperature() float32         { return m.tempe
 func (m *customRestMockConfig) GetProviderRegion() string       { return "" }
 func (m *customRestMockConfig) GetTopP() float32                { return m.topP }
 func (m *customRestMockConfig) GetTopK() int32                  { return m.topK }
-func (m *customRestMockConfig) GetMaxTokens() int               { return 0 }
+func (m *customRestMockConfig) GetMaxTokens() int               { return m.maxTokens }
 func (m *customRestMockConfig) GetStopSequences() []string      { return nil }
 func (m *customRestMockConfig) GetProviderId() string           { return "" }
 func (m *customRestMockConfig) GetCompartmentId() string        { return "" }
@@ -371,6 +372,58 @@ func TestCustomRestClient_GetCompletion_JSONWithoutMessageOrPrompt(t *testing.T)
 			assert.Equal(t, tt.prompt, receivedRequest.Options["message"])
 		})
 	}
+}
+
+func TestCustomRestClient_GetCompletion_SendsMaxTokens(t *testing.T) {
+	var receivedRequest CustomRestRequest
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(body, &receivedRequest))
+
+		resp := CustomRestResponse{Response: "capped"}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	c := &CustomRestClient{}
+	require.NoError(t, c.Configure(&customRestMockConfig{
+		baseURL:     server.URL,
+		temperature: 0.2,
+		topP:        0.9,
+		topK:        40,
+		maxTokens:   512,
+	}))
+
+	resp, err := c.GetCompletion(context.Background(), "why is the pod pending?")
+	require.NoError(t, err)
+	assert.Equal(t, "capped", resp)
+	assert.EqualValues(t, 512, receivedRequest.Options["num_predict"])
+}
+
+func TestCustomRestClient_GetCompletion_OmitsUnsetMaxTokens(t *testing.T) {
+	var receivedRequest CustomRestRequest
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		require.NoError(t, err)
+		require.NoError(t, json.Unmarshal(body, &receivedRequest))
+
+		resp := CustomRestResponse{Response: "uncapped"}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(resp)
+	}))
+	defer server.Close()
+
+	c := &CustomRestClient{}
+	require.NoError(t, c.Configure(&customRestMockConfig{baseURL: server.URL}))
+
+	resp, err := c.GetCompletion(context.Background(), "why?")
+	require.NoError(t, err)
+	assert.Equal(t, "uncapped", resp)
+	assert.NotContains(t, receivedRequest.Options, "num_predict")
 }
 
 func TestCustomRestClient_GetCompletion_EmptyResponse(t *testing.T) {
