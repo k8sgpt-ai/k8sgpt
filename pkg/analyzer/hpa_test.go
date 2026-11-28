@@ -572,6 +572,115 @@ func TestHPAAnalyzerRequestsWithoutLimitsNotReported(t *testing.T) {
 	}
 }
 
+// Only a resource utilization target is computed from container requests.
+// An HPA that scales on other metrics, such as the External metrics of the
+// HPAs KEDA creates, works on a target without requests and must not be
+// reported as having no resources configured.
+func TestHPAAnalyzerRequestsOnlyRequiredForUtilizationMetrics(t *testing.T) {
+	averageValue := resource.MustParse("500m")
+	utilization := int32(80)
+
+	tests := []struct {
+		name       string
+		metrics    []autoscalingv2.MetricSpec
+		wantReport bool
+	}{
+		{
+			name: "external metric",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.ExternalMetricSourceType,
+				External: &autoscalingv2.ExternalMetricSource{
+					Metric: autoscalingv2.MetricIdentifier{Name: "s0-rabbitmq-queue"},
+					Target: autoscalingv2.MetricTarget{Type: autoscalingv2.AverageValueMetricType, AverageValue: &averageValue},
+				},
+			}},
+			wantReport: false,
+		},
+		{
+			name: "cpu average value",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.ResourceMetricSourceType,
+				Resource: &autoscalingv2.ResourceMetricSource{
+					Name:   corev1.ResourceCPU,
+					Target: autoscalingv2.MetricTarget{Type: autoscalingv2.AverageValueMetricType, AverageValue: &averageValue},
+				},
+			}},
+			wantReport: false,
+		},
+		{
+			name: "cpu utilization",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.ResourceMetricSourceType,
+				Resource: &autoscalingv2.ResourceMetricSource{
+					Name:   corev1.ResourceCPU,
+					Target: autoscalingv2.MetricTarget{Type: autoscalingv2.UtilizationMetricType, AverageUtilization: &utilization},
+				},
+			}},
+			wantReport: true,
+		},
+		{
+			name: "container cpu utilization",
+			metrics: []autoscalingv2.MetricSpec{{
+				Type: autoscalingv2.ContainerResourceMetricSourceType,
+				ContainerResource: &autoscalingv2.ContainerResourceMetricSource{
+					Name:      corev1.ResourceCPU,
+					Container: "example",
+					Target:    autoscalingv2.MetricTarget{Type: autoscalingv2.UtilizationMetricType, AverageUtilization: &utilization},
+				},
+			}},
+			wantReport: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clientset := fake.NewSimpleClientset(
+				&autoscalingv2.HorizontalPodAutoscaler{
+					ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+					Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+						ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{Kind: "Deployment", Name: "example"},
+						Metrics:        tt.metrics,
+					},
+				},
+				&appsv1.Deployment{
+					ObjectMeta: metav1.ObjectMeta{Name: "example", Namespace: "default"},
+					Spec: appsv1.DeploymentSpec{
+						Template: corev1.PodTemplateSpec{
+							Spec: corev1.PodSpec{Containers: []corev1.Container{{
+								Name:  "example",
+								Image: "nginx",
+							}}},
+						},
+					},
+				})
+
+			config := common.Analyzer{
+				Client: &kubernetes.Client{
+					Client: clientset,
+				},
+				Context:   context.Background(),
+				Namespace: "default",
+			}
+			analysisResults, err := HpaAnalyzer{}.Analyze(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var reported bool
+			for _, analysis := range analysisResults {
+				for _, failure := range analysis.Error {
+					if strings.Contains(failure.Text, "does not have resource configured.") {
+						reported = true
+					}
+				}
+			}
+			if reported != tt.wantReport {
+				t.Errorf("resource-configured failure reported = %v, want %v", reported, tt.wantReport)
+			}
+		})
+	}
+}
+
 func TestHPAAnalyzerResourceNotConfiguredNamesHPANamespace(t *testing.T) {
 	clientset := fake.NewSimpleClientset(
 		&autoscalingv2.HorizontalPodAutoscaler{

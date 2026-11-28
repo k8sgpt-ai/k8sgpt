@@ -149,7 +149,7 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 					},
 				})
 			}
-		} else {
+		} else if hpaUsesResourceUtilization(hpa.Spec) {
 			containers := len(podInfo.GetPodSpec().Containers)
 			for _, container := range podInfo.GetPodSpec().Containers {
 				if len(container.Resources.Requests) == 0 {
@@ -199,6 +199,30 @@ func (HpaAnalyzer) Analyze(a common.Analyzer) ([]common.Result, error) {
 	}
 
 	return a.Results, nil
+}
+
+// hpaUsesResourceUtilization reports whether the HPA scales on a resource
+// utilization target, the only kind of metric the HPA controller computes as
+// a percentage of container requests. Pods, Object and External metrics, and
+// resource metrics with an AverageValue target, do not need requests. An HPA
+// with no metrics is defaulted by the API server to 80% CPU utilization.
+func hpaUsesResourceUtilization(spec autoscalingv2.HorizontalPodAutoscalerSpec) bool {
+	if len(spec.Metrics) == 0 {
+		return true
+	}
+	for _, metric := range spec.Metrics {
+		switch metric.Type {
+		case autoscalingv2.ResourceMetricSourceType:
+			if metric.Resource != nil && metric.Resource.Target.Type == autoscalingv2.UtilizationMetricType {
+				return true
+			}
+		case autoscalingv2.ContainerResourceMetricSourceType:
+			if metric.ContainerResource != nil && metric.ContainerResource.Target.Type == autoscalingv2.UtilizationMetricType {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 type PodInfo interface {
