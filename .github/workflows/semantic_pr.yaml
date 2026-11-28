@@ -20,7 +20,7 @@ jobs:
       pull-requests: read # Needed for reading prs
     steps:
       - name: Validate Pull Request
-        uses: amannn/action-semantic-pull-request@fdd4d3ddf614fbcd8c29e4b106d3bbe0cb2c605d # v6.0.1
+        uses: amannn/action-semantic-pull-request@66e72920af32222769c386d81f89656ebcb6d6d5 # v6.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
